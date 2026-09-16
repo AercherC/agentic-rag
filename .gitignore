@@ -1,0 +1,23 @@
+# 本地密钥与运行配置：仅提交脱敏后的 .env.example。
+.env
+
+# Python 解释器、测试与静态检查缓存。
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# 本地模型缓存、向量索引与一次性中间产物。
+.cache/
+data/chroma/
+tmp/
+
+# 开发工具的本地工作状态。
+.vscode/
+.workbuddy/
+
+# 常见操作系统临时文件。
+.DS_Store
+Thumbs.db
