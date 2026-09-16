@@ -1,0 +1,270 @@
+{
+  "document_id": "W1",
+  "source_format": "docx",
+  "source_file": "W1.docx",
+  "source_sha256": "1e8b4fb1222b55700ec435501519dae75c4b8d68a2c8f92bcf92aa8b1e9aa77d",
+  "element_count": 8,
+  "elements": [
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Sample Technical Document",
+      "normalized_text": "Sample Technical Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 0
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Introduction",
+      "normalized_text": "Introduction",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "This document describes the experiment setup.",
+      "normalized_text": "This document describes the experiment setup.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-3",
+      "type": "heading",
+      "raw_text": "Background",
+      "normalized_text": "Background",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Heading 2",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 2
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-4",
+      "type": "paragraph",
+      "raw_text": "Prior work focused on point cloud completion.",
+      "normalized_text": "Prior work focused on point cloud completion.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-5",
+      "type": "list_item",
+      "raw_text": "First bullet point",
+      "normalized_text": "First bullet point",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 5,
+        "xml_path": "/w:document/w:body/w:p[6]",
+        "style_id": "List Bullet",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "list_id": "list-1",
+        "ordered": false,
+        "level": 1,
+        "item_index": 1
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-6",
+      "type": "list_item",
+      "raw_text": "Second bullet point",
+      "normalized_text": "Second bullet point",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 6,
+        "xml_path": "/w:document/w:body/w:p[7]",
+        "style_id": "List Bullet",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "list_id": "list-1",
+        "ordered": false,
+        "level": 1,
+        "item_index": 2
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-7",
+      "type": "list_item",
+      "raw_text": "First numbered item",
+      "normalized_text": "First numbered item",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 7,
+        "xml_path": "/w:document/w:body/w:p[8]",
+        "style_id": "List Number",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "list_id": "list-2",
+        "ordered": true,
+        "level": 1,
+        "item_index": 1
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "DOCX-B1_python_docx_semantic",
+    "page_breaks": [],
+    "page_break_provenance_kind": null
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-0",
+      "reason": "explicit_style: Title",
+      "from": "paragraph",
+      "to": "document_title",
+      "source_element_id": "el-docx-p-0"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-1",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-1"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-3",
+      "reason": "explicit_style: Heading 2",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-3"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-5",
+      "reason": "explicit_style: List Bullet",
+      "from": "paragraph",
+      "to": "list_item",
+      "source_element_id": "el-docx-p-5"
+    },
+    {
+      "action": "normalize_list",
+      "target": "el-docx-p-5",
+      "reason": "group consecutive items of style List Bullet",
+      "to": "list_group",
+      "source_element_id": "el-docx-p-5",
+      "detail": {
+        "list_id": "list-1",
+        "ordered": false
+      }
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-6",
+      "reason": "explicit_style: List Bullet",
+      "from": "paragraph",
+      "to": "list_item",
+      "source_element_id": "el-docx-p-6"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-7",
+      "reason": "explicit_style: List Number",
+      "from": "paragraph",
+      "to": "list_item",
+      "source_element_id": "el-docx-p-7"
+    },
+    {
+      "action": "normalize_list",
+      "target": "el-docx-p-7",
+      "reason": "group consecutive items of style List Number",
+      "to": "list_group",
+      "source_element_id": "el-docx-p-7",
+      "detail": {
+        "list_id": "list-2",
+        "ordered": true
+      }
+    }
+  ],
+  "unresolved": []
+}

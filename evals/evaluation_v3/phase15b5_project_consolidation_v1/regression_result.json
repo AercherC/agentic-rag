@@ -1,0 +1,47 @@
+{
+  "phase": "15B.5",
+  "status": "PASS",
+  "full_tests": {
+    "before": {"passed": 637, "failed": 0, "warnings": 18},
+    "after": {"passed": 517, "failed": 0, "warnings": 18}
+  },
+  "production_replay": {
+    "questions": 40,
+    "top5_mismatch_count": 0,
+    "active_relevance_projection_hash": "6ccf0ffeffb8799429baff192e2de75e57199d1868688ca75ac2479cfb0cc4cd",
+    "metrics_equal": true,
+    "summary_at_5": {
+      "P@5": 0.26842105263157895,
+      "Recall@5": 0.5102789340364703,
+      "MRR@5": 0.5175438596491229,
+      "MAP@5": 0.36306468629590677,
+      "nDCG@5": 0.4902576778760202,
+      "eligible_count": 38,
+      "excluded_count": 2
+    }
+  },
+  "active_index": {
+    "pass": true,
+    "collection": "ef_research_bge_m3_hybrid_c512_v2",
+    "document_count": 10,
+    "chunk_count": 817,
+    "metadata_coverage": 1.0,
+    "corpus_signature": "bb184726b7f98756bd519d70e1a2a1f1224b5108e689680b2c328023ba1f4332",
+    "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5"
+  },
+  "frozen_hash_parity": {
+    "phase13f": true,
+    "gold_qrels": true,
+    "phase15a_gate": "PASS",
+    "phase15a_phase15b_file_manifest": {
+      "baseline": "artifacts/cleanup/post13f/full_file_hash_manifest.json",
+      "checked": 43,
+      "missing": 0,
+      "mismatches": 0,
+      "phase15a_files": 4,
+      "phase15b_v1_files": 19,
+      "phase15b_v2_files": 20
+    }
+  },
+  "production_behavior_delta": 0
+}

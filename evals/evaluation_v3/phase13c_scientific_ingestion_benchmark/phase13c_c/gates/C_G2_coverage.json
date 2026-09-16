@@ -1,0 +1,18 @@
+{
+ "PC0": {
+  "coverage_rate": 1.0,
+  "pass": true
+ },
+ "PC1": {
+  "coverage_rate": 1.0,
+  "pass": true
+ },
+ "PC2": {
+  "coverage_rate": 1.0,
+  "pass": true
+ },
+ "PC3": {
+  "coverage_rate": 1.0,
+  "pass": true
+ }
+}

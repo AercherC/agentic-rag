@@ -1,0 +1,9 @@
+{
+ "ref_qrels_reprojection": {
+  "PC0": true,
+  "PC1": true,
+  "PC2": true
+ },
+ "pass": true,
+ "protocol": "同 13C-C：bge-m3/Top20/anchor 严格制（结构保证，逐条记录）"
+}

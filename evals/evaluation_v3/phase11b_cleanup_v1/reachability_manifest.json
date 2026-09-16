@@ -1,0 +1,3081 @@
+{
+  "artifact_type": "phase11b_reachability_manifest",
+  "method": "ast static import closure from evidenceflow.__main__ / evidenceflow.runtime",
+  "production_entry_modules": [
+    "evidenceflow.__main__",
+    "evidenceflow.runtime"
+  ],
+  "fallback_entry_modules": [
+    "evidenceflow.retrieval.bm25",
+    "evidenceflow.retrieval.fusion",
+    "evidenceflow.retrieval.hybrid_fusion",
+    "evidenceflow.retrieval.multilingual",
+    "evidenceflow.translation.llm"
+  ],
+  "production_reachable_modules": [
+    "evidenceflow.__main__",
+    "evidenceflow.citation",
+    "evidenceflow.citation.parser",
+    "evidenceflow.config",
+    "evidenceflow.context",
+    "evidenceflow.context.builder",
+    "evidenceflow.domain",
+    "evidenceflow.domain.answer",
+    "evidenceflow.domain.chunk",
+    "evidenceflow.domain.citation",
+    "evidenceflow.domain.context",
+    "evidenceflow.domain.document",
+    "evidenceflow.domain.evaluation",
+    "evidenceflow.domain.generation",
+    "evidenceflow.domain.ids",
+    "evidenceflow.domain.query",
+    "evidenceflow.embedding",
+    "evidenceflow.embedding.base",
+    "evidenceflow.embedding.bge_m3",
+    "evidenceflow.generation",
+    "evidenceflow.generation.generator",
+    "evidenceflow.ingestion",
+    "evidenceflow.ingestion.chunker",
+    "evidenceflow.ingestion.cleaner",
+    "evidenceflow.ingestion.loader",
+    "evidenceflow.ingestion.service",
+    "evidenceflow.ingestion.tokenizer",
+    "evidenceflow.llm",
+    "evidenceflow.llm.base",
+    "evidenceflow.llm.diagnostics",
+    "evidenceflow.llm.openai_compatible",
+    "evidenceflow.rag",
+    "evidenceflow.rag.service",
+    "evidenceflow.retrieval",
+    "evidenceflow.retrieval.bm25",
+    "evidenceflow.retrieval.fusion",
+    "evidenceflow.retrieval.hybrid_fusion",
+    "evidenceflow.retrieval.multilingual",
+    "evidenceflow.retrieval.reranker",
+    "evidenceflow.retrieval.retriever",
+    "evidenceflow.runtime",
+    "evidenceflow.storage",
+    "evidenceflow.storage.base",
+    "evidenceflow.storage.chroma",
+    "evidenceflow.translation",
+    "evidenceflow.translation.base",
+    "evidenceflow.translation.llm"
+  ],
+  "modules": [
+    {
+      "path": "src/evidenceflow/__init__.py",
+      "module": "evidenceflow",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_config.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "Settings",
+          "refs_src": 15,
+          "refs_tests": 36,
+          "refs_experiments": 60
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/__main__.py",
+      "module": "evidenceflow.__main__",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_ask_cli.py",
+        "tests/test_ingest_cli.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_render_ask_error",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "main",
+          "refs_src": 0,
+          "refs_tests": 7,
+          "refs_experiments": 55
+        },
+        {
+          "symbol": "render_ingestion_summary",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "render_rag_answer",
+          "refs_src": 0,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/citation/__init__.py",
+      "module": "evidenceflow.citation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__",
+        "evidenceflow.rag.service"
+      ],
+      "imported_by_tests": [
+        "tests/test_ask_cli.py",
+        "tests/test_citation_parser.py",
+        "tests/test_rag_answer_assembly.py",
+        "tests/test_rag_service.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "CitationError",
+          "refs_src": 1,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "CitationParseResult",
+          "refs_src": 7,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "CitationValidationError",
+          "refs_src": 7,
+          "refs_tests": 8,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "assemble_rag_answer",
+          "refs_src": 3,
+          "refs_tests": 9,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "parse_citations",
+          "refs_src": 2,
+          "refs_tests": 10,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/citation/parser.py",
+      "module": "evidenceflow.citation.parser",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "CitationValidationError",
+          "refs_src": 4,
+          "refs_tests": 8,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "assemble_rag_answer",
+          "refs_src": 4,
+          "refs_tests": 9,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "parse_citations",
+          "refs_src": 2,
+          "refs_tests": 10,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/config.py",
+      "module": "evidenceflow.config",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow",
+        "evidenceflow.__main__",
+        "evidenceflow.retrieval.fusion",
+        "evidenceflow.retrieval.multilingual",
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_ask_cli.py",
+        "tests/test_chunker.py",
+        "tests/test_embedding.py",
+        "tests/test_ingest_cli.py",
+        "tests/test_phase8_runtime_readiness.py",
+        "tests/test_runtime.py",
+        "tests/test_tokenizer.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py",
+        "experiments/build_research_reference_metadata_collection.py",
+        "experiments/debug/audit_research_ingestion.py",
+        "experiments/debug/chunk_id_verify.py",
+        "experiments/debug/gen_eval.py",
+        "experiments/debug/inspect_retrieval.py",
+        "experiments/debug/inspect_vector_store.py",
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/run_research_query_rewrite_experiment.py",
+        "experiments/run_research_references_aware_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "Settings",
+          "refs_src": 14,
+          "refs_tests": 36,
+          "refs_experiments": 60
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/context/__init__.py",
+      "module": "evidenceflow.context",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_context_builder.py",
+        "tests/test_phase9_runtime_promotion.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BuiltContext",
+          "refs_src": 21,
+          "refs_tests": 19,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "ContextBuilder",
+          "refs_src": 3,
+          "refs_tests": 19,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "ContextEntry",
+          "refs_src": 8,
+          "refs_tests": 10,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/context/builder.py",
+      "module": "evidenceflow.context.builder",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.context"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "ContextBuilder",
+          "refs_src": 4,
+          "refs_tests": 19,
+          "refs_experiments": 2
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/__init__.py",
+      "module": "evidenceflow.domain",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__"
+      ],
+      "imported_by_tests": [
+        "tests/test_ask_cli.py",
+        "tests/test_citation_parser.py",
+        "tests/test_cleaner.py",
+        "tests/test_context_builder.py",
+        "tests/test_domain_models.py",
+        "tests/test_generator.py",
+        "tests/test_inspect_retrieval.py",
+        "tests/test_llm_client.py",
+        "tests/test_multilingual_retriever.py",
+        "tests/test_phase8_runtime_readiness.py",
+        "tests/test_phase9_runtime_promotion.py",
+        "tests/test_rag_answer_assembly.py",
+        "tests/test_rag_service.py",
+        "tests/test_reranker.py",
+        "tests/test_retrieval_fusion.py",
+        "tests/test_translation.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "AnswerStatus",
+          "refs_src": 8,
+          "refs_tests": 16,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "BuiltContext",
+          "refs_src": 21,
+          "refs_tests": 19,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "CitationParseResult",
+          "refs_src": 7,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "ContextEntry",
+          "refs_src": 8,
+          "refs_tests": 10,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "Document",
+          "refs_src": 23,
+          "refs_tests": 14,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "DocumentChunk",
+          "refs_src": 45,
+          "refs_tests": 50,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "DocumentSegment",
+          "refs_src": 13,
+          "refs_tests": 12,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EvaluationQuestion",
+          "refs_src": 7,
+          "refs_tests": 8,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "EvaluationSource",
+          "refs_src": 10,
+          "refs_tests": 24,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "GeneratedAnswer",
+          "refs_src": 10,
+          "refs_tests": 14,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "LLMMessage",
+          "refs_src": 12,
+          "refs_tests": 15,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "MultilingualRetrievedChunk",
+          "refs_src": 28,
+          "refs_tests": 16,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "QueryRequest",
+          "refs_src": 1,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RAGAnswer",
+          "refs_src": 11,
+          "refs_tests": 10,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "RerankedRetrievedChunk",
+          "refs_src": 17,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RetrievedChunk",
+          "refs_src": 36,
+          "refs_tests": 44,
+          "refs_experiments": 7
+        },
+        {
+          "symbol": "SourceReference",
+          "refs_src": 10,
+          "refs_tests": 15,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "build_chunk_id",
+          "refs_src": 3,
+          "refs_tests": 4,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "build_content_hash",
+          "refs_src": 3,
+          "refs_tests": 5,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "build_document_id",
+          "refs_src": 3,
+          "refs_tests": 11,
+          "refs_experiments": 2
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/answer.py",
+      "module": "evidenceflow.domain.answer",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation.parser",
+        "evidenceflow.context.builder",
+        "evidenceflow.domain",
+        "evidenceflow.domain.context",
+        "evidenceflow.rag.service"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "RAGAnswer",
+          "refs_src": 12,
+          "refs_tests": 10,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "SourceReference",
+          "refs_src": 9,
+          "refs_tests": 15,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/chunk.py",
+      "module": "evidenceflow.domain.chunk",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation.parser",
+        "evidenceflow.context.builder",
+        "evidenceflow.domain",
+        "evidenceflow.domain.answer",
+        "evidenceflow.eval.mapping",
+        "evidenceflow.eval.metrics",
+        "evidenceflow.eval.runner",
+        "evidenceflow.ingestion.chunker",
+        "evidenceflow.rag.service",
+        "evidenceflow.retrieval.bm25",
+        "evidenceflow.retrieval.fusion",
+        "evidenceflow.retrieval.hybrid_fusion",
+        "evidenceflow.retrieval.multilingual",
+        "evidenceflow.retrieval.reranker",
+        "evidenceflow.retrieval.retriever",
+        "evidenceflow.runtime",
+        "evidenceflow.storage.base",
+        "evidenceflow.storage.chroma"
+      ],
+      "imported_by_tests": [
+        "tests/test_eval_metrics.py",
+        "tests/test_eval_runner.py",
+        "tests/test_gold_mapping_v2.py",
+        "tests/test_gold_stabilization.py",
+        "tests/test_hybrid_fusion.py",
+        "tests/test_lexical.py",
+        "tests/test_research_candidate_augmentation_experiment.py",
+        "tests/test_research_references_aware_experiment.py",
+        "tests/test_retriever.py",
+        "tests/test_storage.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "DocumentChunk",
+          "refs_src": 38,
+          "refs_tests": 50,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "MultilingualRetrievedChunk",
+          "refs_src": 28,
+          "refs_tests": 16,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RerankedRetrievedChunk",
+          "refs_src": 18,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RetrievedChunk",
+          "refs_src": 37,
+          "refs_tests": 44,
+          "refs_experiments": 7
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/citation.py",
+      "module": "evidenceflow.domain.citation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation",
+        "evidenceflow.citation.parser",
+        "evidenceflow.domain"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "CitationParseResult",
+          "refs_src": 7,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/context.py",
+      "module": "evidenceflow.domain.context",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation.parser",
+        "evidenceflow.context",
+        "evidenceflow.context.builder",
+        "evidenceflow.domain",
+        "evidenceflow.generation.generator",
+        "evidenceflow.rag.service"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BuiltContext",
+          "refs_src": 21,
+          "refs_tests": 19,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "ContextEntry",
+          "refs_src": 7,
+          "refs_tests": 10,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/document.py",
+      "module": "evidenceflow.domain.document",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.domain",
+        "evidenceflow.eval.mapping",
+        "evidenceflow.ingestion.chunker",
+        "evidenceflow.ingestion.cleaner",
+        "evidenceflow.ingestion.loader"
+      ],
+      "imported_by_tests": [
+        "tests/test_chunker.py",
+        "tests/test_gold_mapping_v2.py",
+        "tests/test_gold_stabilization.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "Document",
+          "refs_src": 24,
+          "refs_tests": 14,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "DocumentSegment",
+          "refs_src": 13,
+          "refs_tests": 12,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/evaluation.py",
+      "module": "evidenceflow.domain.evaluation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.domain",
+        "evidenceflow.eval.dataset",
+        "evidenceflow.eval.metrics",
+        "evidenceflow.eval.runner"
+      ],
+      "imported_by_tests": [
+        "tests/test_eval_metrics.py",
+        "tests/test_eval_runner.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "EvaluationQuestion",
+          "refs_src": 8,
+          "refs_tests": 8,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "EvaluationSource",
+          "refs_src": 9,
+          "refs_tests": 24,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/evaluation_v2.py",
+      "module": "evidenceflow.domain.evaluation_v2",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval.dataset",
+        "evidenceflow.eval.mapping",
+        "evidenceflow.eval.quality",
+        "evidenceflow.eval.stable_mapping",
+        "evidenceflow.eval.v2",
+        "evidenceflow.eval.v3"
+      ],
+      "imported_by_tests": [
+        "tests/test_evaluation_v2.py",
+        "tests/test_gold_mapping_v2.py",
+        "tests/test_gold_stabilization.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase11a_standard_ir.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/stabilize_gold_v3.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "ContractModel",
+          "refs_src": 3,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EvaluationDatasetV2",
+          "refs_src": 9,
+          "refs_tests": 8,
+          "refs_experiments": 31
+        },
+        {
+          "symbol": "EvaluationQuestionV2",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EvidenceAlternative",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EvidenceGroup",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "EvidenceLocator",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "GroupMapping",
+          "refs_src": 4,
+          "refs_tests": 7,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "MappingArtifact",
+          "refs_src": 12,
+          "refs_tests": 7,
+          "refs_experiments": 22
+        },
+        {
+          "symbol": "validate_dataset_splits",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/generation.py",
+      "module": "evidenceflow.domain.generation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.citation.parser",
+        "evidenceflow.domain",
+        "evidenceflow.generation.generator",
+        "evidenceflow.llm.base",
+        "evidenceflow.llm.openai_compatible",
+        "evidenceflow.rag.service",
+        "evidenceflow.translation.llm"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_query_rewrite_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "AnswerStatus",
+          "refs_src": 8,
+          "refs_tests": 16,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "GeneratedAnswer",
+          "refs_src": 11,
+          "refs_tests": 14,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "LLMMessage",
+          "refs_src": 13,
+          "refs_tests": 15,
+          "refs_experiments": 4
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/ids.py",
+      "module": "evidenceflow.domain.ids",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.domain",
+        "evidenceflow.ingestion.chunker",
+        "evidenceflow.ingestion.loader"
+      ],
+      "imported_by_tests": [
+        "tests/test_ingestion_service.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/debug/chunk_id_verify.py",
+        "experiments/prepare_research_corpus.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_normalize_relative_path",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_sha256",
+          "refs_src": 0,
+          "refs_tests": 3,
+          "refs_experiments": 5
+        },
+        {
+          "symbol": "build_chunk_id",
+          "refs_src": 4,
+          "refs_tests": 4,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "build_content_hash",
+          "refs_src": 4,
+          "refs_tests": 5,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "build_document_id",
+          "refs_src": 4,
+          "refs_tests": 11,
+          "refs_experiments": 2
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/domain/query.py",
+      "module": "evidenceflow.domain.query",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.domain"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "QueryRequest",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/embedding/__init__.py",
+      "module": "evidenceflow.embedding",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_embedding.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/debug/inspect_retrieval.py",
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/run_research_query_rewrite_experiment.py",
+        "experiments/run_research_references_aware_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BgeM3EmbeddingProvider",
+          "refs_src": 4,
+          "refs_tests": 11,
+          "refs_experiments": 29
+        },
+        {
+          "symbol": "EmbeddingError",
+          "refs_src": 5,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EmbeddingLoadError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EmbeddingNormalizationError",
+          "refs_src": 8,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EmbeddingProvider",
+          "refs_src": 6,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/embedding/base.py",
+      "module": "evidenceflow.embedding.base",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.embedding",
+        "evidenceflow.ingestion.service",
+        "evidenceflow.retrieval.retriever"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "EmbeddingProvider",
+          "refs_src": 7,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/embedding/bge_m3.py",
+      "module": "evidenceflow.embedding.bge_m3",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.embedding"
+      ],
+      "imported_by_tests": [
+        "tests/test_embedding.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BgeM3EmbeddingProvider",
+          "refs_src": 5,
+          "refs_tests": 11,
+          "refs_experiments": 29
+        },
+        {
+          "symbol": "EmbeddingError",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EmbeddingLoadError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EmbeddingNormalizationError",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_normalize_batch",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_normalize_vector",
+          "refs_src": 0,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/__init__.py",
+      "module": "evidenceflow.eval",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_eval_dataset.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "AggregateMetrics",
+          "refs_src": 5,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "BM25Index",
+          "refs_src": 15,
+          "refs_tests": 8,
+          "refs_experiments": 26
+        },
+        {
+          "symbol": "BM25RetrievedChunk",
+          "refs_src": 9,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "EvaluationDatasetError",
+          "refs_src": 7,
+          "refs_tests": 6,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "EvaluationReport",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "EvaluationRunner",
+          "refs_src": 1,
+          "refs_tests": 7,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "HybridRRFChunk",
+          "refs_src": 8,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "MetricSummary",
+          "refs_src": 6,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "PerQuestionResult",
+          "refs_src": 6,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "QuestionMetrics",
+          "refs_src": 6,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RankedChunkCandidate",
+          "refs_src": 11,
+          "refs_tests": 3,
+          "refs_experiments": 8
+        },
+        {
+          "symbol": "RetrievedResultSummary",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "aggregate_hits_at_depths",
+          "refs_src": 1,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "aggregate_question_metrics",
+          "refs_src": 4,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "calculate_question_metrics",
+          "refs_src": 4,
+          "refs_tests": 6,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "equal_ranked_rrf_fusion",
+          "refs_src": 6,
+          "refs_tests": 9,
+          "refs_experiments": 11
+        },
+        {
+          "symbol": "gold_chunk_hit",
+          "refs_src": 1,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "gold_chunk_rank",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "hits_at_depths",
+          "refs_src": 1,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "is_hit_at",
+          "refs_src": 4,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "is_relevant",
+          "refs_src": 2,
+          "refs_tests": 7,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "is_relevant_to_any",
+          "refs_src": 4,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "load_evaluation_questions",
+          "refs_src": 1,
+          "refs_tests": 8,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "save_evaluation_report",
+          "refs_src": 1,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/comparison.py",
+      "module": "evidenceflow.eval.comparison",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_evaluation_v2.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "holm_adjust",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "paired_comparison",
+          "refs_src": 0,
+          "refs_tests": 6,
+          "refs_experiments": 12
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/dataset.py",
+      "module": "evidenceflow.eval.dataset",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval"
+      ],
+      "imported_by_tests": [
+        "tests/test_evaluation_v2.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "EvaluationDatasetError",
+          "refs_src": 2,
+          "refs_tests": 6,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "adapt_research_v1",
+          "refs_src": 0,
+          "refs_tests": 1,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "load_evaluation_questions",
+          "refs_src": 2,
+          "refs_tests": 8,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/gold.py",
+      "module": "evidenceflow.eval.gold",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval"
+      ],
+      "imported_by_tests": [
+        "tests/test_hybrid_fusion.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/run_research_query_rewrite_experiment.py",
+        "experiments/run_research_references_aware_experiment.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "_validated_depths",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "aggregate_hits_at_depths",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "gold_chunk_hit",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "gold_chunk_rank",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "gold_group_rank",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 43
+        },
+        {
+          "symbol": "hits_at_depths",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "is_hit_at",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/hybrid.py",
+      "module": "evidenceflow.eval.hybrid",
+      "classification": "COMPATIBILITY_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval"
+      ],
+      "imported_by_tests": [
+        "tests/test_hybrid_fusion.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_research_hybrid_retrieval_experiment.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "HybridRRFChunk",
+          "refs_src": 8,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "RankedChunkCandidate",
+          "refs_src": 11,
+          "refs_tests": 3,
+          "refs_experiments": 8
+        },
+        {
+          "symbol": "equal_ranked_rrf_fusion",
+          "refs_src": 5,
+          "refs_tests": 9,
+          "refs_experiments": 11
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/ir_metrics.py",
+      "module": "evidenceflow.eval.ir_metrics",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval.v3"
+      ],
+      "imported_by_tests": [
+        "tests/test_ir_metrics.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "average_precision_at_k",
+          "refs_src": 0,
+          "refs_tests": 5,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "evaluate_ir_run",
+          "refs_src": 2,
+          "refs_tests": 6,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "ndcg_at_k",
+          "refs_src": 2,
+          "refs_tests": 5,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "precision_at_k",
+          "refs_src": 2,
+          "refs_tests": 7,
+          "refs_experiments": 7
+        },
+        {
+          "symbol": "recall_at_k",
+          "refs_src": 2,
+          "refs_tests": 11,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "reciprocal_rank_at_k",
+          "refs_src": 0,
+          "refs_tests": 5,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/lexical.py",
+      "module": "evidenceflow.eval.lexical",
+      "classification": "COMPATIBILITY_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval"
+      ],
+      "imported_by_tests": [
+        "tests/test_lexical.py",
+        "tests/test_multilingual_retriever.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "BM25Index",
+          "refs_src": 14,
+          "refs_tests": 8,
+          "refs_experiments": 26
+        },
+        {
+          "symbol": "BM25RetrievedChunk",
+          "refs_src": 9,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/mapping.py",
+      "module": "evidenceflow.eval.mapping",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_gold_mapping_v2.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "_loose_hyphen",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_map_alternative",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "_occurrences",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "map_dataset",
+          "refs_src": 0,
+          "refs_tests": 4,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "normalize_anchor",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/metrics.py",
+      "module": "evidenceflow.eval.metrics",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval",
+        "evidenceflow.eval.runner",
+        "evidenceflow.eval.v2"
+      ],
+      "imported_by_tests": [
+        "tests/test_eval_metrics.py",
+        "tests/test_evaluation_v2.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "AggregateMetrics",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "QuestionMetrics",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "aggregate_question_metrics",
+          "refs_src": 5,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "calculate_question_metrics",
+          "refs_src": 5,
+          "refs_tests": 6,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "custom_bundle_ndcg",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "custom_evidence_group_ndcg",
+          "refs_src": 1,
+          "refs_tests": 5,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "is_relevant",
+          "refs_src": 2,
+          "refs_tests": 7,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "is_relevant_to_any",
+          "refs_src": 4,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "legacy_research_metrics",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 5
+        },
+        {
+          "symbol": "normalize_gold_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/quality.py",
+      "module": "evidenceflow.eval.quality",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_evaluation_v2.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "CitationJudgment",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "ClaimJudgment",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "abstention_metrics",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "answer_metrics",
+          "refs_src": 0,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "context_metrics",
+          "refs_src": 0,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/runner.py",
+      "module": "evidenceflow.eval.runner",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval"
+      ],
+      "imported_by_tests": [
+        "tests/test_eval_runner.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "EvaluationReport",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "EvaluationRunner",
+          "refs_src": 2,
+          "refs_tests": 7,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "MetricSummary",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "PerQuestionResult",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RetrievedResultSummary",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_gold_format_group",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_summarize_retrieved",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "save_evaluation_report",
+          "refs_src": 2,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/stable_mapping.py",
+      "module": "evidenceflow.eval.stable_mapping",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [
+        "tests/test_gold_stabilization.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/stabilize_gold_v3.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "_compact",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "_positions",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "hyphen_rules",
+          "refs_src": 0,
+          "refs_tests": 6,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "map_source_to_chunks",
+          "refs_src": 0,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "map_stable_dataset",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "normalize_mapping",
+          "refs_src": 0,
+          "refs_tests": 6,
+          "refs_experiments": 5
+        },
+        {
+          "symbol": "validate_source",
+          "refs_src": 0,
+          "refs_tests": 12,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/v2.py",
+      "module": "evidenceflow.eval.v2",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [
+        "evidenceflow.eval.quality",
+        "evidenceflow.eval.v3"
+      ],
+      "imported_by_tests": [
+        "tests/test_evaluation_v2.py",
+        "tests/test_gold_mapping_v2.py",
+        "tests/test_gold_stabilization.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py",
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/stabilize_gold_v3.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "evaluate_evidence_coverage",
+          "refs_src": 0,
+          "refs_tests": 3,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "evaluate_rankings",
+          "refs_src": 0,
+          "refs_tests": 6,
+          "refs_experiments": 16
+        },
+        {
+          "symbol": "ranking_metrics",
+          "refs_src": 5,
+          "refs_tests": 3,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "save_artifact",
+          "refs_src": 1,
+          "refs_tests": 3,
+          "refs_experiments": 58
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/eval/v3.py",
+      "module": "evidenceflow.eval.v3",
+      "classification": "EXPERIMENT_ONLY",
+      "imported_by_src": [],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_phase11a_standard_ir.py",
+        "experiments/run_phase11b_cleanup.py"
+      ],
+      "used_by_runtime": false,
+      "symbols": [
+        {
+          "symbol": "_diagnostic_block",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_sha256_file",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 8
+        },
+        {
+          "symbol": "build_qrels",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 5
+        },
+        {
+          "symbol": "evaluate_v3",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 5
+        },
+        {
+          "symbol": "qrels_hash",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 21
+        },
+        {
+          "symbol": "save_artifact",
+          "refs_src": 1,
+          "refs_tests": 3,
+          "refs_experiments": 58
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/generation/__init__.py",
+      "module": "evidenceflow.generation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_generator.py",
+        "tests/test_phase9_runtime_promotion.py",
+        "tests/test_rag_service.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "GENERATOR_PROMPT_VERSION",
+          "refs_src": 1,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "Generator",
+          "refs_src": 6,
+          "refs_tests": 20,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "INSUFFICIENT_CONTEXT_ANSWER",
+          "refs_src": 2,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/generation/generator.py",
+      "module": "evidenceflow.generation.generator",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.generation"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "Generator",
+          "refs_src": 8,
+          "refs_tests": 20,
+          "refs_experiments": 4
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/__init__.py",
+      "module": "evidenceflow.ingestion",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_cleaner.py",
+        "tests/test_loader.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py",
+        "experiments/build_research_reference_metadata_collection.py",
+        "experiments/debug/audit_research_ingestion.py",
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/stabilize_gold_v3.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BgeM3Tokenizer",
+          "refs_src": 5,
+          "refs_tests": 12,
+          "refs_experiments": 17
+        },
+        {
+          "symbol": "ChunkingError",
+          "refs_src": 13,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "DocumentCleaningError",
+          "refs_src": 3,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "DocumentIngestionResult",
+          "refs_src": 6,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "IngestionService",
+          "refs_src": 6,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "IngestionSummary",
+          "refs_src": 5,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TokenizerError",
+          "refs_src": 8,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TokenizerLoadError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TokenizerProtocol",
+          "refs_src": 12,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "chunk_document",
+          "refs_src": 3,
+          "refs_tests": 18,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "clean_document",
+          "refs_src": 3,
+          "refs_tests": 10,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "discover_source_files",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "load_document",
+          "refs_src": 3,
+          "refs_tests": 16,
+          "refs_experiments": 8
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/chunker.py",
+      "module": "evidenceflow.ingestion.chunker",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.ingestion",
+        "evidenceflow.ingestion.service"
+      ],
+      "imported_by_tests": [
+        "tests/test_chunker.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "ChunkingError",
+          "refs_src": 2,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_build_token_stream",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_decode_checked",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_encode_checked",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_chunk_parameters",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "chunk_document",
+          "refs_src": 4,
+          "refs_tests": 18,
+          "refs_experiments": 2
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/cleaner.py",
+      "module": "evidenceflow.ingestion.cleaner",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.ingestion",
+        "evidenceflow.ingestion.service"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "DocumentCleaningError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_clean_markdown_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_clean_plain_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_clean_segment",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_normalize_common_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_strip_edge_blank_lines",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "clean_document",
+          "refs_src": 4,
+          "refs_tests": 10,
+          "refs_experiments": 4
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/loader.py",
+      "module": "evidenceflow.ingestion.loader",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.ingestion",
+        "evidenceflow.ingestion.service"
+      ],
+      "imported_by_tests": [
+        "tests/test_ingestion_service.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_load_pdf",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_load_utf8_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_resolve_source_path",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "load_document",
+          "refs_src": 4,
+          "refs_tests": 16,
+          "refs_experiments": 8
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/service.py",
+      "module": "evidenceflow.ingestion.service",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__",
+        "evidenceflow.ingestion"
+      ],
+      "imported_by_tests": [
+        "tests/test_ingest_cli.py",
+        "tests/test_ingestion_service.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "DocumentIngestionResult",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "IngestionService",
+          "refs_src": 7,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "IngestionSummary",
+          "refs_src": 4,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_relative_source_path",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "discover_source_files",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/ingestion/tokenizer.py",
+      "module": "evidenceflow.ingestion.tokenizer",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.context.builder",
+        "evidenceflow.ingestion",
+        "evidenceflow.ingestion.chunker",
+        "evidenceflow.ingestion.service",
+        "evidenceflow.retrieval.bm25"
+      ],
+      "imported_by_tests": [
+        "tests/test_chunker.py",
+        "tests/test_tokenizer.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BgeM3Tokenizer",
+          "refs_src": 6,
+          "refs_tests": 12,
+          "refs_experiments": 17
+        },
+        {
+          "symbol": "TokenizerError",
+          "refs_src": 4,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TokenizerLoadError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TokenizerProtocol",
+          "refs_src": 13,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/llm/__init__.py",
+      "module": "evidenceflow.llm",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__",
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_ask_cli.py",
+        "tests/test_generator.py",
+        "tests/test_llm_client.py",
+        "tests/test_llm_diagnostics.py",
+        "tests/test_rag_service.py",
+        "tests/test_translation.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "LLMClient",
+          "refs_src": 8,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "LLMConfigurationError",
+          "refs_src": 10,
+          "refs_tests": 5,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "LLMError",
+          "refs_src": 6,
+          "refs_tests": 4,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "LLMRequestError",
+          "refs_src": 8,
+          "refs_tests": 14,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "OpenAICompatibleLLMClient",
+          "refs_src": 4,
+          "refs_tests": 11,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "classify_llm_failure",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "serialize_llm_failure",
+          "refs_src": 1,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/llm/base.py",
+      "module": "evidenceflow.llm.base",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.generation.generator",
+        "evidenceflow.llm",
+        "evidenceflow.llm.openai_compatible",
+        "evidenceflow.translation.llm"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_research_query_rewrite_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "LLMClient",
+          "refs_src": 9,
+          "refs_tests": 2,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "LLMConfigurationError",
+          "refs_src": 11,
+          "refs_tests": 5,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "LLMError",
+          "refs_src": 5,
+          "refs_tests": 4,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "LLMRequestError",
+          "refs_src": 9,
+          "refs_tests": 14,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/llm/diagnostics.py",
+      "module": "evidenceflow.llm.diagnostics",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.llm",
+        "evidenceflow.llm.openai_compatible"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_safe_message",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_status_code",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "classify_llm_failure",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "exception_chain",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "serialize_llm_failure",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/llm/openai_compatible.py",
+      "module": "evidenceflow.llm.openai_compatible",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.llm"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_research_query_rewrite_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "OpenAICompatibleLLMClient",
+          "refs_src": 5,
+          "refs_tests": 11,
+          "refs_experiments": 4
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/rag/__init__.py",
+      "module": "evidenceflow.rag",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__",
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_phase9_runtime_promotion.py",
+        "tests/test_rag_service.py",
+        "tests/test_runtime.py"
+      ],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "RAGService",
+          "refs_src": 10,
+          "refs_tests": 15,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/rag/service.py",
+      "module": "evidenceflow.rag.service",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.rag"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "ContextBuilderProtocol",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "GeneratorProtocol",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RAGService",
+          "refs_src": 8,
+          "refs_tests": 15,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RetrieverProtocol",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/__init__.py",
+      "module": "evidenceflow.retrieval",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_multilingual_retriever.py",
+        "tests/test_phase8_runtime_readiness.py",
+        "tests/test_phase9_runtime_promotion.py",
+        "tests/test_reranker.py",
+        "tests/test_retrieval_fusion.py",
+        "tests/test_retriever.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/debug/inspect_retrieval.py",
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/run_research_query_rewrite_experiment.py",
+        "experiments/run_research_references_aware_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BM25Index",
+          "refs_src": 15,
+          "refs_tests": 8,
+          "refs_experiments": 26
+        },
+        {
+          "symbol": "BM25RetrievedChunk",
+          "refs_src": 9,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "DenseRerankerRetriever",
+          "refs_src": 3,
+          "refs_tests": 7,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "DenseRetriever",
+          "refs_src": 9,
+          "refs_tests": 13,
+          "refs_experiments": 27
+        },
+        {
+          "symbol": "InvalidQueryError",
+          "refs_src": 6,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "LearnedReranker",
+          "refs_src": 4,
+          "refs_tests": 14,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "MultilingualRetriever",
+          "refs_src": 5,
+          "refs_tests": 22,
+          "refs_experiments": 31
+        },
+        {
+          "symbol": "RerankedChunk",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RerankerError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TransformersCrossEncoderScorer",
+          "refs_src": 3,
+          "refs_tests": 1,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "rank_scored_candidates",
+          "refs_src": 2,
+          "refs_tests": 5,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "weighted_rrf_fusion",
+          "refs_src": 4,
+          "refs_tests": 5,
+          "refs_experiments": 7
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/bm25.py",
+      "module": "evidenceflow.retrieval.bm25",
+      "classification": "FALLBACK_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.eval.lexical",
+        "evidenceflow.retrieval",
+        "evidenceflow.retrieval.multilingual"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "BM25Index",
+          "refs_src": 16,
+          "refs_tests": 8,
+          "refs_experiments": 26
+        },
+        {
+          "symbol": "BM25RetrievedChunk",
+          "refs_src": 8,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "_validate_token_ids",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/fusion.py",
+      "module": "evidenceflow.retrieval.fusion",
+      "classification": "FALLBACK_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.retrieval",
+        "evidenceflow.retrieval.multilingual"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_validate_positive_integer",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_weight",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "weighted_rrf_fusion",
+          "refs_src": 5,
+          "refs_tests": 5,
+          "refs_experiments": 7
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/hybrid_fusion.py",
+      "module": "evidenceflow.retrieval.hybrid_fusion",
+      "classification": "FALLBACK_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.eval.hybrid",
+        "evidenceflow.retrieval.multilingual"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase7_reranker_validation.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "HybridRRFChunk",
+          "refs_src": 6,
+          "refs_tests": 0,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "RankedChunkCandidate",
+          "refs_src": 8,
+          "refs_tests": 3,
+          "refs_experiments": 8
+        },
+        {
+          "symbol": "equal_ranked_rrf_fusion",
+          "refs_src": 7,
+          "refs_tests": 9,
+          "refs_experiments": 11
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/multilingual.py",
+      "module": "evidenceflow.retrieval.multilingual",
+      "classification": "FALLBACK_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.retrieval"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "MultilingualRetriever",
+          "refs_src": 6,
+          "refs_tests": 22,
+          "refs_experiments": 31
+        },
+        {
+          "symbol": "_to_multilingual_retrieved_chunks",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_hybrid_rrf_k",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_top_k",
+          "refs_src": 3,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/reranker.py",
+      "module": "evidenceflow.retrieval.reranker",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.retrieval"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "DenseRerankerRetriever",
+          "refs_src": 4,
+          "refs_tests": 7,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "LearnedReranker",
+          "refs_src": 4,
+          "refs_tests": 14,
+          "refs_experiments": 4
+        },
+        {
+          "symbol": "PairScorerProtocol",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RerankedChunk",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "RerankerError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "TransformersCrossEncoderScorer",
+          "refs_src": 4,
+          "refs_tests": 1,
+          "refs_experiments": 10
+        },
+        {
+          "symbol": "rank_scored_candidates",
+          "refs_src": 2,
+          "refs_tests": 5,
+          "refs_experiments": 4
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/retrieval/retriever.py",
+      "module": "evidenceflow.retrieval.retriever",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.eval.runner",
+        "evidenceflow.retrieval",
+        "evidenceflow.retrieval.multilingual",
+        "evidenceflow.retrieval.reranker"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "DenseRetriever",
+          "refs_src": 10,
+          "refs_tests": 13,
+          "refs_experiments": 27
+        },
+        {
+          "symbol": "InvalidQueryError",
+          "refs_src": 6,
+          "refs_tests": 4,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_validate_top_k",
+          "refs_src": 7,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/runtime.py",
+      "module": "evidenceflow.runtime",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.__main__"
+      ],
+      "imported_by_tests": [
+        "tests/test_runtime.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/debug/gen_eval.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "_build_bm25_index",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "build_ingestion_service",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "build_llm_client",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 2
+        },
+        {
+          "symbol": "build_rag_service",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 7
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/storage/__init__.py",
+      "module": "evidenceflow.storage",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_ingestion_service.py",
+        "tests/test_storage.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/build_research_reference_metadata_collection.py",
+        "experiments/debug/audit_research_ingestion.py",
+        "experiments/debug/inspect_retrieval.py",
+        "experiments/debug/inspect_vector_store.py",
+        "experiments/diagnose_research_candidate_failures.py",
+        "experiments/run_phase10_reranker_performance.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_phase7_reranker_validation.py",
+        "experiments/run_phase8_runtime_readiness.py",
+        "experiments/run_phase9_runtime_promotion.py",
+        "experiments/run_research_candidate_augmentation_experiment.py",
+        "experiments/run_research_candidate_reranking_experiment.py",
+        "experiments/run_research_dense_baseline.py",
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_hybrid_runtime_validation.py",
+        "experiments/run_research_query_rewrite_experiment.py",
+        "experiments/run_research_references_aware_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "ChromaVectorStore",
+          "refs_src": 5,
+          "refs_tests": 12,
+          "refs_experiments": 42
+        },
+        {
+          "symbol": "VectorStore",
+          "refs_src": 7,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        },
+        {
+          "symbol": "VectorStoreConfigurationError",
+          "refs_src": 4,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreError",
+          "refs_src": 4,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreQueryError",
+          "refs_src": 18,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreWriteError",
+          "refs_src": 8,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/storage/base.py",
+      "module": "evidenceflow.storage.base",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.ingestion.service",
+        "evidenceflow.retrieval.retriever",
+        "evidenceflow.storage"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "VectorStore",
+          "refs_src": 8,
+          "refs_tests": 4,
+          "refs_experiments": 1
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/storage/chroma.py",
+      "module": "evidenceflow.storage.chroma",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.storage"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/audit_gold_v2.py",
+        "experiments/build_research_reference_metadata_collection.py",
+        "experiments/debug/chunk_id_verify.py",
+        "experiments/run_research_dense_baseline.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "ChromaVectorStore",
+          "refs_src": 6,
+          "refs_tests": 12,
+          "refs_experiments": 42
+        },
+        {
+          "symbol": "VectorStoreConfigurationError",
+          "refs_src": 2,
+          "refs_tests": 2,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreError",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreQueryError",
+          "refs_src": 2,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "VectorStoreWriteError",
+          "refs_src": 2,
+          "refs_tests": 3,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_build_chroma_metadata",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_coerce_embedding",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_deserialize_domain_metadata",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_require_non_empty_text",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        },
+        {
+          "symbol": "_restore_chunk",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 6
+        },
+        {
+          "symbol": "_serialize_domain_metadata",
+          "refs_src": 0,
+          "refs_tests": 0,
+          "refs_experiments": 0
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/translation/__init__.py",
+      "module": "evidenceflow.translation",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.runtime"
+      ],
+      "imported_by_tests": [
+        "tests/test_multilingual_retriever.py",
+        "tests/test_translation.py"
+      ],
+      "imported_by_experiments": [
+        "experiments/debug/inspect_retrieval.py",
+        "experiments/run_phase11b_cleanup.py",
+        "experiments/run_phase6_retrieval_baselines.py",
+        "experiments/run_research_dense_baseline.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "LLMTranslationProvider",
+          "refs_src": 3,
+          "refs_tests": 6,
+          "refs_experiments": 7
+        },
+        {
+          "symbol": "TranslationError",
+          "refs_src": 8,
+          "refs_tests": 6,
+          "refs_experiments": 6
+        },
+        {
+          "symbol": "TranslationProvider",
+          "refs_src": 3,
+          "refs_tests": 2,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "TranslationResult",
+          "refs_src": 5,
+          "refs_tests": 8,
+          "refs_experiments": 16
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/translation/base.py",
+      "module": "evidenceflow.translation.base",
+      "classification": "PRODUCTION_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.retrieval.multilingual",
+        "evidenceflow.translation",
+        "evidenceflow.translation.llm"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [
+        "experiments/run_research_hybrid_retrieval_experiment.py",
+        "experiments/run_research_query_rewrite_experiment.py"
+      ],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "TranslationError",
+          "refs_src": 9,
+          "refs_tests": 6,
+          "refs_experiments": 6
+        },
+        {
+          "symbol": "TranslationProvider",
+          "refs_src": 4,
+          "refs_tests": 2,
+          "refs_experiments": 3
+        },
+        {
+          "symbol": "TranslationResult",
+          "refs_src": 5,
+          "refs_tests": 8,
+          "refs_experiments": 16
+        }
+      ]
+    },
+    {
+      "path": "src/evidenceflow/translation/llm.py",
+      "module": "evidenceflow.translation.llm",
+      "classification": "FALLBACK_REACHABLE",
+      "imported_by_src": [
+        "evidenceflow.translation"
+      ],
+      "imported_by_tests": [],
+      "imported_by_experiments": [],
+      "used_by_runtime": true,
+      "symbols": [
+        {
+          "symbol": "LLMTranslationProvider",
+          "refs_src": 4,
+          "refs_tests": 6,
+          "refs_experiments": 7
+        }
+      ]
+    }
+  ]
+}

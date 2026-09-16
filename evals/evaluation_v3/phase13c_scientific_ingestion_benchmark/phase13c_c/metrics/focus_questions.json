@@ -1,0 +1,98 @@
+{
+ "ARR-007": {
+  "question_id": "ARR-007",
+  "PC0": {
+   "num_relevant": 1,
+   "first_relevant_rank": null,
+   "in_top10": false,
+   "in_top20": false
+  },
+  "PC1": {
+   "num_relevant": 1,
+   "first_relevant_rank": null,
+   "in_top10": false,
+   "in_top20": false
+  },
+  "PC2": {
+   "num_relevant": 1,
+   "first_relevant_rank": 1,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC3": {
+   "num_relevant": 1,
+   "first_relevant_rank": null,
+   "in_top10": false,
+   "in_top20": false
+  },
+  "production_phase10_reference": {
+   "recall_at_10": 0.0,
+   "recall_at_20": null,
+   "ndcg_at_5": 0.0
+  }
+ },
+ "ARR-037": {
+  "question_id": "ARR-037",
+  "PC0": {
+   "num_relevant": 6,
+   "first_relevant_rank": 6,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC1": {
+   "num_relevant": 7,
+   "first_relevant_rank": 7,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC2": {
+   "num_relevant": 7,
+   "first_relevant_rank": 7,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC3": {
+   "num_relevant": 7,
+   "first_relevant_rank": 8,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "production_phase10_reference": {
+   "recall_at_10": 0.0,
+   "recall_at_20": null,
+   "ndcg_at_5": 0.0
+  }
+ },
+ "ARR-040": {
+  "question_id": "ARR-040",
+  "PC0": {
+   "num_relevant": 30,
+   "first_relevant_rank": 1,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC1": {
+   "num_relevant": 37,
+   "first_relevant_rank": 3,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC2": {
+   "num_relevant": 29,
+   "first_relevant_rank": 3,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "PC3": {
+   "num_relevant": 38,
+   "first_relevant_rank": 3,
+   "in_top10": true,
+   "in_top20": true
+  },
+  "production_phase10_reference": {
+   "recall_at_10": 0.0,
+   "recall_at_20": null,
+   "ndcg_at_5": 0.0
+  }
+ }
+}

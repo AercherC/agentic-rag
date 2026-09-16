@@ -1,0 +1,28 @@
+{
+  "artifact_type": "phase11a_removed_metrics",
+  "evaluation_version": "3.0",
+  "hard_deleted": [],
+  "hard_deleted_reason": "Step 18 要求项删除前必须证明：no current import / no current test dependency / no current runner dependency / historical artifact remains readable。经审计，所有候选删除项均存在现存 test 或 experiment 引用，依据 'no current test dependency' 规则不可硬删除，全部转为 COMPATIBILITY_ONLY 或 KEEP_DIAGNOSTIC（见 compatibility_manifest.json）。故本阶段 0 项硬删除。",
+  "downgraded_from_primary": [
+    {
+      "metric": "custom_evidence_group_ndcg",
+      "from": "phase9/10 曾作为主 nDCG 指标 (ndcg_at_5=0.4634)",
+      "to": "deprecated_for_primary_eval=true; 仅历史兼容读取; 新报告仅用标准 nDCG@5=0.4619"
+    },
+    {
+      "metric": "Legacy Recall@K (v1 recall_at_k, 实为 HitRate)",
+      "from": "phase9/10 recall_at_5=0.5625 实为 evidence_group_recall",
+      "to": "COMPATIBILITY_ONLY; 标准 Recall@5=0.5583 替代为主指标"
+    },
+    {
+      "metric": "complete_evidence_rr",
+      "from": "自定义 RR",
+      "to": "COMPATIBILITY_ONLY; 由标准 MRR@K + 多证据诊断取代"
+    }
+  ],
+  "preserved_as_diagnostic": [
+    "evidence_group_recall_at_k (diagnostic.evidence_group_recall_at_k)",
+    "all_required_evidence_at_k (diagnostic.all_required_evidence_at_k)",
+    "gold_mappability_rate (data quality, non-retrieval-accuracy)"
+  ]
+}

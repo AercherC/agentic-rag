@@ -1,0 +1,212 @@
+{
+  "artifact_type": "phase13b_baseline",
+  "stage": "Step 0 — Baseline Freeze",
+  "created_at_utc": "2026-09-10T13:21:19.109984+00:00",
+  "hypothesis": "PDF Element → Structured Node → Chunk → Metadata → Vector 的结构化知识库，能在不改动 Embedding / Reranker / LLM / Runtime 的前提下提升检索质量。",
+  "baseline_collection": {
+    "collection_name": "ef_research_bge_m3_c512_o64_v1",
+    "chunk_count": 361,
+    "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0"
+  },
+  "candidate_collections": {
+    "SECTION_AWARE_MINIMAL": "ef_research_structure_v1",
+    "ELEMENT_AWARE": "ef_research_structure_v1_elemaware",
+    "SECTION_AWARE_OVERLAP64": "ef_research_structure_v1_ovl64"
+  },
+  "canonical_gold": {
+    "questions_source": "D:/Agent_learn/evidenceFlow/evals/evaluation_v2/phase35_gold_stabilization_v1/research_questions_v2_gold_stable.json",
+    "question_count": 40,
+    "dataset_file_sha256": "cc4cd24242ee793aeb38cb69c3cd2a766315fa9a92d60acf5c498e059b50a8dd",
+    "frozen_dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357"
+  },
+  "canonical_qrels": {
+    "source": "D:/Agent_learn/evidenceFlow/evals/evaluation_v3/standard_ir_v1/qrels.json",
+    "question_count": 40,
+    "total_relevant_chunks": 45,
+    "sha256": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+    "frozen_sha256": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+    "unchanged": true
+  },
+  "standard_ir_metrics": {
+    "Precision@5": {
+      "frozen": 0.115,
+      "artifact": 0.11500000000000002,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    },
+    "Recall@5": {
+      "frozen": 0.558333,
+      "artifact": 0.5583333333333333,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    },
+    "Recall@10": {
+      "frozen": 0.733333,
+      "artifact": 0.7333333333333333,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    },
+    "MRR@5": {
+      "frozen": 0.432083,
+      "artifact": 0.4320833333333334,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    },
+    "MAP@5": {
+      "frozen": 0.427917,
+      "artifact": 0.42791666666666667,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    },
+    "nDCG@5": {
+      "frozen": 0.461851,
+      "artifact": 0.46185080710419263,
+      "matches": true,
+      "source": "evals/evaluation_v3/standard_ir_v1/resume_metrics.json"
+    }
+  },
+  "frozen_reference_metrics": {
+    "runtime_after_reranker": {
+      "Precision@5": 0.115,
+      "Recall@5": 0.558333,
+      "Recall@10": 0.733333,
+      "MRR@5": 0.432083,
+      "MAP@5": 0.427917,
+      "nDCG@5": 0.461851
+    },
+    "dense_baseline": {
+      "Precision@5": 0.085,
+      "Recall@5": 0.425,
+      "Recall@10": 0.6625,
+      "Recall@20": 0.816667,
+      "MRR@5": 0.262083,
+      "MAP@5": 0.262083,
+      "nDCG@5": 0.302429
+    },
+    "note": "来自 resume_metrics.json；本阶段必须能用自己的 harness 复现。"
+  },
+  "corpus": {
+    "manifest": "D:/Agent_learn/evidenceFlow/evals/research_ingestion/academic_corpus_manifest_v1.json",
+    "corpus_hash": "1e48b401aa48fc59d94bba627deaa3005a7627860e4fe5815761d45c6ba68675",
+    "frozen_corpus_hash": "1e48b401aa48fc59d94bba627deaa3005a7627860e4fe5815761d45c6ba68675",
+    "paper_count": 10,
+    "papers": [
+      {
+        "file_name": "adapointr.pdf",
+        "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+        "sha256": "1fde4c0d2a246f4cb0c941049198fd8f5d67318029c7623d243bd886364b6153",
+        "page_count": 22
+      },
+      {
+        "file_name": "hyper_pcn.pdf",
+        "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+        "sha256": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+        "page_count": 17
+      },
+      {
+        "file_name": "pcn_point_completion_network.pdf",
+        "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+        "sha256": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+        "page_count": 17
+      },
+      {
+        "file_name": "pfnet_point_fractal_network.pdf",
+        "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+        "sha256": "7055d83ede3b651eeb18a093ea007472be3b2da33418ddcfbc213ba9ef4689b9",
+        "page_count": 9
+      },
+      {
+        "file_name": "pointattn.pdf",
+        "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+        "sha256": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+        "page_count": 12
+      },
+      {
+        "file_name": "pointr_geometry_aware_transformers.pdf",
+        "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+        "sha256": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+        "page_count": 14
+      },
+      {
+        "file_name": "proxyformer.pdf",
+        "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+        "sha256": "35f91130124e55fd5bce3bcdc046c505cab5c71015af7f8bae923dbabf568653",
+        "page_count": 10
+      },
+      {
+        "file_name": "seedformer.pdf",
+        "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+        "sha256": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+        "page_count": 22
+      },
+      {
+        "file_name": "snowflakenet.pdf",
+        "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+        "sha256": "464e66a054d4eea8dea5fb2c64505530b9766b2cae9c640111f0590b99ac8d68",
+        "page_count": 11
+      },
+      {
+        "file_name": "svdformer.pdf",
+        "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+        "sha256": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+        "page_count": 11
+      }
+    ]
+  },
+  "runtime_source_fingerprint": "ee04cb516783474b8ca29a3f250b60079ef7753d184fac988e436a5dab35c4db",
+  "runtime_composition_fingerprint": {
+    "settings_subset": {
+      "reranker_enabled": true,
+      "reranker_model": "BAAI/bge-reranker-base",
+      "reranker_input_k": 20,
+      "reranker_final_k": 5,
+      "multilingual_hybrid_enabled": false,
+      "multilingual_candidate_top_k": 10,
+      "multilingual_candidate_pool_k": 20,
+      "multilingual_final_top_k": 5,
+      "multilingual_rrf_k": 60,
+      "embedding_model": "BAAI/bge-m3",
+      "collection_name": "ef_research_bge_m3_c512_o64_v1",
+      "max_context_tokens": 4096,
+      "chunk_size": 512,
+      "chunk_overlap": 64
+    },
+    "env_sensitive_settings": {
+      "reranker_model": "BAAI/bge-reranker-base"
+    },
+    "assembly_module_hashes": {
+      "src/evidenceflow/runtime.py": "198e3dcad864c69a5daa0aa520817677f545ef4b6f587e409e7f689c0277ef0f",
+      "src/evidenceflow/retrieval/reranker.py": "b022da55250de300f2fff9f1167c9c68b4fa95123717a1f59961299f56989555",
+      "src/evidenceflow/retrieval/retriever.py": "c3d7e3f256b533f2cebe8230043335c5475827c89b28ecbe265faeb31e683dad",
+      "src/evidenceflow/rag/service.py": "828edc7adcf082801360ffc4029be1ed08794c846747960576a601e13ac6cbaa",
+      "src/evidenceflow/context/builder.py": "e6512d26c742a5f26ec4ee9ce7790fe66228f18b8b8a336511ce334d44e0aa65",
+      "src/evidenceflow/generation/generator.py": "24105ace6794979c129162b9f988d583fe4fd11cb60d403b7fc2fac73a37aa00",
+      "src/evidenceflow/citation/parser.py": "14532da8ff1dc4643885f9418b6417fbba8c685bba645efc751382cc48c374c1"
+    },
+    "fingerprint": "8e36dd547f11462f4e646703625f4f64a60ae7d1d5b524aec5cccf5eab87bd6f",
+    "fingerprint_excluding_env_sensitive": "a33cfd7ce4657780eb82b901a91d4684ca354d6ca8633941046307788279446d"
+  },
+  "chunking_contract": {
+    "baseline": {
+      "chunk_size": 512,
+      "chunk_overlap": 64
+    },
+    "candidates": {
+      "max_chunk_tokens": 512
+    }
+  },
+  "control_variables_frozen": [
+    "embedding_model=BAAI/bge-m3",
+    "reranker=BAAI/bge-reranker-base",
+    "llm=Settings.llm_model",
+    "runtime_default_path 未修改",
+    "canonical Gold / qrels 未修改"
+  ],
+  "guardrails": {
+    "old_chroma_modified": false,
+    "canonical_gold_modified": false,
+    "qrels_modified": false,
+    "runtime_default_path_modified": false,
+    "src_evidenceflow_new_files": 0
+  }
+}

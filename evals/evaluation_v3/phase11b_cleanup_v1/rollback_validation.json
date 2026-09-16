@@ -1,0 +1,43 @@
+{
+  "artifact_type": "phase11b_rollback_validation",
+  "created_at": "2026-09-08T15:40:29.798995+00:00",
+  "assemblies": {
+    "reranker_enabled_true": {
+      "assembled": true,
+      "retriever": "DenseRerankerRetriever",
+      "retrieval_strategy": "dense_reranker",
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "reranker_enabled_false": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "retrieval_strategy": null,
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "hybrid_conditional_disabled": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "retrieval_strategy": null,
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "hybrid_conditional_enabled": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "retrieval_strategy": null,
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    }
+  },
+  "fallback_implementations_present": {
+    "TranslationProvider(LLMTranslationProvider)": true,
+    "BM25Index": true,
+    "Hybrid(equal_ranked_rrf_fusion)": true,
+    "RRF(weighted_rrf_fusion)": true,
+    "MultilingualRetriever": true
+  },
+  "note": "仅验证装配路径与类型，不端到端推理；reranker_enabled_true 使用本机本地快照 .cache/models/bge-reranker-base（同 Phase 9 run_manifest 的 resolved_local_path）。",
+  "gate": "PASS"
+}

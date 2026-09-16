@@ -1,0 +1,123 @@
+{
+  "selection_rule": "nDCG@5 within 0.01 of best, then simplest architecture, lower budget, lower latency",
+  "best_ndcg_at_5": 0.46646944362254245,
+  "selected": {
+    "architecture": "c0_original_dense",
+    "budget": 20,
+    "ndcg_at_5": 0.46339982650599376,
+    "mrr_at_5": 0.4320833333333334,
+    "recall_at_5": 0.5625,
+    "latency": 184.0747895987006,
+    "complexity": 0
+  },
+  "all_variants": [
+    {
+      "architecture": "c0_original_dense",
+      "budget": 20,
+      "ndcg_at_5": 0.46339982650599376,
+      "mrr_at_5": 0.4320833333333334,
+      "recall_at_5": 0.5625,
+      "latency": 184.0747895987006,
+      "complexity": 0
+    },
+    {
+      "architecture": "c0_original_dense",
+      "budget": 30,
+      "ndcg_at_5": 0.4493596687148725,
+      "mrr_at_5": 0.4216666666666667,
+      "recall_at_5": 0.5375,
+      "latency": 291.9430885979673,
+      "complexity": 0
+    },
+    {
+      "architecture": "c0_original_dense",
+      "budget": 50,
+      "ndcg_at_5": 0.43992928583142127,
+      "mrr_at_5": 0.41208333333333336,
+      "recall_at_5": 0.525,
+      "latency": 471.72657439729664,
+      "complexity": 0
+    },
+    {
+      "architecture": "c0_original_dense",
+      "budget": 100,
+      "ndcg_at_5": 0.4366560419921348,
+      "mrr_at_5": 0.40791666666666665,
+      "recall_at_5": 0.525,
+      "latency": 900.1205608968157,
+      "complexity": 0
+    },
+    {
+      "architecture": "c1_translation_dense",
+      "budget": 20,
+      "ndcg_at_5": 0.46339982650599376,
+      "mrr_at_5": 0.4320833333333334,
+      "recall_at_5": 0.5625,
+      "latency": 166.6103593999287,
+      "complexity": 1
+    },
+    {
+      "architecture": "c1_translation_dense",
+      "budget": 30,
+      "ndcg_at_5": 0.4493596687148725,
+      "mrr_at_5": 0.4216666666666667,
+      "recall_at_5": 0.5375,
+      "latency": 262.3247541011078,
+      "complexity": 1
+    },
+    {
+      "architecture": "c1_translation_dense",
+      "budget": 50,
+      "ndcg_at_5": 0.43992928583142127,
+      "mrr_at_5": 0.41208333333333336,
+      "recall_at_5": 0.525,
+      "latency": 422.62628040113486,
+      "complexity": 1
+    },
+    {
+      "architecture": "c1_translation_dense",
+      "budget": 100,
+      "ndcg_at_5": 0.4366560419921348,
+      "mrr_at_5": 0.40791666666666665,
+      "recall_at_5": 0.525,
+      "latency": 805.4301621025661,
+      "complexity": 1
+    },
+    {
+      "architecture": "c2_hybrid",
+      "budget": 20,
+      "ndcg_at_5": 0.45526866411625144,
+      "mrr_at_5": 0.4208333333333333,
+      "recall_at_5": 0.5625,
+      "latency": 161.62781320081558,
+      "complexity": 2
+    },
+    {
+      "architecture": "c2_hybrid",
+      "budget": 30,
+      "ndcg_at_5": 0.46646944362254245,
+      "mrr_at_5": 0.43083333333333335,
+      "recall_at_5": 0.575,
+      "latency": 255.0248715003254,
+      "complexity": 2
+    },
+    {
+      "architecture": "c2_hybrid",
+      "budget": 50,
+      "ndcg_at_5": 0.4517917935542274,
+      "mrr_at_5": 0.41958333333333336,
+      "recall_at_5": 0.55,
+      "latency": 410.33523860096466,
+      "complexity": 2
+    },
+    {
+      "architecture": "c2_hybrid",
+      "budget": 100,
+      "ndcg_at_5": 0.4366560419921348,
+      "mrr_at_5": 0.40791666666666665,
+      "recall_at_5": 0.525,
+      "latency": 784.4480046000099,
+      "complexity": 2
+    }
+  ]
+}

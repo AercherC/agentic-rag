@@ -1,0 +1,77 @@
+{
+  "phase": "11A",
+  "title": "Standard IR Evaluation Migration + Eval Simplification",
+  "evaluation_version": "3.0",
+  "evaluation_v3_gate": "PASS",
+  "primary_metrics": {
+    "Precision@K": "established (ir_metrics.precision_at_k; depths 1/3/5/10/20)",
+    "Recall@K": "established, STANDARD definition (denominator = |qrels|; replaces legacy HitRate 'recall')",
+    "MRR@K": "established (reciprocal_rank_at_k; depths 5/10/20)",
+    "MAP@K": "established (average_precision_at_k; depths 5/10/20)",
+    "nDCG@K": "established, STANDARD binary definition (replaces custom_evidence_group_ndcg)"
+  },
+  "deprecated_or_deleted": {
+    "hard_deleted": [],
+    "deprecated_for_primary_eval": ["custom_evidence_group_ndcg", "custom_complete_evidence_rr", "legacy Recall@K (HitRate)"],
+    "deprecate_overlap": ["overall_evidence_coverage", "any_evidence_hit_at_k"],
+    "note": "无函数被硬删除：所有候选删除项均有现存 test/experiment 引用，依 Step 18 'no current test dependency' 规则保留为 COMPATIBILITY_ONLY / KEEP_DIAGNOSTIC。"
+  },
+  "diagnostic_only": {
+    "evidence_group_recall_at_k": "diagnostic.evidence_group_recall_at_k",
+    "all_required_evidence_at_k": "diagnostic.all_required_evidence_at_k",
+    "gold_mappability_rate": "data-quality, non-retrieval-accuracy"
+  },
+  "legacy_recall_semantic_issue": "FOUND",
+  "dense_baseline": {
+    "Precision@5": 0.0850,
+    "Recall@5": 0.4250,
+    "Recall@10": 0.6625,
+    "Recall@20": 0.8167,
+    "MRR@5": 0.2621,
+    "MAP@5": 0.2621,
+    "nDCG@5": 0.3024,
+    "source": "phase6_retrieval_baselines_v1/b0_original_dense.json (depth-100 replay)"
+  },
+  "current_runtime": {
+    "Precision@5": 0.1150,
+    "Recall@5": 0.5583,
+    "Recall@10": 0.7333,
+    "Recall@20": null,
+    "Recall@20_note": "N/A: 冻结排名仅 Top-10，标准 @20 不可重建",
+    "MRR@5": 0.4321,
+    "MAP@5": 0.4279,
+    "nDCG@5": 0.4619,
+    "source": "phase9_runtime_promotion_v1/runtime_after.json (depth-10 replay)"
+  },
+  "reranker_improvement_under_standard_ir_metrics": "CONFIRMED",
+  "reranker_deltas": {
+    "Precision@5": 0.0300,
+    "Recall@5": 0.1333,
+    "Recall@10": 0.0708,
+    "MRR@5": 0.1700,
+    "MAP@5": 0.1658,
+    "nDCG@5": 0.1594
+  },
+  "wins_ties_losses": {"wins": 16, "ties": 18, "losses": 6, "evaluated_questions": 40},
+  "runtime_modified": "NO",
+  "gold_chunk_embedding_chroma_modified": "NO",
+  "historical_artifacts_overwritten": "NO",
+  "full_tests_pass": "PASS (eval-scope 全过；完整套件 1 fail + 5 errors 均为离线沙箱无法加载真实 BGE-M3 模型的既有问题，与 Phase 11A 无关且不属 Eval 范围)",
+  "gate_checks": {
+    "standard_qrels_contract": true,
+    "precision_at_k": true,
+    "recall_at_k_standard_def": true,
+    "mrr_at_k_standardized": true,
+    "map_at_k": true,
+    "ndcg_at_k_standard_def": true,
+    "legacy_hitrate_recall_renamed": true,
+    "custom_ranking_metrics_deprecated_or_downgraded": true,
+    "multi_evidence_diagnostics_layered": true,
+    "dense_baseline_recomputed_standard": true,
+    "current_runtime_recomputed_standard": true,
+    "old_new_results_traceable": true,
+    "historical_artifacts_not_overwritten": true,
+    "runtime_gold_chunk_embedding_chroma_unchanged": true
+  },
+  "next_step": "STOP. Do not enter Phase 11B Runtime Stabilization + Cleanup until explicitly requested."
+}

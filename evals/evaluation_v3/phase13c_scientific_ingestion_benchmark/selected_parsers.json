@@ -1,0 +1,64 @@
+{
+  "artifact_type": "phase13c_selected_parsers",
+  "created_at_utc": "2026-09-14T10:36:35.287463+00:00",
+  "stage": "Phase 13C-A",
+  "next_stage": "Phase 13C-B — Cleaning Benchmark（只对入选 arm 运行）",
+  "selected": [
+    {
+      "arm_id": "P0_current",
+      "conditional": true,
+      "why": "通过 8/10 条硬门，未过门；仅作为有条件候选列出，需在 13C-B 前先解决未过门项。",
+      "failed_gates": [
+        "structured_elements_not_fully_downgraded",
+        "furniture_isolated_or_filtered"
+      ]
+    },
+    {
+      "arm_id": "P1_mineru",
+      "conditional": true,
+      "why": "通过 8/10 条硬门，未过门；仅作为有条件候选列出，需在 13C-B 前先解决未过门项。",
+      "failed_gates": [
+        "canonical_anchor_no_new_loss",
+        "furniture_isolated_or_filtered"
+      ]
+    }
+  ],
+  "gate_summary": {
+    "P0_current": {
+      "gate_passed": false,
+      "passed_count": 8,
+      "decidable_count": 10,
+      "status": "OK"
+    },
+    "P1_mineru": {
+      "gate_passed": false,
+      "passed_count": 8,
+      "decidable_count": 10,
+      "status": "OK"
+    },
+    "P2_docling": {
+      "gate_passed": false,
+      "passed_count": 7,
+      "decidable_count": 10,
+      "status": "OK"
+    },
+    "P3_marker": {
+      "gate_passed": false,
+      "passed_count": 8,
+      "decidable_count": 10,
+      "status": "OK"
+    },
+    "P4_grobid": {
+      "gate_passed": false,
+      "passed_count": 0,
+      "decidable_count": 1,
+      "status": "BLOCKED"
+    },
+    "O2_ocr": {
+      "gate_passed": false,
+      "passed_count": 6,
+      "decidable_count": 10,
+      "status": "OK"
+    }
+  }
+}

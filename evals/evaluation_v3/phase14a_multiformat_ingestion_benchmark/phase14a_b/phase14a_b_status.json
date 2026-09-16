@@ -1,0 +1,37 @@
+{
+ "PHASE_14A_B_STATUS": "PASS",
+ "SANDBOX_ONLY": "YES",
+ "LOCAL_PROJECT_MODIFIED": "NO",
+ "SOURCE_FILES_MODIFIED": "NO",
+ "PHASE_14A_A_FROZEN": "YES",
+ "DOCX_B0": "PASS",
+ "DOCX_B1": "PASS",
+ "XLSX_B0": "PASS",
+ "XLSX_B1": "PASS",
+ "DOCX_HARD_GATES": "12/12 cases pass D-G1..G8 (DOCX-B1)",
+ "XLSX_HARD_GATES": "15/15 cases pass X-G1..G10 (XLSX-B1)",
+ "DOCX_REAL_CORPUS": "PENDING",
+ "XLSX_REAL_CORPUS": "PENDING",
+ "DOCX_FAKE_PROVENANCE": 0,
+ "XLSX_FAKE_PROVENANCE": 0,
+ "FORMULA_SILENT_OVERWRITE": 0,
+ "MERGED_RANGE_LOSS": 0,
+ "HIDDEN_CONTENT_SILENT_DROP": 0,
+ "SELECTED_FOR_14A_C": {
+  "DOCX": "DOCX-B1",
+  "XLSX": "XLSX-B1",
+  "rationale": "硬门全过前提下，按方案 §22 顺序（Source Fidelity → Semantic Structure → Provenance → Explainability）优先 semantic cleaner（B1）：其保留 B0 全部事实，并额外提供 heading 推断留痕 / list 归组 / 表格序列化 / 区域推断与表头层级。"
+ },
+ "TESTS": "experiments/phase14a/tests/test_phase14a_b.py（运行结果见 reports 与 status）",
+ "SANDBOX_BOUNDARY": "PASS",
+ "STOPPED_AT": "Phase 14A-B",
+ "created_at_utc": "2026-09-14T16:47:00.735953+00:00",
+ "real_corpus_note": "受控基准不得宣称成真实语料验证（方案 §6）；原文件只读 + SHA256 在导入时记录。",
+ "ARCHIVE_CLOSEOUT": {
+  "executed_at": "2026-09-15T06:01:29.498257+00:00",
+  "STATUS": "COMPLETE_CONTROLLED_EXPERIMENT",
+  "REAL_CORPUS": "INTENTIONALLY_DEFERRED_OUT_OF_SCOPE",
+  "RUNTIME_PROMOTED": false,
+  "note": "Real-world Office validation was intentionally deferred because Office ingestion is outside the current scientific-PDF runtime scope. Chroma benchmark indexes removed (reproducible from chunks+embeddings via runners/embed14c.py); collection inventory at artifacts/cleanup/chroma_collection_inventory.json."
+ }
+}

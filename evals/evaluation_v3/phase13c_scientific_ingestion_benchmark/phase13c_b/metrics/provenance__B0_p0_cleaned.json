@@ -1,0 +1,87 @@
+{
+  "artifact_type": "phase13c_b_metrics_provenance",
+  "created_at_utc": "2026-09-14T12:40:29.812327+00:00",
+  "arm_id": "B0_p0_cleaned",
+  "scope": "controlled",
+  "document_count": 12,
+  "arm_summary": {
+    "page_provenance_coverage": 1.0,
+    "bbox_provenance_coverage": 1.0,
+    "source_parser_traceability": 1.0,
+    "fusion_traceability": null
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T02_ieee_two_column": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T03_cvpr_two_column": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T04_acm_two_column": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T05_springer_lncs": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T06_elsevier_journal": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T07_arxiv_preprint": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T08_table_heavy": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T09_formula_heavy": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T10_figure_heavy": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T11_references_heavy": {
+      "page_provenance_coverage": 1.0,
+      "bbox_provenance_coverage": 1.0,
+      "source_parser_traceability": 1.0,
+      "fusion_traceability": null
+    },
+    "T12_scanned_image_only": {
+      "page_provenance_coverage": null,
+      "bbox_provenance_coverage": null,
+      "source_parser_traceability": null,
+      "fusion_traceability": null
+    }
+  }
+}

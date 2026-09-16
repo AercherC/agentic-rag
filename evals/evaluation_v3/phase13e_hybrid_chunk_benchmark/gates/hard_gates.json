@@ -1,0 +1,29 @@
+{
+ "gate_definitions_version": "phase13e-gates-v1.0",
+ "gates": {
+  "E_G1_inputs": true,
+  "E_G2_coverage": {
+   "PH1": true,
+   "PH2": true,
+   "PH3": true
+  },
+  "E_G3_determinism": {
+   "PH1": true,
+   "PH2": true,
+   "PH3": true
+  },
+  "E_G4_provenance": {
+   "PH1": true,
+   "PH2": true,
+   "PH3": true
+  },
+  "E_G5_token_budget": {
+   "PH1": true,
+   "PH2": true,
+   "PH3": true
+  },
+  "E_G6_protocol": true,
+  "E_G7_bootstrap_determinism": true
+ },
+ "verdict": "PASS"
+}

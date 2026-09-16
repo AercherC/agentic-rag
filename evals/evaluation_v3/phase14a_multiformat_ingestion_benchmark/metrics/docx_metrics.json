@@ -1,0 +1,585 @@
+{
+  "format": "docx",
+  "primary_arm": "W-A0",
+  "per_case": [
+    {
+      "case_id": "W1",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W1__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W2",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W2__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W3",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W3__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W4",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=True"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W4__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W5",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W5__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W6",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=True"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W6__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W7",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W7__W-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "W8",
+      "arms": {
+        "W-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "heading_recall": 1.0,
+            "paragraph_recall": 1.0,
+            "paragraph_order_accuracy": 1.0,
+            "list_structure_recall": 1.0,
+            "table_structure_accuracy": 1.0,
+            "header_footer_separation": true,
+            "header_footer_recall": 1.0,
+            "footnote_recall": 1.0,
+            "caption_link_accuracy": 1.0,
+            "style_provenance_ok": true,
+            "bad_heading_not_faked_as_heading": true,
+            "fake_provenance_count": 0,
+            "semantic_type_accuracy": 1.0
+          },
+          "gates": [
+            {
+              "gate": "W-G1 Structural Preservation",
+              "status": "PASS",
+              "detail": "heading=1.0 para=1.0 list=1.0 table=1.0"
+            },
+            {
+              "gate": "W-G2 No Semantic Flattening",
+              "status": "PASS",
+              "detail": "semantic_type_acc=1.0 bad_heading_faked=False"
+            },
+            {
+              "gate": "W-G3 Table Fidelity",
+              "status": "PASS",
+              "detail": "table_structure_accuracy=1.0"
+            },
+            {
+              "gate": "W-G4 Style Provenance",
+              "status": "PASS",
+              "detail": "heading elements carry style_id=True"
+            },
+            {
+              "gate": "W-G5 Header/Footer Separation",
+              "status": "PASS",
+              "detail": "separated=True expects=False"
+            },
+            {
+              "gate": "W-G6 Image/Caption Relationship",
+              "status": "PASS",
+              "detail": "caption_link_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "W-G7 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "W-G8 Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent across runs"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\docx\\W8__W-A0_a.json"
+        }
+      }
+    }
+  ],
+  "arm_summaries": [
+    {
+      "arm_id": "W-A0",
+      "status": "RUNNABLE",
+      "cases_passing_all_gates": 8,
+      "cases_total": 8
+    },
+    {
+      "arm_id": "W-A1",
+      "status": "BLOCKED",
+      "reason": "Docling 未安装（用户选择仅安装 python-docx+openpyxl）；本机离线，ML 依赖不可得。"
+    },
+    {
+      "arm_id": "W-A2",
+      "status": "BLOCKED",
+      "reason": "Unstructured 未安装（同上）。"
+    },
+    {
+      "arm_id": "W-A3",
+      "status": "BLOCKED",
+      "reason": "Mammoth 未安装（同上）。"
+    }
+  ],
+  "blocked_arms": [
+    "W-A1",
+    "W-A2",
+    "W-A3"
+  ],
+  "aggregate": {
+    "cases_total": 8,
+    "cases_passing_all_gates": 8,
+    "fake_provenance_count": 0,
+    "formula_silent_overwrite": 0,
+    "merged_range_loss": 0
+  }
+}

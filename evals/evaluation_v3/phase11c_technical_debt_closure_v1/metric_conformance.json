@@ -1,0 +1,929 @@
+{
+  "artifact_type": "phase11c_metric_conformance",
+  "created_at": "2026-09-09T04:55:18.425144+00:00",
+  "plan": "B（环境无 pytrec_eval / BEIR / ranx / ir_measures / trectools，不新增大型依赖）",
+  "reference_library_probe": {
+    "pytrec_eval": false,
+    "beir": false,
+    "ranx": false,
+    "ir_measures": false,
+    "trectools": false
+  },
+  "method": "在脚本内按教科书定义独立实现一份参考实现（二元相关性、首次出现去重），生成冻结 TREC-style fixture，再与 src/evidenceflow/eval/ir_metrics.py 逐指标比对。",
+  "coverage": [
+    "Precision@5",
+    "Recall@5",
+    "Recall@10",
+    "MRR@5",
+    "MAP@5",
+    "nDCG@5"
+  ],
+  "fixture_path": "evals/evaluation_v3/phase11c_technical_debt_closure_v1/ir_metric_conformance_fixture.json",
+  "function_level_comparisons": [
+    {
+      "question_id": "q1",
+      "metric": "precision_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_3",
+      "reference": 0.3333333333333333,
+      "production": 0.3333333333333333,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_5",
+      "reference": 0.4,
+      "production": 0.4,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_10",
+      "reference": 0.3,
+      "production": 0.3,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_3",
+      "reference": 0.3333333333333333,
+      "production": 0.3333333333333333,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_5",
+      "reference": 0.6666666666666666,
+      "production": 0.6666666666666666,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_10",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_3",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_5",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_10",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_3",
+      "reference": 0.16666666666666666,
+      "production": 0.16666666666666666,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_5",
+      "reference": 0.3333333333333333,
+      "production": 0.3333333333333333,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_10",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_3",
+      "reference": 0.2960819109658652,
+      "production": 0.2960819109658652,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_5",
+      "reference": 0.49818925746641285,
+      "production": 0.49818925746641285,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_10",
+      "reference": 0.6653497124326151,
+      "production": 0.6653497124326151,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_3",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_5",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_10",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_3",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_5",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_10",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_3",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_5",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_10",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_3",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_5",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_10",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_1",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_3",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_5",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_10",
+      "reference": 0.0,
+      "production": 0.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_1",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_3",
+      "reference": 0.3333333333333333,
+      "production": 0.3333333333333333,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_5",
+      "reference": 0.4,
+      "production": 0.4,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_10",
+      "reference": 0.2,
+      "production": 0.2,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_1",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_3",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_5",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_10",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_1",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_3",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_5",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_10",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_1",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_3",
+      "reference": 0.5,
+      "production": 0.5,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_5",
+      "reference": 0.75,
+      "production": 0.75,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_10",
+      "reference": 0.75,
+      "production": 0.75,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_1",
+      "reference": 1.0,
+      "production": 1.0,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_3",
+      "reference": 0.6131471927654584,
+      "production": 0.6131471927654584,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_5",
+      "reference": 0.8772153153380493,
+      "production": 0.8772153153380493,
+      "abs_diff": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_10",
+      "reference": 0.8772153153380493,
+      "production": 0.8772153153380493,
+      "abs_diff": 0.0,
+      "match": true
+    }
+  ],
+  "evaluate_ir_run_comparisons": [
+    {
+      "question_id": "q1",
+      "metric": "precision_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_3",
+      "reference": 0.3333333333333333,
+      "evaluate_ir_run": 0.3333333333333333,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_5",
+      "reference": 0.4,
+      "evaluate_ir_run": 0.4,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "precision_at_10",
+      "reference": 0.3,
+      "evaluate_ir_run": 0.3,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_3",
+      "reference": 0.3333333333333333,
+      "evaluate_ir_run": 0.3333333333333333,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_5",
+      "reference": 0.6666666666666666,
+      "evaluate_ir_run": 0.6666666666666666,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "recall_at_10",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_3",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_5",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "mrr_at_10",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_3",
+      "reference": 0.16666666666666666,
+      "evaluate_ir_run": 0.16666666666666666,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_5",
+      "reference": 0.3333333333333333,
+      "evaluate_ir_run": 0.3333333333333333,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "map_at_10",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_3",
+      "reference": 0.2960819109658652,
+      "evaluate_ir_run": 0.2960819109658652,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_5",
+      "reference": 0.49818925746641285,
+      "evaluate_ir_run": 0.49818925746641285,
+      "match": true
+    },
+    {
+      "question_id": "q1",
+      "metric": "ndcg_at_10",
+      "reference": 0.6653497124326151,
+      "evaluate_ir_run": 0.6653497124326151,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_3",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_5",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "precision_at_10",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_3",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_5",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "recall_at_10",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_3",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_5",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "mrr_at_10",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_3",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_5",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "map_at_10",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_1",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_3",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_5",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q2",
+      "metric": "ndcg_at_10",
+      "reference": 0.0,
+      "evaluate_ir_run": 0.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_1",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_3",
+      "reference": 0.3333333333333333,
+      "evaluate_ir_run": 0.3333333333333333,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_5",
+      "reference": 0.4,
+      "evaluate_ir_run": 0.4,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "precision_at_10",
+      "reference": 0.2,
+      "evaluate_ir_run": 0.2,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_1",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_3",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_5",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "recall_at_10",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_1",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_3",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_5",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "mrr_at_10",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_1",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_3",
+      "reference": 0.5,
+      "evaluate_ir_run": 0.5,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_5",
+      "reference": 0.75,
+      "evaluate_ir_run": 0.75,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "map_at_10",
+      "reference": 0.75,
+      "evaluate_ir_run": 0.75,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_1",
+      "reference": 1.0,
+      "evaluate_ir_run": 1.0,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_3",
+      "reference": 0.6131471927654584,
+      "evaluate_ir_run": 0.6131471927654584,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_5",
+      "reference": 0.8772153153380493,
+      "evaluate_ir_run": 0.8772153153380493,
+      "match": true
+    },
+    {
+      "question_id": "q3",
+      "metric": "ndcg_at_10",
+      "reference": 0.8772153153380493,
+      "evaluate_ir_run": 0.8772153153380493,
+      "match": true
+    }
+  ],
+  "comparison_count": 120,
+  "mismatch_count": 0,
+  "gate": "PASS"
+}

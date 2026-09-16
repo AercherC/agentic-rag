@@ -1,0 +1,204 @@
+{
+  "document_id": "X5",
+  "source_format": "xlsx",
+  "source_file": "X5.xlsx",
+  "source_sha256": "7a1d619e457f6b09a263665a5af6bebaa6e3348117f091031606867ae39b2670",
+  "element_count": 7,
+  "elements": [
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-wb",
+      "type": "workbook_metadata",
+      "raw_text": "workbook:X5",
+      "normalized_text": "workbook:X5",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": null,
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "workbook_metadata",
+      "metadata": {
+        "sheet_count": 1,
+        "sheet_names": [
+          "Merged"
+        ]
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-sheet-0",
+      "type": "sheet",
+      "raw_text": "sheet:Merged",
+      "normalized_text": "sheet:Merged",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "sheet",
+      "metadata": {
+        "name": "Merged",
+        "order": 0,
+        "state": "visible",
+        "hidden": false,
+        "merged_ranges": [
+          "A3:B3"
+        ]
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-tbl-0-1",
+      "type": "table",
+      "raw_text": "table:A1:B2",
+      "normalized_text": "table:A1:B2",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "table",
+      "metadata": {
+        "rows": 2,
+        "cols": 2,
+        "inferred": true,
+        "named": false
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-A1",
+      "type": "cell",
+      "raw_text": "Name",
+      "normalized_text": "Name",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "A1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "Name",
+        "formula": null,
+        "cached_value": "Name",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-B1",
+      "type": "cell",
+      "raw_text": "Score",
+      "normalized_text": "Score",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "B1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "Score",
+        "formula": null,
+        "cached_value": "Score",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-A2",
+      "type": "cell",
+      "raw_text": "Team A",
+      "normalized_text": "Team A",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "A2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "Team A",
+        "formula": null,
+        "cached_value": "Team A",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-B2",
+      "type": "cell",
+      "raw_text": "90",
+      "normalized_text": "90",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "B2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 90,
+        "formula": null,
+        "cached_value": 90,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "X-A0_openpyxl"
+  }
+}

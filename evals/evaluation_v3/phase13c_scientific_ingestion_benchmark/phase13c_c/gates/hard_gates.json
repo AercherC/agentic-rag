@@ -1,0 +1,33 @@
+{
+ "gate_definitions_version": "phase13c-c-gates-v1.0",
+ "gates": {
+  "C_G1_inputs": true,
+  "C_G2_coverage": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G3_determinism": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G4_provenance": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G5_token_budget": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G6_protocol_consistency": true,
+  "C_G7_bootstrap_determinism": true
+ },
+ "verdict": "PASS"
+}

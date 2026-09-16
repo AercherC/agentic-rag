@@ -1,0 +1,458 @@
+{
+  "document_id": "X2",
+  "source_format": "xlsx",
+  "source_file": "X2.xlsx",
+  "source_sha256": "f59450e0ad82d79072fd4893a66e241b573e1f00d52a2e9a1760ca8ffc304615",
+  "element_count": 16,
+  "elements": [
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-wb",
+      "type": "workbook_metadata",
+      "raw_text": "workbook:X2",
+      "normalized_text": "workbook:X2",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": null,
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "workbook_metadata",
+      "metadata": {
+        "sheet_count": 1,
+        "sheet_names": [
+          "Data"
+        ]
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-sheet-0",
+      "type": "sheet",
+      "raw_text": "sheet:Data",
+      "normalized_text": "sheet:Data",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "sheet",
+      "metadata": {
+        "name": "Data",
+        "order": 0,
+        "state": "visible",
+        "hidden": false,
+        "merged_ranges": []
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-tbl-0-1",
+      "type": "table",
+      "raw_text": "table:A1:B3",
+      "normalized_text": "table:A1:B3",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "table",
+      "metadata": {
+        "rows": 3,
+        "cols": 2,
+        "inferred": true,
+        "named": false
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-tbl-0-5",
+      "type": "table",
+      "raw_text": "table:A5:B7",
+      "normalized_text": "table:A5:B7",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "table",
+      "metadata": {
+        "rows": 3,
+        "cols": 2,
+        "inferred": true,
+        "named": false
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A1",
+      "type": "cell",
+      "raw_text": "A",
+      "normalized_text": "A",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "A1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "A",
+        "formula": null,
+        "cached_value": "A",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B1",
+      "type": "cell",
+      "raw_text": "B",
+      "normalized_text": "B",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "B1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "B",
+        "formula": null,
+        "cached_value": "B",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A2",
+      "type": "cell",
+      "raw_text": "1",
+      "normalized_text": "1",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "A2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 1,
+        "formula": null,
+        "cached_value": 1,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B2",
+      "type": "cell",
+      "raw_text": "2",
+      "normalized_text": "2",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "B2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 2,
+        "formula": null,
+        "cached_value": 2,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A3",
+      "type": "cell",
+      "raw_text": "3",
+      "normalized_text": "3",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "A3",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 3,
+        "formula": null,
+        "cached_value": 3,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B3",
+      "type": "cell",
+      "raw_text": "4",
+      "normalized_text": "4",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A1:B3",
+        "cell": "B3",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 4,
+        "formula": null,
+        "cached_value": 4,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A5",
+      "type": "cell",
+      "raw_text": "X",
+      "normalized_text": "X",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "A5",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "X",
+        "formula": null,
+        "cached_value": "X",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B5",
+      "type": "cell",
+      "raw_text": "Y",
+      "normalized_text": "Y",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "B5",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": "Y",
+        "formula": null,
+        "cached_value": "Y",
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A6",
+      "type": "cell",
+      "raw_text": "5",
+      "normalized_text": "5",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "A6",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 5,
+        "formula": null,
+        "cached_value": 5,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B6",
+      "type": "cell",
+      "raw_text": "6",
+      "normalized_text": "6",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "B6",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 6,
+        "formula": null,
+        "cached_value": 6,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-A7",
+      "type": "cell",
+      "raw_text": "7",
+      "normalized_text": "7",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "A7",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 7,
+        "formula": null,
+        "cached_value": 7,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    },
+    {
+      "document_id": "X2",
+      "element_id": "el-xlsx-cell-0-B7",
+      "type": "cell",
+      "raw_text": "8",
+      "normalized_text": "8",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Data",
+        "range": "A5:B7",
+        "cell": "B7",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "cell",
+      "metadata": {
+        "value": 8,
+        "formula": null,
+        "cached_value": 8,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "X-A0_openpyxl"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "X-A0_openpyxl"
+  }
+}

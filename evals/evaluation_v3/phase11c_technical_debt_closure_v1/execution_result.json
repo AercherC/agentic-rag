@@ -1,0 +1,52 @@
+{
+  "artifact_type": "phase11c_execution_result",
+  "created_at": "2026-09-09T05:11:53.475092+00:00",
+  "phase": "11C",
+  "gate": "PASS",
+  "checks": {
+    "tests_debug_dependency_decoupled": true,
+    "settings_top_k_resolved": true,
+    "documentation_reconciled": true,
+    "metric_conformance_pass": true,
+    "standard_ir_metrics_unchanged": true,
+    "per_query_diff_zero": true,
+    "chroma_identity_unchanged": true,
+    "runtime_composition_unchanged": true,
+    "rollback_pass": true,
+    "full_tests_pass": true,
+    "eval_directory_split_recorded": true,
+    "no_new_algorithm_or_dependency": true
+  },
+  "tests": {
+    "before": 408,
+    "after": 418,
+    "warnings_before": 17,
+    "warnings_after": 17,
+    "failed": 0,
+    "delta_note": "Step 1 迁移只改 import，不删测试；Step 4 新增标准 IR 指标一致性单测，因此总数上升属预期。production / fallback / eval 覆盖均无下降。"
+  },
+  "standard_ir_after": {
+    "Precision@5": 0.11500000000000002,
+    "Recall@5": 0.5583333333333333,
+    "Recall@10": 0.7333333333333333,
+    "MRR@5": 0.4320833333333334,
+    "MAP@5": 0.42791666666666667,
+    "nDCG@5": 0.46185080710419263
+  },
+  "per_query_diff_count": 0,
+  "chroma": {
+    "chunk_count": 361,
+    "identity_unchanged": true
+  },
+  "runtime_composition_unchanged": true,
+  "rollback": {
+    "true": "DenseRerankerRetriever",
+    "false": "MultilingualRetriever"
+  },
+  "recall_at_20": {
+    "value": null,
+    "note": "继续 N/A；冻结排名仅 Top-10。"
+  },
+  "no_new_algorithm": true,
+  "no_new_dependency": true
+}

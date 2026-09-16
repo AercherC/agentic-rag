@@ -1,0 +1,15 @@
+{
+ "generated_at": "2026-09-16T10:32:35.613085+00:00",
+ "git_available": false,
+ "physical_actions_performed": [],
+ "candidate_paths_are_original_paths": true,
+ "restore_note": "本轮仅生成 dry-run 证据；未删除或移动文件，无需恢复。后续若批准动作，应先复制 pre_cleanup_manifest 和 candidate list。",
+ "candidate_counts": {
+  "KEEP": 98,
+  "ARCHIVE": 0,
+  "DELETE_SAFE": 245,
+  "DELETE_REVIEW": 6,
+  "MOVE_SAFE": 0,
+  "REVIEW": 1087
+ }
+}

@@ -1,0 +1,219 @@
+{
+  "artifact_type": "phase13b_failure_case_verification",
+  "stage": "Step 6 — Failure Case Verification",
+  "created_at_utc": "2026-09-10T13:59:05.422332+00:00",
+  "focus_failures": [
+    "ARR-007",
+    "ARR-037",
+    "ARR-040"
+  ],
+  "baseline_reference_dense_ranks": {
+    "ARR-007": {
+      "baseline": 25
+    },
+    "ARR-037": {
+      "baseline": [
+        17,
+        77
+      ]
+    },
+    "ARR-040": {
+      "baseline": [
+        6,
+        43
+      ]
+    },
+    "note": "来自 Phase 13A retrieval_failure_root_cause.json 的冻结值"
+  },
+  "rows": [
+    {
+      "question_id": "ARR-007",
+      "query_language": "en",
+      "variant": "BASELINE_C512_O64",
+      "gold_chunk_ids": [
+        "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": false
+    },
+    {
+      "question_id": "ARR-007",
+      "query_language": "en",
+      "variant": "SECTION_AWARE_MINIMAL",
+      "gold_chunk_ids": [
+        "fc27a5c1ee730b94bd30f4fbf780e1fe98754ab17ab894e58017157859dee212"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "fc27a5c1ee730b94bd30f4fbf780e1fe98754ab17ab894e58017157859dee212",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": false
+    },
+    {
+      "question_id": "ARR-007",
+      "query_language": "en",
+      "variant": "ELEMENT_AWARE",
+      "gold_chunk_ids": [
+        "cd17a0bc3cfdfac0540691aab261ae24bf56f193b8895f1ccb43b9223889100c"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "cd17a0bc3cfdfac0540691aab261ae24bf56f193b8895f1ccb43b9223889100c",
+          "dense_rank": 1,
+          "in_top20": true
+        }
+      ],
+      "all_gold_in_top20": true,
+      "any_gold_in_top20": true
+    },
+    {
+      "question_id": "ARR-037",
+      "query_language": "en",
+      "variant": "BASELINE_C512_O64",
+      "gold_chunk_ids": [
+        "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da",
+        "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da",
+          "dense_rank": 17,
+          "in_top20": true
+        },
+        {
+          "chunk_id": "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": true
+    },
+    {
+      "question_id": "ARR-037",
+      "query_language": "en",
+      "variant": "SECTION_AWARE_MINIMAL",
+      "gold_chunk_ids": [
+        "4d1ad69f46760a775e4c8fa60f50a2461e65a955135070b82cff807a9656cf5d",
+        "9dd9827072235a690c96ba88a924b6058ce7de907094f25b0ca82e0050359964"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "4d1ad69f46760a775e4c8fa60f50a2461e65a955135070b82cff807a9656cf5d",
+          "dense_rank": 19,
+          "in_top20": true
+        },
+        {
+          "chunk_id": "9dd9827072235a690c96ba88a924b6058ce7de907094f25b0ca82e0050359964",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": true
+    },
+    {
+      "question_id": "ARR-037",
+      "query_language": "en",
+      "variant": "ELEMENT_AWARE",
+      "gold_chunk_ids": [
+        "4e506828505f3de1d27320399ae0082593ce1724f071bbfd8ad244d86f9cd673",
+        "b0a876f34ad18192f08f57325cc725b9700f453f70856dc91112b1520c50ee9d"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "4e506828505f3de1d27320399ae0082593ce1724f071bbfd8ad244d86f9cd673",
+          "dense_rank": null,
+          "in_top20": false
+        },
+        {
+          "chunk_id": "b0a876f34ad18192f08f57325cc725b9700f453f70856dc91112b1520c50ee9d",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": false
+    },
+    {
+      "question_id": "ARR-040",
+      "query_language": "zh",
+      "variant": "BASELINE_C512_O64",
+      "gold_chunk_ids": [
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+          "dense_rank": 6,
+          "in_top20": true
+        },
+        {
+          "chunk_id": "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": true
+    },
+    {
+      "question_id": "ARR-040",
+      "query_language": "zh",
+      "variant": "SECTION_AWARE_MINIMAL",
+      "gold_chunk_ids": [
+        "81545595e9ce326ce3eedf9671927ddbedb68850004090b545b764dee99d463b",
+        "bee78a185aaf99d967dd4edd4cbfe7ef676acce8658fac671e88d206f0e3e9d0"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "81545595e9ce326ce3eedf9671927ddbedb68850004090b545b764dee99d463b",
+          "dense_rank": 2,
+          "in_top20": true
+        },
+        {
+          "chunk_id": "bee78a185aaf99d967dd4edd4cbfe7ef676acce8658fac671e88d206f0e3e9d0",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": true
+    },
+    {
+      "question_id": "ARR-040",
+      "query_language": "zh",
+      "variant": "ELEMENT_AWARE",
+      "gold_chunk_ids": [
+        "2120ce2c7e14baa3545bf71343c10b185e7d75a2bf4461021cac92591d63867c",
+        "72f9af15260ec6223d9fc0808299c8cc5c1fad2e49311713185eac1c359faf9e"
+      ],
+      "gold_ranks": [
+        {
+          "chunk_id": "2120ce2c7e14baa3545bf71343c10b185e7d75a2bf4461021cac92591d63867c",
+          "dense_rank": 1,
+          "in_top20": true
+        },
+        {
+          "chunk_id": "72f9af15260ec6223d9fc0808299c8cc5c1fad2e49311713185eac1c359faf9e",
+          "dense_rank": null,
+          "in_top20": false
+        }
+      ],
+      "all_gold_in_top20": false,
+      "any_gold_in_top20": true
+    }
+  ]
+}

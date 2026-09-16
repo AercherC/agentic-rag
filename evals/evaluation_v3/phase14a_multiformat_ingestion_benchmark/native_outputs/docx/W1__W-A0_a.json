@@ -1,0 +1,165 @@
+{
+  "document_id": "W1",
+  "source_format": "docx",
+  "source_file": "W1.docx",
+  "source_sha256": "c766c48e69918685d9d4d9dc6a772c7e58471e39ce06ec6a01074eb773fdf310",
+  "element_count": 8,
+  "elements": [
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Sample Technical Document",
+      "normalized_text": "Sample Technical Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Introduction",
+      "normalized_text": "Introduction",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "This document describes the experiment setup.",
+      "normalized_text": "This document describes the experiment setup.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-3",
+      "type": "heading",
+      "raw_text": "Background",
+      "normalized_text": "Background",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Heading 2",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-4",
+      "type": "paragraph",
+      "raw_text": "Prior work focused on point cloud completion.",
+      "normalized_text": "Prior work focused on point cloud completion.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-5",
+      "type": "list_item",
+      "raw_text": "First bullet point",
+      "normalized_text": "First bullet point",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 5,
+        "xml_path": "/w:document/w:body/w:p[6]",
+        "style_id": "List Bullet",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-6",
+      "type": "list_item",
+      "raw_text": "Second bullet point",
+      "normalized_text": "Second bullet point",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 6,
+        "xml_path": "/w:document/w:body/w:p[7]",
+        "style_id": "List Bullet",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W1",
+      "element_id": "el-docx-p-7",
+      "type": "list_item",
+      "raw_text": "First numbered item",
+      "normalized_text": "First numbered item",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 7,
+        "xml_path": "/w:document/w:body/w:p[8]",
+        "style_id": "List Number",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "W-A0_python_docx"
+  }
+}

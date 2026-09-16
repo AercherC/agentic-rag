@@ -1,0 +1,14 @@
+{
+  "phase": 10,
+  "status": "PASS",
+  "best_cpu_variant": null,
+  "pareto_front": [
+    "baseline_cpu_fp32_b4",
+    "cpu_fp32_b4_inference_mode"
+  ],
+  "runtime_modified": false,
+  "runtime_observability_changed": true,
+  "formal_chroma_modified": false,
+  "gold_chunk_embedding_modified": false,
+  "interactive_performance": "NEEDS_OPTIMIZATION"
+}

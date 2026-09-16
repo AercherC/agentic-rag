@@ -1,0 +1,152 @@
+{
+  "document_id": "W3",
+  "source_format": "docx",
+  "source_file": "W3.docx",
+  "source_sha256": "79642d6a520f7e2eb4731ccfefc20cb4e7cf01c0af5e78bee3e7e756ff96ab0c",
+  "element_count": 4,
+  "elements": [
+    {
+      "document_id": "W3",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Table Heavy Document",
+      "normalized_text": "Table Heavy Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 0
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W3",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Results",
+      "normalized_text": "Results",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W3",
+      "element_id": "el-docx-tbl-0",
+      "type": "table",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "table[1]",
+        "style_id": "Table Grid",
+        "table_index": 0,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "rows": 4,
+        "cols": 3,
+        "cells": [
+          [
+            "Model\nCD\nF1",
+            "Model\nCD\nF1",
+            "Model\nCD\nF1"
+          ],
+          [
+            "Method",
+            "Chamfer",
+            "Score"
+          ],
+          [
+            "Baseline",
+            "8.7",
+            "0.81"
+          ],
+          [
+            "Ours",
+            "7.4",
+            "0.85"
+          ]
+        ],
+        "merged_regions": [
+          {
+            "anchor": "R1C1",
+            "row_span": 1,
+            "col_span": 3
+          }
+        ],
+        "table_style_id": "Table Grid"
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W3",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "A caption-like sentence follows the table.",
+      "normalized_text": "A caption-like sentence follows the table.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "DOCX-B0_python_docx_minimal",
+    "page_breaks": [],
+    "page_break_provenance_kind": null
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-0",
+      "reason": "explicit_style: Title",
+      "from": "paragraph",
+      "to": "document_title",
+      "source_element_id": "el-docx-p-0"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-1",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-1"
+    }
+  ],
+  "unresolved": []
+}

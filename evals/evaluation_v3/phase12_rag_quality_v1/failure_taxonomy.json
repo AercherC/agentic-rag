@@ -1,0 +1,184 @@
+{
+  "phase": "phase12_rag_quality_v1",
+  "generated_at_utc": "2026-09-10T06:00:17.253594+00:00",
+  "status": "COMPLETE",
+  "counts_by_type": {
+    "RETRIEVAL_FAILURE": 3,
+    "CONTEXT_SELECTION_FAILURE": 0,
+    "ANSWER_MISSING_CLAIM": 7,
+    "ANSWER_WRONG_CLAIM": 0,
+    "UNSUPPORTED_CLAIM": 0,
+    "CITATION_MISSING": 7,
+    "CITATION_WRONG_SOURCE": 0,
+    "CITATION_INVALID_LABEL": 0,
+    "FALSE_ABSTENTION": 1,
+    "FALSE_ANSWER": 0,
+    "GENERATION_CONTRACT_ERROR": 3,
+    "LLM_REQUEST_ERROR": 0
+  },
+  "questions_with_any_failure": 15,
+  "questions_clean": 10,
+  "entries": [
+    {
+      "question_id": "ARR-002",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "CITATION_MISSING"
+      ]
+    },
+    {
+      "question_id": "ARR-004",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-009",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-010",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "CITATION_MISSING"
+      ]
+    },
+    {
+      "question_id": "ARR-011",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-012",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ]
+    },
+    {
+      "question_id": "ARR-013",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-014",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "CITATION_MISSING"
+      ]
+    },
+    {
+      "question_id": "ARR-016",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ]
+    },
+    {
+      "question_id": "ARR-018",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-019",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ]
+    },
+    {
+      "question_id": "ARR-022",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-029",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ]
+    },
+    {
+      "question_id": "ARR-030",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "CITATION_MISSING",
+        "FALSE_ABSTENTION"
+      ]
+    },
+    {
+      "question_id": "ARR-031",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "CITATION_MISSING"
+      ]
+    },
+    {
+      "question_id": "ARR-036",
+      "answerability": "ANSWERABLE",
+      "failure_types": []
+    },
+    {
+      "question_id": "ARR-039",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "CITATION_MISSING"
+      ]
+    },
+    {
+      "question_id": "ARR-007",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR",
+        "RETRIEVAL_FAILURE"
+      ]
+    },
+    {
+      "question_id": "ARR-037",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "RETRIEVAL_FAILURE"
+      ]
+    },
+    {
+      "question_id": "ARR-040",
+      "answerability": "ANSWERABLE",
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "CITATION_MISSING",
+        "RETRIEVAL_FAILURE"
+      ]
+    },
+    {
+      "question_id": "GEN-U01",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "failure_types": []
+    },
+    {
+      "question_id": "GEN-U02",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "failure_types": []
+    },
+    {
+      "question_id": "GEN-U03",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR"
+      ]
+    },
+    {
+      "question_id": "GEN-U04",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR"
+      ]
+    },
+    {
+      "question_id": "GEN-U05",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "failure_types": []
+    }
+  ]
+}

@@ -1,0 +1,1199 @@
+{
+  "evaluation_version": "research-hybrid-runtime-validation-v1",
+  "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357",
+  "runtime_supersession_marker": {
+    "applied": true,
+    "by": "§17.3.1 Hybrid Runtime Integration",
+    "note": "本报告本身在 §17.3.1 Runtime 集成完成后运行；Runtime 路径已包含 multilingual_hybrid_enabled=True 与 BM25→Equal RRF 末轮融合。"
+  },
+  "configuration": {
+    "runtime_path": "MultilingualRetriever(bm25_index=BM25Index(iter_all_chunks()))",
+    "settings": {
+      "multilingual_hybrid_enabled": true,
+      "multilingual_hybrid_bm25_k1": 1.5,
+      "multilingual_hybrid_bm25_b": 0.75,
+      "multilingual_hybrid_rrf_k": 60,
+      "candidate_top_k_per_branch": 10,
+      "final_runtime_top_k": 5,
+      "hybrid_candidate_budget": 20
+    },
+    "offline_treatment_artifact": "evals\\research_retrieval\\hybrid_retrieval_experiment_v1.json"
+  },
+  "runtime": {
+    "breakdowns": {
+      "overall": {
+        "N": 40,
+        "hit_at_1": 0.1,
+        "ndcg_at_1": 0.1,
+        "hit_at_3": 0.35,
+        "ndcg_at_3": 0.24776429553800927,
+        "hit_at_5": 0.475,
+        "ndcg_at_5": 0.30050327152621215,
+        "hit_at_10": 0.725,
+        "ndcg_at_10": 0.379003160735902,
+        "hit_at_20": 0.8,
+        "ndcg_at_20": 0.4033753292659341,
+        "mrr": 0.2679184704184704
+      },
+      "language_group": {
+        "chinese_to_english": {
+          "N": 18,
+          "hit_at_1": 0.1111111111111111,
+          "ndcg_at_1": 0.1111111111111111,
+          "hit_at_3": 0.3888888888888889,
+          "ndcg_at_3": 0.26454775039682865,
+          "hit_at_5": 0.6111111111111112,
+          "ndcg_at_5": 0.35781899936653533,
+          "hit_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.4297117895634782,
+          "hit_at_20": 0.9444444444444444,
+          "ndcg_at_20": 0.4607054501913816,
+          "mrr": 0.3147967772967773
+        },
+        "english_to_english": {
+          "N": 18,
+          "hit_at_1": 0.1111111111111111,
+          "ndcg_at_1": 0.1111111111111111,
+          "hit_at_3": 0.3888888888888889,
+          "ndcg_at_3": 0.26454775039682865,
+          "hit_at_5": 0.4444444444444444,
+          "ndcg_at_5": 0.2884742258453505,
+          "hit_at_10": 0.6666666666666666,
+          "ndcg_at_10": 0.3595702238281571,
+          "hit_at_20": 0.7222222222222222,
+          "ndcg_at_20": 0.37379011409536905,
+          "mrr": 0.26884920634920634
+        },
+        "mixed_multiple_sources": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "ndcg_at_3": 0.09671320180863541,
+          "hit_at_5": 0.0,
+          "ndcg_at_5": 0.09671320180863541,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.23826254709666092,
+          "hit_at_20": 0.5,
+          "ndcg_at_20": 0.27852325336896294,
+          "mrr": 0.05277777777777778
+        }
+      },
+      "question_type": {
+        "ablation": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.25,
+          "ndcg_at_3": 0.125,
+          "hit_at_5": 0.25,
+          "ndcg_at_5": 0.125,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.21405179677700553,
+          "hit_at_20": 0.75,
+          "ndcg_at_20": 0.2780413029794594,
+          "mrr": 0.14285714285714285
+        },
+        "conclusion_limitation": {
+          "N": 2,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.5,
+          "ndcg_at_3": 0.25,
+          "hit_at_5": 0.5,
+          "ndcg_at_5": 0.25,
+          "hit_at_10": 1.0,
+          "ndcg_at_10": 0.4077324383928644,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.4077324383928644,
+          "mrr": 0.22916666666666666
+        },
+        "experiment_setup": {
+          "N": 5,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "ndcg_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "hit_at_10": 0.2,
+          "ndcg_at_10": 0.06309297535714575,
+          "hit_at_20": 0.6,
+          "ndcg_at_20": 0.1746701536175977,
+          "mrr": 0.06136363636363636
+        },
+        "implementation": {
+          "N": 5,
+          "hit_at_1": 0.2,
+          "ndcg_at_1": 0.2,
+          "hit_at_3": 0.2,
+          "ndcg_at_3": 0.2,
+          "hit_at_5": 0.6,
+          "ndcg_at_5": 0.3722706232293572,
+          "hit_at_10": 0.8,
+          "ndcg_at_10": 0.4353635985865029,
+          "hit_at_20": 0.8,
+          "ndcg_at_20": 0.4353635985865029,
+          "mrr": 0.325
+        },
+        "method": {
+          "N": 8,
+          "hit_at_1": 0.125,
+          "ndcg_at_1": 0.125,
+          "hit_at_3": 0.875,
+          "ndcg_at_3": 0.5654648767857288,
+          "hit_at_5": 0.875,
+          "ndcg_at_5": 0.5654648767857288,
+          "hit_at_10": 1.0,
+          "ndcg_at_10": 0.6071315434523954,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.6071315434523954,
+          "mrr": 0.47619047619047616
+        },
+        "motivation_concept": {
+          "N": 6,
+          "hit_at_1": 0.16666666666666666,
+          "ndcg_at_1": 0.16666666666666666,
+          "hit_at_3": 0.5,
+          "ndcg_at_3": 0.3333333333333333,
+          "hit_at_5": 0.6666666666666666,
+          "ndcg_at_5": 0.4051127596788988,
+          "hit_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.4606683152344544,
+          "hit_at_20": 0.8333333333333334,
+          "ndcg_at_20": 0.4606683152344544,
+          "mrr": 0.3432539682539682
+        },
+        "multi_document": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "ndcg_at_3": 0.09671320180863541,
+          "hit_at_5": 0.0,
+          "ndcg_at_5": 0.09671320180863541,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.23826254709666092,
+          "hit_at_20": 0.5,
+          "ndcg_at_20": 0.27852325336896294,
+          "mrr": 0.05277777777777778
+        },
+        "quantitative_results": {
+          "N": 6,
+          "hit_at_1": 0.16666666666666666,
+          "ndcg_at_1": 0.16666666666666666,
+          "hit_at_3": 0.16666666666666666,
+          "ndcg_at_3": 0.16666666666666666,
+          "hit_at_5": 0.5,
+          "ndcg_at_5": 0.30292156088465577,
+          "hit_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.40367651140192523,
+          "hit_at_20": 0.8333333333333334,
+          "ndcg_at_20": 0.40367651140192523,
+          "mrr": 0.2791666666666667
+        }
+      },
+      "evidence_type": {
+        "body_text": {
+          "N": 22,
+          "hit_at_1": 0.13636363636363635,
+          "ndcg_at_1": 0.13636363636363635,
+          "hit_at_3": 0.4090909090909091,
+          "ndcg_at_3": 0.28462997759740527,
+          "hit_at_5": 0.5454545454545454,
+          "ndcg_at_5": 0.3433585991528679,
+          "hit_at_10": 0.7272727272727273,
+          "ndcg_at_10": 0.40152805204789155,
+          "hit_at_20": 0.8181818181818182,
+          "ndcg_at_20": 0.42688650165253966,
+          "mrr": 0.3083185753640299
+        },
+        "figure_caption": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.75,
+          "ndcg_at_3": 0.44046487678572877,
+          "hit_at_5": 0.75,
+          "ndcg_at_5": 0.44046487678572877,
+          "hit_at_10": 1.0,
+          "ndcg_at_10": 0.5237982101190621,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.5237982101190621,
+          "mrr": 0.36904761904761907
+        },
+        "multi_document": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "ndcg_at_3": 0.09671320180863541,
+          "hit_at_5": 0.0,
+          "ndcg_at_5": 0.09671320180863541,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.23826254709666092,
+          "hit_at_20": 0.5,
+          "ndcg_at_20": 0.27852325336896294,
+          "mrr": 0.05277777777777778
+        },
+        "supplementary": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.25,
+          "ndcg_at_3": 0.125,
+          "hit_at_5": 0.25,
+          "ndcg_at_5": 0.125,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.21405179677700553,
+          "hit_at_20": 0.75,
+          "ndcg_at_20": 0.2780413029794594,
+          "mrr": 0.14285714285714285
+        },
+        "table": {
+          "N": 6,
+          "hit_at_1": 0.16666666666666666,
+          "ndcg_at_1": 0.16666666666666666,
+          "hit_at_3": 0.16666666666666666,
+          "ndcg_at_3": 0.16666666666666666,
+          "hit_at_5": 0.5,
+          "ndcg_at_5": 0.30292156088465577,
+          "hit_at_10": 0.8333333333333334,
+          "ndcg_at_10": 0.40367651140192523,
+          "hit_at_20": 0.8333333333333334,
+          "ndcg_at_20": 0.40367651140192523,
+          "mrr": 0.2791666666666667
+        }
+      },
+      "paper": {
+        "adapointr.pdf": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.0,
+          "ndcg_at_3": 0.0,
+          "hit_at_5": 0.0,
+          "ndcg_at_5": 0.0,
+          "hit_at_10": 0.25,
+          "ndcg_at_10": 0.07886621919643219,
+          "hit_at_20": 0.5,
+          "ndcg_at_20": 0.1831164316711881,
+          "mrr": 0.049107142857142856
+        },
+        "hyper_pcn.pdf": {
+          "N": 5,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.2,
+          "ndcg_at_3": 0.17737056144690833,
+          "hit_at_5": 0.4,
+          "ndcg_at_5": 0.26350587306158696,
+          "hit_at_10": 0.8,
+          "ndcg_at_10": 0.371662449839105,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.427451038969331,
+          "mrr": 0.1904040404040404
+        },
+        "pcn_point_completion_network.pdf": {
+          "N": 5,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.2,
+          "ndcg_at_3": 0.1,
+          "hit_at_5": 0.2,
+          "ndcg_at_5": 0.1,
+          "hit_at_10": 0.4,
+          "ndcg_at_10": 0.16666666666666666,
+          "hit_at_20": 0.6,
+          "ndcg_at_20": 0.22245525579689263,
+          "mrr": 0.11341991341991342
+        },
+        "pfnet_point_fractal_network.pdf": {
+          "N": 2,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.5,
+          "ndcg_at_3": 0.31546487678572877,
+          "hit_at_5": 0.5,
+          "ndcg_at_5": 0.31546487678572877,
+          "hit_at_10": 0.5,
+          "ndcg_at_10": 0.31546487678572877,
+          "hit_at_20": 0.5,
+          "ndcg_at_20": 0.31546487678572877,
+          "mrr": 0.25
+        },
+        "pointattn.pdf": {
+          "N": 5,
+          "hit_at_1": 0.2,
+          "ndcg_at_1": 0.2,
+          "hit_at_3": 0.6,
+          "ndcg_at_3": 0.4,
+          "hit_at_5": 0.6,
+          "ndcg_at_5": 0.4,
+          "hit_at_10": 1.0,
+          "ndcg_at_10": 0.5341373021380844,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.5341373021380844,
+          "mrr": 0.37333333333333335
+        },
+        "pointr_geometry_aware_transformers.pdf": {
+          "N": 5,
+          "hit_at_1": 0.2,
+          "ndcg_at_1": 0.2,
+          "hit_at_3": 0.4,
+          "ndcg_at_3": 0.3261859507142915,
+          "hit_at_5": 0.6,
+          "ndcg_at_5": 0.41232126232897015,
+          "hit_at_10": 0.6,
+          "ndcg_at_10": 0.41232126232897015,
+          "hit_at_20": 0.6,
+          "ndcg_at_20": 0.4445298273468118,
+          "mrr": 0.35
+        },
+        "proxyformer.pdf": {
+          "N": 4,
+          "hit_at_1": 0.25,
+          "ndcg_at_1": 0.25,
+          "hit_at_3": 0.25,
+          "ndcg_at_3": 0.25,
+          "hit_at_5": 0.75,
+          "ndcg_at_5": 0.4543823413269837,
+          "hit_at_10": 0.75,
+          "ndcg_at_10": 0.4543823413269837,
+          "hit_at_20": 0.75,
+          "ndcg_at_20": 0.4543823413269837,
+          "mrr": 0.3625
+        },
+        "seedformer.pdf": {
+          "N": 5,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.4,
+          "ndcg_at_3": 0.2,
+          "hit_at_5": 0.6,
+          "ndcg_at_5": 0.28613531161467864,
+          "hit_at_10": 0.8,
+          "ndcg_at_10": 0.34922828697182434,
+          "hit_at_20": 0.8,
+          "ndcg_at_20": 0.34922828697182434,
+          "mrr": 0.20833333333333331
+        },
+        "snowflakenet.pdf": {
+          "N": 4,
+          "hit_at_1": 0.0,
+          "ndcg_at_1": 0.0,
+          "hit_at_3": 0.25,
+          "ndcg_at_3": 0.15773243839286438,
+          "hit_at_5": 0.25,
+          "ndcg_at_5": 0.15773243839286438,
+          "hit_at_10": 0.75,
+          "ndcg_at_10": 0.33200407868243004,
+          "hit_at_20": 0.75,
+          "ndcg_at_20": 0.33200407868243004,
+          "mrr": 0.18125
+        },
+        "svdformer.pdf": {
+          "N": 5,
+          "hit_at_1": 0.2,
+          "ndcg_at_1": 0.2,
+          "hit_at_3": 0.4,
+          "ndcg_at_3": 0.40355651216119987,
+          "hit_at_5": 0.4,
+          "ndcg_at_5": 0.40355651216119987,
+          "hit_at_10": 1.0,
+          "ndcg_at_10": 0.5702312935409258,
+          "hit_at_20": 1.0,
+          "ndcg_at_20": 0.5702312935409258,
+          "mrr": 0.3757936507936508
+        }
+      }
+    },
+    "failure_counts": {
+      "success": 19,
+      "chunk_failure": 2,
+      "ranking_failure": 13,
+      "candidate_retrieval_failure": 6
+    },
+    "question_results": [
+      {
+        "question_id": "ARR-001",
+        "query": "Why is point cloud completion needed according to PCN?",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pcn_point_completion_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-002",
+        "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+        "gold_group_rank": 1,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointr_geometry_aware_transformers.pdf"
+        ],
+        "ndcg_at_1": 1.0,
+        "ndcg_at_3": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0,
+        "ndcg_at_20": 1.0
+      },
+      {
+        "question_id": "ARR-003",
+        "query": "What acquisition problems motivate ProxyFormer?",
+        "gold_group_rank": null,
+        "primary_failure": "chunk_failure",
+        "language_group": "english_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "proxyformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-004",
+        "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+        "gold_group_rank": 7,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "svdformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.3333333333333333,
+        "ndcg_at_20": 0.3333333333333333
+      },
+      {
+        "question_id": "ARR-005",
+        "query": "Why does PointAttN question using a fixed neighborhood parameter?",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointattn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-006",
+        "query": "Hyper-PCN 认为只建模成对关系会遗漏什么？",
+        "gold_group_rank": 4,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "motivation_concept",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "hyper_pcn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.43067655807339306,
+        "ndcg_at_10": 0.43067655807339306,
+        "ndcg_at_20": 0.43067655807339306
+      },
+      {
+        "question_id": "ARR-007",
+        "query": "What two outputs are shown in the PCN architecture?",
+        "gold_group_rank": 7,
+        "primary_failure": "ranking_failure",
+        "language_group": "english_to_english",
+        "question_type": "method",
+        "evidence_type": "figure_caption",
+        "gold_files": [
+          "pcn_point_completion_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.3333333333333333,
+        "ndcg_at_20": 0.3333333333333333
+      },
+      {
+        "question_id": "ARR-008",
+        "query": "PF-Net 的总体架构图由哪三个主要模块组成？",
+        "gold_group_rank": 2,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "method",
+        "evidence_type": "figure_caption",
+        "gold_files": [
+          "pfnet_point_fractal_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.6309297535714575,
+        "ndcg_at_5": 0.6309297535714575,
+        "ndcg_at_10": 0.6309297535714575,
+        "ndcg_at_20": 0.6309297535714575
+      },
+      {
+        "question_id": "ARR-009",
+        "query": "How does PoinTr represent a point cloud for transformer processing?",
+        "gold_group_rank": 2,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "method",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointr_geometry_aware_transformers.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.6309297535714575,
+        "ndcg_at_5": 0.6309297535714575,
+        "ndcg_at_10": 0.6309297535714575,
+        "ndcg_at_20": 0.6309297535714575
+      },
+      {
+        "question_id": "ARR-010",
+        "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+        "gold_group_rank": 2,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "method",
+        "evidence_type": "figure_caption",
+        "gold_files": [
+          "snowflakenet.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.6309297535714575,
+        "ndcg_at_5": 0.6309297535714575,
+        "ndcg_at_10": 0.6309297535714575,
+        "ndcg_at_20": 0.6309297535714575
+      },
+      {
+        "question_id": "ARR-011",
+        "query": "What new shape representation does SeedFormer introduce?",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "method",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "seedformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-012",
+        "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+        "gold_group_rank": 1,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "method",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "proxyformer.pdf"
+        ],
+        "ndcg_at_1": 1.0,
+        "ndcg_at_3": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0,
+        "ndcg_at_20": 1.0
+      },
+      {
+        "question_id": "ARR-013",
+        "query": "What two generators make up SVDFormer's dual-generator design?",
+        "gold_group_rank": 2,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "method",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "svdformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.6309297535714575,
+        "ndcg_at_5": 0.6309297535714575,
+        "ndcg_at_10": 0.6309297535714575,
+        "ndcg_at_20": 0.6309297535714575
+      },
+      {
+        "question_id": "ARR-014",
+        "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "method",
+        "evidence_type": "figure_caption",
+        "gold_files": [
+          "hyper_pcn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-015",
+        "query": "How many ShapeNet models and categories are used by PCN?",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "english_to_english",
+        "question_type": "implementation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pcn_point_completion_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-016",
+        "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+        "gold_group_rank": 8,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "implementation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "snowflakenet.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.31546487678572877,
+        "ndcg_at_20": 0.31546487678572877
+      },
+      {
+        "question_id": "ARR-017",
+        "query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+        "gold_group_rank": 4,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "implementation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "seedformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.43067655807339306,
+        "ndcg_at_10": 0.43067655807339306,
+        "ndcg_at_20": 0.43067655807339306
+      },
+      {
+        "question_id": "ARR-018",
+        "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+        "gold_group_rank": 4,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "implementation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "proxyformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.43067655807339306,
+        "ndcg_at_10": 0.43067655807339306,
+        "ndcg_at_20": 0.43067655807339306
+      },
+      {
+        "question_id": "ARR-019",
+        "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+        "gold_group_rank": 1,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "implementation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointattn.pdf"
+        ],
+        "ndcg_at_1": 1.0,
+        "ndcg_at_3": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0,
+        "ndcg_at_20": 1.0
+      },
+      {
+        "question_id": "ARR-020",
+        "query": "PCN 的合成训练数据来自哪个 CAD 数据集？",
+        "gold_group_rank": 11,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "experiment_setup",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pcn_point_completion_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.27894294565112987
+      },
+      {
+        "question_id": "ARR-021",
+        "query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "english_to_english",
+        "question_type": "experiment_setup",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointr_geometry_aware_transformers.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-022",
+        "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "experiment_setup",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "snowflakenet.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-023",
+        "query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+        "gold_group_rank": 8,
+        "primary_failure": "ranking_failure",
+        "language_group": "english_to_english",
+        "question_type": "experiment_setup",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "adapointr.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.31546487678572877,
+        "ndcg_at_20": 0.31546487678572877
+      },
+      {
+        "question_id": "ARR-024",
+        "query": "Hyper-PCN 在哪些主要数据集上进行评估？",
+        "gold_group_rank": 11,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "experiment_setup",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "hyper_pcn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.27894294565112987
+      },
+      {
+        "question_id": "ARR-025",
+        "query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "english_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "adapointr.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-026",
+        "query": "PoinTr 的 PCN 数据集结果表使用什么指标比较各方法？",
+        "gold_group_rank": 4,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "pointr_geometry_aware_transformers.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.43067655807339306,
+        "ndcg_at_10": 0.43067655807339306,
+        "ndcg_at_20": 0.43067655807339306
+      },
+      {
+        "question_id": "ARR-027",
+        "query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+        "gold_group_rank": 8,
+        "primary_failure": "ranking_failure",
+        "language_group": "english_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "seedformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.31546487678572877,
+        "ndcg_at_20": 0.31546487678572877
+      },
+      {
+        "question_id": "ARR-028",
+        "query": "ProxyFormer 的 PCN 定量对比表包含哪些物体类别？",
+        "gold_group_rank": 5,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "proxyformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.38685280723454163,
+        "ndcg_at_10": 0.38685280723454163,
+        "ndcg_at_20": 0.38685280723454163
+      },
+      {
+        "question_id": "ARR-029",
+        "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+        "gold_group_rank": 1,
+        "primary_failure": "success",
+        "language_group": "english_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "svdformer.pdf"
+        ],
+        "ndcg_at_1": 1.0,
+        "ndcg_at_3": 1.0,
+        "ndcg_at_5": 1.0,
+        "ndcg_at_10": 1.0,
+        "ndcg_at_20": 1.0
+      },
+      {
+        "question_id": "ARR-030",
+        "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+        "gold_group_rank": 10,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "quantitative_results",
+        "evidence_type": "table",
+        "gold_files": [
+          "pointattn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.2890648263178879,
+        "ndcg_at_20": 0.2890648263178879
+      },
+      {
+        "question_id": "ARR-031",
+        "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+        "gold_group_rank": 14,
+        "primary_failure": "ranking_failure",
+        "language_group": "english_to_english",
+        "question_type": "ablation",
+        "evidence_type": "supplementary",
+        "gold_files": [
+          "adapointr.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.2559580248098155
+      },
+      {
+        "question_id": "ARR-032",
+        "query": "Hyper-PCN 补充材料如何通过替换方式消融核心模块？",
+        "gold_group_rank": 6,
+        "primary_failure": "ranking_failure",
+        "language_group": "chinese_to_english",
+        "question_type": "ablation",
+        "evidence_type": "supplementary",
+        "gold_files": [
+          "hyper_pcn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.3562071871080222,
+        "ndcg_at_20": 0.3562071871080222
+      },
+      {
+        "question_id": "ARR-033",
+        "query": "What additional evidence does the PCN supplementary document provide?",
+        "gold_group_rank": null,
+        "primary_failure": "chunk_failure",
+        "language_group": "english_to_english",
+        "question_type": "ablation",
+        "evidence_type": "supplementary",
+        "gold_files": [
+          "pcn_point_completion_network.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-034",
+        "query": "SeedFormer 补充材料列出了哪些额外实现与实验内容？",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "ablation",
+        "evidence_type": "supplementary",
+        "gold_files": [
+          "seedformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-035",
+        "query": "What core approach does SVDFormer summarize in its conclusion?",
+        "gold_group_rank": 8,
+        "primary_failure": "ranking_failure",
+        "language_group": "english_to_english",
+        "question_type": "conclusion_limitation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "svdformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.31546487678572877,
+        "ndcg_at_20": 0.31546487678572877
+      },
+      {
+        "question_id": "ARR-036",
+        "query": "PointAttN 在结论中如何概括其核心网络？",
+        "gold_group_rank": 3,
+        "primary_failure": "success",
+        "language_group": "chinese_to_english",
+        "question_type": "conclusion_limitation",
+        "evidence_type": "body_text",
+        "gold_files": [
+          "pointattn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.5,
+        "ndcg_at_5": 0.5,
+        "ndcg_at_10": 0.5,
+        "ndcg_at_20": 0.5
+      },
+      {
+        "question_id": "ARR-037",
+        "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "mixed_multiple_sources",
+        "question_type": "multi_document",
+        "evidence_type": "multi_document",
+        "gold_files": [
+          "pointr_geometry_aware_transformers.pdf",
+          "adapointr.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.16104282508920814
+      },
+      {
+        "question_id": "ARR-038",
+        "query": "比较 PF-Net 与 SeedFormer 的层级式点云生成表示。",
+        "gold_group_rank": null,
+        "primary_failure": "candidate_retrieval_failure",
+        "language_group": "mixed_multiple_sources",
+        "question_type": "multi_document",
+        "evidence_type": "multi_document",
+        "gold_files": [
+          "pfnet_point_fractal_network.pdf",
+          "seedformer.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.0,
+        "ndcg_at_20": 0.0
+      },
+      {
+        "question_id": "ARR-039",
+        "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+        "gold_group_rank": 10,
+        "primary_failure": "ranking_failure",
+        "language_group": "mixed_multiple_sources",
+        "question_type": "multi_document",
+        "evidence_type": "multi_document",
+        "gold_files": [
+          "snowflakenet.pdf",
+          "pointattn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.0,
+        "ndcg_at_5": 0.0,
+        "ndcg_at_10": 0.38162168437253385,
+        "ndcg_at_20": 0.38162168437253385
+      },
+      {
+        "question_id": "ARR-040",
+        "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+        "gold_group_rank": 9,
+        "primary_failure": "ranking_failure",
+        "language_group": "mixed_multiple_sources",
+        "question_type": "multi_document",
+        "evidence_type": "multi_document",
+        "gold_files": [
+          "svdformer.pdf",
+          "hyper_pcn.pdf"
+        ],
+        "ndcg_at_1": 0.0,
+        "ndcg_at_3": 0.38685280723454163,
+        "ndcg_at_5": 0.38685280723454163,
+        "ndcg_at_10": 0.5714285040141098,
+        "ndcg_at_20": 0.5714285040141098
+      }
+    ]
+  },
+  "comparison": {
+    "overall": {
+      "hit_at_1": {
+        "runtime": 0.1,
+        "offline_treatment": 0.075,
+        "abs_diff": 0.025
+      },
+      "hit_at_3": {
+        "runtime": 0.35,
+        "offline_treatment": 0.35,
+        "abs_diff": 0.0
+      },
+      "hit_at_5": {
+        "runtime": 0.475,
+        "offline_treatment": 0.475,
+        "abs_diff": 0.0
+      },
+      "hit_at_10": {
+        "runtime": 0.725,
+        "offline_treatment": 0.725,
+        "abs_diff": 0.0
+      },
+      "hit_at_20": {
+        "runtime": 0.8,
+        "offline_treatment": 0.8,
+        "abs_diff": 0.0
+      },
+      "mrr": {
+        "runtime": 0.267918,
+        "offline_treatment": 0.254604,
+        "abs_diff": 0.013314
+      },
+      "ndcg_at_20": {
+        "runtime": 0.403375,
+        "offline_treatment": 0.393271,
+        "abs_diff": 0.010104
+      }
+    },
+    "failures": {
+      "candidate_retrieval_failure": {
+        "runtime": 6,
+        "offline_treatment": 6,
+        "abs_diff": 0
+      },
+      "chunk_failure": {
+        "runtime": 2,
+        "offline_treatment": 2,
+        "abs_diff": 0
+      },
+      "ranking_failure": {
+        "runtime": 13,
+        "offline_treatment": 13,
+        "abs_diff": 0
+      },
+      "success": {
+        "runtime": 19,
+        "offline_treatment": 19,
+        "abs_diff": 0
+      }
+    }
+  },
+  "gate": {
+    "must_pass_metrics": [
+      "hit_at_5"
+    ],
+    "must_pass_failures": [
+      "candidate_retrieval_failure"
+    ],
+    "non_regression_metrics": [
+      "hit_at_1",
+      "hit_at_3",
+      "hit_at_10",
+      "hit_at_20",
+      "mrr",
+      "ndcg_at_20"
+    ],
+    "failed_hard_metrics": [],
+    "failed_hard_failure_buckets": [],
+    "regressed_metrics": [],
+    "passed": true,
+    "decision": "PASSED → Runtime 集成与离线 hybrid 实验一致，保持开启 multilingual_hybrid_enabled"
+  },
+  "runtime_fingerprint": {
+    "PROJECT_SPEC.md": "943b678bd7cd806165768a93f4e527cceb01a00dd9ba4fd5b8788c1d10d08b94",
+    "src/evidenceflow/runtime.py": "1b1d8f4249c8d2cd3ca0cdd270db804bdb92bb3f85b5bed1a712e6b5e3e75082",
+    "src/evidenceflow/config.py": "ff7c1d9e0734c7f5494c15fd9a40099cfe792d2def0d91343f3a4b677e45edde",
+    "src/evidenceflow/retrieval/retriever.py": "c3d7e3f256b533f2cebe8230043335c5475827c89b28ecbe265faeb31e683dad",
+    "src/evidenceflow/retrieval/multilingual.py": "6738711b82510fe7c3fb981a544e78384f26ea8ce2e269f493aa041b79039ff2",
+    "src/evidenceflow/retrieval/hybrid_fusion.py": "7f067160e732a255720f3b789fff4baeffd170bad9fc7306dfd61b929ad27c82",
+    "src/evidenceflow/retrieval/bm25.py": "04c852ecc10ce11a5ecad4d1989295a3e17cd7c101524599037f0f2a3b20c5b1",
+    "src/evidenceflow/retrieval/fusion.py": "f21092853905294b99375b3d1de51ebdf35fce7aad69e3092a926ba7e8caa447",
+    "src/evidenceflow/domain/chunk.py": "c909cb3c919dcff72cdcd16a2568cbe753c8199210752c026aa633ceca9160ae",
+    "src/evidenceflow/storage/base.py": "a3cbd3b17b2d27a22bd81c0498d03ad0584624c21a7850733774aca97815b337",
+    "src/evidenceflow/storage/chroma.py": "c38b1b01a0c8dd80d9a6e15d6d43090e118296c413ca69fd121996f184b51a04"
+  }
+}

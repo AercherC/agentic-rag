@@ -1,0 +1,182 @@
+{
+  "artifact_type": "phase13c_b_alignment",
+  "created_at_utc": "2026-09-14T12:40:22.659415+00:00",
+  "documents": [
+    {
+      "scope": "controlled",
+      "document_id": "T01_single_column_plain",
+      "aligned": 52,
+      "p0_only": 12,
+      "p1_only": 3,
+      "rate": 0.776119
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T02_ieee_two_column",
+      "aligned": 52,
+      "p0_only": 13,
+      "p1_only": 3,
+      "rate": 0.764706
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T03_cvpr_two_column",
+      "aligned": 56,
+      "p0_only": 11,
+      "p1_only": 3,
+      "rate": 0.8
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T04_acm_two_column",
+      "aligned": 50,
+      "p0_only": 13,
+      "p1_only": 3,
+      "rate": 0.757576
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T05_springer_lncs",
+      "aligned": 53,
+      "p0_only": 11,
+      "p1_only": 3,
+      "rate": 0.791045
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T06_elsevier_journal",
+      "aligned": 50,
+      "p0_only": 15,
+      "p1_only": 3,
+      "rate": 0.735294
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T07_arxiv_preprint",
+      "aligned": 52,
+      "p0_only": 14,
+      "p1_only": 1,
+      "rate": 0.776119
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T08_table_heavy",
+      "aligned": 54,
+      "p0_only": 20,
+      "p1_only": 3,
+      "rate": 0.701299
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T09_formula_heavy",
+      "aligned": 60,
+      "p0_only": 12,
+      "p1_only": 2,
+      "rate": 0.810811
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T10_figure_heavy",
+      "aligned": 54,
+      "p0_only": 12,
+      "p1_only": 6,
+      "rate": 0.75
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T11_references_heavy",
+      "aligned": 115,
+      "p0_only": 11,
+      "p1_only": 3,
+      "rate": 0.891473
+    },
+    {
+      "scope": "controlled",
+      "document_id": "T12_scanned_image_only",
+      "aligned": 0,
+      "p0_only": 0,
+      "p1_only": 21,
+      "rate": 0.0
+    },
+    {
+      "scope": "real",
+      "document_id": "adapointr",
+      "aligned": 290,
+      "p0_only": 323,
+      "p1_only": 13,
+      "rate": 0.463259
+    },
+    {
+      "scope": "real",
+      "document_id": "hyper_pcn",
+      "aligned": 187,
+      "p0_only": 145,
+      "p1_only": 16,
+      "rate": 0.537356
+    },
+    {
+      "scope": "real",
+      "document_id": "pcn_point_completion_network",
+      "aligned": 204,
+      "p0_only": 44,
+      "p1_only": 33,
+      "rate": 0.725979
+    },
+    {
+      "scope": "real",
+      "document_id": "pfnet_point_fractal_network",
+      "aligned": 129,
+      "p0_only": 53,
+      "p1_only": 9,
+      "rate": 0.675393
+    },
+    {
+      "scope": "real",
+      "document_id": "pointattn",
+      "aligned": 151,
+      "p0_only": 45,
+      "p1_only": 6,
+      "rate": 0.747525
+    },
+    {
+      "scope": "real",
+      "document_id": "pointr_geometry_aware_transformers",
+      "aligned": 171,
+      "p0_only": 137,
+      "p1_only": 9,
+      "rate": 0.539432
+    },
+    {
+      "scope": "real",
+      "document_id": "proxyformer",
+      "aligned": 158,
+      "p0_only": 212,
+      "p1_only": 7,
+      "rate": 0.419098
+    },
+    {
+      "scope": "real",
+      "document_id": "seedformer",
+      "aligned": 134,
+      "p0_only": 109,
+      "p1_only": 18,
+      "rate": 0.51341
+    },
+    {
+      "scope": "real",
+      "document_id": "snowflakenet",
+      "aligned": 143,
+      "p0_only": 164,
+      "p1_only": 11,
+      "rate": 0.449686
+    },
+    {
+      "scope": "real",
+      "document_id": "svdformer",
+      "aligned": 155,
+      "p0_only": 102,
+      "p1_only": 11,
+      "rate": 0.578358
+    }
+  ]
+}

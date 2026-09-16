@@ -1,0 +1,87 @@
+{
+  "artifact_type": "phase13c_b_metrics_section",
+  "created_at_utc": "2026-09-14T12:40:29.699743+00:00",
+  "arm_id": "B0_p0_cleaned",
+  "scope": "controlled",
+  "document_count": 12,
+  "arm_summary": {
+    "section_header_f1": 1.0,
+    "section_path_accuracy": 0.9,
+    "section_conflict_count": 0.916667,
+    "cross_section_merge_count": 16.833333
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 18
+    },
+    "T02_ieee_two_column": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 17
+    },
+    "T03_cvpr_two_column": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 17
+    },
+    "T04_acm_two_column": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 17
+    },
+    "T05_springer_lncs": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 18
+    },
+    "T06_elsevier_journal": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 17
+    },
+    "T07_arxiv_preprint": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 18
+    },
+    "T08_table_heavy": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 21
+    },
+    "T09_formula_heavy": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 24
+    },
+    "T10_figure_heavy": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 17
+    },
+    "T11_references_heavy": {
+      "section_header_f1": 1.0,
+      "section_path_accuracy": 0.9,
+      "section_conflict_count": 1,
+      "cross_section_merge_count": 18
+    },
+    "T12_scanned_image_only": {
+      "section_header_f1": null,
+      "section_path_accuracy": null,
+      "section_conflict_count": 0,
+      "cross_section_merge_count": 0
+    }
+  }
+}

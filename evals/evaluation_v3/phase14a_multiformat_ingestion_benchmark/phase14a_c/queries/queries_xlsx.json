@@ -1,0 +1,1240 @@
+[
+ {
+  "qid": "X1-LF",
+  "doc_id": "X1",
+  "type": "local_fact",
+  "text": "What CD value does Ours achieve in X1?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Ours",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A3",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "7.4",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B3",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A3"
+  ]
+ },
+ {
+  "qid": "X1-SC",
+  "doc_id": "X1",
+  "type": "structural_context",
+  "text": "What columns does the X1 table have?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "CD",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:C3-h2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "F1",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:C3-h3",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:C3-h2"
+  ]
+ },
+ {
+  "qid": "X1-TC",
+  "doc_id": "X1",
+  "type": "table_caption_formula",
+  "text": "What is the F1 score of the Baseline method in X1?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "0.81",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-C2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Baseline",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-A2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-C2"
+  ]
+ },
+ {
+  "qid": "X2-LF",
+  "doc_id": "X2",
+  "type": "local_fact",
+  "text": "What is the value of Y when X is 5 in X2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "5",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A6",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "6",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B6",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A6"
+  ]
+ },
+ {
+  "qid": "X2-SC",
+  "doc_id": "X2",
+  "type": "structural_context",
+  "text": "How many tables are in sheet Data of X2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B3",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 1,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A5:B7",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B3",
+   "el-xlsx-tbl-0-inf-A5:B7"
+  ]
+ },
+ {
+  "qid": "X2-TC",
+  "doc_id": "X2",
+  "type": "table_caption_formula",
+  "text": "What are the headers of the second table in X2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "X",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A5:B7-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Y",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A5:B7-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A5:B7-h1"
+  ]
+ },
+ {
+  "qid": "X3-LF",
+  "doc_id": "X3",
+  "type": "local_fact",
+  "text": "What Acc value is reported in the Summary sheet of X3?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "0.92",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B2"
+  ]
+ },
+ {
+  "qid": "X3-SC",
+  "doc_id": "X3",
+  "type": "structural_context",
+  "text": "Which sheets does workbook X3 contain?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-sheet-0",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 1,
+     "required": false
+    },
+    "element_id": "el-xlsx-sheet-1",
+    "required": false,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 2,
+     "required": false
+    },
+    "element_id": "el-xlsx-sheet-2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-sheet-0"
+  ]
+ },
+ {
+  "qid": "X3-TC",
+  "doc_id": "X3",
+  "type": "table_caption_formula",
+  "text": "What cd values are compared in the Ablation sheet of X3?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "8.0",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-2-B2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "7.5",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-2-B3",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-2-B2"
+  ]
+ },
+ {
+  "qid": "X4-LF",
+  "doc_id": "X4",
+  "type": "local_fact",
+  "text": "What is the 2025 Q2 value for North in X4?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "12",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-C3",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "North",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-A3",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-C3"
+  ]
+ },
+ {
+  "qid": "X4-SC",
+  "doc_id": "X4",
+  "type": "structural_context",
+  "text": "Which years span the header of the X4 table?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2025",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2026",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B1",
+   "el-xlsx-cell-0-D1"
+  ]
+ },
+ {
+  "qid": "X4-TC",
+  "doc_id": "X4",
+  "type": "table_caption_formula",
+  "text": "Which columns share the merged header 2025 in X4?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Q1",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:E4-h2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Q2",
+     "ordinal": 0,
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:E4-h3",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:E4-h2"
+  ]
+ },
+ {
+  "qid": "X5-LF",
+  "doc_id": "X5",
+  "type": "local_fact",
+  "text": "What score does Team A achieve in X5?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Team A",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "90",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A2"
+  ]
+ },
+ {
+  "qid": "X5-SC",
+  "doc_id": "X5",
+  "type": "structural_context",
+  "text": "Which merged range appears in the X5 table?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B2"
+  ]
+ },
+ {
+  "qid": "X5-TC",
+  "doc_id": "X5",
+  "type": "table_caption_formula",
+  "text": "What are the headers of the merged-cell table in X5?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Name",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B2-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Score",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B2-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B2-h1"
+  ]
+ },
+ {
+  "qid": "X6-LF",
+  "doc_id": "X6",
+  "type": "local_fact",
+  "text": "What is the cached sum of 30 and 40 in X6?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "meta_equals",
+     "field": "cached_value",
+     "value": "70",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-C3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-C3"
+  ]
+ },
+ {
+  "qid": "X6-SC",
+  "doc_id": "X6",
+  "type": "structural_context",
+  "text": "What columns does the Calc table in X6 have?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "sum",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:C3-h3",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "a",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:C3-h1",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:C3-h3"
+  ]
+ },
+ {
+  "qid": "X6-TC",
+  "doc_id": "X6",
+  "type": "table_caption_formula",
+  "text": "Which formula computes the sum column in X6?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "meta_contains",
+     "field": "formula",
+     "value": "=A2+B2",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-C2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-C2"
+  ]
+ },
+ {
+  "qid": "X7-LF",
+  "doc_id": "X7",
+  "type": "local_fact",
+  "text": "What k-v pairs are visible in the Visible sheet of X7?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A2"
+  ]
+ },
+ {
+  "qid": "X7-SC",
+  "doc_id": "X7",
+  "type": "structural_context",
+  "text": "Which sheets exist in X7?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-sheet-0",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 1,
+     "required": false
+    },
+    "element_id": "el-xlsx-sheet-1",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-sheet-0"
+  ]
+ },
+ {
+  "qid": "X7-TC",
+  "doc_id": "X7",
+  "type": "table_caption_formula",
+  "text": "What is the header of the visible table in X7?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "k",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B3-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "v",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B3-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B3-h1"
+  ]
+ },
+ {
+  "qid": "X8-LF",
+  "doc_id": "X8",
+  "type": "local_fact",
+  "text": "What CD value does ResultTable report for Ours in X8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "7.4",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B3"
+  ]
+ },
+ {
+  "qid": "X8-SC",
+  "doc_id": "X8",
+  "type": "structural_context",
+  "text": "Which named table exists in the Results sheet of X8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "meta_equals",
+     "field": "table_name",
+     "value": "ResultTable",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-ResultTable",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-ResultTable"
+  ]
+ },
+ {
+  "qid": "X8-TC",
+  "doc_id": "X8",
+  "type": "table_caption_formula",
+  "text": "What are the column headers of ResultTable in X8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Method",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-ResultTable-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "CD",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-ResultTable-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-ResultTable-h1"
+  ]
+ },
+ {
+  "qid": "X9-LF",
+  "doc_id": "X9",
+  "type": "local_fact",
+  "text": "What does the note about M2 say in X9?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "fewer params",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-D4"
+  ]
+ },
+ {
+  "qid": "X9-SC",
+  "doc_id": "X9",
+  "type": "structural_context",
+  "text": "What title does the Report sheet of X9 carry?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Experiment Report",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A1"
+  ]
+ },
+ {
+  "qid": "X9-TC",
+  "doc_id": "X9",
+  "type": "table_caption_formula",
+  "text": "What scores do M1 and M2 achieve in X9?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "M1",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A5",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "0.9",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B5",
+    "required": false,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "0.88",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B6",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A5"
+  ]
+ },
+ {
+  "qid": "X10-LF",
+  "doc_id": "X10",
+  "type": "local_fact",
+  "text": "What y value corresponds to x=2 in X10?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "4",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B3"
+  ]
+ },
+ {
+  "qid": "X10-SC",
+  "doc_id": "X10",
+  "type": "structural_context",
+  "text": "What does the chart in X10 visualize?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "sheet",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-sheet-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-sheet-0"
+  ]
+ },
+ {
+  "qid": "X10-TC",
+  "doc_id": "X10",
+  "type": "table_caption_formula",
+  "text": "What are the x-y headers in X10?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "x",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B4-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "y",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B4-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B4-h1"
+  ]
+ },
+ {
+  "qid": "X11-LF",
+  "doc_id": "X11",
+  "type": "local_fact",
+  "text": "What CD value does the Base method achieve in X11?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "8.9",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B4"
+  ]
+ },
+ {
+  "qid": "X11-SC",
+  "doc_id": "X11",
+  "type": "structural_context",
+  "text": "How many tables does the MultiTable sheet of X11 contain?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A3:B4",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 1,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A6:B8",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A3:B4",
+   "el-xlsx-tbl-0-inf-A6:B8"
+  ]
+ },
+ {
+  "qid": "X11-TC",
+  "doc_id": "X11",
+  "type": "table_caption_formula",
+  "text": "Which variant is the best in X11?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "best variant",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D6",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-D6"
+  ]
+ },
+ {
+  "qid": "X12-LF",
+  "doc_id": "X12",
+  "type": "local_fact",
+  "text": "What is the 2026 Q1 value for North in X12?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "14",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-D3"
+  ]
+ },
+ {
+  "qid": "X12-SC",
+  "doc_id": "X12",
+  "type": "structural_context",
+  "text": "Which years does the header hierarchy of X12 span?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2025",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2026",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B1",
+   "el-xlsx-cell-0-D1"
+  ]
+ },
+ {
+  "qid": "X12-TC",
+  "doc_id": "X12",
+  "type": "table_caption_formula",
+  "text": "Which header shares the merged 2026 Q1 column in X12?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Q1",
+     "ordinal": 1,
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:E3-h4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:E3-h4"
+  ]
+ },
+ {
+  "qid": "X13-LF",
+  "doc_id": "X13",
+  "type": "local_fact",
+  "text": "What is the display value of alpha in X13?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "81.6%",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-C2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-C2"
+  ]
+ },
+ {
+  "qid": "X13-SC",
+  "doc_id": "X13",
+  "type": "structural_context",
+  "text": "What is the raw value of beta in X13?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "0.744",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B3"
+  ]
+ },
+ {
+  "qid": "X13-TC",
+  "doc_id": "X13",
+  "type": "table_caption_formula",
+  "text": "Which formula computes the Sum column in X13?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "meta_contains",
+     "field": "formula",
+     "value": "=B2*1.0",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-D2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-D2"
+  ]
+ },
+ {
+  "qid": "X14-LF",
+  "doc_id": "X14",
+  "type": "local_fact",
+  "text": "What value pairs are visible in the Filtered sheet of X14?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A2",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "2",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A2"
+  ]
+ },
+ {
+  "qid": "X14-SC",
+  "doc_id": "X14",
+  "type": "structural_context",
+  "text": "What range does the auto filter cover in X14?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "meta_equals",
+     "field": "auto_filter_ref",
+     "value": "A1:B4",
+     "required": true
+    },
+    "element_id": "el-xlsx-sheet-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-sheet-0"
+  ]
+ },
+ {
+  "qid": "X14-TC",
+  "doc_id": "X14",
+  "type": "table_caption_formula",
+  "text": "What is the header of the visible table in X14?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "k",
+     "required": true
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B4-h1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "v",
+     "required": false
+    },
+    "element_id": "el-xlsx-tbl-0-inf-A1:B4-h2",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-tbl-0-inf-A1:B4-h1"
+  ]
+ },
+ {
+  "qid": "X15-LF",
+  "doc_id": "X15",
+  "type": "local_fact",
+  "text": "What is the Total Runs KPI in X15?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "42",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B4"
+  ]
+ },
+ {
+  "qid": "X15-SC",
+  "doc_id": "X15",
+  "type": "structural_context",
+  "text": "Who prepared the Business sheet of X15?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "eval",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-B5",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-B5"
+  ]
+ },
+ {
+  "qid": "X15-TC",
+  "doc_id": "X15",
+  "type": "table_caption_formula",
+  "text": "What CD value does run R1 report in X15?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "R1",
+     "required": true
+    },
+    "element_id": "el-xlsx-cell-0-A12",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "8.7",
+     "required": false
+    },
+    "element_id": "el-xlsx-cell-0-B12",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-xlsx-cell-0-A12"
+  ]
+ }
+]

@@ -1,0 +1,20 @@
+{
+  "template_id": "T02_ieee_two_column",
+  "records": {
+    "B0_p0_cleaned": {
+      "reproducible": true,
+      "digest_prefix": "de38d3aa0e879233",
+      "on_disk_matches": true
+    },
+    "B1_mineru_cleaned": {
+      "reproducible": true,
+      "digest_prefix": "6822adbf3320c997",
+      "on_disk_matches": true
+    },
+    "B2_fused": {
+      "reproducible": true,
+      "digest_prefix": "bea1e25f54096556",
+      "on_disk_matches": true
+    }
+  }
+}

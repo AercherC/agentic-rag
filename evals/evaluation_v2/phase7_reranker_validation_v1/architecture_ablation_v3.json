@@ -1,0 +1,56 @@
+{
+  "phase": 7,
+  "supersedes": "architecture_ablation_v2.json",
+  "selection": "Original Dense -> Learned Reranker, K=20",
+  "modules": {
+    "Original Dense": {
+      "status": "KEEP",
+      "failure_mode": "深层候选已包含大多数证据，浅层损失主要来自排序。",
+      "evidence": {"reranker_ndcg_at_5": 0.4633998265, "reranker_mrr_at_5": 0.4320833333, "latency_seconds_per_query": 4.601869739967515},
+      "slice": "中文/英文均完成排序提升；多文档仍是独立难点。",
+      "deletion_loss": "失去最简单且已验证的候选生成路径。"
+    },
+    "Translation": {
+      "status": "REMOVE_CANDIDATE",
+      "failure_mode": "翻译候选未在 reranker 后带来独立浅层收益。",
+      "evidence": {"c0_ndcg_at_5": 0.4633998265, "c1_ndcg_at_5": 0.4633998265, "c0_mrr_at_5": 0.4320833333, "c1_mrr_at_5": 0.4320833333, "paired_delta": 0.0},
+      "slice": "未观察到 reranker 后中文独立提升；仅保留离线/后续条件验证价值。",
+      "deletion_loss": "可能失去少数翻译召回增益，因此本阶段不删除代码或历史 artifact。"
+    },
+    "BM25": {
+      "status": "EXPERIMENT_ONLY",
+      "failure_mode": "可补充 exact-term/table 候选，但当前不足以证明排序收益。",
+      "evidence": {"hybrid_candidate_coverage_at_100": 1.0, "ranking_variant": "c2_hybrid K=30"},
+      "slice": "多文档/术语切片需要更大样本确认。",
+      "deletion_loss": "可能损失深层候选覆盖，故暂不删除实现。"
+    },
+    "Hybrid": {
+      "status": "KEEP_CONDITIONAL",
+      "failure_mode": "候选并集可提高深层覆盖，但 RRF 顺序并不稳定。",
+      "evidence": {"c2_ndcg_at_5_k30": 0.4664694436, "c2_mrr_at_5_k30": 0.4308333333, "coverage_at_100": 1.0},
+      "slice": "仅作为 hard-negative/multi-document 候选分支保留条件验证。",
+      "deletion_loss": "失去 Hybrid 在 K=100 的额外覆盖。"
+    },
+    "RRF stage 1": {
+      "status": "EXPERIMENT_ONLY",
+      "failure_mode": "把候选分支的原始排序绑定到最终排序。",
+      "evidence": "Candidate Union 直接交给 reranker 后，c1 与 c0 的最终指标相同。",
+      "slice": "仅保留候选去重与来源记录用途。",
+      "deletion_loss": "失去现有 fusion baseline 的可比性。"
+    },
+    "RRF stage 2": {
+      "status": "EXPERIMENT_ONLY",
+      "failure_mode": "BM25 融合排序可能把新增候选提前但未稳定提升 Top-5。",
+      "evidence": "c2 K=30 的 nDCG@5 优势未达到显著性；直接 rerank union 更符合实验目标。",
+      "slice": "exact-term/table/multi-document 仍需后续样本确认。",
+      "deletion_loss": "失去现有 Hybrid baseline 与回放对照。"
+    },
+    "Learned Reranker": {
+      "status": "KEEP_CONDITIONAL",
+      "failure_mode": "把候选池中的正确证据重新推入 Top-5。",
+      "evidence": {"c0_k20_ndcg_delta": 0.1609705406745725, "c0_k20_mrr_delta": 0.16999999999999998},
+      "slice": "中文/英文均改善；多文档 complete evidence 仍不足。",
+      "deletion_loss": "恢复到浅层排序瓶颈，故下一阶段可单独评估 promotion。"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+ "gate1_src_hash": {
+  "checked_py_files": 64,
+  "unchanged": 64,
+  "missing": [],
+  "mismatch": [],
+  "pass": true
+ },
+ "gate5_frozen_hash": {
+  "unchanged": 583,
+  "expected_changed": 4,
+  "expected_deleted": 0,
+  "unexpected": [],
+  "protected_sets_intact": {
+   "standard_ir_v1": 16,
+   "phase12_rag_quality_v1": 24,
+   "phase13c_b": 57
+  },
+  "pass": true
+ },
+ "gate3_ir_smoke": {
+  "fixture_path": "tests/test_ir_metric_conformance.py",
+  "golden_source": "evals/evaluation_v3/standard_ir_v1/execution_result.json",
+  "fixture_found": true,
+  "note": "fixture 数值校验由 tests/ 内 conformance 测试在 Gate2 全量回归中执行；此处核对冻结黄金结果可读且完整",
+  "golden_keys_sample": [
+   "current_runtime",
+   "dense_baseline",
+   "deprecated_or_deleted",
+   "diagnostic_only",
+   "evaluation_v3_gate",
+   "evaluation_version",
+   "full_tests_pass",
+   "gate_checks"
+  ]
+ }
+}

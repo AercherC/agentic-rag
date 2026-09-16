@@ -1,0 +1,32 @@
+{
+  "artifact_type": "phase11a_run_manifest",
+  "evaluation_version": "3.0",
+  "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357",
+  "qrels_hash": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+  "source_mapping": "evals/evaluation_v2/phase35_gold_stabilization_v1/gold_mapping_v3.json",
+  "recomputed_from": {
+    "dense_baseline": "evals/evaluation_v2/phase6_retrieval_baselines_v1/b0_original_dense.json",
+    "phase7_original_dense": "evals/evaluation_v2/phase7_reranker_validation_v1/reranker_results.json (c0_original_dense.20.baseline)",
+    "current_runtime": "evals/evaluation_v2/phase9_runtime_promotion_v1/runtime_after.json (depth-10)",
+    "current_runtime_v10": "evals/evaluation_v2/phase10_reranker_performance_v1/baseline.json (depth-10)"
+  },
+  "artifacts": {
+    "compatibility_manifest.json": "627620610bfa44026b565b726227a38e748b9e6083f1045f00fb00f074658e05",
+    "eval_inventory.json": "e37e6d21d525ecf2420139aface5f0aa45d0db0315cc7776989157fd1ee20394",
+    "execution_result.json": "8617265c851765fb8bc0db8d2310dba737d98d93a0acb6f5fe1f7b842bb32467",
+    "metric_contract.json": "c087cca41556915576fa905fdb373dfc031b416545968efb5510128c8caeabbe",
+    "per_query_results.json": "053174f19c0292c87415569dc16d80b2c717a57ff899457d5b6c1f4a3baf1a5d",
+    "phase10_recomputed.json": "00b417a72222ffab0a90a12102393d199469f7597362d0d47946087d7139ab6c",
+    "phase6_recomputed.json": "ab5ae659525acfb1cbe0ecb250bd96870d5d57c9cedd696ea9667fc01009688a",
+    "phase7_recomputed.json": "04f5fbc3994dec3da00863111df716fe1372c2b153f22f363a62aebc36c050bf",
+    "phase9_recomputed.json": "7fdc1df37d070b7c85325c7374d8b4475bfe30936ff9289c30b919b67e36a2d0",
+    "qrels.json": "ca8fe6d2f881517c9019488e8ce1b96cae01e483523699b238a83b8a9d1b06c2",
+    "qrels_manifest.json": "12b39b29930a258b02aa0917ffba0c9a3eb1ee9154bf50a028c465f9d14fbce0",
+    "removed_metrics.json": "09ed7b9e1e2bd124d2835c1f0992cc7aa274a153acabbf0ec38dd8ac912f244a",
+    "resume_metrics.json": "20f559eb232f0ae6172bb276cd7e52f3fc8bf3bf9899ba0c0f79d3227bb39a1e",
+    "run_manifest.json": "d0a07b577212f5871fade37e06fafc5a6a800ece4182afa634a62dd0151d5b47",
+    "standard_baseline_comparison.json": "63149df0388cea60ffcc6cef743b7cf49f7571f1eb3125a0d55dff725b92c4d0"
+  },
+  "historical_artifacts_untouched": true,
+  "note": "All 16 v3 JSON artifacts with real SHA-256; report.md is the markdown companion."
+}

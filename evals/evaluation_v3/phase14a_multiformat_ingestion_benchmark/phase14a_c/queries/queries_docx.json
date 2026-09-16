@@ -1,0 +1,878 @@
+[
+ {
+  "qid": "W1-LF",
+  "doc_id": "W1",
+  "type": "local_fact",
+  "text": "What does W1 say about the experiment setup?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "experiment setup",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W1-SC",
+  "doc_id": "W1",
+  "type": "structural_context",
+  "text": "What does the Background section of W1 cover?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Background",
+     "required": true
+    },
+    "element_id": "el-docx-p-3",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "point cloud completion",
+     "required": false
+    },
+    "element_id": "el-docx-p-4",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-3"
+  ]
+ },
+ {
+  "qid": "W1-TC",
+  "doc_id": "W1",
+  "type": "table_caption_formula",
+  "text": "What is the title of document W1?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Sample Technical Document",
+     "required": true
+    },
+    "element_id": "el-docx-p-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-0"
+  ]
+ },
+ {
+  "qid": "W2-LF",
+  "doc_id": "W2",
+  "type": "local_fact",
+  "text": "What is the motivation body text in W2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Motivation body text.",
+     "required": true
+    },
+    "element_id": "el-docx-p-4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-4"
+  ]
+ },
+ {
+  "qid": "W2-SC",
+  "doc_id": "W2",
+  "type": "structural_context",
+  "text": "Which subsections appear under 1 Introduction in W2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1 Introduction",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.1 Background",
+     "required": false
+    },
+    "element_id": "el-docx-p-2",
+    "required": false,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.2 Related Work",
+     "required": false
+    },
+    "element_id": "el-docx-p-5",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W2-TC",
+  "doc_id": "W2",
+  "type": "table_caption_formula",
+  "text": "What is the deepest heading in W2?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.1.1 Motivation",
+     "required": true
+    },
+    "element_id": "el-docx-p-3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-3"
+  ]
+ },
+ {
+  "qid": "W3-LF",
+  "doc_id": "W3",
+  "type": "local_fact",
+  "text": "In the W3 results table, what CD value does the Ours method achieve?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-tbl-0"
+  ]
+ },
+ {
+  "qid": "W3-SC",
+  "doc_id": "W3",
+  "type": "structural_context",
+  "text": "Which section of W3 contains the results table?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Results",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": false
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W3-TC",
+  "doc_id": "W3",
+  "type": "table_caption_formula",
+  "text": "What is the multi-row header of the W3 table?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-tbl-0"
+  ]
+ },
+ {
+  "qid": "W4-LF",
+  "doc_id": "W4",
+  "type": "local_fact",
+  "text": "What does Figure 1 show in W4?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Figure 1",
+     "required": true
+    },
+    "element_id": "el-docx-p-3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-3"
+  ]
+ },
+ {
+  "qid": "W4-SC",
+  "doc_id": "W4",
+  "type": "structural_context",
+  "text": "Which section presents the architecture diagram in W4?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Architecture",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W4-TC",
+  "doc_id": "W4",
+  "type": "table_caption_formula",
+  "text": "What caption is attached to the figure in W4?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "overall network architecture",
+     "required": true
+    },
+    "element_id": "el-docx-p-3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-3"
+  ]
+ },
+ {
+  "qid": "W5-LF",
+  "doc_id": "W5",
+  "type": "local_fact",
+  "text": "What does the footnote in W5 reference?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Smith et al. 2020",
+     "required": true
+    },
+    "element_id": "el-docx-fn-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-fn-0"
+  ]
+ },
+ {
+  "qid": "W5-SC",
+  "doc_id": "W5",
+  "type": "structural_context",
+  "text": "Which section contains the claims in W5?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Claims",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W5-TC",
+  "doc_id": "W5",
+  "type": "table_caption_formula",
+  "text": "What additional note appears in W5?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Additional ablation",
+     "required": true
+    },
+    "element_id": "el-docx-fn-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-fn-1"
+  ]
+ },
+ {
+  "qid": "W6-LF",
+  "doc_id": "W6",
+  "type": "local_fact",
+  "text": "What content appears before the page break in W6?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Content before the page break.",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W6-SC",
+  "doc_id": "W6",
+  "type": "structural_context",
+  "text": "Which top-level sections does W6 have?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Section One",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Section Two",
+     "required": true
+    },
+    "element_id": "el-docx-p-4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1",
+   "el-docx-p-4"
+  ]
+ },
+ {
+  "qid": "W6-TC",
+  "doc_id": "W6",
+  "type": "table_caption_formula",
+  "text": "What is the document title of W6?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Header Footer Document",
+     "required": true
+    },
+    "element_id": "el-docx-p-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-0"
+  ]
+ },
+ {
+  "qid": "W7-LF",
+  "doc_id": "W7",
+  "type": "local_fact",
+  "text": "Which paragraph appears first in the tree in W7?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "appears first in the tree",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W7-SC",
+  "doc_id": "W7",
+  "type": "structural_context",
+  "text": "What does the Main Body section of W7 discuss?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Main Body",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W7-TC",
+  "doc_id": "W7",
+  "type": "table_caption_formula",
+  "text": "What is the title of W7?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Textbox Document",
+     "required": true
+    },
+    "element_id": "el-docx-p-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-0"
+  ]
+ },
+ {
+  "qid": "W8-LF",
+  "doc_id": "W8",
+  "type": "local_fact",
+  "text": "What body text appears under the fake heading in W8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Body text under the fake heading.",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W8-SC",
+  "doc_id": "W8",
+  "type": "structural_context",
+  "text": "Which heading does the fake Introduction use in W8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Introduction",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W8-TC",
+  "doc_id": "W8",
+  "type": "table_caption_formula",
+  "text": "What is the title of W8?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Badly Styled Document",
+     "required": true
+    },
+    "element_id": "el-docx-p-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-0"
+  ]
+ },
+ {
+  "qid": "W9-LF",
+  "doc_id": "W9",
+  "type": "local_fact",
+  "text": "What do the data sources include in W9?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "PDF and DOCX files",
+     "required": true
+    },
+    "element_id": "el-docx-p-4",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-4"
+  ]
+ },
+ {
+  "qid": "W9-SC",
+  "doc_id": "W9",
+  "type": "structural_context",
+  "text": "Which sections appear under System Overview in W9?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "System Overview",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.1 Data Sources",
+     "required": false
+    },
+    "element_id": null,
+    "required": false,
+    "indexable": false
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.2 Cleaning Rules",
+     "required": false
+    },
+    "element_id": null,
+    "required": false,
+    "indexable": false
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W9-TC",
+  "doc_id": "W9",
+  "type": "table_caption_formula",
+  "text": "What do the cleaning rules require in W9?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "deterministic and auditable",
+     "required": true
+    },
+    "element_id": "el-docx-p-6",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "1.2 Cleaning Rules",
+     "required": false
+    },
+    "element_id": null,
+    "required": false,
+    "indexable": false
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-6"
+  ]
+ },
+ {
+  "qid": "W10-LF",
+  "doc_id": "W10",
+  "type": "local_fact",
+  "text": "Which paragraph separates the two tables in W10?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Middle paragraph between the two tables",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W10-SC",
+  "doc_id": "W10",
+  "type": "structural_context",
+  "text": "What precedes the first table in W10?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Intro paragraph before the first table",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": false
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W10-TC",
+  "doc_id": "W10",
+  "type": "table_caption_formula",
+  "text": "What Score value does Id 1 achieve in the second table of W10?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 1,
+     "required": true
+    },
+    "element_id": "el-docx-tbl-1",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-tbl-1"
+  ]
+ },
+ {
+  "qid": "W11-LF",
+  "doc_id": "W11",
+  "type": "local_fact",
+  "text": "What F1 value does North achieve in W11?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": true
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-tbl-0"
+  ]
+ },
+ {
+  "qid": "W11-SC",
+  "doc_id": "W11",
+  "type": "structural_context",
+  "text": "What does the Complex Tables section of W11 contain?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Complex Tables",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 0,
+     "required": false
+    },
+    "element_id": "el-docx-tbl-0",
+    "required": false,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1"
+  ]
+ },
+ {
+  "qid": "W11-TC",
+  "doc_id": "W11",
+  "type": "table_caption_formula",
+  "text": "What nested table detail appears in W11?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "type_is",
+     "value": "table",
+     "ordinal": 2,
+     "required": true
+    },
+    "element_id": "el-docx-tbl1-nested-0",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-tbl1-nested-0"
+  ]
+ },
+ {
+  "qid": "W12-LF",
+  "doc_id": "W12",
+  "type": "local_fact",
+  "text": "What is the main finding stated in W12?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Main finding text",
+     "required": true
+    },
+    "element_id": "el-docx-p-2",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-2"
+  ]
+ },
+ {
+  "qid": "W12-SC",
+  "doc_id": "W12",
+  "type": "structural_context",
+  "text": "Which top-level sections does W12 have?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Findings",
+     "required": true
+    },
+    "element_id": "el-docx-p-1",
+    "required": true,
+    "indexable": true
+   },
+   {
+    "locator": {
+     "match": "value_equals",
+     "value": "Appendix",
+     "required": true
+    },
+    "element_id": "el-docx-p-5",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-1",
+   "el-docx-p-5"
+  ]
+ },
+ {
+  "qid": "W12-TC",
+  "doc_id": "W12",
+  "type": "table_caption_formula",
+  "text": "What does Table 1 summarize in W12?",
+  "anchors": [
+   {
+    "locator": {
+     "match": "value_contains",
+     "value": "Table 1",
+     "required": true
+    },
+    "element_id": "el-docx-p-3",
+    "required": true,
+    "indexable": true
+   }
+  ],
+  "required_element_ids": [
+   "el-docx-p-3"
+  ]
+ }
+]

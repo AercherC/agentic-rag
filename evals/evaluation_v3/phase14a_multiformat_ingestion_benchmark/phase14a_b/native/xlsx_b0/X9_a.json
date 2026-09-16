@@ -1,0 +1,347 @@
+{
+  "document_id": "X9",
+  "source_format": "xlsx",
+  "source_file": "X9.xlsx",
+  "source_sha256": "aa35290836567f11aac20b365377256fbf2304d78df6a2ef17eda7af4737dfa8",
+  "element_count": 11,
+  "elements": [
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-wb",
+      "type": "workbook_metadata",
+      "raw_text": "workbook:X9",
+      "normalized_text": "workbook:X9",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": null,
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "metadata",
+      "metadata": {
+        "sheet_count": 1,
+        "sheet_names": [
+          "Report"
+        ]
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-sheet-0",
+      "type": "sheet",
+      "raw_text": "sheet:Report",
+      "normalized_text": "sheet:Report",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "name": "Report",
+        "order": 0,
+        "state": "visible",
+        "hidden": false,
+        "merged_ranges": [],
+        "anchor_cells": {},
+        "hidden_rows": [],
+        "hidden_cols": [],
+        "named_tables": [],
+        "named_table_names": [],
+        "auto_filter_ref": null,
+        "charts": [],
+        "visual_content_unparsed": false,
+        "images": []
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-A1",
+      "type": "cell",
+      "raw_text": "Experiment Report",
+      "normalized_text": "Experiment Report",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "A1",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Experiment Report",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-A2",
+      "type": "cell",
+      "raw_text": "This sheet summarizes the runs.",
+      "normalized_text": "This sheet summarizes the runs.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "A2",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "This sheet summarizes the runs.",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-A4",
+      "type": "cell",
+      "raw_text": "Method",
+      "normalized_text": "Method",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "A4",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Method",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-B4",
+      "type": "cell",
+      "raw_text": "Score",
+      "normalized_text": "Score",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "B4",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Score",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-D4",
+      "type": "cell",
+      "raw_text": "Note: M2 uses fewer params.",
+      "normalized_text": "Note: M2 uses fewer params.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "D4",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Note: M2 uses fewer params.",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-A5",
+      "type": "cell",
+      "raw_text": "M1",
+      "normalized_text": "M1",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "A5",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "M1",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-B5",
+      "type": "cell",
+      "raw_text": "0.9",
+      "normalized_text": "0.9",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "B5",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": 0.9,
+        "formula": null,
+        "cached_value": null,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-A6",
+      "type": "cell",
+      "raw_text": "M2",
+      "normalized_text": "M2",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "A6",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "M2",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X9",
+      "element_id": "el-xlsx-cell-0-B6",
+      "type": "cell",
+      "raw_text": "0.88",
+      "normalized_text": "0.88",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Report",
+        "range": null,
+        "cell": "B6",
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": 0.88,
+        "formula": null,
+        "cached_value": null,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": false
+      },
+      "source_parser": "XLSX-B0_openpyxl_cell_truth",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "XLSX-B0_openpyxl_cell_truth",
+    "charts_policy": "presence-only, visual_content_unparsed=true"
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [],
+  "unresolved": []
+}

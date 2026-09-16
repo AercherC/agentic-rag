@@ -1,0 +1,442 @@
+{
+  "groups": [
+    {
+      "question_id": "ARR-003",
+      "group_id": "G1",
+      "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+      "file_name": "proxyformer.pdf",
+      "page": 1,
+      "current_anchor": "equipment defects or limited viewpoints",
+      "current_status": "ANCHOR_NORMALIZATION_FAILURE",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": " mingqiang wei college of computer science and technology, nanjing university of aeronautics and astronautics {markli, pan.gao, x.tan, mqwei}@nuaa.edu.cn abstract problems such as equipment defects or limited viewpoints will lead the captured point clouds to be incomplete. therefore, recovering the complete point clouds from the partial ones plays an vital role in many practical tasks, and one of the keys lies in the prediction of the "
+        }
+      ],
+      "current_chunk_matches": [],
+      "diagnostic_loose_matches": [
+        "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+      ],
+      "suspected_reason": "alternative 1: ANCHOR_NORMALIZATION_FAILURE: source anchor exists; decoded chunk lost hyphen line break; diagnostic chunks=9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+    },
+    {
+      "question_id": "ARR-006",
+      "group_id": "G1",
+      "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+      "file_name": "hyper_pcn.pdf",
+      "page": 1,
+      "current_anchor": "high-order correlations",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "and dense 3d shapes from partial point clouds. although transformer-based and geometry-based approaches have made significant progress, they often struggle to capture the complex, high-order correlations inherent in point clouds. to address this limitation, we propose hyper-pcn, a point cloud completion framework that leverages hypergraphs to explicitly model complex, higherorder correlations within incomplete inputs fo"
+        },
+        {
+          "occurrence": 2,
+          "context": "gherorder correlations within incomplete inputs for more accurate completion. it comprises two key modules: hyper refinement stack, designed to progressively capture coarse-tofine high-order correlations through a series of hypergraph learning stages, and anchor-based hypergraph neural network, which employs a two-stage sampling strategy to construct collaborative hypergraphs, ensuring robust modeling of global structur"
+        }
+      ],
+      "current_chunk_matches": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "1ac04c8e9deb0122b1fc06f27f7d2ada218f47bf49fd10345e7828e34657e7be"
+      ],
+      "diagnostic_loose_matches": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "1ac04c8e9deb0122b1fc06f27f7d2ada218f47bf49fd10345e7828e34657e7be"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-010",
+      "group_id": "G1",
+      "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+      "file_name": "snowflakenet.pdf",
+      "page": 3,
+      "current_anchor": "architecture of SnowflakeNet",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "r ps point-wise splitting operation c concatenation element-wise addition pn pointnet ni x 3 nc x (c + cʹ ) ni x 2cʹ ni x cʹ duplicate nc x (c + cʹ ) ... figure 3. (a) the overall architecture of snowflakenet, which consists of three modules: feature extraction, seed generation and point generation. (b) the details of seed generation module. (c) snowflake point deconvolution (spd). note that n, nc and ni are the number of po"
+        },
+        {
+          "occurrence": 2,
+          "context": "nto the decoding process of point cloud completion, and reveal its ability for generating high quality 3d shapes through the proposed skip-transformer. 3. snowflakenet the overall architecture of snowflakenet is shown in figure 3(a), which consists of three modules: feature extraction, seed generation and point generation. we will detail each module in the following. 3.1. overview feature extraction module. let p = {pj} of s"
+        }
+      ],
+      "current_chunk_matches": [
+        "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e",
+        "bcf41148b49bc3111560fc3bceb161b9343d3a453babed405988823f9334af4e"
+      ],
+      "diagnostic_loose_matches": [
+        "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e",
+        "bcf41148b49bc3111560fc3bceb161b9343d3a453babed405988823f9334af4e"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-012",
+      "group_id": "G1",
+      "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+      "file_name": "proxyformer.pdf",
+      "page": 1,
+      "current_anchor": "proxy alignment",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "proxyformer: proxy alignment assisted point cloud completion with missing part sensitive transformer shanshan li, pan gao*, xiaoyang tan, mingqiang wei college of computer science and technology, nanjing university of aeronautics and astronautics {"
+        },
+        {
+          "occurrence": 2,
+          "context": "r perceive the position of missing points, we design a missing part sensitive transformer, which converts random normal distribution into reasonable position information, and uses proxy alignment to refine the missing proxies. it makes the predicted point proxies more sensitive to the features and positions of the missing part, and thus makes these proxies more suitable for subsequent coarse-tofine processes. ex"
+        }
+      ],
+      "current_chunk_matches": [
+        "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+      ],
+      "diagnostic_loose_matches": [
+        "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-013",
+      "group_id": "G1",
+      "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+      "file_name": "svdformer.pdf",
+      "page": 1,
+      "current_anchor": "self-structure dual-generator",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "svdformer: complementing point cloud via self-view augmentation and self-structure dual-generator zhe zhu1, honghua chen1, xing he1, weiming wang2†, jing qin3, mingqiang wei1† 1nanjing university of aeronautics and astronautics 2hong kong metropolitan university 3the hong kong polytechnic university zhuzhe0619@nuaa."
+        },
+        {
+          "occurrence": 2,
+          "context": "to observe incomplete self-shape and generate a compact global shape. †co-corresponding authors to reveal highly detailed structures, we then introduce a refinement module, called self-structure dual-generator, in which we incorporate learned shape priors and geometric self-similarities for producing new points. by perceiving the incompleteness of each point, the dual-path design disentangles refinement strategies conditioned"
+        }
+      ],
+      "current_chunk_matches": [
+        "25bab32eca74a173b04d9acf2fca21972bf66eeb591a95de67d5d4b0270cece1",
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+      ],
+      "diagnostic_loose_matches": [
+        "25bab32eca74a173b04d9acf2fca21972bf66eeb591a95de67d5d4b0270cece1",
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-024",
+      "group_id": "G1",
+      "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+      "file_name": "hyper_pcn.pdf",
+      "page": 5,
+      "current_anchor": "PCN dataset",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "ement features, respectively. 4. experiment 4.1. experiment settings datasets and evaluation metric we use three widely adopted datasets for training and evaluation, including the pcn dataset[46], mvp dataset[26], and shapenet55/34 dataset[35]. additionally, we test our method on the kitti dataset to evaluate the generalization ability in real-world scenarios. we adopt three standard metrics for quantitative"
+        },
+        {
+          "occurrence": 2,
+          "context": "= 0.20 to τend = 0.16. a-hgnn comprises two stages with anchors/top-k pairs of (na1 = 128, k1 = 24) and (na2 = 192, k2 = 32). 4.2. comparison to the state-of-the-art evaluation on pcn dataset in this section, we evaluate the proposed network on the pcn dataset and compare it with previous methods. we present the quantitative results of the cd-l1 and f1-score on the pcn dataset in table 1."
+        },
+        {
+          "occurrence": 3,
+          "context": " pairs of (na1 = 128, k1 = 24) and (na2 = 192, k2 = 32). 4.2. comparison to the state-of-the-art evaluation on pcn dataset in this section, we evaluate the proposed network on the pcn dataset and compare it with previous methods. we present the quantitative results of the cd-l1 and f1-score on the pcn dataset in table 1."
+        },
+        {
+          "occurrence": 4,
+          "context": "set in this section, we evaluate the proposed network on the pcn dataset and compare it with previous methods. we present the quantitative results of the cd-l1 and f1-score on the pcn dataset in table 1."
+        }
+      ],
+      "current_chunk_matches": [
+        "c5fa02a59b960f58b0e32a8869f464a0f2acd45ba8b6b1e3ca68afff15c26cee"
+      ],
+      "diagnostic_loose_matches": [
+        "c5fa02a59b960f58b0e32a8869f464a0f2acd45ba8b6b1e3ca68afff15c26cee"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 4 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-025",
+      "group_id": "G1",
+      "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+      "file_name": "adapointr.pdf",
+      "page": 9,
+      "current_anchor": "Results on ShapeNet-55",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "9 table 1 results on shapenet-55. we report the detailed results for each method on 10 categories and the overall results on 55 categories for three difficulty degrees. † represents re-implemented results. we use cd-s, cd-m, and cd-h to represent the c"
+        },
+        {
+          "occurrence": 2,
+          "context": "we can calculate the f-score@d by: f-score(d) = 2p(d)r(d) p(d) + r(d), where p(d) and r(d) denote the precision and recall. in our experiments, we set the threshold d to 1%. 5.1.3 results on shapenet-55 we report the performance of our model pointr and adapointr in table 1 and compare them with the existing"
+        }
+      ],
+      "current_chunk_matches": [
+        "39eb81320519262063d9a12a0b02a60d3809e99b12ae0a21d15e6d8f0867e574",
+        "5d0236bc6985609d88584bab2b67ca3ca8cb4d4bfd8a05ac9ea398d7d62392e2"
+      ],
+      "diagnostic_loose_matches": [
+        "39eb81320519262063d9a12a0b02a60d3809e99b12ae0a21d15e6d8f0867e574",
+        "5d0236bc6985609d88584bab2b67ca3ca8cb4d4bfd8a05ac9ea398d7d62392e2"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-026",
+      "group_id": "G1",
+      "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+      "file_name": "pointr_geometry_aware_transformers.pdf",
+      "page": 7,
+      "current_anchor": "Results on the PCN dataset",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "rks apart from the experiments on the two newly proposed challenging benchmarks, we also conduct the experiments on the existing benchmarks including the pcn dataset [51] table 3: results on the pcn dataset. we use the l1 chamfer distance to compare with other methods. cd-l1 (× 1000) avg air cab car cha lam sof tab wat foldingnet [50] 14.31 9.49 15.80 12.61 15.55 16.41 15.97 13.65 14.99 atlasnet [13] 10.85 6.37 11.94 10.10"
+        },
+        {
+          "occurrence": 2,
+          "context": "are blocks (geometry). model query dgcnn geometry cd-l1 f-score@1% a 9.43 67.82 b ✓ 9.09 0.713 c ✓ ✓ 8.69 0.736 d ✓ ✓ all 8.44 0.741 e ✓ ✓ 1st 8.38 0.745 and kitti benchmark [10]. results on the pcn dataset. the pcn dataset [51] is one of the most widely used benchmark datasets for the point cloud completion task. to verify the effectiveness of our method on existing benchmarks and compare it with more state-of-the-art met"
+        }
+      ],
+      "current_chunk_matches": [
+        "96ccc34ef9060bab4a14396fe585eac35f4335cf19d5f44f4fc818b9726e34ad",
+        "d3af5834cf78c7d49c6d077f0e346b4a0bf349fce8f85b72f99387435671ad02"
+      ],
+      "diagnostic_loose_matches": [
+        "96ccc34ef9060bab4a14396fe585eac35f4335cf19d5f44f4fc818b9726e34ad",
+        "d3af5834cf78c7d49c6d077f0e346b4a0bf349fce8f85b72f99387435671ad02"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-028",
+      "group_id": "G1",
+      "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+      "file_name": "proxyformer.pdf",
+      "page": 6,
+      "current_anchor": "Quantitative comparison",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "art in all the categories, which means that our method is more able to take into account the rationality of shape and distribution density while complementing the object. table 1. quantitative comparison of pcn dataset. point resolutions for the output and gt are 16384. for cd, lower is better. methods chamfer distance(10−3) air cab car cha lam sof tab ves ave foldingnet [40] 9.49 15.80 12.61 15.55 16.41 15.97 13.65 14."
+        },
+        {
+          "occurrence": 2,
+          "context": "ur method can perceive the position of the missing points while completing, and reduce the noisy points in the process of refinement. for example, as can be seen from the table 2. quantitative comparison of pcn dataset. point resolutions for the output and gt are 16384. for dcd, lower is better. methods density-aware chamfer distance air cab car cha lam sof tab ves ave grnet [38] 0.688 0.582 0.610 0.607 0.644 0.622 0.57"
+        }
+      ],
+      "current_chunk_matches": [
+        "6e06bccc7d680593d449a72c975b246bc418a6ebf6713020782b092dd01f212e",
+        "af2501861816147a7797882bcc111981432928ebc3b9ee6756bf1360191ab4a4",
+        "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+      ],
+      "diagnostic_loose_matches": [
+        "6e06bccc7d680593d449a72c975b246bc418a6ebf6713020782b092dd01f212e",
+        "af2501861816147a7797882bcc111981432928ebc3b9ee6756bf1360191ab4a4",
+        "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-033",
+      "group_id": "G1",
+      "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+      "file_name": "pcn_point_completion_network.pdf",
+      "page": 12,
+      "current_anchor": "technical details and additional quantitative",
+      "current_status": "ANCHOR_NORMALIZATION_FAILURE",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "a. overview in this document we provide technical details and additional quantitative and qualitative results to the main paper. in section b, we describe the local folding operation in detail. section c provides specific parameters for the models compared in section 5.2. section d and e present more res"
+        }
+      ],
+      "current_chunk_matches": [],
+      "diagnostic_loose_matches": [
+        "5a4b6df500dfa06b57443d01f3095199da15d0674328a50b99ecdd1194ce9662"
+      ],
+      "suspected_reason": "alternative 1: ANCHOR_NORMALIZATION_FAILURE: source anchor exists; decoded chunk lost hyphen line break; diagnostic chunks=5a4b6df500dfa06b57443d01f3095199da15d0674328a50b99ecdd1194ce9662"
+    },
+    {
+      "question_id": "ARR-037",
+      "group_id": "G2",
+      "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+      "file_name": "adapointr.pdf",
+      "page": 4,
+      "current_anchor": "dynamic query",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "rmation, while the cross-attention layer explores the relationship between queries and outputs of the encoder. to predict the point proxies of the missing parts, we propose to use dynamic query embeddings, which is different from the learnable static query embedding in [5], [73] (as shown in fig. 6 (a, b)). this dynamic query scheme makes our decoder more flexible and adjustable for different types of"
+        },
+        {
+          "occurrence": 2,
+          "context": "oxies of the missing parts, we propose to use dynamic query embeddings, which is different from the learnable static query embedding in [5], [73] (as shown in fig. 6 (a, b)). this dynamic query scheme makes our decoder more flexible and adjustable for different types of"
+        }
+      ],
+      "current_chunk_matches": [
+        "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+      ],
+      "diagnostic_loose_matches": [
+        "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 2 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-038",
+      "group_id": "G2",
+      "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+      "file_name": "seedformer.pdf",
+      "page": 1,
+      "current_anchor": "Patch Seeds",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "seedformer: patch seeds based point cloud completion with upsample transformer haoran zhou1, yun cao2, wenqing chu2, junwei zhu2, tong lu1⋆, ying tai2, and chengjie wang2 1state key laboratory for novel software technology, nanjing university "
+        },
+        {
+          "occurrence": 2,
+          "context": "he ability of detail preservation and recovery in point cloud completion. unlike previous methods based on a global feature vector, we introduce a new shape representation, namely patch seeds, which not only captures general structures from partial inputs but also preserves regional information of local patterns. then, by integrating seed features into the generation process, we can recover faithful details "
+        },
+        {
+          "occurrence": 3,
+          "context": "d outperforms state-of-the-art completion networks on several benchmark datasets. our code is available at https://github.com/hrzhou2/seedformer. keywords: point cloud completion, patch seeds, upsample transformer 1 introduction as a commonly-used and easily-acquired data format for describing 3d objects, point clouds have boosted wider research in computer vision for understanding 3d scenes and objects. how"
+        }
+      ],
+      "current_chunk_matches": [
+        "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+      ],
+      "diagnostic_loose_matches": [
+        "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 3 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-039",
+      "group_id": "G1",
+      "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+      "file_name": "snowflakenet.pdf",
+      "page": 1,
+      "current_anchor": "Skip-Transformer",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "snowflakenet: point cloud completion by snowflake point deconvolution with skip-transformer peng xiang1*, xin wen1,4*, yu-shen liu1, yan-pei cao2, pengfei wan2, wen zheng2, zhizhong han3 1school of software, bnrist, tsinghua university, beijing, china 2y-tech, kuaishou technology, beijing, china 3wayne state u"
+        },
+        {
+          "occurrence": 2,
+          "context": " points in 3d space, where the child points are progressively generated by splitting their parent points after each spd. our insight of revealing detailed geometry is to introduce skip-transformer in spd to learn point splitting patterns which can fit local regions the best. skip-transformer leverages attention mechanism to summarize the splitting patterns used in the previous spd layer to produce the splitting i"
+        },
+        {
+          "occurrence": 3,
+          "context": "t points after each spd. our insight of revealing detailed geometry is to introduce skip-transformer in spd to learn point splitting patterns which can fit local regions the best. skip-transformer leverages attention mechanism to summarize the splitting patterns used in the previous spd layer to produce the splitting in the current spd layer. the locally compact and structured point cloud generated by spd is able"
+        }
+      ],
+      "current_chunk_matches": [
+        "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+        "4eeb3b90eb7dfde4e31aeee6d4e68eec27e275588c374dd135d865d366a2d050",
+        "ef0320a7eae79938a18b0dfdecb31e8e58e9f8129037af79df039e49274b2b9d"
+      ],
+      "diagnostic_loose_matches": [
+        "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+        "4eeb3b90eb7dfde4e31aeee6d4e68eec27e275588c374dd135d865d366a2d050",
+        "ef0320a7eae79938a18b0dfdecb31e8e58e9f8129037af79df039e49274b2b9d"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 3 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-040",
+      "group_id": "G1",
+      "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+      "file_name": "svdformer.pdf",
+      "page": 1,
+      "current_anchor": "self-structure",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "svdformer: complementing point cloud via self-view augmentation and self-structure dual-generator zhe zhu1, honghua chen1, xing he1, weiming wang2†, jing qin3, mingqiang wei1† 1nanjing university of aeronautics and astronautics 2hong kong metropolitan university 3the hong kong polytechnic university z"
+        },
+        {
+          "occurrence": 2,
+          "context": "xtra images with well-calibrated intrinsic parameters to guide the geometry estimation of the missing parts. however, these approaches do not always fully leverage the cross-modal self-structures available for accurate and high-quality point cloud completion. to this end, we first design a self-view fusion network that leverages multiple-view depth image information to observe incomplete self-shape and generate"
+        },
+        {
+          "occurrence": 3,
+          "context": "to observe incomplete self-shape and generate a compact global shape. †co-corresponding authors to reveal highly detailed structures, we then introduce a refinement module, called self-structure dual-generator, in which we incorporate learned shape priors and geometric self-similarities for producing new points. by perceiving the incompleteness of each point, the dual-path design disentangles refinement strateg"
+        },
+        {
+          "occurrence": 4,
+          "context": "ceiving the incompleteness of each point, the dual-path design disentangles refinement strategies conditioned on the structural type of each point. svdformer absorbs the wisdom of self-structures, avoiding any additional paired information such as color images with precisely calibrated camera intrinsic parameters. comprehensive experiments indicate that our method achieves state-of-the-art performance on widely"
+        }
+      ],
+      "current_chunk_matches": [
+        "25bab32eca74a173b04d9acf2fca21972bf66eeb591a95de67d5d4b0270cece1",
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+      ],
+      "diagnostic_loose_matches": [
+        "25bab32eca74a173b04d9acf2fca21972bf66eeb591a95de67d5d4b0270cece1",
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 4 times within locator; refine source span"
+    },
+    {
+      "question_id": "ARR-040",
+      "group_id": "G2",
+      "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+      "file_name": "hyper_pcn.pdf",
+      "page": 1,
+      "current_anchor": "hypergraph",
+      "current_status": "AMBIGUOUS_MAPPING",
+      "source_occurrences": [
+        {
+          "occurrence": 1,
+          "context": "hyper-pcn: hypergraph-based point cloud completion via high-order correlation modeling linfei li1,2 pei tan3 siqi li1,2* changqing zou4 yue gao1,2 1{bnrist, thuibcs, blbci, school of software}, tsinghua university 2yangtze delta region insti"
+        },
+        {
+          "occurrence": 2,
+          "context": "uggle to capture the complex, high-order correlations inherent in point clouds. to address this limitation, we propose hyper-pcn, a point cloud completion framework that leverages hypergraphs to explicitly model complex, higherorder correlations within incomplete inputs for more accurate completion. it comprises two key modules: hyper refinement stack, designed to progressively capture coarse-tofine high-or"
+        },
+        {
+          "occurrence": 3,
+          "context": "uts for more accurate completion. it comprises two key modules: hyper refinement stack, designed to progressively capture coarse-tofine high-order correlations through a series of hypergraph learning stages, and anchor-based hypergraph neural network, which employs a two-stage sampling strategy to construct collaborative hypergraphs, ensuring robust modeling of global structures. extensive experiments on mu"
+        },
+        {
+          "occurrence": 4,
+          "context": "s two key modules: hyper refinement stack, designed to progressively capture coarse-tofine high-order correlations through a series of hypergraph learning stages, and anchor-based hypergraph neural network, which employs a two-stage sampling strategy to construct collaborative hypergraphs, ensuring robust modeling of global structures. extensive experiments on multiple datasets demonstrate that our approach"
+        },
+        {
+          "occurrence": 5,
+          "context": "der correlations through a series of hypergraph learning stages, and anchor-based hypergraph neural network, which employs a two-stage sampling strategy to construct collaborative hypergraphs, ensuring robust modeling of global structures. extensive experiments on multiple datasets demonstrate that our approach consistently outperforms state-of-the-art methods. code is available at https://github.com/rinfly"
+        }
+      ],
+      "current_chunk_matches": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "1ac04c8e9deb0122b1fc06f27f7d2ada218f47bf49fd10345e7828e34657e7be"
+      ],
+      "diagnostic_loose_matches": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "1ac04c8e9deb0122b1fc06f27f7d2ada218f47bf49fd10345e7828e34657e7be"
+      ],
+      "suspected_reason": "alternative 1: AMBIGUOUS_MAPPING: anchor occurs 5 times within locator; refine source span"
+    }
+  ],
+  "count": 15,
+  "selection_used_retrieval_rank": false
+}

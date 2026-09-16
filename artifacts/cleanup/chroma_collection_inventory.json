@@ -1,0 +1,170 @@
+{
+ "exported_at": "2026-09-15T06:00:31.045866+00:00",
+ "chroma_dir": "evals/evaluation_v3/phase14a_multiformat_ingestion_benchmark/phase14a_c/chroma",
+ "collections": [
+  {
+   "collection_name": "ef_14ac_docx_dc0",
+   "collection_id": "ee79e9c2-15ea-4ff5-b90c-33bacc53d2d0",
+   "record_count": 12,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "DC0",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/DC0.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_docx_dc1",
+   "collection_id": "3730a9fb-102f-434c-98ab-11b6601c10ab",
+   "record_count": 32,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "DC1",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/DC1.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_docx_dc2",
+   "collection_id": "b33850da-07b4-4118-897a-c82ecc8e2364",
+   "record_count": 38,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "DC2",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/DC2.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_docx_dc3",
+   "collection_id": "4e0aaa05-5522-485b-9b67-788b6cd7305d",
+   "record_count": 41,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "DC3",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/DC3.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_xlsx_xc0",
+   "collection_id": "280d4943-f57d-4183-b0f8-c00e39d759d3",
+   "record_count": 17,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "XC0",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/XC0.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_xlsx_xc1",
+   "collection_id": "43b8db10-6ad4-48d4-8343-b6e38f0e2ca6",
+   "record_count": 24,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "XC1",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/XC1.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_xlsx_xc2",
+   "collection_id": "e8263fea-decc-4762-b2ac-3d57b73b795c",
+   "record_count": 24,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "XC2",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/XC2.jsonl line count"
+  },
+  {
+   "collection_name": "ef_14ac_xlsx_xc3",
+   "collection_id": "fa8ff590-fc89-4cb9-b658-ad645cab3f22",
+   "record_count": 47,
+   "metadata": [
+    {
+     "key": "arm",
+     "str": "XC3",
+     "int": null,
+     "float": null
+    },
+    {
+     "key": "hnsw:space",
+     "str": "cosine",
+     "int": null,
+     "float": null
+    }
+   ],
+   "record_count_source": "chunks/XC3.jsonl line count"
+  }
+ ],
+ "dir_bytes": 18864544,
+ "dir_files": 161,
+ "rebuild_hint": "chunks/*.jsonl + embeddings/*.npz 经 experiments/phase14a/runners/embed14c.py 可重建",
+ "embedding_model_note": "见 phase14a_c/metrics/metrics_by_arm.json 与 manifest.json（bge-m3 离线本地模型）"
+}

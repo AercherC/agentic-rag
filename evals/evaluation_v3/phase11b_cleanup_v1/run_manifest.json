@@ -1,0 +1,58 @@
+{
+  "artifact_type": "phase11b_run_manifest",
+  "phase": "11B",
+  "title": "Runtime Stabilization + Cleanup",
+  "created_at": "2026-09-08T15:45:00+00:00",
+  "gate": "PASS",
+  "environment": {
+    "python": "D:/miniconda/envs/agent/python.exe",
+    "required_env": {
+      "HF_HOME": ".cache/huggingface",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "PYTHONPATH": "experiments;src",
+      "note": "Git Bash 中 conda activate 常失败，直接调用解释器绝对路径；并需 unset SSL_CERT_FILE"
+    },
+    "git_available": false
+  },
+  "steps_executed": [
+    {"step": 0, "name": "freeze cleanup baseline", "script": "experiments/run_phase11b_cleanup.py baseline", "artifact": "cleanup_baseline.json"},
+    {"step": 1, "name": "production reachability audit", "script": "experiments/phase11b_audit.py", "artifact": "reachability_manifest.json"},
+    {"step": 2, "name": "runtime main path audit", "script": "manual review", "artifact": "runtime_path_classification.json"},
+    {"step": 3, "name": "translation/bm25/hybrid/rrf classification", "script": "experiments/phase11b_manifests.py", "artifact": "runtime_path_classification.json"},
+    {"step": 4, "name": "eval cleanup", "script": "experiments/phase11b_manifests.py", "artifact": "eval_cleanup_manifest.json"},
+    {"step": 5, "name": "settings cleanup", "script": "experiments/phase11b_manifests.py", "artifact": "config_inventory.json"},
+    {"step": 6, "name": "domain model review", "script": "manual review", "artifact": "cleanup_manifest_v4.json"},
+    {"step": 7, "name": "logging audit", "script": "experiments/phase11b_manifests.py", "artifact": "log_cleanup_manifest.json"},
+    {"step": 8, "name": "file / cache cleanup", "script": "experiments/phase11b_cleanup_files.py", "artifact": "deleted_files.json"},
+    {"step": 9, "name": "artifact classification", "script": "experiments/phase11b_manifests.py", "artifact": "artifact_inventory.json"},
+    {"step": 10, "name": "test audit", "script": "manual review", "artifact": "removed_tests.json"},
+    {"step": 11, "name": "import / dead code audit", "script": "experiments/phase11b_unused_imports.py", "artifact": "unused_imports.json"},
+    {"step": 12, "name": "documentation cleanup", "script": "manual edit", "artifact": "README.md / PROJECT_SPEC.md §37"},
+    {"step": 13, "name": "runtime regression", "script": "experiments/run_phase11b_cleanup.py regression", "artifact": "runtime_regression.json"},
+    {"step": 14, "name": "chroma identity regression", "script": "experiments/run_phase11b_cleanup.py regression", "artifact": "chroma_identity.json"},
+    {"step": 15, "name": "rollback regression", "script": "experiments/run_phase11b_cleanup.py rollback", "artifact": "rollback_validation.json"},
+    {"step": 16, "name": "full test", "script": "experiments/phase11b_finalize.py", "artifact": "removed_tests.json"},
+    {"step": 17, "name": "cleanup manifest", "script": "experiments/phase11b_finalize.py", "artifact": "cleanup_manifest_v4.json"}
+  ],
+  "frozen_references": {
+    "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357",
+    "qrels_hash": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+    "chroma_collection": "ef_research_bge_m3_c512_o64_v1",
+    "chunk_count": 361,
+    "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0",
+    "ranking_frozen_artifact": "evals/evaluation_v2/phase9_runtime_promotion_v1/runtime_after.json",
+    "ranking_frozen_artifact_hash": "ffc5cff422eb581888a4a5ada9fadf0ee884ff69d8613ae1ca16d9dbf26a3e85"
+  },
+  "code_changes": [
+    {"path": "src/evidenceflow/eval/dataset.py", "change": "删除 load_evaluation_v2（零引用）"}
+  ],
+  "no_behavior_change_guarantees": [
+    "Retrieval ranking 未变（冻结 artifact hash + 逐题指标 0 差异）",
+    "标准 IR 六项指标未变",
+    "Runtime 默认装配路径未变",
+    "Gold / Chunk / Embedding / Chroma 未变",
+    "Context / Generator / Citation 未变",
+    "Rollback 能力未变"
+  ]
+}

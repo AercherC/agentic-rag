@@ -1,0 +1,304 @@
+{
+  "document_id": "X5",
+  "source_format": "xlsx",
+  "source_file": "X5.xlsx",
+  "source_sha256": "2d29ede839727c940ca69fa7d1812029d4ae54dc38e0ce0dee6cd0dd3cf3540a",
+  "element_count": 9,
+  "elements": [
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-wb",
+      "type": "workbook_metadata",
+      "raw_text": "workbook:X5",
+      "normalized_text": "workbook:X5",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": null,
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "metadata",
+      "metadata": {
+        "sheet_count": 1,
+        "sheet_names": [
+          "Merged"
+        ]
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-sheet-0",
+      "type": "sheet",
+      "raw_text": "sheet:Merged",
+      "normalized_text": "sheet:Merged",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": null,
+        "cell": null,
+        "table_name": null,
+        "inferred": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "name": "Merged",
+        "order": 0,
+        "state": "visible",
+        "hidden": false,
+        "merged_ranges": [
+          "A3:B3"
+        ],
+        "anchor_cells": {
+          "A3:B3": "A3"
+        },
+        "hidden_rows": [],
+        "hidden_cols": [],
+        "named_tables": [],
+        "named_table_names": [],
+        "auto_filter_ref": null,
+        "charts": [],
+        "visual_content_unparsed": false,
+        "images": []
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-tbl-0-inf-A1:B2",
+      "type": "table",
+      "raw_text": "table:A1:B2",
+      "normalized_text": "table:A1:B2",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "rows": 2,
+        "cols": 2,
+        "named": false,
+        "inferred": true,
+        "inference_reason": "contiguous region passed gates",
+        "inference_gates": {
+          "density": 1.0,
+          "header_plausible": true,
+          "trimmed_rows": []
+        }
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-tbl-0-inf-A1:B2-h1",
+      "type": "table_header",
+      "raw_text": "Name",
+      "normalized_text": "Name",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "hierarchy": [
+          "Name"
+        ],
+        "column_index": 1,
+        "merged_range": null,
+        "anchor_cell": null,
+        "inferred": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-tbl-0-inf-A1:B2-h2",
+      "type": "table_header",
+      "raw_text": "Score",
+      "normalized_text": "Score",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": null,
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "hierarchy": [
+          "Score"
+        ],
+        "column_index": 2,
+        "merged_range": null,
+        "anchor_cell": null,
+        "inferred": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-A1",
+      "type": "cell",
+      "raw_text": "Name",
+      "normalized_text": "Name",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "A1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Name",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-B1",
+      "type": "cell",
+      "raw_text": "Score",
+      "normalized_text": "Score",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "B1",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Score",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-A2",
+      "type": "cell",
+      "raw_text": "Team A",
+      "normalized_text": "Team A",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "A2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": "Team A",
+        "formula": null,
+        "cached_value": null,
+        "data_type": "s",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "X5",
+      "element_id": "el-xlsx-cell-0-B2",
+      "type": "cell",
+      "raw_text": "90",
+      "normalized_text": "90",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "sheet": "Merged",
+        "range": "A1:B2",
+        "cell": "B2",
+        "table_name": null,
+        "inferred": true
+      },
+      "retrieval_role": "body",
+      "metadata": {
+        "raw_value": 90,
+        "formula": null,
+        "cached_value": null,
+        "data_type": "n",
+        "number_format": "General",
+        "is_formula": false,
+        "is_hidden_row": false,
+        "is_hidden_col": false,
+        "in_table": true
+      },
+      "source_parser": "XLSX-B1_openpyxl_region_structured",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "XLSX-B1_openpyxl_region_structured",
+    "charts_policy": "presence-only, visual_content_unparsed=true"
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "infer_table_region",
+      "target": "el-xlsx-tbl-0-inf-A1:B2",
+      "reason": "contiguous non-empty region passed min/density/header gates",
+      "from": "cells",
+      "to": "table",
+      "detail": {
+        "range": "A1:B2",
+        "rows": 2,
+        "cols": 2,
+        "density": 1.0,
+        "header_plausible": true,
+        "trimmed_rows": []
+      }
+    }
+  ],
+  "unresolved": []
+}

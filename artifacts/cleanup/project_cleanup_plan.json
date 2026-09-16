@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-09-16T11:01:15.125496+00:00",
+  "dry_run": true,
+  "delete_safe": [
+    {
+      "path": ".pytest_cache/.gitignore",
+      "size_bytes": 37,
+      "mtime": "2026-09-16T11:01:03.412074+00:00",
+      "reason": "pytest cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": ".pytest_cache/CACHEDIR.TAG",
+      "size_bytes": 191,
+      "mtime": "2026-09-16T11:01:03.412074+00:00",
+      "reason": "pytest cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": ".pytest_cache/README.md",
+      "size_bytes": 302,
+      "mtime": "2026-09-16T11:01:03.412074+00:00",
+      "reason": "pytest cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": ".pytest_cache/v/cache/nodeids",
+      "size_bytes": 234,
+      "mtime": "2026-09-16T11:01:03.414069+00:00",
+      "reason": "pytest cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": "scripts/__pycache__/audit_codex_runtime_state.cpython-312.pyc",
+      "size_bytes": 14553,
+      "mtime": "2026-09-16T11:01:03.404097+00:00",
+      "reason": "Python bytecode cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": "scripts/__pycache__/audit_project_cleanup.cpython-312.pyc",
+      "size_bytes": 12911,
+      "mtime": "2026-09-16T11:00:29.726895+00:00",
+      "reason": "Python bytecode cache",
+      "classification": "DELETE_SAFE"
+    },
+    {
+      "path": "tests/__pycache__/test_hygiene_scripts.cpython-312-pytest-9.1.1.pyc",
+      "size_bytes": 11259,
+      "mtime": "2026-09-16T11:01:03.399632+00:00",
+      "reason": "Python bytecode cache",
+      "classification": "DELETE_SAFE"
+    }
+  ],
+  "review_count": 1147,
+  "anomalies": [],
+  "pass": true,
+  "guard": "本文件只读；删除器必须逐项读取本计划并再次校验 exact allowlist"
+}

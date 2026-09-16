@@ -1,0 +1,28 @@
+{
+  "artifact_type": "phase11c_tmp_retention",
+  "created_at": "2026-09-09T05:10:06.647221+00:00",
+  "action": "CONFIRM_ONLY（不强删）",
+  "items": [
+    {
+      "path": "tmp/pdfs",
+      "owner": "Gold 审计（phase35 gold stabilization）",
+      "purpose": "人工审计 Gold 标注时导出的 PDF 截图证据",
+      "last_consumer": "人工复核；代码中无 import/读取",
+      "reproducibility_value": "需原始 PDF + 人工标注判断，不可确定性重建",
+      "decision": "KEEP",
+      "exists": true,
+      "entry_count": 70
+    },
+    {
+      "path": "tmp/generation_eval_result.json",
+      "owner": "experiments/debug/gen_eval.py",
+      "purpose": "一次性 Generation 评估输出，用于人工查看答案质量",
+      "last_consumer": "experiments/debug/gen_eval.py（写入方）",
+      "reproducibility_value": "依赖真实 LLM 调用，不可确定性重建",
+      "decision": "KEEP",
+      "exists": true,
+      "size_bytes": 11233
+    }
+  ],
+  "gate": "PASS"
+}

@@ -1,0 +1,280 @@
+{
+ "artifact_type": "phase13c_c_chunk_benchmark_status",
+ "schema_version": "phase13c-c-chunk-benchmark-v1",
+ "gate_definitions_version": "phase13c-c-gates-v1.0",
+ "plan": "PLAN.md（执行前冻结）",
+ "generated_at": "2026-09-15T07:53:54.155323+00:00",
+ "stop_at": "Phase 13C-C",
+ "verdict": "PASS",
+ "inputs_frozen": {
+  "b2_fused_docs": 10,
+  "questions": 40,
+  "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357"
+ },
+ "retrieval_protocol": {
+  "embedding": "BAAI/bge-m3",
+  "top_k": 20,
+  "reranker": false,
+  "qrels": "anchor_strict"
+ },
+ "arm_stats": {
+  "PC0": {
+   "chunk_count": 436,
+   "token_mean": 439.0,
+   "token_max": 512,
+   "doc_chunk_counts": {
+    "adapointr": 103,
+    "hyper_pcn": 38,
+    "pcn_point_completion_network": 36,
+    "pfnet_point_fractal_network": 27,
+    "pointattn": 31,
+    "pointr_geometry_aware_transformers": 54,
+    "proxyformer": 38,
+    "seedformer": 41,
+    "snowflakenet": 34,
+    "svdformer": 34
+   }
+  },
+  "PC1": {
+   "chunk_count": 960,
+   "token_mean": 187.8,
+   "token_max": 512,
+   "doc_chunk_counts": {
+    "adapointr": 248,
+    "hyper_pcn": 102,
+    "pcn_point_completion_network": 62,
+    "pfnet_point_fractal_network": 47,
+    "pointattn": 49,
+    "pointr_geometry_aware_transformers": 105,
+    "proxyformer": 89,
+    "seedformer": 101,
+    "snowflakenet": 82,
+    "svdformer": 75
+   }
+  },
+  "PC2": {
+   "chunk_count": 795,
+   "token_mean": 226.8,
+   "token_max": 512,
+   "doc_chunk_counts": {
+    "adapointr": 167,
+    "hyper_pcn": 90,
+    "pcn_point_completion_network": 69,
+    "pfnet_point_fractal_network": 52,
+    "pointattn": 50,
+    "pointr_geometry_aware_transformers": 81,
+    "proxyformer": 69,
+    "seedformer": 88,
+    "snowflakenet": 64,
+    "svdformer": 65
+   }
+  },
+  "PC3": {
+   "chunk_count": 973,
+   "token_mean": 192.4,
+   "token_max": 512,
+   "doc_chunk_counts": {
+    "adapointr": 252,
+    "hyper_pcn": 103,
+    "pcn_point_completion_network": 63,
+    "pfnet_point_fractal_network": 48,
+    "pointattn": 49,
+    "pointr_geometry_aware_transformers": 107,
+    "proxyformer": 90,
+    "seedformer": 103,
+    "snowflakenet": 82,
+    "svdformer": 76
+   }
+  }
+ },
+ "ir_aggregate": {
+  "PC0": {
+   "precision_at_5": 0.24500000000000002,
+   "recall_at_5": 0.41008169934640526,
+   "recall_at_10": 0.6561379551820729,
+   "recall_at_20": 0.8264495798319327,
+   "mrr_at_5": 0.45583333333333337,
+   "map_at_5": 0.2937044526143791,
+   "ndcg_at_5": 0.41419281903114424,
+   "hit_rate_at_5": 0.625,
+   "hit_rate_at_10": 0.85,
+   "hit_rate_at_20": 0.95,
+   "eligible_count": 40,
+   "excluded_count": 0
+  },
+  "PC1": {
+   "precision_at_5": 0.24,
+   "recall_at_5": 0.46693937443937444,
+   "recall_at_10": 0.60500429000429,
+   "recall_at_20": 0.7123437073437073,
+   "mrr_at_5": 0.4945833333333334,
+   "map_at_5": 0.3346877023127023,
+   "ndcg_at_5": 0.44803155133488237,
+   "hit_rate_at_5": 0.7,
+   "hit_rate_at_10": 0.825,
+   "hit_rate_at_20": 0.875,
+   "eligible_count": 40,
+   "excluded_count": 0
+  },
+  "PC2": {
+   "precision_at_5": 0.2,
+   "recall_at_5": 0.41994383490073145,
+   "recall_at_10": 0.6097253321391253,
+   "recall_at_20": 0.6998856172563068,
+   "mrr_at_5": 0.45166666666666666,
+   "map_at_5": 0.2712135206747276,
+   "ndcg_at_5": 0.385936023821977,
+   "hit_rate_at_5": 0.65,
+   "hit_rate_at_10": 0.825,
+   "hit_rate_at_20": 0.85,
+   "eligible_count": 40,
+   "excluded_count": 0
+  },
+  "PC3": {
+   "precision_at_5": 0.24,
+   "recall_at_5": 0.4627370984278879,
+   "recall_at_10": 0.5904841649578492,
+   "recall_at_20": 0.7097402597402598,
+   "mrr_at_5": 0.4883333333333334,
+   "map_at_5": 0.32225397774739883,
+   "ndcg_at_5": 0.44059630315275317,
+   "hit_rate_at_5": 0.7,
+   "hit_rate_at_10": 0.8,
+   "hit_rate_at_20": 0.875,
+   "eligible_count": 40,
+   "excluded_count": 0
+  }
+ },
+ "bootstrap": {
+  "n": 10000,
+  "seed": 20260915,
+  "significant_pairs": []
+ },
+ "focus_questions": {
+  "ARR-007": {
+   "question_id": "ARR-007",
+   "PC0": {
+    "num_relevant": 1,
+    "first_relevant_rank": null,
+    "in_top10": false,
+    "in_top20": false
+   },
+   "PC1": {
+    "num_relevant": 1,
+    "first_relevant_rank": null,
+    "in_top10": false,
+    "in_top20": false
+   },
+   "PC2": {
+    "num_relevant": 1,
+    "first_relevant_rank": 1,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC3": {
+    "num_relevant": 1,
+    "first_relevant_rank": null,
+    "in_top10": false,
+    "in_top20": false
+   },
+   "production_phase10_reference": {
+    "recall_at_10": 0.0,
+    "recall_at_20": null,
+    "ndcg_at_5": 0.0
+   }
+  },
+  "ARR-037": {
+   "question_id": "ARR-037",
+   "PC0": {
+    "num_relevant": 6,
+    "first_relevant_rank": 6,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC1": {
+    "num_relevant": 7,
+    "first_relevant_rank": 7,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC2": {
+    "num_relevant": 7,
+    "first_relevant_rank": 7,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC3": {
+    "num_relevant": 7,
+    "first_relevant_rank": 8,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "production_phase10_reference": {
+    "recall_at_10": 0.0,
+    "recall_at_20": null,
+    "ndcg_at_5": 0.0
+   }
+  },
+  "ARR-040": {
+   "question_id": "ARR-040",
+   "PC0": {
+    "num_relevant": 30,
+    "first_relevant_rank": 1,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC1": {
+    "num_relevant": 37,
+    "first_relevant_rank": 3,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC2": {
+    "num_relevant": 29,
+    "first_relevant_rank": 3,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "PC3": {
+    "num_relevant": 38,
+    "first_relevant_rank": 3,
+    "in_top10": true,
+    "in_top20": true
+   },
+   "production_phase10_reference": {
+    "recall_at_10": 0.0,
+    "recall_at_20": null,
+    "ndcg_at_5": 0.0
+   }
+  }
+ },
+ "gates": {
+  "C_G1_inputs": true,
+  "C_G2_coverage": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G3_determinism": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G4_provenance": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G5_token_budget": {
+   "PC0": true,
+   "PC1": true,
+   "PC2": true,
+   "PC3": true
+  },
+  "C_G6_protocol_consistency": true,
+  "C_G7_bootstrap_determinism": true
+ }
+}

@@ -1,0 +1,71 @@
+{
+  "dataset_id": "rag_generation_eval_v1",
+  "corpus_chunk_count": 361,
+  "verification": {
+    "GEN-U01": {
+      "question_id": "GEN-U01",
+      "absence_terms": [
+        "BLEU",
+        "WMT"
+      ],
+      "corpus_chunk_count": 361,
+      "term_hit_counts": {
+        "BLEU": 0,
+        "WMT": 0
+      },
+      "all_terms_zero_hit": true,
+      "rationale": "语料为点云补全论文，不含机器翻译评测；BLEU/WMT 全语料零命中。"
+    },
+    "GEN-U02": {
+      "question_id": "GEN-U02",
+      "absence_terms": [
+        "A100"
+      ],
+      "corpus_chunk_count": 361,
+      "term_hit_counts": {
+        "A100": 0
+      },
+      "all_terms_zero_hit": true,
+      "rationale": "语料未说明训练所用 GPU 型号；A100 全语料零命中。"
+    },
+    "GEN-U03": {
+      "question_id": "GEN-U03",
+      "absence_terms": [
+        "license"
+      ],
+      "corpus_chunk_count": 361,
+      "term_hit_counts": {
+        "license": 0
+      },
+      "all_terms_zero_hit": true,
+      "rationale": "论文只给出代码仓库链接，未声明开源许可证；license 全语料零命中。"
+    },
+    "GEN-U04": {
+      "question_id": "GEN-U04",
+      "absence_terms": [
+        "Point-BERT",
+        "mask ratio"
+      ],
+      "corpus_chunk_count": 361,
+      "term_hit_counts": {
+        "Point-BERT": 0,
+        "mask ratio": 0
+      },
+      "all_terms_zero_hit": true,
+      "rationale": "Point-BERT 不在语料的 10 篇论文中；Point-BERT 与 mask ratio 均零命中。"
+    },
+    "GEN-U05": {
+      "question_id": "GEN-U05",
+      "absence_terms": [
+        "normal estimation"
+      ],
+      "corpus_chunk_count": 361,
+      "term_hit_counts": {
+        "normal estimation": 0
+      },
+      "all_terms_zero_hit": true,
+      "rationale": "PCN 论文做的是形状补全，未做法向量估计；normal estimation 零命中。"
+    }
+  },
+  "all_passed": true
+}

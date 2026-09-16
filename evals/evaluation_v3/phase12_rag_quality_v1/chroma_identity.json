@@ -1,0 +1,15 @@
+{
+  "before": {
+    "collection_name": "ef_research_bge_m3_c512_o64_v1",
+    "vector_db_path": "data\\chroma",
+    "chunk_count": 361,
+    "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0"
+  },
+  "after": {
+    "collection_name": "ef_research_bge_m3_c512_o64_v1",
+    "vector_db_path": "data\\chroma",
+    "chunk_count": 361,
+    "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0"
+  },
+  "identity_unchanged": true
+}

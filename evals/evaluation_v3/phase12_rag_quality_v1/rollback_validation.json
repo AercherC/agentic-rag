@@ -1,0 +1,35 @@
+{
+  "artifact_type": "phase12_rollback_validation",
+  "created_at": "2026-09-10T05:56:32.709801+00:00",
+  "assemblies": {
+    "reranker_enabled_true": {
+      "assembled": true,
+      "retriever": "DenseRerankerRetriever",
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "reranker_enabled_false": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "hybrid_disabled": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    },
+    "hybrid_enabled": {
+      "assembled": true,
+      "retriever": "MultilingualRetriever",
+      "context_builder": "ContextBuilder",
+      "generator": "Generator"
+    }
+  },
+  "expectation": {
+    "true": "DenseRerankerRetriever",
+    "false": "MultilingualRetriever"
+  },
+  "gate": "PASS"
+}

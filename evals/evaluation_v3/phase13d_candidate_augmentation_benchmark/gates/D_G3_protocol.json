@@ -1,0 +1,9 @@
+{
+ "top_k": 20,
+ "bm25_k1": 1.5,
+ "bm25_b": 0.75,
+ "tokenizer": "BAAI/bge-m3",
+ "reranker": false,
+ "qrels_source": "phase13c_c metrics/qrels_projection.json PC0",
+ "pass": true
+}

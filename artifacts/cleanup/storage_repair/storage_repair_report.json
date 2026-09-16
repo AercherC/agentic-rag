@@ -1,0 +1,91 @@
+{
+  "artifact_type": "evidenceflow_storage_contract_repair",
+  "generated_at": "2026-09-15T14:21:35.270282+00:00",
+  "source_collection": "ef_research_bge_m3_hybrid_c512_v1",
+  "staging_collection": "ef_research_bge_m3_hybrid_c512_v2_staging",
+  "promoted_collection": "ef_research_bge_m3_hybrid_c512_v2",
+  "source_collection_status": "LEGACY_RETRIEVAL_ONLY / BROKEN_METADATA",
+  "old_source": {
+    "count": 817,
+    "metadata_coverage": 0.0,
+    "read_only": true,
+    "identity_pass": true
+  },
+  "staging": {
+    "count": 817,
+    "identity": {
+      "expected_count": 817,
+      "actual_count": 817,
+      "missing_ids": [],
+      "extra_ids": [],
+      "changed_documents": [],
+      "pass": true
+    },
+    "metadata": {
+      "checked": 817,
+      "valid": 817,
+      "coverage": 1.0,
+      "failures": [],
+      "pass": true
+    },
+    "reconstruction": {
+      "count": 817,
+      "pass": true
+    }
+  },
+  "retrieval_parity": {
+    "question_count": 40,
+    "old_vs_new_mismatches": [],
+    "old_vs_frozen_artifact_mismatches": [],
+    "pass": true
+  },
+  "ir_parity": {
+    "actual": {
+      "precision_at_5": 0.23157894736842108,
+      "recall_at_5": 0.5123862463645745,
+      "recall_at_10": 0.6574985874480742,
+      "recall_at_20": 0.6960852736964844,
+      "mrr_at_5": 0.5521929824561403,
+      "map_at_5": 0.38551310316790194,
+      "ndcg_at_5": 0.49734103517021605,
+      "hit_rate_at_5": 0.7368421052631579,
+      "hit_rate_at_10": 0.868421052631579,
+      "hit_rate_at_20": 0.868421052631579,
+      "eligible_count": 38,
+      "excluded_count": 2
+    },
+    "expected": {
+      "precision_at_5": 0.23157894736842108,
+      "recall_at_5": 0.5123862463645745,
+      "recall_at_10": 0.6574985874480742,
+      "recall_at_20": 0.6960852736964844,
+      "mrr_at_5": 0.5521929824561403,
+      "map_at_5": 0.38551310316790194,
+      "ndcg_at_5": 0.49734103517021605,
+      "hit_rate_at_5": 0.7368421052631579,
+      "hit_rate_at_10": 0.868421052631579,
+      "hit_rate_at_20": 0.868421052631579,
+      "eligible_count": 38,
+      "excluded_count": 2
+    },
+    "differences": {},
+    "pass": true
+  },
+  "tests": {
+    "phase13f_recorded_pass": true,
+    "note": "root pytest 在 promotion 后单独执行；本 gate 只确认 13F 冻结记录为 PASS"
+  },
+  "gates": {
+    "SR-G1_count": true,
+    "SR-G2_chunk_identity": true,
+    "SR-G3_metadata_completeness": true,
+    "SR-G4_domain_reconstruction": true,
+    "SR-G5_retrieval_parity": true,
+    "SR-G6_ir_parity": true,
+    "SR-G7_tests_recorded": true,
+    "SR-G8_frozen_input_hashes": true
+  },
+  "pass": true,
+  "promotion_performed": true,
+  "stop_at": "PROJECT_AND_CODEX_HYGIENE_CLEANUP"
+}

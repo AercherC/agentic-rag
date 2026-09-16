@@ -1,0 +1,9 @@
+{
+  "baseline": {
+    "untruncated_tokenization": 0.009528393746586516,
+    "model_tokenization": 0.018352808749477846,
+    "model_forward": 4.538241436246608,
+    "score_postprocess": 4.676001408370212e-05
+  },
+  "promoted": null
+}

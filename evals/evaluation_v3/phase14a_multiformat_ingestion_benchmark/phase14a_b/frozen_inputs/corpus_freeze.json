@@ -1,0 +1,117 @@
+{
+  "artifact_type": "phase14a_b_corpus_freeze",
+  "files": {
+    "controlled_docx": {
+      "W1.docx": {
+        "sha256": "1e8b4fb1222b55700ec435501519dae75c4b8d68a2c8f92bcf92aa8b1e9aa77d",
+        "size_bytes": 36754
+      },
+      "W10.docx": {
+        "sha256": "b98e27748a7983907308f946336e04e2b81066c56d1c559c3b9d94590076ec1c",
+        "size_bytes": 36864
+      },
+      "W11.docx": {
+        "sha256": "4b23d55a0a6b81bc717e3c229a8bccda5e91ff44255b6a11f0cb25035041165a",
+        "size_bytes": 36959
+      },
+      "W12.docx": {
+        "sha256": "69a674668b8af33e7c87537825ea2ca60f0e88c255dbd3886442388888272041",
+        "size_bytes": 38132
+      },
+      "W2.docx": {
+        "sha256": "c9d3118dbded6542576bf79afb2499fd2c7077a32ec8a25543a39fe635a8be78",
+        "size_bytes": 36692
+      },
+      "W3.docx": {
+        "sha256": "79642d6a520f7e2eb4731ccfefc20cb4e7cf01c0af5e78bee3e7e756ff96ab0c",
+        "size_bytes": 36893
+      },
+      "W4.docx": {
+        "sha256": "1a21d01cdd2f009b584eccad48b02b094ddf494661a7add18736c1968afa1805",
+        "size_bytes": 37148
+      },
+      "W5.docx": {
+        "sha256": "5fcf7f9e8f4aa2e2b267f0690a879e517e6074332b97b4e2e406ec68611cd8d7",
+        "size_bytes": 37026
+      },
+      "W6.docx": {
+        "sha256": "4ef8afbd16ef73868c94beb408322fad232f58970d478df2a6c00299660af47f",
+        "size_bytes": 37774
+      },
+      "W7.docx": {
+        "sha256": "1cfd153a9d280023396267880901502636c8fd5a6294ae221a2f4e3a261d3538",
+        "size_bytes": 37005
+      },
+      "W8.docx": {
+        "sha256": "aa115cb75338da3c21ea8c2ea29ada880e266a09d95828df73e0ef8a9a8ad4a6",
+        "size_bytes": 36692
+      },
+      "W9.docx": {
+        "sha256": "97d63cb75e224c022326e88066c076e62d3f09fcbef88701ffe21cbbebc25d73",
+        "size_bytes": 36775
+      }
+    },
+    "controlled_xlsx": {
+      "X1.xlsx": {
+        "sha256": "e8f7a7d10f709a1ae26998d2af350a0f4cdd75d50e112d47fd39f9187144553c",
+        "size_bytes": 4911
+      },
+      "X10.xlsx": {
+        "sha256": "bb3416a2ea4c47d1dd8efb4c691dd859bd14ccdeb9e057883aeff570c9d1788b",
+        "size_bytes": 6579
+      },
+      "X11.xlsx": {
+        "sha256": "e90dd0b2ce1625ddddcaadd52974116e4bd7badecbeef85fc9b80e858d60529b",
+        "size_bytes": 4966
+      },
+      "X12.xlsx": {
+        "sha256": "a0e9b3c3973715b882ad43872cc56f87db0ef95b89e8b7d73b105ef7393a0edf",
+        "size_bytes": 4957
+      },
+      "X13.xlsx": {
+        "sha256": "6b78a5fc90419e67387278d192cadc2fac909279b853f0d99400a876a292964a",
+        "size_bytes": 5012
+      },
+      "X14.xlsx": {
+        "sha256": "0c5c9d8f25c9d28769fd771d15436b089856261bf86a8829e6e9bb321fb20421",
+        "size_bytes": 5474
+      },
+      "X15.xlsx": {
+        "sha256": "007dd7c4ec2c44e486a7ddb6a9e2c7bf6d6f56978c4181e440965b9cb0eb8628",
+        "size_bytes": 5130
+      },
+      "X2.xlsx": {
+        "sha256": "e4462199d07a7fe4b7809e7f8cbd7f8ffcd78746850a797591342a2138fb755e",
+        "size_bytes": 4910
+      },
+      "X3.xlsx": {
+        "sha256": "fdcc48d36c81c5d884eaee6bb8eba9372848268c8c23b3cc500dcaeff9255146",
+        "size_bytes": 5892
+      },
+      "X4.xlsx": {
+        "sha256": "d45f274c2aac35c99ab208d284c7bef12940bc3c595ab9b8a6d8b77b5d1b7a9a",
+        "size_bytes": 4989
+      },
+      "X5.xlsx": {
+        "sha256": "2d29ede839727c940ca69fa7d1812029d4ae54dc38e0ce0dee6cd0dd3cf3540a",
+        "size_bytes": 4893
+      },
+      "X6.xlsx": {
+        "sha256": "ed063b0f51a31b819b162514a8feee01a9a9c05c695deebbf929e005802327e5",
+        "size_bytes": 4963
+      },
+      "X7.xlsx": {
+        "sha256": "38e98445ff46f1884ef6aa03181fa3d83ce4d33bc474c0025bb871ce76d54da8",
+        "size_bytes": 5398
+      },
+      "X8.xlsx": {
+        "sha256": "4c671ba57644b5f6eb13a6f3b9b7288ea6924c25aff4e5a844388a467bb76b3e",
+        "size_bytes": 5602
+      },
+      "X9.xlsx": {
+        "sha256": "aa35290836567f11aac20b365377256fbf2304d78df6a2ef17eda7af4737dfa8",
+        "size_bytes": 4953
+      }
+    }
+  }
+}

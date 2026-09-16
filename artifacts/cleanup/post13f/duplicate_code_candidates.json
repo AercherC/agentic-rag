@@ -1,0 +1,1483 @@
+{
+ "generated_at": "2026-09-16T10:32:35.035697+00:00",
+ "ast_normalization": "ast.dump(include_attributes=False)",
+ "duplicate_function_groups": [
+  [
+   {
+    "path": "experiments/phase13c/cleaning_metrics.py",
+    "line": 51,
+    "name": "_f1"
+   },
+   {
+    "path": "experiments/phase13c/metrics.py",
+    "line": 726,
+    "name": "_f1"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/runners/run_phase13c_c.py",
+    "line": 153,
+    "name": "counter"
+   },
+   {
+    "path": "experiments/phase14a/runners/run_phase14a_c.py",
+    "line": 96,
+    "name": "counter"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/runners/run_phase13d_augmentation.py",
+    "line": 49,
+    "name": "sha256_of"
+   },
+   {
+    "path": "experiments/phase13c/runners/run_phase13e_hybrid.py",
+    "line": 45,
+    "name": "sha256_of"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/runners/run_phase13d_augmentation.py",
+    "line": 57,
+    "name": "write_json"
+   },
+   {
+    "path": "experiments/phase13c/runners/run_phase13e_hybrid.py",
+    "line": 53,
+    "name": "write_json"
+   },
+   {
+    "path": "experiments/phase13c/runners/run_phase13f_runtime_promotion.py",
+    "line": 65,
+    "name": "write_json"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/runners/run_phase13e_hybrid.py",
+    "line": 82,
+    "name": "embed"
+   },
+   {
+    "path": "experiments/phase13c/runners/run_phase13f_runtime_promotion.py",
+    "line": 213,
+    "name": "embed"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/runners/run_phase13f_runtime_promotion.py",
+    "line": 57,
+    "name": "sha256_of"
+   },
+   {
+    "path": "scripts/rebaseline_post_promotion.py",
+    "line": 51,
+    "name": "sha256_of"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/sandbox.py",
+    "line": 190,
+    "name": "load_json"
+   },
+   {
+    "path": "experiments/run_phase12_rag_quality.py",
+    "line": 176,
+    "name": "load_json"
+   },
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 198,
+    "name": "load_json"
+   },
+   {
+    "path": "experiments/run_phase13c_cleaning_benchmark.py",
+    "line": 101,
+    "name": "load_json"
+   },
+   {
+    "path": "experiments/run_phase13c_parser_benchmark.py",
+    "line": 79,
+    "name": "load_json"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase13c/sandbox.py",
+    "line": 77,
+    "name": "__init__"
+   },
+   {
+    "path": "experiments/phase14a/sandbox14a.py",
+    "line": 67,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/cleaners14b.py",
+    "line": 53,
+    "name": "_col_letter"
+   },
+   {
+    "path": "experiments/phase14a/metrics14b.py",
+    "line": 45,
+    "name": "_col_letter"
+   },
+   {
+    "path": "experiments/phase14a/runners/build_corpus_arm.py",
+    "line": 362,
+    "name": "_col_letter"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/gates14a.py",
+    "line": 17,
+    "name": "_gate"
+   },
+   {
+    "path": "experiments/phase14a/gates14b.py",
+    "line": 13,
+    "name": "_gate"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/gates14a.py",
+    "line": 97,
+    "name": "all_pass"
+   },
+   {
+    "path": "experiments/phase14a/gates14b.py",
+    "line": 125,
+    "name": "all_pass"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/metrics14a.py",
+    "line": 28,
+    "name": "_tokens"
+   },
+   {
+    "path": "experiments/phase14a/metrics14b.py",
+    "line": 23,
+    "name": "_tokens"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/metrics14a.py",
+    "line": 32,
+    "name": "_jaccard"
+   },
+   {
+    "path": "experiments/phase14a/metrics14b.py",
+    "line": 27,
+    "name": "_jaccard"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/tests/test_phase14a.py",
+    "line": 17,
+    "name": "_t"
+   },
+   {
+    "path": "experiments/phase14a/tests/test_phase14a_b.py",
+    "line": 19,
+    "name": "_t"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/tests/test_phase14a.py",
+    "line": 18,
+    "name": "deco"
+   },
+   {
+    "path": "experiments/phase14a/tests/test_phase14a_b.py",
+    "line": 20,
+    "name": "deco"
+   }
+  ],
+  [
+   {
+    "path": "experiments/phase14a/tests/test_phase14a.py",
+    "line": 19,
+    "name": "wrap"
+   },
+   {
+    "path": "experiments/phase14a/tests/test_phase14a_b.py",
+    "line": 21,
+    "name": "wrap"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase11b_cleanup.py",
+    "line": 100,
+    "name": "save_artifact"
+   },
+   {
+    "path": "experiments/run_phase11c_technical_debt_closure.py",
+    "line": 197,
+    "name": "save_artifact"
+   },
+   {
+    "path": "experiments/run_phase12_rag_quality.py",
+    "line": 167,
+    "name": "save_artifact"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase11c_technical_debt_closure.py",
+    "line": 103,
+    "name": "_sha256_json"
+   },
+   {
+    "path": "experiments/run_phase12_rag_quality.py",
+    "line": 61,
+    "name": "_sha256_json"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13_kb_chunk_audit.py",
+    "line": 612,
+    "name": "resolve_section"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 247,
+    "name": "resolve_section"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13_kb_chunk_audit.py",
+    "line": 807,
+    "name": "detect_document_furniture"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 284,
+    "name": "detect_document_furniture"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13_kb_chunk_audit.py",
+    "line": 906,
+    "name": "record"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 351,
+    "name": "record"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 578,
+    "name": "_block_lines"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 493,
+    "name": "_block_lines"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 584,
+    "name": "_digit_ratio"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 499,
+    "name": "_digit_ratio"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 598,
+    "name": "_line_stats"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 513,
+    "name": "_line_stats"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 659,
+    "name": "_heading_lookup"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 573,
+    "name": "_heading_lookup"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 812,
+    "name": "_column_of"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 586,
+    "name": "_column_of"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 823,
+    "name": "_vertical_band"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 597,
+    "name": "_vertical_band"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13b_controlled_rebuild.py",
+    "line": 834,
+    "name": "_governing_heading_id"
+   },
+   {
+    "path": "src/evidenceflow/ingestion/structure.py",
+    "line": 608,
+    "name": "_governing_heading_id"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_phase13c_cleaning_benchmark.py",
+    "line": 95,
+    "name": "log"
+   },
+   {
+    "path": "experiments/run_phase13c_parser_benchmark.py",
+    "line": 73,
+    "name": "log"
+   }
+  ],
+  [
+   {
+    "path": "experiments/run_research_dense_baseline.py",
+    "line": 310,
+    "name": "_metric_line"
+   },
+   {
+    "path": "experiments/run_research_query_rewrite_experiment.py",
+    "line": 349,
+    "name": "_metric_line"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_embedding.py",
+    "line": 109,
+    "name": "fail_loading"
+   },
+   {
+    "path": "tests/test_tokenizer.py",
+    "line": 58,
+    "name": "fail_loading"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_phase13b_controlled_rebuild.py",
+    "line": 106,
+    "name": "encode"
+   },
+   {
+    "path": "tests/test_phase13b_controlled_rebuild.py",
+    "line": 116,
+    "name": "encode"
+   },
+   {
+    "path": "tests/test_phase13b_controlled_rebuild.py",
+    "line": 128,
+    "name": "encode"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_phase13b_controlled_rebuild.py",
+    "line": 119,
+    "name": "decode"
+   },
+   {
+    "path": "tests/test_phase13b_controlled_rebuild.py",
+    "line": 131,
+    "name": "decode"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 14,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 46,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 111,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 139,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 188,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 191,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 17,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 114,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 194,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 20,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 121,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 31,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 42,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 35,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 124,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 39,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 53,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 128,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 146,
+    "name": "__init__"
+   }
+  ],
+  [
+   {
+    "path": "tests/test_runtime.py",
+    "line": 49,
+    "name": "__init__"
+   },
+   {
+    "path": "tests/test_runtime.py",
+    "line": 142,
+    "name": "__init__"
+   }
+  ]
+ ],
+ "code_similarity_review": [
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase6_retrieval_baselines.py",
+     "line": 44,
+     "name": "__init__",
+     "exact_hash": "1972e0a192b4b7a3e88f893e51c1d89e7664fb94749b27c2edf4db6afca91959"
+    },
+    {
+     "path": "experiments/run_research_dense_baseline.py",
+     "line": 44,
+     "name": "__init__",
+     "exact_hash": "3604004fec569e8ba6867ce8d2c6da657878b5a7b47d5e8afdd048cc944a9876"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "src/evidenceflow/generation/generator.py",
+     "line": 30,
+     "name": "__init__",
+     "exact_hash": "483ca6610262f44357520c224e3b5515ac0fd60102b1264b0a5bd8e9f4e79e86"
+    },
+    {
+     "path": "src/evidenceflow/translation/llm.py",
+     "line": 17,
+     "name": "__init__",
+     "exact_hash": "56e29475da08e7632c1b75eed32b843907febf0716ffa73a378c35acf645b7d8"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/build_research_retrieval_dataset.py",
+     "line": 102,
+     "name": "_canonical_hash",
+     "exact_hash": "855b0c96da49a87d837bd6e359e397db8068142ce0a0526cdc1e2220d9c939a5"
+    },
+    {
+     "path": "experiments/run_research_dense_baseline.py",
+     "line": 34,
+     "name": "_canonical_hash",
+     "exact_hash": "41637f5ca757aefa0b5a6181aaefbacdd49aa3c3e686a429fe37a05c4e10da5c"
+    },
+    {
+     "path": "tests/test_research_baseline_artifacts.py",
+     "line": 20,
+     "name": "_canonical_hash",
+     "exact_hash": "53384ad91bce51f0b56d762b95dbc1d3fd62f039a7584f5522e3ce6b35169169"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase11c_technical_debt_closure.py",
+     "line": 134,
+     "name": "_chroma_identity",
+     "exact_hash": "6ba16cb609a33f4b17b1fbc283169ce940106382cdcda80e473d755fe150cfe4"
+    },
+    {
+     "path": "experiments/run_phase12_rag_quality.py",
+     "line": 97,
+     "name": "_chroma_identity",
+     "exact_hash": "ce09141d209a768917568f4a7c4d4d46eb10755ac04e934b07eeeb565628a8b9"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 626,
+     "name": "_classify_block_text",
+     "exact_hash": "a7ff85cd6e1ba83e2764aec95472196dd26718045a2736e01069349c0a647ed9"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 541,
+     "name": "_classify_block_text",
+     "exact_hash": "27047754f94367cfdb830662b15e8d645c052923e86c9027ba71930a78011b32"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 805,
+     "name": "_element_id",
+     "exact_hash": "436483168fc8e3c46f0eba9aef54d61c870c98cfa58602967746a67154a1ca33"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 579,
+     "name": "_element_id",
+     "exact_hash": "ca1c4036c6cad30dc05c225134aae752319693a08054de8bcc67662bb44a5574"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 608,
+     "name": "_is_table_body",
+     "exact_hash": "88a9244ef0edb3122e18bf61b7ef24d9c262269356488a7d2013746608b1501a"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 523,
+     "name": "_is_table_body",
+     "exact_hash": "fb56d9b6baf86a2094f5143053be5d249ea7af9fc85f31f0d5d5c5cee0da67cb"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase10_reranker_performance.py",
+     "line": 42,
+     "name": "_load",
+     "exact_hash": "8ee591f920f37205bd9780ef89154c390b51e639e19e067e3d6f52205ca048a2"
+    },
+    {
+     "path": "experiments/run_phase9_runtime_promotion.py",
+     "line": 43,
+     "name": "_load",
+     "exact_hash": "9889bdd82914ed7682ff0da940852797984fb0baa2fc6dfce3d0789c14053d51"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "tests/test_phase10_reranker_performance.py",
+     "line": 10,
+     "name": "_load",
+     "exact_hash": "e9513aa2855812a74c21dc6eb650e8022b4ff42745d7f4e50d45bad193587548"
+    },
+    {
+     "path": "tests/test_phase7_artifacts.py",
+     "line": 10,
+     "name": "_load",
+     "exact_hash": "41e639c06fba11c34a440a5397be0c0e909fd5bab24fedc310a6753182fe9fde"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "tests/test_research_baseline_artifacts.py",
+     "line": 14,
+     "name": "_load",
+     "exact_hash": "19db1735cdab518ba33b6fe109569300105729060ee3703168ebd4963fb450b2"
+    },
+    {
+     "path": "tests/test_research_candidate_failure_diagnosis.py",
+     "line": 26,
+     "name": "_load",
+     "exact_hash": "7f4f3268271bf58df41299b90a7908e4129ff25a8f3deb0b38d790b1a1917dfd"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/cleaning_metrics.py",
+     "line": 45,
+     "name": "_looks_like_latex",
+     "exact_hash": "94d263d005f2d6e8afcb1a46c7b52e458c700f3651ade64d1add7a3008b3ee34"
+    },
+    {
+     "path": "experiments/phase13c/metrics.py",
+     "line": 1428,
+     "name": "_looks_like_latex",
+     "exact_hash": "05f01b253dc2bee7e414075fa18ffb2999db8f257fc6c52a5062d766a96703d5"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase7_reranker_validation.py",
+     "line": 399,
+     "name": "_metric_values",
+     "exact_hash": "681fb1b6361c75dda49624c190f41e03fc5f3df48f0afb4e2b7fec6fd5699f2b"
+    },
+    {
+     "path": "experiments/run_phase9_runtime_promotion.py",
+     "line": 59,
+     "name": "_metric_values",
+     "exact_hash": "7f51c6abf3b984b3d46dd5c2b32a2d86371d19f47138c62655e32da23dccdb7a"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_research_candidate_reranking_experiment.py",
+     "line": 86,
+     "name": "_metrics",
+     "exact_hash": "c214991eb3da4306fc8483cbeadaaa771ac4b81392283b299355dade310032ef"
+    },
+    {
+     "path": "experiments/run_research_dense_baseline.py",
+     "line": 120,
+     "name": "_metrics",
+     "exact_hash": "19e8cfbc99ec337f89a018497ac4bd33a9e70b5ea31eea674309b39ae7ebfbb1"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/build_research_retrieval_dataset.py",
+     "line": 94,
+     "name": "_normalize",
+     "exact_hash": "9c2fbe58a631e6db9a1ec55278fc0b35742d4223dd1ff754c728f976d5399b85"
+    },
+    {
+     "path": "experiments/run_research_dense_baseline.py",
+     "line": 26,
+     "name": "_normalize",
+     "exact_hash": "968ffd917ff36b54f7e22351994bca2fff12d6196cf7c98fa2e6f5dc6a58242f"
+    },
+    {
+     "path": "experiments/run_research_query_rewrite_experiment.py",
+     "line": 85,
+     "name": "_normalize",
+     "exact_hash": "cfde5b4314b9eb3b6ef676f69228442d84b247041cdc071e47059b5f674755f1"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 531,
+     "name": "_normalize_block_text",
+     "exact_hash": "38c152d7faf4f2763a502a49762be087322bc7be65636b55fa7c1650fa57cd41"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 452,
+     "name": "_normalize_block_text",
+     "exact_hash": "291c90e142ffadfcd5920f34027f16ad91d0d00cfb2947fc453a7324c37bb26a"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13_kb_chunk_audit.py",
+     "line": 238,
+     "name": "_now",
+     "exact_hash": "4d705fd931558ef928a165499f5091beff473be1b8bf50b0316af25388823735"
+    },
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 215,
+     "name": "_now",
+     "exact_hash": "d17f01a7d2c65488b5628bd24c987e7d023286c014729995ed762b5a33383365"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase10_reranker_performance.py",
+     "line": 48,
+     "name": "_percentile",
+     "exact_hash": "7a1ed1ffd07a9ded5825cc9ddbe338450a624d75d8513bb5da2e164ff40c457e"
+    },
+    {
+     "path": "experiments/run_phase9_runtime_promotion.py",
+     "line": 49,
+     "name": "_percentile",
+     "exact_hash": "570e95359426acab405470e513f516f0abab43787a96120ed4b35be319b41ea5"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase14a/run_phase14a_a.py",
+     "line": 36,
+     "name": "_run_cmd",
+     "exact_hash": "b216d4a713c39a8b7e48cf9a54f78ee017986513cb1f3734fd3f114ed852f269"
+    },
+    {
+     "path": "experiments/phase14a/run_phase14a_b.py",
+     "line": 33,
+     "name": "_run_cmd",
+     "exact_hash": "9e5d5b857da33c06afb03561a4c2de45d7a83b69ff78dd4ccbc1c5f7e59e7b45"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/diagnose_research_candidate_failures.py",
+     "line": 203,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "56c0cd048049bff790e0bc855b758ac560df10eac31cbb2e7ecbce2d4287d2a1"
+    },
+    {
+     "path": "experiments/run_research_candidate_augmentation_experiment.py",
+     "line": 118,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "818ae13f82fd445b994eb096203639eb0478b7c4e325f22ba10ba6194d70682f"
+    },
+    {
+     "path": "experiments/run_research_candidate_reranking_experiment.py",
+     "line": 57,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "fb8685c5457273f28ecf88b0f25dabdadf43a730d000215e8ceb8e5bfab7e41c"
+    },
+    {
+     "path": "experiments/run_research_query_rewrite_experiment.py",
+     "line": 93,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "c96ac8b5734910ec49607f84a33c595919a6e24fa5d96c36c5421aaf267c117a"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase11b_cleanup.py",
+     "line": 54,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "0e196091ff7c63034a440f508242c39832ff8c615b2b068904c4012551aa8355"
+    },
+    {
+     "path": "experiments/run_phase11c_technical_debt_closure.py",
+     "line": 109,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "4b66d7d10c7344a54d3677d6f1fbf9780e3afafeb46ed16bc7f86d3afcbbf9ce"
+    },
+    {
+     "path": "experiments/run_phase12_rag_quality.py",
+     "line": 73,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "b75dfd83096dd3bf279fa87052f081f21e3e3dc4ebb58fe27eedc3d62a86ebf7"
+    },
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 309,
+     "name": "_runtime_fingerprint",
+     "exact_hash": "069ae45b3ca62d9d56edd15a13ea5445815870c40941f74aec8605ebec6e205b"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase9_runtime_promotion.py",
+     "line": 99,
+     "name": "_sha256",
+     "exact_hash": "39a197850c6ee02062d193fd90e09cf6ad2ff09e609cdab374eec83089daa5bc"
+    },
+    {
+     "path": "tests/test_research_candidate_augmentation_experiment.py",
+     "line": 32,
+     "name": "_sha256",
+     "exact_hash": "04c0a6ac136395d17e520947870d3ff3fafbd724fba43b9185e0ad16cc2f2a93"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase11b_cleanup.py",
+     "line": 48,
+     "name": "_sha256_file",
+     "exact_hash": "6eeb0b187a44cd4416933d39f080b054db3701ca0ee266933902d61640ceb907"
+    },
+    {
+     "path": "experiments/run_phase11c_technical_debt_closure.py",
+     "line": 97,
+     "name": "_sha256_file",
+     "exact_hash": "22c775b09349d1a79170728708dfd82ee66f4ac76da5046de89e70be26d18de5"
+    },
+    {
+     "path": "experiments/run_phase12_rag_quality.py",
+     "line": 55,
+     "name": "_sha256_file",
+     "exact_hash": "02d819550c54d268fb8b22cff7391e75e8d84d215be68b9de9d6f15d34118099"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase10_reranker_performance.py",
+     "line": 58,
+     "name": "_summary",
+     "exact_hash": "d30d3633272d841c9d33c90c5c4d5819d81eeed146ea191a740bd714f6f3f9c2"
+    },
+    {
+     "path": "experiments/run_phase9_runtime_promotion.py",
+     "line": 85,
+     "name": "_summary",
+     "exact_hash": "2ffb5f7a05fb9efdc5311c09319d0bc6a01959c89e12ec722293190888492fbd"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/schema.py",
+     "line": 292,
+     "name": "collapse_whitespace",
+     "exact_hash": "b8bf3727ee9744f970f6c308be6798a247629cdee01b7291e5feb8d8f97bebca"
+    },
+    {
+     "path": "experiments/phase14a/schema14a.py",
+     "line": 122,
+     "name": "collapse_whitespace",
+     "exact_hash": "d7fab5a1301f32b913f46403b588e6003c66d0290cce939ed53d54dec9e075be"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "tests/test_context_builder.py",
+     "line": 23,
+     "name": "decode",
+     "exact_hash": "cbefad1c2228cfa58173a49c19aab9bc286a3ff5a5d3256fa4d7d861e8dd5dd1"
+    },
+    {
+     "path": "tests/test_phase9_runtime_promotion.py",
+     "line": 24,
+     "name": "decode",
+     "exact_hash": "0a31888e95020d4a791c1776009745628e64dced0242f4e4a46ec8e38cef898e"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13_kb_chunk_audit.py",
+     "line": 519,
+     "name": "detect_headings",
+     "exact_hash": "11cc34c4a3c4c8a88e220125e0f98460e09f26842a39ca63e5d0fc50ba2537aa"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 153,
+     "name": "detect_headings",
+     "exact_hash": "9822d94cd1720d15608a0eecc9750f8ac829c90aa763524e1a5ede264923fdfa"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase14a/schema14a.py",
+     "line": 287,
+     "name": "digest_of",
+     "exact_hash": "401ed81d905ab477bb364c86819a408ff9ff160a0d7c0871a508ffe06a77ac62"
+    },
+    {
+     "path": "experiments/phase14a/schema14b.py",
+     "line": 177,
+     "name": "digest_of",
+     "exact_hash": "57152e8d9b80b4572179e538199a5a220fef1d7bcca130483ae27b48ca7efaf9"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "tests/test_citation_parser.py",
+     "line": 46,
+     "name": "empty_context",
+     "exact_hash": "bd036585789aeb3abc2c51b5036b8e52ce624caf2d2d456ab4362a68d98591c5"
+    },
+    {
+     "path": "tests/test_generator.py",
+     "line": 61,
+     "name": "empty_context",
+     "exact_hash": "d931cd3ab9364f0ec1fbbae4fc2383fa0c45b00ce456d21104df18805ae8c1d2"
+    },
+    {
+     "path": "tests/test_rag_answer_assembly.py",
+     "line": 82,
+     "name": "empty_context",
+     "exact_hash": "c70c3fcc948f4fb30f5ba02d7406721452d65fb43bf363832bb7f0a34bcda279"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "tests/test_context_builder.py",
+     "line": 18,
+     "name": "encode",
+     "exact_hash": "25a53ec7325675172398a0504863ebd1f535bfa3eda4fc0e78029416ebae8d2b"
+    },
+    {
+     "path": "tests/test_phase9_runtime_promotion.py",
+     "line": 19,
+     "name": "encode",
+     "exact_hash": "cb5af11718745ea5f4a2e414f02b0b2ea5847fbed88544a76f0d6c8bebe738db"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "src/evidenceflow/knowledge/lifecycle.py",
+     "line": 26,
+     "name": "iter_all_chunks",
+     "exact_hash": "a994f1ca6a80e4468a7f06735e40ddc17a1ec4776d6aba1da091f464e40e72a6"
+    },
+    {
+     "path": "src/evidenceflow/storage/base.py",
+     "line": 44,
+     "name": "iter_all_chunks",
+     "exact_hash": "e915ec267fc4cd414b24c8b774795a20e1dc0b43a20057022f80a18d194ce17c"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase11b_finalize.py",
+     "line": 49,
+     "name": "load",
+     "exact_hash": "ef607421b6aaa076ec2fafafb7c4dd94dcafd1e4f558b76b74c76633166d9eda"
+    },
+    {
+     "path": "experiments/run_phase11c_technical_debt_closure.py",
+     "line": 1021,
+     "name": "load",
+     "exact_hash": "8667de6af91ec997e6ba6e134805b408a3de472db3d35c7102a35562a1da8b3c"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase14a/runners/docx_native_arm.py",
+     "line": 209,
+     "name": "main",
+     "exact_hash": "70451bc4f2b8565f91274778ff9fa9b289db10e759673a278a33c527fcc217e4"
+    },
+    {
+     "path": "experiments/phase14a/runners/xlsx_native_arm.py",
+     "line": 166,
+     "name": "main",
+     "exact_hash": "c141251333d19642820102ab39e25cb06a38f85f8a7ed89fdea587a99119cf8d"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase14a/tests/test_phase14a.py",
+     "line": 213,
+     "name": "main",
+     "exact_hash": "78980c47c57547dd10a441822b9b0737721371ac06af0d01ef7b1d0e6704dc7e"
+    },
+    {
+     "path": "experiments/phase14a/tests/test_phase14a_b.py",
+     "line": 446,
+     "name": "main",
+     "exact_hash": "0426023ad35db07cb7be3af0b92277ebdb55de2781b90590ceae16d7e11ca37a"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase15b_active_relevance.py",
+     "line": 14,
+     "name": "normalize_text",
+     "exact_hash": "391c097ec589562cbd89ce0ba60e198aa6e6399a5e8ac9016d1c30b01dee3df5"
+    },
+    {
+     "path": "experiments/run_phase15b_hybrid_candidate_benchmark.py",
+     "line": 115,
+     "name": "normalize_text",
+     "exact_hash": "f25692c515b6b479fe392e4e70d8c617e6c61c222d860edfc0678c65dff8052e"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/schema.py",
+     "line": 265,
+     "name": "normalize_unicode",
+     "exact_hash": "8c405837f684c96beebd31967b838654e6576de2be3a399bf20334afb61b62c2"
+    },
+    {
+     "path": "experiments/phase14a/schema14a.py",
+     "line": 113,
+     "name": "normalize_unicode",
+     "exact_hash": "a4cfe24b50059134e09d98100b15987defa6a43bf2c7b906cceaab283d04a929"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13_kb_chunk_audit.py",
+     "line": 882,
+     "name": "page_level_furniture_spans",
+     "exact_hash": "52dd2f44aebc4724df488efe6abb155f1e68d7030ca7312219471b5f88f40dfa"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 331,
+     "name": "page_level_furniture_spans",
+     "exact_hash": "efd5e83c0799131f8bd5fea93650e964f01ad8f66b6b5b3437e254a55afeaa46"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase15b_hybrid_candidate_benchmark.py",
+     "line": 1514,
+     "name": "parse_args",
+     "exact_hash": "eaea27d52b7d6f46c39f93af690029b88f1923fb9c645d90379d080017a6b747"
+    },
+    {
+     "path": "experiments/run_production_reranked_baseline_replay.py",
+     "line": 263,
+     "name": "parse_args",
+     "exact_hash": "c8408d8ab1b03d1f1f0b01439b96fa289796dd52bbec0668e67a7810069252fd"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase13b_controlled_rebuild.py",
+     "line": 543,
+     "name": "parse_page_blocks",
+     "exact_hash": "ffccc0a0d4b99c2b56fa51893e1529085155118de69b2311460ce52aecd46cc5"
+    },
+    {
+     "path": "src/evidenceflow/ingestion/structure.py",
+     "line": 464,
+     "name": "parse_page_blocks",
+     "exact_hash": "f1b9dc3399e1ef635b5c4778d0b30e79766a15b396132aa97c850b67ad9f90bb"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase15b_hybrid_candidate_benchmark.py",
+     "line": 89,
+     "name": "read_json",
+     "exact_hash": "7e97c9b10013e44f55c661089a1e007bae9d017ca9add5cbd8af5edeb1e66c71"
+    },
+    {
+     "path": "experiments/run_production_reranked_baseline_replay.py",
+     "line": 59,
+     "name": "read_json",
+     "exact_hash": "8dec56a1b69550b022c7c159e906cfe8c3ce23d6a7d5037c861d3601d0361b38"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "src/evidenceflow/eval/v2.py",
+     "line": 92,
+     "name": "save_artifact",
+     "exact_hash": "d6faf198ea16025b3c2a933a3e9e1d781d40f39dde28641d5a6898acbe5363f1"
+    },
+    {
+     "path": "src/evidenceflow/eval/v3.py",
+     "line": 157,
+     "name": "save_artifact",
+     "exact_hash": "07f94ffb6df46453c14c5794be664f15af1a681cdb8daee6c223579c09bd8ce6"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "src/evidenceflow/knowledge/lifecycle.py",
+     "line": 31,
+     "name": "search",
+     "exact_hash": "46ff64642642606d0236e6b8dfb933c952da9cdee549c8462b64edcd45ae6344"
+    },
+    {
+     "path": "src/evidenceflow/storage/base.py",
+     "line": 21,
+     "name": "search",
+     "exact_hash": "1d70b48e3cfaffcfa223dded8b97310001dc73914250ffefdf8a7e628df91b54"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase15b_hybrid_candidate_benchmark.py",
+     "line": 95,
+     "name": "sha256_file",
+     "exact_hash": "273cfa1889c41c645a987b44a4b4188fa6aa6b4d7cd73b9d9496ea6600b9a4f7"
+    },
+    {
+     "path": "experiments/run_production_reranked_baseline_replay.py",
+     "line": 65,
+     "name": "sha256_file",
+     "exact_hash": "bcb719cb08f7e1716016fe1a414ee940b9d41a11791df32d3ac2be934fa85f27"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/runners/run_phase13c_c.py",
+     "line": 58,
+     "name": "sha256_of",
+     "exact_hash": "2d74a78274e11242b9c5eee786498a03708181840c598855af197669010c119d"
+    },
+    {
+     "path": "scripts/build_cleanup_inventory.py",
+     "line": 29,
+     "name": "sha256_of",
+     "exact_hash": "7cdc7d59a812e89484fd6b2e3c041ce7414610041af36fce5812d7092753be08"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/runners/run_phase13d_augmentation.py",
+     "line": 49,
+     "name": "sha256_of",
+     "exact_hash": "4bf3002364986192344124b42df2f0cbc6d8adb9aa3ccf0aace7b0e081f842a7"
+    },
+    {
+     "path": "experiments/phase13c/runners/run_phase13e_hybrid.py",
+     "line": 45,
+     "name": "sha256_of",
+     "exact_hash": "4bf3002364986192344124b42df2f0cbc6d8adb9aa3ccf0aace7b0e081f842a7"
+    },
+    {
+     "path": "experiments/phase13c/runners/run_phase13f_runtime_promotion.py",
+     "line": 57,
+     "name": "sha256_of",
+     "exact_hash": "ccbd0eaca4a0503b15b64959e8ab8381553e4fea01f012c24c8cc997a5a49b3b"
+    },
+    {
+     "path": "scripts/rebaseline_post_promotion.py",
+     "line": 51,
+     "name": "sha256_of",
+     "exact_hash": "ccbd0eaca4a0503b15b64959e8ab8381553e4fea01f012c24c8cc997a5a49b3b"
+    },
+    {
+     "path": "scripts/verify_cleanup_gates.py",
+     "line": 20,
+     "name": "sha256_of",
+     "exact_hash": "701248dcd3b2f61e69748a90c9f55c5b0b2bbba5af7baa15ecffd433833e6a07"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "scripts/audit_codex_runtime_state.py",
+     "line": 108,
+     "name": "sha256_of",
+     "exact_hash": "fe29cda33e1237d433fcb34832964d35cee53a5992dcb5883f7502dce0105308"
+    },
+    {
+     "path": "scripts/audit_project_cleanup.py",
+     "line": 27,
+     "name": "sha256_of",
+     "exact_hash": "171ff10c572a3e6fd6f9194cd090d1a7631bc539386c14ee6acc3c56851cbb22"
+    },
+    {
+     "path": "scripts/execute_project_cleanup.py",
+     "line": 22,
+     "name": "sha256_of",
+     "exact_hash": "6e507c6099bc4ee8d81d5aea31611f0aa6967e7a411a4f2a979c79e001169ecf"
+    },
+    {
+     "path": "scripts/repair_active_index_metadata.py",
+     "line": 46,
+     "name": "sha256_of",
+     "exact_hash": "3b88c6fb54e92955edb0639493271ba04272a889ec4143e3e3ed35973107a5d4"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase14a/tests/test_phase14a.py",
+     "line": 188,
+     "name": "t_nomut",
+     "exact_hash": "54d6b41ae29012275b90acbb6f557da825b7cc6c734c730cf04e75ba909a1cda"
+    },
+    {
+     "path": "experiments/phase14a/tests/test_phase14a_b.py",
+     "line": 383,
+     "name": "t_nomut",
+     "exact_hash": "23edfd8d998cb1c99c4483fdd001a0d1af23ced279522a25a7543111f28d4a70"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "src/evidenceflow/domain/answer.py",
+     "line": 34,
+     "name": "validate_page_range",
+     "exact_hash": "0dce69a5e84e78c6cf7d0f54ad8522770570bfa6ff284ec55970000c3d164e3d"
+    },
+    {
+     "path": "src/evidenceflow/domain/chunk.py",
+     "line": 46,
+     "name": "validate_page_range",
+     "exact_hash": "e74ee33526471d7e477ae2cc90e6c4b0f029892b589f8efc9934156b9b88e0fa"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/phase13c/runners/run_phase13c_c.py",
+     "line": 67,
+     "name": "write_json",
+     "exact_hash": "592940b938618ff349fad07d9d46e883cd9b82423b329c3d06497f1e96515491"
+    },
+    {
+     "path": "experiments/phase13c/runners/run_phase13d_augmentation.py",
+     "line": 57,
+     "name": "write_json",
+     "exact_hash": "1dbef5fd083bfe765f992d5b0760511aca5d52a04a34de5b8fbad96e1ef9c75e"
+    },
+    {
+     "path": "experiments/phase13c/runners/run_phase13e_hybrid.py",
+     "line": 53,
+     "name": "write_json",
+     "exact_hash": "1dbef5fd083bfe765f992d5b0760511aca5d52a04a34de5b8fbad96e1ef9c75e"
+    },
+    {
+     "path": "experiments/phase13c/runners/run_phase13f_runtime_promotion.py",
+     "line": 65,
+     "name": "write_json",
+     "exact_hash": "1dbef5fd083bfe765f992d5b0760511aca5d52a04a34de5b8fbad96e1ef9c75e"
+    }
+   ]
+  },
+  {
+   "structural_similarity": 1.0,
+   "candidates": [
+    {
+     "path": "experiments/run_phase15b_hybrid_candidate_benchmark.py",
+     "line": 105,
+     "name": "write_json",
+     "exact_hash": "f3d52f32d6cc9a74ba1694d3566f34ef6f2e84bb0afcb7b499e39257cad1a0f2"
+    },
+    {
+     "path": "experiments/run_production_reranked_baseline_replay.py",
+     "line": 75,
+     "name": "write_json",
+     "exact_hash": "d2eabf3cf7ff1401551649fbad378834665444d3400725db6241b38fc88da2cb"
+    }
+   ]
+  }
+ ],
+ "parse_errors": [],
+ "policy": "完全重复仅标记候选；高相似函数使用结构归一化分组，仅供 REVIEW，不自动合并"
+}

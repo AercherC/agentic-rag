@@ -1,0 +1,32 @@
+{
+  "phase": 8,
+  "status": "EXECUTABLE_WITH_ADJUSTMENT",
+  "adjustment": "No GPU; CPU float32 batch=4 only.",
+  "dataset_id": "research_questions_v2_gold_stable_v1",
+  "mapping_version": "gold-mapper-v3",
+  "retrieval_contract_version": 2,
+  "index_version": "ef_research_bge_m3_c512_o64_v1:3f542723409fabf5649dc363f23bfb417f4538c876db1483fd64334916b5d332",
+  "collection_name": "ef_research_bge_m3_c512_o64_v1",
+  "chunk_count": 361,
+  "depths": [
+    5,
+    10,
+    20,
+    30,
+    50
+  ],
+  "candidate_k": 20,
+  "final_k": 5,
+  "reranker": {
+    "id": "BAAI/bge-reranker-base",
+    "local_path": ".cache\\models\\bge-reranker-base",
+    "max_length": 512
+  },
+  "device": {
+    "cpu": true,
+    "gpu_available": false,
+    "gpu_name": null
+  },
+  "runtime_modified": false,
+  "formal_index_modified": false
+}

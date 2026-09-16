@@ -1,0 +1,757 @@
+{
+  "dataset_version": "research-retrieval-v1",
+  "corpus_hash": "1e48b401aa48fc59d94bba627deaa3005a7627860e4fe5815761d45c6ba68675",
+  "corpus_manifest_hash": "efd92f9de8ac30e6a1081d1641076a9166b18f671238b5d44f89f6727423bb16",
+  "gold_contract": "document_id + 1-based page_range + evidence_anchor; no chunk_id",
+  "questions": [
+    {
+      "question_id": "ARR-001",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "Why is point cloud completion needed according to PCN?",
+      "english_query": "Why is point cloud completion needed according to PCN?",
+      "gold_sources": [
+        {
+          "file_name": "pcn_point_completion_network.pdf",
+          "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "Real-world 3D data are often incomplete"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-002",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+      "english_query": "What three common causes of incomplete real-world point clouds does PoinTr identify?",
+      "gold_sources": [
+        {
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "limited sensor resolution, single viewpoint"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-003",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "What acquisition problems motivate ProxyFormer?",
+      "english_query": "What acquisition problems motivate ProxyFormer?",
+      "gold_sources": [
+        {
+          "file_name": "proxyformer.pdf",
+          "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "equipment defects or limited viewpoints"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-004",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+      "english_query": "What sparsity problem in real-world scans does SVDFormer seek to mitigate?",
+      "gold_sources": [
+        {
+          "file_name": "svdformer.pdf",
+          "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_anchor": "highly sparse real-world"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-005",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "Why does PointAttN question using a fixed neighborhood parameter?",
+      "english_query": "Why does PointAttN question using a fixed neighborhood parameter?",
+      "gold_sources": [
+        {
+          "file_name": "pointattn.pdf",
+          "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "fixed parameter to process point clouds is unreasonable"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-006",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "query": "Hyper-PCN 认为只建模成对关系会遗漏什么？",
+      "english_query": "What does Hyper-PCN argue is missed by modeling only pairwise relations?",
+      "gold_sources": [
+        {
+          "file_name": "hyper_pcn.pdf",
+          "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "high-order correlations"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-007",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "query": "What two outputs are shown in the PCN architecture?",
+      "english_query": "What two outputs are shown in the PCN architecture?",
+      "gold_sources": [
+        {
+          "file_name": "pcn_point_completion_network.pdf",
+          "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+          "page_start": 3,
+          "page_end": 3,
+          "evidence_anchor": "Figure 2: PCN architecture"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-008",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "query": "PF-Net 的总体架构图由哪三个主要模块组成？",
+      "english_query": "Which three main modules form the overall PF-Net architecture?",
+      "gold_sources": [
+        {
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+          "page_start": 3,
+          "page_end": 3,
+          "evidence_anchor": "The architecture of PF-Net"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-009",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "query": "How does PoinTr represent a point cloud for transformer processing?",
+      "english_query": "How does PoinTr represent a point cloud for transformer processing?",
+      "gold_sources": [
+        {
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "sequence of point proxies"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-010",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+      "english_query": "What point deconvolution module is shown in the SnowflakeNet architecture?",
+      "gold_sources": [
+        {
+          "file_name": "snowflakenet.pdf",
+          "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+          "page_start": 3,
+          "page_end": 3,
+          "evidence_anchor": "architecture of SnowflakeNet"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-011",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "query": "What new shape representation does SeedFormer introduce?",
+      "english_query": "What new shape representation does SeedFormer introduce?",
+      "gold_sources": [
+        {
+          "file_name": "seedformer.pdf",
+          "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "shape representation, namely Patch Seeds"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-012",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+      "english_query": "How does ProxyFormer use proxy alignment to improve missing regions?",
+      "gold_sources": [
+        {
+          "file_name": "proxyformer.pdf",
+          "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "proxy alignment"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-013",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "query": "What two generators make up SVDFormer's dual-generator design?",
+      "english_query": "What two generators make up SVDFormer's dual-generator design?",
+      "gold_sources": [
+        {
+          "file_name": "svdformer.pdf",
+          "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "self-structure dual-generator"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-014",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+      "english_query": "What roles do HyperRS and A-HGNN play in the overall Hyper-PCN framework?",
+      "gold_sources": [
+        {
+          "file_name": "hyper_pcn.pdf",
+          "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+          "page_start": 3,
+          "page_end": 3,
+          "evidence_anchor": "overall Hyper-PCN framework"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-015",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "query": "How many ShapeNet models and categories are used by PCN?",
+      "english_query": "How many ShapeNet models and categories are used by PCN?",
+      "gold_sources": [
+        {
+          "file_name": "pcn_point_completion_network.pdf",
+          "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+          "page_start": 4,
+          "page_end": 4,
+          "evidence_anchor": "30974 models from 8 categories"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-016",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+      "english_query": "What primary distance loss is used to train SnowflakeNet?",
+      "gold_sources": [
+        {
+          "file_name": "snowflakenet.pdf",
+          "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+          "page_start": 5,
+          "page_end": 5,
+          "evidence_anchor": "Chamfer distance"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-017",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+      "english_query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+      "gold_sources": [
+        {
+          "file_name": "seedformer.pdf",
+          "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+          "page_start": 8,
+          "page_end": 8,
+          "evidence_anchor": "Np = 128"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-018",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+      "english_query": "How many points are in the input and complete point clouds for ProxyFormer on ShapeNet-55/34?",
+      "gold_sources": [
+        {
+          "file_name": "proxyformer.pdf",
+          "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_anchor": "2048 points"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-019",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "english_query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "gold_sources": [
+        {
+          "file_name": "pointattn.pdf",
+          "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_anchor": "16384 points"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-020",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "query": "PCN 的合成训练数据来自哪个 CAD 数据集？",
+      "english_query": "Which CAD dataset supplies PCN's synthetic training data?",
+      "gold_sources": [
+        {
+          "file_name": "pcn_point_completion_network.pdf",
+          "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+          "page_start": 4,
+          "page_end": 4,
+          "evidence_anchor": "synthetic CAD models from ShapeNet"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-021",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+      "english_query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+      "gold_sources": [
+        {
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "55 categories"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-022",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+      "english_query": "Which two public benchmarks are used in SnowflakeNet's main experiments?",
+      "gold_sources": [
+        {
+          "file_name": "snowflakenet.pdf",
+          "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+          "page_start": 5,
+          "page_end": 5,
+          "evidence_anchor": "PCN [57] and Completion3D"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-023",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+      "english_query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+      "gold_sources": [
+        {
+          "file_name": "adapointr.pdf",
+          "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_anchor": "Projected-ShapeNet-55"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-024",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "query": "Hyper-PCN 在哪些主要数据集上进行评估？",
+      "english_query": "On which main datasets is Hyper-PCN evaluated?",
+      "gold_sources": [
+        {
+          "file_name": "hyper_pcn.pdf",
+          "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+          "page_start": 5,
+          "page_end": 5,
+          "evidence_anchor": "PCN dataset"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-025",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+      "english_query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+      "gold_sources": [
+        {
+          "file_name": "adapointr.pdf",
+          "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+          "page_start": 9,
+          "page_end": 9,
+          "evidence_anchor": "Results on ShapeNet-55"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-026",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "PoinTr 的 PCN 数据集结果表使用什么指标比较各方法？",
+      "english_query": "What metric is used to compare methods in PoinTr's PCN dataset results table?",
+      "gold_sources": [
+        {
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+          "page_start": 7,
+          "page_end": 7,
+          "evidence_anchor": "Results on the PCN dataset"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-027",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+      "english_query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+      "gold_sources": [
+        {
+          "file_name": "seedformer.pdf",
+          "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+          "page_start": 10,
+          "page_end": 10,
+          "evidence_anchor": "Completion results on ShapeNet-55"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-028",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "ProxyFormer 的 PCN 定量对比表包含哪些物体类别？",
+      "english_query": "Which object categories appear in ProxyFormer's quantitative PCN comparison table?",
+      "gold_sources": [
+        {
+          "file_name": "proxyformer.pdf",
+          "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+          "page_start": 6,
+          "page_end": 6,
+          "evidence_anchor": "Quantitative comparison"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-029",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "english_query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "gold_sources": [
+        {
+          "file_name": "svdformer.pdf",
+          "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+          "page_start": 7,
+          "page_end": 7,
+          "evidence_anchor": "Quantitative results on ShapeNet-34"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-030",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+      "english_query": "What Chamfer Distance scaling is used in PointAttN's PCN results table?",
+      "gold_sources": [
+        {
+          "file_name": "pointattn.pdf",
+          "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+          "page_start": 8,
+          "page_end": 8,
+          "evidence_anchor": "Point cloud completion results on the PCN dataset"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-031",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "english_query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "gold_sources": [
+        {
+          "file_name": "adapointr.pdf",
+          "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+          "page_start": 18,
+          "page_end": 18,
+          "evidence_anchor": "Ablation on formulation of point proxies"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-032",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "query": "Hyper-PCN 补充材料如何通过替换方式消融核心模块？",
+      "english_query": "How does the Hyper-PCN supplement ablate core modules by replacement?",
+      "gold_sources": [
+        {
+          "file_name": "hyper_pcn.pdf",
+          "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+          "page_start": 12,
+          "page_end": 12,
+          "evidence_anchor": "Ablation of core modules by replacement"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-033",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "query": "What additional evidence does the PCN supplementary document provide?",
+      "english_query": "What additional evidence does the PCN supplementary document provide?",
+      "gold_sources": [
+        {
+          "file_name": "pcn_point_completion_network.pdf",
+          "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+          "page_start": 12,
+          "page_end": 12,
+          "evidence_anchor": "technical details and additional quantitative"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-034",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "query": "SeedFormer 补充材料列出了哪些额外实现与实验内容？",
+      "english_query": "What additional implementation and experimental content is listed in the SeedFormer supplement?",
+      "gold_sources": [
+        {
+          "file_name": "seedformer.pdf",
+          "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+          "page_start": 18,
+          "page_end": 18,
+          "evidence_anchor": "supplementary material"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-035",
+      "language": "en",
+      "language_group": "english_to_english",
+      "question_type": "conclusion_limitation",
+      "evidence_type": "body_text",
+      "query": "What core approach does SVDFormer summarize in its conclusion?",
+      "english_query": "What core approach does SVDFormer summarize in its conclusion?",
+      "gold_sources": [
+        {
+          "file_name": "svdformer.pdf",
+          "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+          "page_start": 9,
+          "page_end": 9,
+          "evidence_anchor": "We propose SVDFormer"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-036",
+      "language": "zh",
+      "language_group": "chinese_to_english",
+      "question_type": "conclusion_limitation",
+      "evidence_type": "body_text",
+      "query": "PointAttN 在结论中如何概括其核心网络？",
+      "english_query": "How does PointAttN summarize its core network in the conclusion?",
+      "gold_sources": [
+        {
+          "file_name": "pointattn.pdf",
+          "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+          "page_start": 10,
+          "page_end": 10,
+          "evidence_anchor": "we present a novel deep neural network"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-037",
+      "language": "en",
+      "language_group": "mixed_multiple_sources",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "english_query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "gold_sources": [
+        {
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_anchor": "dynamic queries"
+        },
+        {
+          "file_name": "adapointr.pdf",
+          "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+          "page_start": 4,
+          "page_end": 4,
+          "evidence_anchor": "dynamic query"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-038",
+      "language": "zh",
+      "language_group": "mixed_multiple_sources",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "query": "比较 PF-Net 与 SeedFormer 的层级式点云生成表示。",
+      "english_query": "Compare the hierarchical point-cloud generation representations of PF-Net and SeedFormer.",
+      "gold_sources": [
+        {
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "point pyramid decoder"
+        },
+        {
+          "file_name": "seedformer.pdf",
+          "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "Patch Seeds"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-039",
+      "language": "en",
+      "language_group": "mixed_multiple_sources",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "english_query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "gold_sources": [
+        {
+          "file_name": "snowflakenet.pdf",
+          "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "Skip-Transformer"
+        },
+        {
+          "file_name": "pointattn.pdf",
+          "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+          "page_start": 2,
+          "page_end": 2,
+          "evidence_anchor": "self-attention and cross-attention"
+        }
+      ]
+    },
+    {
+      "question_id": "ARR-040",
+      "language": "zh",
+      "language_group": "mixed_multiple_sources",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+      "english_query": "Compare how SVDFormer and Hyper-PCN model structural relationships in point clouds.",
+      "gold_sources": [
+        {
+          "file_name": "svdformer.pdf",
+          "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "self-structure"
+        },
+        {
+          "file_name": "hyper_pcn.pdf",
+          "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+          "page_start": 1,
+          "page_end": 1,
+          "evidence_anchor": "hypergraph"
+        }
+      ]
+    }
+  ],
+  "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357"
+}

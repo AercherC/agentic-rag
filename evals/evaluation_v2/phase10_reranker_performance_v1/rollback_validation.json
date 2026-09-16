@@ -1,0 +1,14 @@
+{
+  "mechanism": "RERANKER_ENABLED=false",
+  "target_strategy": "legacy_multilingual",
+  "requires_code_change": false,
+  "requires_chroma_rebuild": false,
+  "requires_embedding_recompute": false,
+  "translation_available": true,
+  "hybrid_available_when_multilingual_hybrid_enabled": true,
+  "validated_by": [
+    "tests/test_runtime.py::test_runtime_factory_wires_hybrid_bm25_when_enabled",
+    "full pytest suite"
+  ],
+  "status": "PASS"
+}

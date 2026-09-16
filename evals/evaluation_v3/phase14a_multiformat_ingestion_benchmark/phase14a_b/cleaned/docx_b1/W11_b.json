@@ -1,0 +1,234 @@
+{
+  "document_id": "W11",
+  "source_format": "docx",
+  "source_file": "W11.docx",
+  "source_sha256": "4b23d55a0a6b81bc717e3c229a8bccda5e91ff44255b6a11f0cb25035041165a",
+  "element_count": 5,
+  "elements": [
+    {
+      "document_id": "W11",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Nested Merged Table Document",
+      "normalized_text": "Nested Merged Table Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 0
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W11",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Complex Tables",
+      "normalized_text": "Complex Tables",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W11",
+      "element_id": "el-docx-tbl-0",
+      "type": "table",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "table[1]",
+        "style_id": "Table Grid",
+        "table_index": 0,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "rows": 3,
+        "cols": 3,
+        "cells": [
+          [
+            "Region",
+            "Metric",
+            "Value"
+          ],
+          [
+            "North\nNorth",
+            "CD",
+            "8.1"
+          ],
+          [
+            "North\nNorth",
+            "F1",
+            "0.84"
+          ]
+        ],
+        "merged_regions": [
+          {
+            "anchor": "R2C1",
+            "row_span": 2,
+            "col_span": 1
+          }
+        ],
+        "table_style_id": "Table Grid",
+        "serialized_markdown": "| Region | Metric | Value |\n| --- | --- | --- |\n| North\nNorth | CD | 8.1 |\n| North\nNorth | F1 | 0.84 |"
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W11",
+      "element_id": "el-docx-tbl-1",
+      "type": "table",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "table[2]",
+        "style_id": "Table Grid",
+        "table_index": 1,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "rows": 2,
+        "cols": 2,
+        "cells": [
+          [
+            "Model",
+            "Params"
+          ],
+          [
+            "Small\n",
+            "1M"
+          ]
+        ],
+        "merged_regions": [],
+        "table_style_id": "Table Grid",
+        "serialized_markdown": "| Model | Params |\n| --- | --- |\n| Small\n | 1M |"
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W11",
+      "element_id": "el-docx-tbl1-nested-0",
+      "type": "table",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": "el-docx-tbl-1",
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "table[2]",
+        "style_id": null,
+        "table_index": 1,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "rows": 2,
+        "cols": 2,
+        "cells": [
+          [
+            "Detail",
+            "Note"
+          ],
+          [
+            "Encoder",
+            "frozen"
+          ]
+        ],
+        "nested_in_cell": true
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [
+    {
+      "type": "contains",
+      "from": "el-docx-tbl-1",
+      "to": "el-docx-tbl1-nested-0"
+    }
+  ],
+  "document_metadata": {
+    "parser": "DOCX-B1_python_docx_semantic",
+    "page_breaks": [],
+    "page_break_provenance_kind": null
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-0",
+      "reason": "explicit_style: Title",
+      "from": "paragraph",
+      "to": "document_title",
+      "source_element_id": "el-docx-p-0"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-1",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-1"
+    },
+    {
+      "action": "serialize_table",
+      "target": "el-docx-tbl-0",
+      "reason": "table normalization: matrix + markdown + merges"
+    },
+    {
+      "action": "preserve_merged_cells",
+      "target": "el-docx-tbl-0",
+      "reason": "merged cell regions kept traceable",
+      "detail": {
+        "regions": [
+          {
+            "anchor": "R2C1",
+            "row_span": 2,
+            "col_span": 1
+          }
+        ]
+      }
+    },
+    {
+      "action": "extract_nested_table",
+      "target": "el-docx-tbl1-nested-0",
+      "reason": "nested table inside cell",
+      "source_element_id": "el-docx-tbl-1"
+    },
+    {
+      "action": "serialize_table",
+      "target": "el-docx-tbl-1",
+      "reason": "table normalization: matrix + markdown + merges"
+    }
+  ],
+  "unresolved": []
+}

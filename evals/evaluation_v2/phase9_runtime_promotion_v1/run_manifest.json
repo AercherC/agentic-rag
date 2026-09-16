@@ -1,0 +1,22 @@
+{
+  "phase": 9,
+  "status": "EXECUTABLE_WITH_ADJUSTMENT",
+  "adjustment": "CPU float32 only; interactive latency remains outside optimization scope.",
+  "dataset_id": "research_questions_v2_gold_stable_v1",
+  "mapping_version": "gold-mapper-v3",
+  "retrieval_contract_version": 2,
+  "index_version": "ef_research_bge_m3_c512_o64_v1:3f542723409fabf5649dc363f23bfb417f4538c876db1483fd64334916b5d332",
+  "collection_name": "ef_research_bge_m3_c512_o64_v1",
+  "chunk_count": 361,
+  "chunk_id_set_sha256": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0",
+  "candidate_k": 20,
+  "final_k": 5,
+  "reranker": {
+    "id": "BAAI/bge-reranker-base",
+    "resolved_local_path": ".cache\\models\\bge-reranker-base",
+    "max_length": 512,
+    "batch_size": 4,
+    "device": "cpu",
+    "dtype": "float32"
+  }
+}

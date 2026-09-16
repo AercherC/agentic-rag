@@ -1,0 +1,87 @@
+{
+  "artifact_type": "phase13c_b_metrics_equation",
+  "created_at_utc": "2026-09-14T12:40:30.019020+00:00",
+  "arm_id": "B1_mineru_cleaned",
+  "scope": "controlled",
+  "document_count": 12,
+  "arm_summary": {
+    "equation_detection_by_geometry": null,
+    "equation_detection_precision": null,
+    "formula_number_preservation": null,
+    "broken_formula_rate": null
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T02_ieee_two_column": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T03_cvpr_two_column": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T04_acm_two_column": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T05_springer_lncs": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T06_elsevier_journal": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T07_arxiv_preprint": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T08_table_heavy": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T09_formula_heavy": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T10_figure_heavy": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T11_references_heavy": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    },
+    "T12_scanned_image_only": {
+      "equation_detection_by_geometry": null,
+      "equation_detection_precision": null,
+      "formula_number_preservation": null,
+      "broken_formula_rate": null
+    }
+  }
+}

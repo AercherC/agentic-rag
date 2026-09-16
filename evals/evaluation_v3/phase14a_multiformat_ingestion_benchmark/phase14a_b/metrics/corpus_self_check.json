@@ -1,0 +1,261 @@
+{
+  "artifact_type": "phase14a_b_corpus_self_check",
+  "method": "解析器无关 OOXML 自证（14A-A 纪律 + 四项测量修正，见 measurement_notes）",
+  "measurement_notes": [
+    "structural_ok: bool-or-numeric(>=threshold) 判定，修复 selfcheck14a `v is True` 对 float 指标的误判（W5/W12）",
+    "formula_dual: 命名空间无关正则，修复 ET 重写 ns0: 前缀导致的失明（X6/X13）",
+    "hidden_sheet: re.search 替代「正则当子串」（X7/X14）",
+    "cell token recall: float 容差归一，修复 IEEE 754 序列化假阴性（X1/X8）"
+  ],
+  "docx_passing": 12,
+  "docx_total": 12,
+  "xlsx_passing": 15,
+  "xlsx_total": 15,
+  "all_passed": true,
+  "docx": [
+    {
+      "case_id": "W1",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W2",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W3",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "table_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W4",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "image_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W5",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "footnote_part_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W6",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "header_present": true,
+        "footer_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W7",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "textbox_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W8",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W9",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W10",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "table_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W11",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "table_present": true,
+        "heading_style_present": true
+      }
+    },
+    {
+      "case_id": "W12",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "footnote_part_present": true,
+        "header_present": true,
+        "footer_present": true,
+        "heading_style_present": true
+      }
+    }
+  ],
+  "xlsx": [
+    {
+      "case_id": "X1",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X2",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X3",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X4",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "merge_B1:C1": true,
+        "merge_D1:E1": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X5",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "merge_A3:B3": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X6",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "formula_dual_C2": true,
+        "formula_dual_C3": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X7",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "hidden_row_3": true,
+        "hidden_col_C": true,
+        "hidden_sheet_HiddenSheet": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X8",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "named_table_ResultTable": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X9",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X10",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X11",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {},
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X12",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "merge_B1:C1": true,
+        "merge_D1:E1": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X13",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "formula_dual_D2": true,
+        "formula_dual_D3": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X14",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "hidden_row_3": true,
+        "hidden_col_C": true,
+        "auto_filter_A1:B4": true,
+        "hidden_sheet_Archived": true
+      },
+      "all_structural_ok": true
+    },
+    {
+      "case_id": "X15",
+      "passes": true,
+      "min_token_recall": 1.0,
+      "structural": {
+        "kv_A4": true,
+        "kv_B4": true,
+        "kv_A5": true,
+        "kv_B5": true
+      },
+      "all_structural_ok": true
+    }
+  ]
+}

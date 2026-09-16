@@ -1,0 +1,31 @@
+{
+ "artifact_type": "phase13e_manifest",
+ "created_at": "2026-09-15T08:26:52.632337+00:00",
+ "files": {
+  "chunks/PH1.jsonl": "4861f70b82e9a7427e5fe10b34be304cb425c23dc576855ae9150ca9c556ab87",
+  "chunks/PH2.jsonl": "f4f4648939de88dd699da8d058c28a35902ca5356f1f25575f6c7cd5b42e3906",
+  "chunks/PH3.jsonl": "fa4e8dcfd204b312b79330433dd0b1f7ad5fdd5ef28fc3e56c417ceac499e54a",
+  "embeddings/PH1.npz": "aaf3266afa85e33a3dcd3b263a1cfa1ecf40adbf0d836ee37214536bf7964734",
+  "embeddings/PH2.npz": "574c9ee9ececa3185f67f9d06231e5cd12f5ee56e1a451fe0fa256c5a0806a71",
+  "embeddings/PH3.npz": "5b662000eeb5502c2976875bcbdb43ca0bdc74a2fed8c85a6e2412f8e29459ff",
+  "retrieval/PH1_run.json": "faf432a404434393d6552992eeca71ec3f30d5ccf2668de7981646defea94fb1",
+  "retrieval/PH2_run.json": "4743d74ca0c3c9112ea0f2f68b304b71d3a7bdc44a2e47db665fefe3acc7ae22",
+  "retrieval/PH3_run.json": "698f7cb78922acdd5b01f546bcc94f7339396263310447412183e58345bf637f",
+  "metrics/bootstrap.json": "a1576eb9981853e75d3f61c1f9ac9b699fe0f1adcdb79f4c5fcf797398b998d1",
+  "metrics/focus_questions.json": "ac3e0ccab582a8ea68d41e86bf317f5f05e44db87d186dae011b3d4aafdf3f3c",
+  "metrics/ir_by_arm.json": "8c8331a54dd3db1d8b78584cf4607dfde796b154f58f874646cd67985a708a6f",
+  "metrics/ir_per_query.json": "d322b247e5a21abb1bbc8f8bda61eb3f5fc00fcdde72c0d9aa628c68f3748e3c",
+  "metrics/qrels_projection.json": "01b3a4c43b08cde6c3eb30910e8087c31a701629fb271d0eeb1140d7e9705233",
+  "metrics/retrieval_stats.json": "d6e00c0437f2385c31c5bb5e8b8aac9d485ef68960e48f779c3e9b1c8f99bc91",
+  "gates/E_G1_inputs.json": "ee611643f5d9c49937334f1a109298e0515b9d5c8e9d44de13d8fa7166b609b0",
+  "gates/E_G2_coverage.json": "053aa80a08d73c6de9ccbd6eacb937a5a17be2f44f1796845ce30462d5f066c3",
+  "gates/E_G3_G4_G5_structure.json": "7dc4fcfc956a5d12db7dae9679c2c9821a1175140166a9f23ab67ceeb88a616c",
+  "gates/E_G6_protocol.json": "70ff127daf5b005bbb6b15803d3e6be414fbbd693340bcd45eff5e931a5082e6",
+  "gates/E_G7_bootstrap_determinism.json": "1c1e22a61b835a0cfd675ac99eb754e7c9a4c94145c026cd7506d7346725914e",
+  "gates/hard_gates.json": "0013eb99149512e1b0bd58831a46d946bbaa211fdc103264cee14c1c3f0c07e9",
+  "status.json": "338f0eee600140b54b5b0c123562ab2ff13f44f7a6ba6c4861f23542b0739cf7",
+  "PLAN.md": "51acf0560ace493d6a2ab03a48a61a4c7e6cc93e7f3158a6d32bc2534a7ddd98",
+  "reports/final_report.md": "ee5befead7fd6dda1e704c05305ac2ebe4b2b12489559495d8d00647a6d4e8ff"
+ },
+ "note": "参照臂复用 13C-C 冻结产物；chroma 为临时不入 manifest。"
+}

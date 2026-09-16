@@ -1,0 +1,44 @@
+{
+  "phase": 2,
+  "evaluation_version": "2.0",
+  "test_result": {
+    "passed": 339,
+    "failed": 0,
+    "collection_errors": 0,
+    "warnings": 17
+  },
+  "legacy_metric_replay": {
+    "baseline": {
+      "N": 40,
+      "hit_at_1": 0.175,
+      "ndcg_at_1": 0.2,
+      "hit_at_3": 0.35,
+      "ndcg_at_3": 0.2876484113369958,
+      "hit_at_5": 0.475,
+      "ndcg_at_5": 0.34038738732519863,
+      "hit_at_10": 0.65,
+      "ndcg_at_10": 0.4038486841031775,
+      "hit_at_20": 0.65,
+      "ndcg_at_20": 0.4038486841031775,
+      "mrr": 0.30157738095238096
+    },
+    "shared_core": {
+      "N": 40,
+      "hit_at_1": 0.175,
+      "ndcg_at_1": 0.2,
+      "hit_at_3": 0.35,
+      "ndcg_at_3": 0.2876484113369958,
+      "hit_at_5": 0.475,
+      "ndcg_at_5": 0.34038738732519863,
+      "hit_at_10": 0.65,
+      "ndcg_at_10": 0.4038486841031775,
+      "hit_at_20": 0.65,
+      "ndcg_at_20": 0.4038486841031775,
+      "mrr": 0.30157738095238096
+    },
+    "delta": 0,
+    "gate": "PASS"
+  },
+  "runtime_changed": false,
+  "gold_audit_pending": true
+}

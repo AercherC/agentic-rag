@@ -1,0 +1,129 @@
+{
+  "document_id": "W4",
+  "source_format": "docx",
+  "source_file": "W4.docx",
+  "source_sha256": "06c029fa8e0a733b39512e7ed25298221229244e91ebd97a9cd1aa0634af5364",
+  "element_count": 6,
+  "elements": [
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Image Caption Document",
+      "normalized_text": "Image Caption Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Architecture",
+      "normalized_text": "Architecture",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-img-2",
+      "type": "image",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "image",
+      "metadata": {
+        "near_paragraph_index": 2
+      },
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-p-3",
+      "type": "caption",
+      "raw_text": "Figure 1: The overall network architecture.",
+      "normalized_text": "Figure 1: The overall network architecture.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Caption",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W4",
+      "element_id": "el-docx-p-4",
+      "type": "paragraph",
+      "raw_text": "The diagram shows the pipeline.",
+      "normalized_text": "The diagram shows the pipeline.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "W-A0_python_docx"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "artifact_type": "phase13c_reproducibility_check",
+  "created_at_utc": "2026-09-14T10:36:35.099631+00:00",
+  "method": "对每个可运行 arm 在同一份受控模板上重复解析一次，比较结构化输出的规范化摘要（parser / 页数 / 元素的类型·文本·坐标·阅读顺序·章节路径）。摘要不含路径与耗时，因此不一致只可能来自 parser 自身的不确定性。",
+  "template_id": "T02_ieee_two_column",
+  "arm_count": 6,
+  "graded_arm_count": 5,
+  "reproducible_arm_count": 5,
+  "all_reproducible": true,
+  "arms": {
+    "P0_current": {
+      "checked": true,
+      "template_id": "T02_ieee_two_column",
+      "ocr_mode": "none",
+      "digest_first": "e5cb55c3de26907975e6f9e4e625b7d79d7c62cf4665f2e51b74499e087bec6d",
+      "digest_second": "e5cb55c3de26907975e6f9e4e625b7d79d7c62cf4665f2e51b74499e087bec6d",
+      "reproducible": true,
+      "element_count": 65
+    },
+    "P1_mineru": {
+      "checked": true,
+      "template_id": "T02_ieee_two_column",
+      "ocr_mode": "none",
+      "digest_first": "5ec1248e4f723215258679769e069ab0b2059511d398ea9cf8eedbddd1c144b3",
+      "digest_second": "5ec1248e4f723215258679769e069ab0b2059511d398ea9cf8eedbddd1c144b3",
+      "reproducible": true,
+      "element_count": 47
+    },
+    "P2_docling": {
+      "checked": true,
+      "template_id": "T02_ieee_two_column",
+      "ocr_mode": "none",
+      "digest_first": "52c214af3084e78c76f8e899a2a5897a7e08e94fc6449a8e553854a031e535d6",
+      "digest_second": "52c214af3084e78c76f8e899a2a5897a7e08e94fc6449a8e553854a031e535d6",
+      "reproducible": true,
+      "element_count": 55
+    },
+    "P3_marker": {
+      "checked": true,
+      "template_id": "T02_ieee_two_column",
+      "ocr_mode": "none",
+      "digest_first": "197052bd26c02e1244544cf95a0c36ff78e29a4487928e98ba1b934ee28fcfc0",
+      "digest_second": "197052bd26c02e1244544cf95a0c36ff78e29a4487928e98ba1b934ee28fcfc0",
+      "reproducible": true,
+      "element_count": 47
+    },
+    "P4_grobid": {
+      "checked": false,
+      "reproducible": null,
+      "reason": "arm 未运行（BLOCKED 或没有产出）"
+    },
+    "O2_ocr": {
+      "checked": true,
+      "template_id": "T02_ieee_two_column",
+      "ocr_mode": "force",
+      "digest_first": "2f9d59409c77a6db14b562063daadf4aa6da2f4b3818b48c4f3024e768fc7b1e",
+      "digest_second": "2f9d59409c77a6db14b562063daadf4aa6da2f4b3818b48c4f3024e768fc7b1e",
+      "reproducible": true,
+      "element_count": 43
+    }
+  }
+}

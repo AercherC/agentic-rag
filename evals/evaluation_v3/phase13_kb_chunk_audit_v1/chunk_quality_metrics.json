@@ -1,0 +1,3335 @@
+{
+  "artifact_type": "phase13_chunk_quality_metrics",
+  "created_at_utc": "2026-09-10T12:41:43.567063+00:00",
+  "stage": "Step 2 — Automatic Chunk Quality Audit",
+  "chunk_count": 361,
+  "size_distribution": {
+    "tokens": {
+      "min": 129.0,
+      "p25": 512.0,
+      "median": 512.0,
+      "p75": 512.0,
+      "p90": 512.0,
+      "p95": 512.0,
+      "max": 512.0,
+      "mean": 506.160665
+    },
+    "characters": {
+      "min": 384.0,
+      "p25": 1576.0,
+      "median": 1814.0,
+      "p75": 2029.0,
+      "p90": 2136.0,
+      "p95": 2186.0,
+      "max": 2317.0,
+      "mean": 1772.770083
+    },
+    "sentences": {
+      "min": 1.0,
+      "p25": 13.0,
+      "median": 16.0,
+      "p75": 22.0,
+      "p90": 32.0,
+      "p95": 57.0,
+      "max": 69.0,
+      "mean": 19.072022
+    }
+  },
+  "boundary_quality": {
+    "starts_mid_sentence_rate": 0.479224,
+    "ends_mid_sentence_rate": 0.919668,
+    "starts_mid_word_rate": 0.174515,
+    "cross_page_rate": 0.390582,
+    "very_short_chunk_rate": 0.0,
+    "near_max_chunk_rate": 0.975069,
+    "very_short_threshold_tokens": 64,
+    "near_max_threshold_tokens": 460,
+    "counts": {
+      "total": 361,
+      "cross_page": 141,
+      "very_short": 0,
+      "near_max": 352
+    }
+  },
+  "structural_contamination": {
+    "text_and_figure_caption_mixed_rate": 0.315789,
+    "text_and_table_mixed_rate": 0.180055,
+    "references_mixed_rate": 0.01108,
+    "multi_section_suspect_rate": 0.315789,
+    "multi_heading_chunk_rate": 0.121884,
+    "chunk_text_line_structure_preserved": false,
+    "chunks_with_newline": 0,
+    "line_structure_note": "BGE-M3（XLM-R SentencePiece）decode 会把换行折叠为空格，因此 361/361 chunk 的存储文本不含任何行边界；section 标题、caption、表格行、参考文献条目的**行级边界在检索单元中丢失**。",
+    "counts": {
+      "total": 361,
+      "chunks_with_figure_caption": 114,
+      "chunks_with_figure_mention": 82,
+      "chunks_with_table_caption": 65,
+      "chunks_with_table_mention": 89,
+      "chunks_with_reference_entry": 98,
+      "chunks_with_equation": 46,
+      "chunks_with_algorithm": 0,
+      "text_and_figure_caption_mixed": 114,
+      "figure_caption_only_chunks": 0,
+      "text_and_table_mixed": 65,
+      "table_caption_only_chunks": 0,
+      "references_boundary_chunks": 4,
+      "references_mixed": 4,
+      "crossing_section_boundary": 114,
+      "crossing_two_or_more_headings": 44
+    }
+  },
+  "document_furniture": {
+    "definition_repeated_string": {
+      "header_footer_contamination_rate": 0.0,
+      "contaminated_chunk_count": 0,
+      "STATUS": "UNRELIABLE_STRUCTURALLY_ALWAYS_ZERO",
+      "why": "furniture_hit() 按行比较，而 chunk 文本已被 SentencePiece decode 折叠掉换行，因此该指标恒为 0，不能作为'无页眉页脚污染'的证据。保留仅为与历史口径对齐。",
+      "documents_with_furniture": [
+        "adapointr.pdf",
+        "hyper_pcn.pdf",
+        "pcn_point_completion_network.pdf",
+        "pfnet_point_fractal_network.pdf",
+        "pointattn.pdf",
+        "pointr_geometry_aware_transformers.pdf",
+        "proxyformer.pdf",
+        "seedformer.pdf",
+        "snowflakenet.pdf",
+        "svdformer.pdf"
+      ],
+      "furniture_line_counts": {
+        "adapointr.pdf": 7,
+        "hyper_pcn.pdf": 5,
+        "pcn_point_completion_network.pdf": 24,
+        "pfnet_point_fractal_network.pdf": 2,
+        "pointattn.pdf": 6,
+        "pointr_geometry_aware_transformers.pdf": 7,
+        "proxyformer.pdf": 47,
+        "seedformer.pdf": 46,
+        "snowflakenet.pdf": 50,
+        "svdformer.pdf": 42
+      }
+    },
+    "definition_exact_span": {
+      "metric": "高置信页级装饰污染率 = chunks(字符区间 ∩ 模式明确的装饰) / 361",
+      "high_confidence_furniture_rate": 0.282548,
+      "high_confidence_furniture_chunks": 102,
+      "high_confidence_kinds": [
+        "ARXIV_SIDEBAR",
+        "COPYRIGHT",
+        "OPEN_ACCESS_WATERMARK",
+        "PAGE_NUMBER"
+      ],
+      "heuristic_repeated_line_chunks": 82,
+      "union_contamination_rate_HEURISTIC": 0.509695,
+      "page_furniture_span_count": 435,
+      "kind_counts": {
+        "ARXIV_SIDEBAR": 8,
+        "COPYRIGHT": 2,
+        "OPEN_ACCESS_WATERMARK": 3,
+        "PAGE_NUMBER": 96,
+        "REPEATED_FURNITURE": 112
+      },
+      "pattern_based": {
+        "kinds": [
+          "ARXIV_SIDEBAR",
+          "COPYRIGHT",
+          "OPEN_ACCESS_WATERMARK",
+          "PAGE_NUMBER"
+        ],
+        "chunk_count": 102,
+        "rate": 0.282548,
+        "note": "模式明确的装饰：页码 / arXiv 侧栏 / 版权声明 / 开放获取水印。判定精度高。"
+      },
+      "repeated_string_based": {
+        "kinds": [
+          "REPEATED_FURNITURE"
+        ],
+        "chunk_count": 82,
+        "rate": 0.227147,
+        "note": "跨页重复串（数字折叠为 #）在页级文本上按行精确匹配。该类**精度低**，双向都有偏差：过召回——同时命中跨页重复的参考文献 venue 串（如 'Conference on Computer Vision and Pattern Recognition'）与表格行标签；欠召回——作者型页眉（'J. Wang et al.'）因命中引用特征被过滤。因此不得当作纯页眉页脚指标使用；其中确实包含真实页眉（如 adapointr 的 'AdaPoinTr'）。"
+      },
+      "headline": "以模式明确的高置信口径计，102/361 = 28.25% 的检索单元吃进了页级装饰（页码 96 chunk，arXiv 侧栏 8，版权 2，开放获取水印 3）。旧口径报告的 0.0 是测量缺陷（按行匹配 chunk 文本，而 chunk 文本无换行），不是事实。",
+      "page_number_sequence_validation": {
+        "adapointr.pdf": {
+          "page_number_candidate_count": 22,
+          "pages_with_page_number_candidate": 22,
+          "distinct_offsets": [
+            0
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              1,
+              1
+            ],
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ]
+          ]
+        },
+        "hyper_pcn.pdf": {
+          "page_number_candidate_count": 0,
+          "pages_with_page_number_candidate": 0,
+          "distinct_offsets": [],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": []
+        },
+        "pcn_point_completion_network.pdf": {
+          "page_number_candidate_count": 16,
+          "pages_with_page_number_candidate": 16,
+          "distinct_offsets": [
+            0
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ]
+          ]
+        },
+        "pfnet_point_fractal_network.pdf": {
+          "page_number_candidate_count": 9,
+          "pages_with_page_number_candidate": 9,
+          "distinct_offsets": [
+            7661
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              1,
+              7662
+            ],
+            [
+              2,
+              7663
+            ],
+            [
+              3,
+              7664
+            ],
+            [
+              4,
+              7665
+            ],
+            [
+              5,
+              7666
+            ]
+          ]
+        },
+        "pointattn.pdf": {
+          "page_number_candidate_count": 11,
+          "pages_with_page_number_candidate": 11,
+          "distinct_offsets": [
+            0
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              2,
+              2
+            ],
+            [
+              3,
+              3
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              5,
+              5
+            ],
+            [
+              6,
+              6
+            ]
+          ]
+        },
+        "pointr_geometry_aware_transformers.pdf": {
+          "page_number_candidate_count": 0,
+          "pages_with_page_number_candidate": 0,
+          "distinct_offsets": [],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": []
+        },
+        "proxyformer.pdf": {
+          "page_number_candidate_count": 10,
+          "pages_with_page_number_candidate": 10,
+          "distinct_offsets": [
+            9465
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              1,
+              9466
+            ],
+            [
+              2,
+              9467
+            ],
+            [
+              3,
+              9468
+            ],
+            [
+              4,
+              9469
+            ],
+            [
+              5,
+              9470
+            ]
+          ]
+        },
+        "seedformer.pdf": {
+          "page_number_candidate_count": 11,
+          "pages_with_page_number_candidate": 11,
+          "distinct_offsets": [
+            0
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              2,
+              2
+            ],
+            [
+              4,
+              4
+            ],
+            [
+              6,
+              6
+            ],
+            [
+              8,
+              8
+            ],
+            [
+              10,
+              10
+            ]
+          ]
+        },
+        "snowflakenet.pdf": {
+          "page_number_candidate_count": 0,
+          "pages_with_page_number_candidate": 0,
+          "distinct_offsets": [],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": []
+        },
+        "svdformer.pdf": {
+          "page_number_candidate_count": 11,
+          "pages_with_page_number_candidate": 11,
+          "distinct_offsets": [
+            14507
+          ],
+          "inversions": 0,
+          "monotonic": true,
+          "first_five": [
+            [
+              1,
+              14508
+            ],
+            [
+              2,
+              14509
+            ],
+            [
+              3,
+              14510
+            ],
+            [
+              4,
+              14511
+            ],
+            [
+              5,
+              14512
+            ]
+          ]
+        }
+      },
+      "spans_by_document": {
+        "adapointr.pdf": 55,
+        "hyper_pcn.pdf": 30,
+        "pcn_point_completion_network.pdf": 33,
+        "pfnet_point_fractal_network.pdf": 13,
+        "pointattn.pdf": 16,
+        "pointr_geometry_aware_transformers.pdf": 29,
+        "proxyformer.pdf": 98,
+        "seedformer.pdf": 54,
+        "snowflakenet.pdf": 47,
+        "svdformer.pdf": 60
+      },
+      "contaminated_chunks": [
+        {
+          "chunk_id": "321bd270c847bdfe67af8b846c055d2faa7cdc7d40686b0a02b3bc2d7b2a1dd8",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 0,
+          "page_start": 1,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "457acca2896ea780d537b8c2614efd746478b44dc3482f7ccc28d6736bbfad3c",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 3,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR",
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2301.04545v1"
+            ],
+            "PAGE_NUMBER": [
+              "2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1b8b3b2f675b6a0e018020b1c1a6f8e950fd1e86653be1546ad60771348a9d4b",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 4,
+          "page_start": 2,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "28e10542f68defeacabc616d9050e44fc7e98a5591913e8caafbcbc9fd346a2f",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 6,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "3"
+            ]
+          }
+        },
+        {
+          "chunk_id": "086627d90108c5a6862b25ab087bd995bbfe06716af508d7eeca08ebca8c2249",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 9,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "4"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 12,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "5"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d408dba75df075b01a134ec1091e06710a9d048db451e377131fda6e18bfed48",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 15,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "692001cef7b11527dd73ecf15c4b22b75f1284249649a1c2d455dc6838bc0f3b",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 16,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5528f112c01c4f2fe440fc6220d483778d925e7e93b2fe08e5053814999e0acb",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 19,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7"
+            ]
+          }
+        },
+        {
+          "chunk_id": "2a4ed5cf06e654d1c8674e1c2ac6011cbff700df515a3bb9167654c612479c5b",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 22,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "8"
+            ]
+          }
+        },
+        {
+          "chunk_id": "39eb81320519262063d9a12a0b02a60d3809e99b12ae0a21d15e6d8f0867e574",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 26,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9"
+            ],
+            "REPEATED_FURNITURE": [
+              "TABLE 1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "6ff0af3b80b6dbd61779e1f3b1185c2f26946f35b502492df705a5377992dd5f",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 27,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "9e9a0c5fa08aa726176cf38e0797f101831da80a59930da5126f445d3ef732a0",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 28,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5d0236bc6985609d88584bab2b67ca3ca8cb4d4bfd8a05ac9ea398d7d62392e2",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 29,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "10"
+            ],
+            "REPEATED_FURNITURE": [
+              "TABLE 3"
+            ]
+          }
+        },
+        {
+          "chunk_id": "2bda0d3b22cbc72065491777a5f2d7a9d23bbbd607370b174c097b5711af5ade",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 30,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "10"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 3",
+              "TABLE 4"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cf523e5d3d6a7422e904fb77b7b06713cdd3eac42a2876b355d7c613c4d0dd35",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 31,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "9e4fce3081cd86afbc09a7e25dc638f9ebbe38e846942fa73674b26e25dcbc3a",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 32,
+          "page_start": 10,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "11"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 5",
+              "TABLE 6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "68db38e71863ce7137ba8fb2396c3bebb69310821752fff548b3066fd373c41c",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 33,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 6",
+              "TABLE 7"
+            ]
+          }
+        },
+        {
+          "chunk_id": "185d5cf5368eb51c307f32ade21b5c33215b4e7f6c446998365f1230c8cce018",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 34,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "6ba14abb3bbc172071aacd7666a513b58fab7313d1c55ed6f35ac606289be2c3",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 35,
+          "page_start": 11,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "12"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b6873586a0e7d09d009ce968d2e11d8075aa6e6433998af5b8dfdbc3e4ac49d4",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 36,
+          "page_start": 12,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "TABLE 8"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b7329697bad1991c0f00da83815cf544b0ca0aa6bd4e33829cac21ccda902d3b",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 37,
+          "page_start": 12,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "13"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 9"
+            ]
+          }
+        },
+        {
+          "chunk_id": "21bbc99dd1f78fef0260f80c6878c8bd083c50163a79cdc75595137c8f193748",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 38,
+          "page_start": 13,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1cb95048811fbd138c5d42a7aa73d3d5f25d34b353854f8ea67f06550fb21c56",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 39,
+          "page_start": 13,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14"
+            ],
+            "REPEATED_FURNITURE": [
+              "TABLE 10"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1d51f913098d49d44b65a5df40ee0d79c1e909c5bdde017b9922987764f03e31",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 40,
+          "page_start": 13,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14"
+            ],
+            "REPEATED_FURNITURE": [
+              "TABLE 10"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4f2c0756d94edce1da98e31918f4aaaea7fab7c4fbedaaccf837d405fac7610d",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 41,
+          "page_start": 14,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "TABLE 11"
+            ]
+          }
+        },
+        {
+          "chunk_id": "da9e4d340ec0802e267e7845a86f02eedccff40f7f6fe29f85192461c4253949",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 43,
+          "page_start": 14,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "15"
+            ]
+          }
+        },
+        {
+          "chunk_id": "18a222c2bc14f48e69e6efcf11df82eb3e5d51a613ff3ba0252dd66f56c2cd88",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 50,
+          "page_start": 15,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "16"
+            ]
+          }
+        },
+        {
+          "chunk_id": "702ad48c209d405a295a62bd9b8724c131fb09d2ad8e25ca931f75dc0fa375d1",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 53,
+          "page_start": 16,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "modeling,” in Proceedings of the IEEE/CVF Conference on Computer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cc3f1f371d4d570f0c27154d7e4e02d0cce60dfeff73eaacf3c354b14a08ac70",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 55,
+          "page_start": 16,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "17"
+            ]
+          }
+        },
+        {
+          "chunk_id": "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 58,
+          "page_start": 17,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "18"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "75f1313f80190a7b3c9c3004447ddfb2ad270f0d73246193511f55287599e40d",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 59,
+          "page_start": 18,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "19"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ee917aec55174325930f37ce5674534d0468211ca794a4769cf5c171581e218c",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 60,
+          "page_start": 18,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "19",
+              "20"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 12"
+            ]
+          }
+        },
+        {
+          "chunk_id": "e9f01578931bbb5b78e8eba417fae63219a5e87358085a68c8a91d1c9e7251b9",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 62,
+          "page_start": 20,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 13"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a3a02ce238a2e299be5df982938be016adc479353d5c8c6819aa8b2b6152e41e",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 64,
+          "page_start": 20,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "21"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 14"
+            ]
+          }
+        },
+        {
+          "chunk_id": "42e0e65db355d3274e2ac0b9f3b510c3a87fbc813f3e0c89f0b3ae145ab5188b",
+          "file_name": "adapointr.pdf",
+          "chunk_index": 70,
+          "page_start": 21,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "22"
+            ],
+            "REPEATED_FURNITURE": [
+              "AdaPoinTr",
+              "TABLE 15"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cdf6c45c4c6b117c64d95205c3518f5d5d43517197b48b500f49e5fe685b34ce",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 14,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Input",
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "6590b6279151e1197dfe7a974db103ffa0fc36f0509455d698b3b97d80662b48",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 15,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Input",
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "735fe57ffab494b42cd1684c4c9c066eee816e19966e9c7e4022a858ee09d006",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 16,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a241f7cbc2136f08fde72ff90f85a7de99080ea830d243590a6bee278bd97ea9",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 17,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Input",
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "da29aef9a1662556ee27be7c0c3fbfdc3d951e080cfbc8b75ce06a84d8d537f6",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 18,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours"
+            ]
+          }
+        },
+        {
+          "chunk_id": "31e04ebd39e3bba1c56124db59c84b65c5af2d7ec40a39d808891b27fab26b94",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 19,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Input"
+            ]
+          }
+        },
+        {
+          "chunk_id": "166fb73ca627b6af60146b7aae66a422a63df5ebae9e46c63e2916abbc9610a8",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 28,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cb39dee1d2691d9bbcb4b4fdccd382fb954ed188512ba2da11c92dfb9efef1e8",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 29,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4d3bc43f68a0cb0dea25a719a24770f5eb8a9a96fd6dcb74358c6f39c648e4a3",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 31,
+          "page_start": 12,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours"
+            ]
+          }
+        },
+        {
+          "chunk_id": "59c06b6cbe8be784db395b97459f7dd3275ccb822653e2a343ec1ca9f9dbe79d",
+          "file_name": "hyper_pcn.pdf",
+          "chunk_index": 32,
+          "page_start": 12,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Input",
+              "Ours",
+              "PoinTr",
+              "SeedFormer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "7754b1e5803a049b37c0bd39b38ef39c5005d800ea9a6da74ae9fb5937303a6c",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:1808.00671v3"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 4,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f016611b323b0b0bb65e8455ac2d9abea0bc393464b934a4a41b6b63ee7ef028",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 6,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "3"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c29240b93cd63899f483060448fe4eade32b374ed75f181dbffcb6bc9ef5b217",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 9,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "4"
+            ]
+          }
+        },
+        {
+          "chunk_id": "31ba81d89aac15409ab30ad7d0d1a327706b5faf7d0bf8438768933bb5001420",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 11,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "5"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4cee04aaea2743255fc99b5b09a35d7654ce27ebac4bb5cd099452b738f67f43",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 13,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "658fe7e2137879edf8e3136928549be6132160d4efd3e9fa6b11c23d84f2a790",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 16,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a33e5128d0e168325a7b7232d167631c77f5ff7d95c0781f9f920d6b5167cd0e",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 18,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "8",
+              "9"
+            ]
+          }
+        },
+        {
+          "chunk_id": "587f2310ba27ba78bf13c83dd118333a40358f296c0ef4913343aa4c74e02cf6",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 19,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "IEEE Conf. on Computer Vision and Pattern Recognition",
+              "of 3d faces. In Proceedings of the 26th annual conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ce5d70074861a68fbd1c8b7d52f9563b4d47253d7dfb1f1c29ea1edf6f39785f",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 20,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "ence on Computer Vision and Pattern Recognition (CVPR),",
+              "ings of the IEEE Conference on Computer Vision and Pattern"
+            ]
+          }
+        },
+        {
+          "chunk_id": "275954c25e98367885d342ec41dffd598b232a24b5c0f9c6a6a077ef52fe1adf",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 22,
+          "page_start": 10,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "10"
+            ],
+            "REPEATED_FURNITURE": [
+              "conference on Computer graphics and interactive techniques",
+              "mesh optimization. In Proceedings of the 4th international"
+            ]
+          }
+        },
+        {
+          "chunk_id": "25bb75071b298f2a81547419535abef7e3a7e02112a0932e5aeb142c7f53f0af",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 23,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Advances in Neural Information Processing Systems, pages",
+              "Proc. Computer Vision and Pattern Recognition (CVPR),",
+              "age. In Proceedings of the IEEE Conference on Computer",
+              "conference on Computer graphics and interactive techniques"
+            ]
+          }
+        },
+        {
+          "chunk_id": "080d1b03c5743590e6380dba598f6543c6cb009889a01cef534624f709f2f650",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 24,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Conference on Computer Vision, pages 236–250. Springer,",
+              "age. In Proceedings of the IEEE Conference on Computer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "248b4a89e9a8d3caceb65237a975d08aa5d1c34989d0ec12d5f19dc3f9d2d07c",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 25,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "ceedings of the IEEE Conference on Computer Vision and",
+              "depth image. In Computer Vision and Pattern Recognition",
+              "ference on Computer Vision and Pattern Recognition, pages",
+              "ings of the IEEE Conference on Computer Vision and Pattern"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3148dc6eed133eb4f84018083ce3dd4b606222c1245d9a8cf388613201e1fb85",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 26,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Proceedings of the IEEE Conference on Computer Vision",
+              "ceedings of the IEEE Conference on Computer Vision and"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5a4b6df500dfa06b57443d01f3095199da15d0674328a50b99ecdd1194ce9662",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 27,
+          "page_start": 11,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "11"
+            ]
+          }
+        },
+        {
+          "chunk_id": "80cb55c60a4fb9993a2d7e18e1ecd8a5ee3d0bcc7d0734dc579f9d41bccc3671",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 29,
+          "page_start": 12,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "12"
+            ]
+          }
+        },
+        {
+          "chunk_id": "60b9f9a7469bbb8bec2829454360be248691da1242d3b71aaaf83871edfa4422",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 30,
+          "page_start": 12,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "12",
+              "13"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f7591070654748cf252de7a56c4d90480e299905eae737a162cdf67297ef77c0",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 31,
+          "page_start": 14,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14",
+              "15",
+              "16"
+            ]
+          }
+        },
+        {
+          "chunk_id": "de9ff25d529844024a59465af77bb6759a2c33022620cca7090cf02d717f6bef",
+          "file_name": "pcn_point_completion_network.pdf",
+          "chunk_index": 33,
+          "page_start": 17,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "17"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c01f2a144f5b229c8100b614a59ce894ad4b1f5be569ee371803960a417e8ee1",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7662"
+            ]
+          }
+        },
+        {
+          "chunk_id": "36381d13ccf49a708eb0bf48d5e91142a9efb3f91bf180d70ae6f3cb375d47bb",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 2,
+          "page_start": 1,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7662"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3c6d494f7cd993cbbad896824ac725fa58f5a20f10cc4a96821a33e80160366c",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 5,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7663"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4e1e3c58396e4a7ff9b8913a9ad057c2384cb01d8437303e06069b6abcdba73b",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 7,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7664"
+            ]
+          }
+        },
+        {
+          "chunk_id": "647aa94394f02c4a6a7f59d9357b1c4ed7661eae732139afd2a27b55b0a9db8c",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 9,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7665"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a98ab2100d431853f72b5ddbf00cdfa4bbc70bb21b3af44905e2fbae995f1471",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 10,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7665"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f26b8f46c643a22f9d0d1f298ae3c516a224adfcbedbbf5ee007ad297dd579f7",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 13,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7666"
+            ],
+            "REPEATED_FURNITURE": [
+              "Table"
+            ]
+          }
+        },
+        {
+          "chunk_id": "70fe879a96b224705316ff2efc9c4b90c4191140f489544eb44f2051d72ccfa9",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 14,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Table"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b71e8d237656b4f19ebfc690e1793dda51806491fd4e7067e7b31fbb7611bb6d",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 15,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Table"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5983c7df99fa499826ccf5394398f4beca02479b1a0f40c3d178f72c4d83805f",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 16,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7667"
+            ],
+            "REPEATED_FURNITURE": [
+              "Table"
+            ]
+          }
+        },
+        {
+          "chunk_id": "8d406ff2084752e6ad52ab43f9eeedd729370e406e8d1de56c945f3bc8ab5352",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 17,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7668"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1643b1e66a16e7369d2e356fb218ecfc70ab7c3f805b0c0237caa83cce6c80a7",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 18,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Table"
+            ]
+          }
+        },
+        {
+          "chunk_id": "7c2e1938bd8e6174011d0d48cd6613b3721ce2b2ebc189a2320a56e586e5d8bb",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 19,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7669"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a0d332bc0645c6d6196f25d3d3583976db9b94fc7eed0a58084f832aa8c48561",
+          "file_name": "pfnet_point_fractal_network.pdf",
+          "chunk_index": 24,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7670"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cab53a0c7a0a4e671e8b7aa5348546aed973b0f1c18595ad5c8d345e9f0fcfec",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2203.08485v1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 2,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2203.08485v1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "721917a5b2c2eb11ecba27f43b827d5fdaf380708f86c1644f5ffaac0eb9045b",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 4,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "0f81a9c469e8219a5d4d36c226b77ced94c4b865e6265be24f309490573dad7f",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 7,
+          "page_start": 3,
+          "kinds": [
+            "COPYRIGHT",
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "COPYRIGHT": [
+              "©"
+            ],
+            "PAGE_NUMBER": [
+              "3"
+            ],
+            "REPEATED_FURNITURE": [
+              "modules are show in the bottom. Here © denotes a concatenation operation. It should be noticed that all the MLPs are"
+            ]
+          }
+        },
+        {
+          "chunk_id": "361c002c5d32a811c0190abf5d696031e62baa7e4518e3371064578671aa4da9",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 8,
+          "page_start": 4,
+          "kinds": [
+            "COPYRIGHT",
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "COPYRIGHT": [
+              "©"
+            ],
+            "PAGE_NUMBER": [
+              "4"
+            ],
+            "REPEATED_FURNITURE": [
+              "Figure 3: The detailed structure of GDP (left) and SFA (right). Here © denotes a concatenation operation."
+            ]
+          }
+        },
+        {
+          "chunk_id": "92643792d6a8f94e0098d65f9254c6c28483914e855b7c04c3a87887a1338180",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 10,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "5"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 12,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 14,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "7",
+              "8"
+            ]
+          }
+        },
+        {
+          "chunk_id": "33edeb25059d5e8ea95d7ad46973ee3abd6d73bb8af9be2b0bfe19c0a27e99ff",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 15,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "8"
+            ]
+          }
+        },
+        {
+          "chunk_id": "496a10d5e1f43b0493c7e5ead80a85fa5fc7ce7a879ba42b7a6b6acd78aee6e6",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 17,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4273b0f2ae2d2f138a9132068c871e7c71b3d3097b39c11b7ea77ec02130dbda",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 20,
+          "page_start": 10,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "10"
+            ]
+          }
+        },
+        {
+          "chunk_id": "505b729adabb082733e2c3b7d139a935e13c81e0e42de09c2a0e00095b3a58e5",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 23,
+          "page_start": 11,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "11"
+            ]
+          }
+        },
+        {
+          "chunk_id": "8425e56d770415e38c2f42d59032074fc39a4f16c5e141195fe0a516fa69b835",
+          "file_name": "pointattn.pdf",
+          "chunk_index": 24,
+          "page_start": 12,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "12"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3eb0c9718f1f5bdbfac158f23f359e0adf0d5149b539114dd84ada37caa80c9e",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2108.08839v1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5a094618932a5680248cad6b4886e41adacb6b87e475465c85b9d89de00de987",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 2,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2108.08839v1"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ea1aa07c935a0441d39ba3f5cd7bb68fb710863b6be4814766cde33ef2a4c50f",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 13,
+          "page_start": 5,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1e59f43925e49ecc08e3279b09c52e0808019a8092998af796b365783786d3f6",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 14,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d3af5834cf78c7d49c6d077f0e346b4a0bf349fce8f85b72f99387435671ad02",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 17,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "96ccc34ef9060bab4a14396fe585eac35f4335cf19d5f44f4fc818b9726e34ad",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 18,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1f3496dd2435d89ddd5c255fbe1a2a5ffa2140f6ec8f7bbc70a2c4d3f9ce8c86",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 19,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "GRNet [48]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "dba8ecc1892d1bd9616ad62e948e160049310bb3bd4cf69d91ab4c20aa1fe231",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 23,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "490a5265e4fca13cf77bc38681624f9b71d529b64e70049b7fa8f50b59c8be46",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 28,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "7330717ab564304557f5de067b2aa0ff58aa8bb4795f9c1a872ebb788aeeee1c",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 30,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [50]",
+              "GRNet [48]",
+              "PCN [51]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "95c8a1d5a08d54069f4ba42b99c5d2f38b66f5409a47c7ddd7010553e2050d4b",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "chunk_index": 31,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "GRNet [48]",
+              "TopNet [37]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "bf442c73504bd22d3a4183a8afced5bf24442ad342c4f7f32d747703ca59c4be",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "OPEN_ACCESS_WATERMARK",
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "OPEN_ACCESS_WATERMARK": [
+              "This CVPR paper is the Open Access version",
+              "final published version of the proceedings",
+              "is available on IEEE Xplore",
+              "provided by the Computer Vision Foundation"
+            ],
+            "PAGE_NUMBER": [
+              "9466"
+            ],
+            "REPEATED_FURNITURE": [
+              "GRNet",
+              "Input",
+              "PoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4d9a306571f9e641b02d93e1372b8054638452ffc204373258b73dbd0c4222c2",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 2,
+          "page_start": 1,
+          "kinds": [
+            "OPEN_ACCESS_WATERMARK",
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "OPEN_ACCESS_WATERMARK": [
+              "This CVPR paper is the Open Access version",
+              "final published version of the proceedings",
+              "is available on IEEE Xplore",
+              "provided by the Computer Vision Foundation"
+            ],
+            "PAGE_NUMBER": [
+              "9466"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a434b74bd045015dcc24f644d1cb654f21e5347f03ec4e4b365db7b1f64ce244",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 5,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9467"
+            ]
+          }
+        },
+        {
+          "chunk_id": "70986867eaafccd6a85d29ce5628491b38ca69731e4f19d0178949aeb0b38fce",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 7,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9468"
+            ]
+          }
+        },
+        {
+          "chunk_id": "fa00f3afa1c4b45324c9e66ab41c9864c31f38e4572d35006260a8510cb4f06f",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 10,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9469"
+            ]
+          }
+        },
+        {
+          "chunk_id": "e64a1d5d24d0e9e29eec6e1db7faa5b5bef5d7f3387e381fe4d105ccab9e4904",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 13,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9470"
+            ],
+            "REPEATED_FURNITURE": [
+              "GRNet",
+              "Input",
+              "Ours",
+              "PoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "6e06bccc7d680593d449a72c975b246bc418a6ebf6713020782b092dd01f212e",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 14,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "GRNet [38]",
+              "Methods",
+              "PCN [42]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "af2501861816147a7797882bcc111981432928ebc3b9ee6756bf1360191ab4a4",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 15,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "GRNet [38]",
+              "Methods",
+              "PoinTr [41]",
+              "SeedFormer [48]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 16,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9471"
+            ],
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "GRNet [38]",
+              "Methods",
+              "PCN [42]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "fc364e4e767ace801ce24a909ae2ebad3dc9732bb01687ae09e5cfa1e2fe36c9",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 17,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "GRNet",
+              "Methods",
+              "Ours",
+              "PoinTr"
+            ]
+          }
+        },
+        {
+          "chunk_id": "073ae557016ff1ae27898cb2076d9ccffe79988875ba55c867dd6516c3f9e839",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 18,
+          "page_start": 7,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Ours"
+            ]
+          }
+        },
+        {
+          "chunk_id": "9c1a031fe7ea0b08b1b20e07394be93ee9a52893a0d35c16cb7551416274888a",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 19,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9472"
+            ],
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "GRNet",
+              "GRNet [38]",
+              "Input"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f887e081370098e092262a853ea913ccce2f4a4fdb9982e96effdad999a5f1f3",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 20,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "GRNet [38]",
+              "Ours",
+              "PCN [42]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d1660a68b916a7ef639ab7220eb08fafe5484ddd47a0b5d3fdfa568b22f87e0e",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 21,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "Methods",
+              "PCN [42]"
+            ]
+          }
+        },
+        {
+          "chunk_id": "89529fe87af70f5f50e67c42402c234a02f485cdba9ada2cc166235036fa4e80",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 22,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9473"
+            ],
+            "REPEATED_FURNITURE": [
+              "FoldingNet [40]",
+              "GRNet [38]",
+              "Methods",
+              "Ours"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b808d812a1abf52892bf3b3f88aa77c49f275bd1caa567b47d169e84bffc4d5e",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 23,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Proceedings of the IEEE/CVF Conference on Computer Vi-",
+              "image. In Proceedings of the IEEE conference on computer",
+              "proach to learning 3d surface generation. In Proceedings of",
+              "the IEEE conference on computer vision and pattern recog-"
+            ]
+          }
+        },
+        {
+          "chunk_id": "09c55d04b1b114be0e8c3e275894ab9dd48c80702aeee6d5b373e241fc17dc84",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 24,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Proceedings of the IEEE/CVF conference on computer vi-",
+              "ceedings of the IEEE/CVF Conference on Computer Vision",
+              "ference on Computer Vision and Pattern Recognition, pages",
+              "tonomous driving. In Proceedings of the IEEE/CVF Con-"
+            ]
+          }
+        },
+        {
+          "chunk_id": "83d6e6876186ee502625c45be161164cd3e43901db58598f06a4022c1085fd84",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 25,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "and segmentation. In Proceedings of the IEEE conference",
+              "cloud completion. In Proceedings of the AAAI conference on",
+              "man parsing. In Proceedings of the IEEE/CVF Conference",
+              "on Computer Vision and Pattern Recognition, pages 4473–"
+            ]
+          }
+        },
+        {
+          "chunk_id": "4525245f9a8ee990da0d0e0c98796acb6a5f9a1df9e8a828733766e786d1fdac",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 26,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9474"
+            ],
+            "REPEATED_FURNITURE": [
+              "Computer Vision and Pattern Recognition, pages 383–392,",
+              "Proceedings of the IEEE/CVF Conference on Computer Vi-",
+              "and segmentation. In Proceedings of the IEEE conference",
+              "decoder. In Proceedings of the IEEE/CVF Conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "0bbd7980dc6f82867f098fe30844983ce95fda71d98b54eb3a54b2af0d89b846",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 27,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Proceedings of the IEEE/CVF Conference on Computer Vi-",
+              "network for point completion. In Proceedings of the 29th",
+              "ternational Conference on Machine Vision, volume 11605,",
+              "versarial networks. In European Conference on Computer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a578fd06502a2aa8c8b635cbf379eb591b2dcd4969eaaf86e616212b803a6223",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 28,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Conference on Computer Vision, pages 365–381. Springer,",
+              "In Proceedings of the IEEE conference on computer vision",
+              "In Proceedings of the IEEE/CVF inter-",
+              "International Conference on 3D Vision (3DV), pages 728–"
+            ]
+          }
+        },
+        {
+          "chunk_id": "2d2d0e1c4ea6287f789776f0eae399d339543194fd8669aa88e9241b10fba1f0",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 29,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "IEEE/CVF International Conference on Computer Vision,",
+              "In Proceedings of the IEEE/CVF con-",
+              "International Conference on 3D Vision (3DV), pages 728–",
+              "Vladlen Koltun. Point transformer. In Proceedings of the"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ffec521053ff847462efe497b90829a73d72882bf1800044b1a2128382b3dc83",
+          "file_name": "proxyformer.pdf",
+          "chunk_index": 30,
+          "page_start": 10,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "9475"
+            ],
+            "REPEATED_FURNITURE": [
+              "for point cloud based 3d object detection. In Proceedings of",
+              "the IEEE conference on computer vision and pattern recog-"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f2b6f156c8a9afd7b0271e5cb2a0ac8b5d1f1ba66b8865f01ab8827d33b0117a",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR",
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2207.10315v1"
+            ],
+            "PAGE_NUMBER": [
+              "2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "2c391611f169bb39427e7589531ffaed560a1f815f64f11f9a76b3720dba3b12",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 2,
+          "page_start": 2,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a7e3bcb14b240717e377e8174207c4362d4be4e9bad64beb8085d93ab79199f1",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 4,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "4"
+            ]
+          }
+        },
+        {
+          "chunk_id": "782b9fc852a08bf2d841d3bfec8fdc4cf082994bc0a4749ea78a5503000d2b0b",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 6,
+          "page_start": 4,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "b8eb85a75c6a5a6ada57bfe7f4038dc0d7026d2cf61879914b87e975f624986b",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 7,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "6"
+            ]
+          }
+        },
+        {
+          "chunk_id": "e600292f5ca3fc2b9643502d608ccd74048e5c17a8c1b8db9a2d3734028a97c7",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 9,
+          "page_start": 6,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a49d19ca3ad81d427c34773ec18fbb20d25afc82665e61fda25619c0aa42d4ce",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 11,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "8"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c7b681bb1a311164ea2c5a8ed6c4df352aeb36ac4211e6434274e0412f26e396",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 12,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f96b9782053c4f4e2853e8eb6f6217cc2db477508a69b20b8177bccca626b535",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 14,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "10"
+            ]
+          }
+        },
+        {
+          "chunk_id": "128052e86edfeaa5d50c21302872b290e9bffa8230d48f3e3fb275f036306ec3",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 15,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a75b23652b4df68d76c796848488d924e13c55e6e122d3dc7b19fc5253016472",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 16,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "8cce8bb3138dc6e2725f4f493d90343114ce8e6fbfa8cbe2353388d7d5f9a4ba",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 17,
+          "page_start": 11,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "12"
+            ]
+          }
+        },
+        {
+          "chunk_id": "9bef5be2bdc217cf44ccf2615ee8a1ab571f914a0ee0b7ee9823018684e48385",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 18,
+          "page_start": 12,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "5782a92bbd36a57efe36930156d61ff9486f5b721a31f7896857a3dba2b3af0f",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 20,
+          "page_start": 13,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14"
+            ]
+          }
+        },
+        {
+          "chunk_id": "668c3de0e8c496ea60f7fbd13307c45e3b12b81896a19fcc87a660a96dda4c1a",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 21,
+          "page_start": 14,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion",
+              "and generative models for 3d point clouds. In: International conference on machine"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c1fd36c35d22038cd4441367e8c10e9b5bc2faef794ccac2175a2d9302750f27",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 22,
+          "page_start": 15,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "and generative models for 3d point clouds. In: International conference on machine",
+              "predictor cnns and shape synthesis. In: Proceedings of the IEEE conference on",
+              "struction from a single image. In: Proceedings of the IEEE conference on computer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c068008acfa65dca6de9406e7d6d8e486bedc5f24391984e6464b7046b3af650",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 23,
+          "page_start": 15,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In: Proceedings of the IEEE international conference on computer vision. pp. 85–93",
+              "adversarial networks. In: Proceedings of the IEEE/CVF conference on computer",
+              "approach to learning 3d surface generation. In: Proceedings of the IEEE conference",
+              "ceedings of the IEEE conference on computer vision and pattern recognition. pp."
+            ]
+          }
+        },
+        {
+          "chunk_id": "11bead084e6d9a6582134fe345c0e8ae0f518bef1a1f0731919b450071f29879",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 24,
+          "page_start": 15,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "16"
+            ],
+            "REPEATED_FURNITURE": [
+              "3d object detection. In: Proceedings of the European conference on computer vision",
+              "ceedings of the IEEE conference on computer vision and pattern recognition. pp.",
+              "detection from rgb-d data. In: Proceedings of the IEEE conference on computer",
+              "for 3d classification and segmentation. In: Proceedings of the IEEE conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "f34adbce8d63ccf17627bb02fee7a55a65c37ea63aa349276ce72c208adca10b",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 25,
+          "page_start": 16,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Kpconv: Flexible and deformable convolution for point clouds. In: Proceedings of",
+              "for 3d classification and segmentation. In: Proceedings of the IEEE conference on",
+              "ing on point sets in a metric space. Advances in neural information processing",
+              "single-view 3d reconstruction networks learn? In: Proceedings of the IEEE/CVF"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a38daf674c33744d41d947075dc90637ae91c38a92b925e79c46538ad6a03555",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 26,
+          "page_start": 16,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Kpconv: Flexible and deformable convolution for point clouds. In: Proceedings of",
+              "SeedFormer: Patch Seeds based Point Cloud Completion",
+              "coding. In: Proceedings of the IEEE/CVF Conference on Computer Vision and",
+              "completion. In: Proceedings of the IEEE/CVF Conference on Computer Vision"
+            ]
+          }
+        },
+        {
+          "chunk_id": "071195bce8204a2cd95cdfc600f5d469ca5fb8940074dca3aaa2e5a0a6cacfd2",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 27,
+          "page_start": 16,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion",
+              "coding. In: Proceedings of the IEEE/CVF Conference on Computer Vision and",
+              "of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. pp.",
+              "siamese feature matching network for point completion. In: Proceedings of the"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3834f274ac926906b0c1886f43c84fcfe29565845dc0be666fad346ef528eb88",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 28,
+          "page_start": 17,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "arated feature aggregation. In: European Conference on Computer Vision. pp.",
+              "completion with geometry-aware transformers. In: Proceedings of the IEEE/CVF",
+              "deep grid deformation. In: Proceedings of the IEEE conference on computer vision",
+              "guided point cloud completion. In: Proceedings of the IEEE/CVF Conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3ed7506c909a8fde5e61b0267e8d58f6fc344fb48ef5df029e4e1fffec75d028",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 29,
+          "page_start": 17,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "18"
+            ],
+            "REPEATED_FURNITURE": [
+              "guided point cloud completion. In: Proceedings of the IEEE/CVF Conference on",
+              "ings of the IEEE/CVF International Conference on Computer Vision. pp. 16259–",
+              "lution for point cloud analysis. In: Proceedings of the IEEE/CVF International"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ea28f1f760e7b91a792c6f03b865e29bff61a6362e3782e5263f43a61195b61b",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 30,
+          "page_start": 18,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "80da646805b593610c8fd8e43769f2e8d7c6a4cb5ab6106f37495a8dd07d5a64",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 31,
+          "page_start": 19,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "17a1957e163ccc74d619fc9ba01d5aea12f8f2b73890e56beafed5f8b328d2c7",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 32,
+          "page_start": 19,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "20"
+            ]
+          }
+        },
+        {
+          "chunk_id": "7d35bc798469b1206f812bbe94975fca32e667039530f5140d67e8f5f36ea76c",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 34,
+          "page_start": 20,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "SeedFormer: Patch Seeds based Point Cloud Completion"
+            ]
+          }
+        },
+        {
+          "chunk_id": "673035df0704ab5679f25966cf5044a0060ffb4d86d6eef236a98fa48866cfe8",
+          "file_name": "seedformer.pdf",
+          "chunk_index": 38,
+          "page_start": 21,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "22"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ef0320a7eae79938a18b0dfdecb31e8e58e9f8129037af79df039e49274b2b9d",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 2,
+          "page_start": 1,
+          "kinds": [
+            "ARXIV_SIDEBAR"
+          ],
+          "texts_by_kind": {
+            "ARXIV_SIDEBAR": [
+              "arXiv:2108.04444v2"
+            ]
+          }
+        },
+        {
+          "chunk_id": "73b670b77736283c752ad9cc70b3ecc38ecf072f028e8dcac79af77792846118",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 21,
+          "page_start": 8,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Proceedings of the IEEE Conference",
+              "ing. In International Conference on Learning Representa-",
+              "ings of the IEEE International Conference on Computer Vi-",
+              "on Computer Vision and Pattern Recognition (CVPR), pages"
+            ]
+          }
+        },
+        {
+          "chunk_id": "391a94a965c2e3d6075694e675a8443c9362a50052c2bbaadc403761637c3f75",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 22,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Conference on Computer Vision and Pattern Recognition",
+              "International Conference on Multimedia, pages 1018–1027,",
+              "images. In International Conference on Machine Learning",
+              "learning 3D surface generation. In Proceedings of the IEEE"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ababb0218a6f9cb579df341363cc7a9d7f75dbcdf8c5d856a7ee2cda413e02f9",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 23,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "coordinates. In European Conference on Computer Vision,"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d2c5ed9be191f32e9a9436511b5101b4d69d69da1e6352a9eea1cdc27447fde9",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 24,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "IEEE/CVF International Conference on Computer Vision",
+              "among unordered views. In ACM International Conference",
+              "coordinates. In European Conference on Computer Vision,",
+              "views with attention. In International Joint Conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "56786cf24e25d834b8f68642cfd70ae8744929ff0c9fa841ed098243a4367587",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 25,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Conference on Computer Vision (ICCV), pages 7203–7212,",
+              "In Proceedings of the IEEE Conference on Computer Vision",
+              "depth maps for 3D shape completion. In Proceedings of In-",
+              "for 3D shape optimization. In IEEE Conference on Computer"
+            ]
+          }
+        },
+        {
+          "chunk_id": "6c079125e910ec0802032268ce8dc7c341ecb0e7edfda5dde6a95c80ff9174b8",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 26,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Conference on Computer Vision (ICCV), pages 7203–7212,",
+              "In International Conference on Machine Learning (ICML),",
+              "cloud completion. In Proceedings of the AAAI conference on",
+              "quence network. In Proceedings of the AAAI Conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "284c415dbef2a78f6e903bf4766589e203c65744cbaf2dc309a97bd3f19399e8",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 27,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Advances in Neural Information Processing Systems, vol-",
+              "In International Conference on Machine Learning (ICML),",
+              "age transformer. In International Conference on Machine",
+              "and segmentation. In Proceedings of the IEEE Conference"
+            ]
+          }
+        },
+        {
+          "chunk_id": "e6e6a3f18287a6df94f6344d0bd7120091b27ff5e651051caba8a6be0761d36e",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 28,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "31st International Conference on Neural Information Pro-",
+              "Polosukhin. Attention is all you need. In Proceedings of the",
+              "Proceedings of the IEEEF Conference on Computer Vision",
+              "completion and classiﬁcation. In European Conference on"
+            ]
+          }
+        },
+        {
+          "chunk_id": "3fc130b2db03721672c2072c1caeb1a80ff8da9fe72e733743a59516096e5ec3",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 29,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "28th ACM International Conference on Multimedia, pages",
+              "Proceedings of the IEEE Conference on Computer Vision",
+              "by context fusion with self-attention. In Proceedings of the",
+              "erarchical folding. In Proceedings of the IEEE Conference"
+            ]
+          }
+        },
+        {
+          "chunk_id": "35ce369f34d6ef138db1856e1eaf637b8e33098e03a8023b5cd25b088eded1a9",
+          "file_name": "snowflakenet.pdf",
+          "chunk_index": 30,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Proceedings of the IEEE Conference on Computer Vision",
+              "International Conference on 3D Vision (3DV), pages 728–",
+              "tion. In European Conference on Computer Vision (ECCV),"
+            ]
+          }
+        },
+        {
+          "chunk_id": "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 1,
+          "page_start": 1,
+          "kinds": [
+            "OPEN_ACCESS_WATERMARK",
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "OPEN_ACCESS_WATERMARK": [
+              "This ICCV paper is the Open Access version",
+              "final published version of the proceedings",
+              "is available on IEEE Xplore",
+              "provided by the Computer Vision Foundation"
+            ],
+            "PAGE_NUMBER": [
+              "14508"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a8d02f0d1f6be95e1c94dc95afebc1ad78c7f14571b6307ca594ba6f515ce277",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 4,
+          "page_start": 2,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14509"
+            ]
+          }
+        },
+        {
+          "chunk_id": "1c1269aef443c8b14a3c401bbcda13b4b40ca677ae12543e97a4cbdf31111f55",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 6,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14510"
+            ]
+          }
+        },
+        {
+          "chunk_id": "64ed98f62a7b1f4fc3c1aca7a68eecfb150a53bb962366fe95740ed1d772385b",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 7,
+          "page_start": 3,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14510"
+            ]
+          }
+        },
+        {
+          "chunk_id": "dff0dcdc152a53b058bc253312778f7601a9ce987eb989e3880a96591c348f0a",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 10,
+          "page_start": 4,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14511"
+            ]
+          }
+        },
+        {
+          "chunk_id": "77781cc5bc80c97a389e6ddbf156e3b67a950fe1d3918410f193c6700812f73b",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 12,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14512"
+            ]
+          }
+        },
+        {
+          "chunk_id": "084f6eb3f68b6c8651c65dc58209b463273e09bedc5f1749eaf418fbb339af53",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 13,
+          "page_start": 5,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14512"
+            ]
+          }
+        },
+        {
+          "chunk_id": "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 15,
+          "page_start": 6,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14513"
+            ]
+          }
+        },
+        {
+          "chunk_id": "c23f4ff0af9282b45a86d1e275f0b88ae4b30f8900deef4946c8317067c1aea6",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 17,
+          "page_start": 7,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14514"
+            ]
+          }
+        },
+        {
+          "chunk_id": "630a6468ac19b4ae6f38fbfbc304a6921e2302e755154ce0f63734903baec9cb",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 19,
+          "page_start": 8,
+          "kinds": [
+            "PAGE_NUMBER"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14515"
+            ]
+          }
+        },
+        {
+          "chunk_id": "cd9757f9636afe75ccb4783c09fab3d1146d621a77aff33476c89ad1cd370926",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 21,
+          "page_start": 9,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Proceedings of the IEEE conference on computer vision and",
+              "computer vision and pattern recognition, pages 5868–5877,",
+              "ference on computer vision and pattern recognition, pages",
+              "for 3d shape recognition. In Proceedings of the IEEE con-"
+            ]
+          }
+        },
+        {
+          "chunk_id": "a337586139152b7a9bd9f9a561decaadeb0b87a9dcc8b4f3e11bf2fa38c292f5",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 22,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14516"
+            ],
+            "REPEATED_FURNITURE": [
+              "In Proceedings of",
+              "In Proceedings of the IEEE/CVF Conference on Computer",
+              "ings of the IEEE conference on computer vision and pattern",
+              "itors, Advances in Neural Information Processing Systems,"
+            ]
+          }
+        },
+        {
+          "chunk_id": "231d87e9f75c959dd8f4c5a4fcbea15ca04507521ad410014695b8562305fffd",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 23,
+          "page_start": 9,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14516"
+            ],
+            "REPEATED_FURNITURE": [
+              "IEEE/CVF Conference on Computer Vision and Pattern",
+              "In Proceedings of the",
+              "In Proceedings of the IEEE/CVF Conference on Computer",
+              "ceedings of the IEEE Conference on Computer Vision and"
+            ]
+          }
+        },
+        {
+          "chunk_id": "9172a3d54815e1994c0a20dbc85437b00b2cd5ab2a9d7b6bb9813769cb832b4b",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 24,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "Computer Vision and Pattern Recognition, pages 383–392,",
+              "IEEE/CVF Conference on Computer Vision and Pattern",
+              "In Proceedings of the",
+              "Proceedings of the IEEE/CVF Conference on Computer Vi-"
+            ]
+          }
+        },
+        {
+          "chunk_id": "ef5d7f832c626e1c6a48c6f9955afa9b929b657d7dd3db0e24b447f979969ca6",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 25,
+          "page_start": 10,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "In Proceedings of the IEEE/CVF Inter-",
+              "erarchical folding. In Proceedings of the IEEE/CVF Con-",
+              "ference on Computer Vision and Pattern Recognition, pages",
+              "ings of the IEEE/CVF Conference on Computer Vision and"
+            ]
+          }
+        },
+        {
+          "chunk_id": "d1c6763d5019cb89f9e095588592284464199edb26dedcdf38e5e42f00a92ed9",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 26,
+          "page_start": 10,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14517"
+            ],
+            "REPEATED_FURNITURE": [
+              "AAAI conference on artificial intelligence, volume 33, pages",
+              "Conference on Computer Vision, pages 365–381. Springer,",
+              "In Proceedings of the",
+              "In Proceedings of the IEEE conference on computer vision"
+            ]
+          }
+        },
+        {
+          "chunk_id": "167b7bbcf106260a3b35b6fcfc8feb2b8055a5fd489f7df59eeffb78f7199367",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 27,
+          "page_start": 11,
+          "kinds": [
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "REPEATED_FURNITURE": [
+              "AAAI conference on artificial intelligence, volume 33, pages",
+              "IEEE/CVF Conference on Computer Vision and Pattern",
+              "IEEE/CVF International Conference on Computer Vision,",
+              "In Proceedings of the"
+            ]
+          }
+        },
+        {
+          "chunk_id": "8ab26861c244c89f0048cf111c6a2d62c8da4b4f389b620cf84e1feec1be2880",
+          "file_name": "svdformer.pdf",
+          "chunk_index": 28,
+          "page_start": 11,
+          "kinds": [
+            "PAGE_NUMBER",
+            "REPEATED_FURNITURE"
+          ],
+          "texts_by_kind": {
+            "PAGE_NUMBER": [
+              "14518"
+            ],
+            "REPEATED_FURNITURE": [
+              "European Conference on Computer Vision, pages 416–432.",
+              "on Computer Vision and Pattern Recognition, pages 10256–",
+              "point clouds. In Proceedings of the IEEE/CVF Conference"
+            ]
+          }
+        }
+      ],
+      "note": "以精确字符区间判定。页级装饰包含逐页变化的页码，而'跨页重复串'口径不可能命中这类元素。"
+    }
+  },
+  "interpretation_guard": "这些是描述性指标，不构成根因结论。只有 Step 6 的逐题证据才允许把问题归到某一层。"
+}

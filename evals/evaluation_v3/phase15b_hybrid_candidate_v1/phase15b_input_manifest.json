@@ -1,0 +1,101 @@
+{
+  "active_collection_metadata": {
+    "chunk_strategy": "hybrid",
+    "hnsw:space": "cosine",
+    "lifecycle": "ACTIVE",
+    "storage_contract": "domain_chunk_metadata_v2"
+  },
+  "active_manifest_identity": {
+    "corpus_signature": "bb184726b7f98756bd519d70e1a2a1f1224b5108e689680b2c328023ba1f4332",
+    "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5"
+  },
+  "bm25": {
+    "b": 0.75,
+    "corpus": "active collection iter_all_chunks() content, 817 chunks",
+    "k1": 1.5,
+    "tokenizer_model": "BAAI/bge-m3"
+  },
+  "chunk_count": 817,
+  "chunk_id_hash": "e87a613ebe65b10262996e83974b55839e0b6c27fbe22053ee7b8826dd1f153d",
+  "collection_name": "ef_research_bge_m3_hybrid_c512_v2",
+  "corpus_signature": "bb184726b7f98756bd519d70e1a2a1f1224b5108e689680b2c328023ba1f4332",
+  "document_count": 10,
+  "embedding": {
+    "chunk_overlap": 64,
+    "chunk_size": 512,
+    "chunk_strategy": "hybrid",
+    "model": "BAAI/bge-m3",
+    "normalization": "explicit_l2",
+    "query_field": "english_query from research_questions_v1",
+    "version": "evidenceflow.bge-m3-dense-l2-normalized.v1"
+  },
+  "gold_qrels_mapping": {
+    "canonical_qrels_not_rewritten": true,
+    "current_index_relevance": "read-only evidence_anchor projection",
+    "file_sha256": {
+      "gold_mapping_v3": "42d067404ae01e204bdfcfce87f008d11a237d24215e9b05fb89642a6c004203",
+      "qrels_manifest": "12b39b29930a258b02aa0917ffba0c9a3eb1ee9154bf50a028c465f9d14fbce0",
+      "research_questions_v2": "cc4cd24242ee793aeb38cb69c3cd2a766315fa9a92d60acf5c498e059b50a8dd",
+      "standard_qrels": "ca8fe6d2f881517c9019488e8ce1b96cae01e483523699b238a83b8a9d1b06c2"
+    },
+    "gold_mapping_hash": "42d067404ae01e204bdfcfce87f008d11a237d24215e9b05fb89642a6c004203",
+    "mapping_hash": "42d067404ae01e204bdfcfce87f008d11a237d24215e9b05fb89642a6c004203",
+    "qrels_hash": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9"
+  },
+  "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5",
+  "phase": "15B",
+  "question_ids": [
+    "ARR-001",
+    "ARR-002",
+    "ARR-003",
+    "ARR-004",
+    "ARR-005",
+    "ARR-006",
+    "ARR-007",
+    "ARR-008",
+    "ARR-009",
+    "ARR-010",
+    "ARR-011",
+    "ARR-012",
+    "ARR-013",
+    "ARR-014",
+    "ARR-015",
+    "ARR-016",
+    "ARR-017",
+    "ARR-018",
+    "ARR-019",
+    "ARR-020",
+    "ARR-021",
+    "ARR-022",
+    "ARR-023",
+    "ARR-024",
+    "ARR-025",
+    "ARR-026",
+    "ARR-027",
+    "ARR-028",
+    "ARR-029",
+    "ARR-030",
+    "ARR-031",
+    "ARR-032",
+    "ARR-033",
+    "ARR-034",
+    "ARR-035",
+    "ARR-036",
+    "ARR-037",
+    "ARR-038",
+    "ARR-039",
+    "ARR-040"
+  ],
+  "reranker": {
+    "batch_size": 4,
+    "checkpoint": "BAAI/bge-reranker-base",
+    "device": "cpu",
+    "dtype": "float32",
+    "final_top_k": 5,
+    "inference_mode": false,
+    "max_length": 512,
+    "model": "BAAI/bge-reranker-base"
+  },
+  "schema_version": "phase15b-input-manifest-v1",
+  "status": "FROZEN_INPUTS_VALIDATED"
+}

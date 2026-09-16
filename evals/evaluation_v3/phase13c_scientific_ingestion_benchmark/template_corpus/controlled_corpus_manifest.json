@@ -1,0 +1,391 @@
+{
+  "artifact_type": "phase13c_controlled_corpus_manifest",
+  "created_at_utc": "2026-09-14T10:31:39.782107+00:00",
+  "core_content_version": "core-v1",
+  "note": "12 个模板共用同一份核心内容（title/abstract/5 节/2 图/2 表/3 行间公式/1 脚注/引用标注/12 条参考文献）。table-heavy / formula-heavy / figure-heavy / references-heavy 模板在其上追加对应类型的元素，以形成单类压力测试；核心元素的 GT 文本在所有模板间完全一致，因此跨模板可比较。",
+  "template_count": 12,
+  "templates": [
+    {
+      "template_id": "T01_single_column_plain",
+      "label": "普通单栏论文",
+      "role": "单栏出生数字 PDF（对照组）",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 3,
+      "element_count": 57,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "footer": 1,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "cba599ec255576d5f5f5378c8939b49db5b5ac119b0189541e7827774b9f5b75",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T01_single_column_plain.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T02_ieee_two_column",
+      "label": "IEEE-style 双栏",
+      "role": "双栏 reading order 主测试",
+      "columns": 2,
+      "page_size": [
+        612.0,
+        792.0
+      ],
+      "rasterized": false,
+      "page_count": 3,
+      "element_count": 59,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "footer": 1,
+        "header": 2,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "d9b2e81755d8f95a21e0edb1003a6c3791001058a1f7e2c3f8ca3b044b3dc095",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T02_ieee_two_column.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T03_cvpr_two_column",
+      "label": "CVPR/ICCV-style 双栏",
+      "role": "双栏 + 水印 + 跨栏图",
+      "columns": 2,
+      "page_size": [
+        612.0,
+        792.0
+      ],
+      "rasterized": false,
+      "page_count": 4,
+      "element_count": 63,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 3,
+        "figure_caption": 3,
+        "header": 3,
+        "list_item": 3,
+        "page_number": 4,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2,
+        "watermark": 1
+      },
+      "pdf_sha256": "dfb6916588af69f0339eed1538611b20ae66b29834069970c0710ca78e03f320",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T03_cvpr_two_column.pdf",
+      "content_key_count": 55
+    },
+    {
+      "template_id": "T04_acm_two_column",
+      "label": "ACM conference 双栏",
+      "role": "双栏 + 版权页脚",
+      "columns": 2,
+      "page_size": [
+        612.0,
+        792.0
+      ],
+      "rasterized": false,
+      "page_count": 3,
+      "element_count": 57,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "footer": 1,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "dd56e295b0bcdb6dfdfb26c35dc3f203b321374397e3ed79817545b95c4fcd9b",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T04_acm_two_column.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T05_springer_lncs",
+      "label": "Springer LNCS 类单栏",
+      "role": "单栏窄版心 + 出版社页脚",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 3,
+      "element_count": 57,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "footer": 1,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "d858977dbd0dd80ec35d16c6adcc6d01b262ecfad16cdee357dc0198ea95050a",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T05_springer_lncs.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T06_elsevier_journal",
+      "label": "Elsevier / Journal 类双栏",
+      "role": "双栏 + 期刊页眉",
+      "columns": 2,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 3,
+      "element_count": 59,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "footer": 1,
+        "header": 2,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "4aeff743b65c417a00a87f72a2649cc77aa453a4f0f21344391f3438ba633e49",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T06_elsevier_journal.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T07_arxiv_preprint",
+      "label": "arXiv preprint 单栏（含 arXiv 侧栏）",
+      "role": "单栏 + arXiv 侧栏（furniture 主测试）",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 4,
+      "element_count": 58,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "list_item": 3,
+        "page_number": 4,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "sidebar": 1,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "50f539e533831a6abaa6206b462b723ae21d238c1e0bb925273793cb6641acea",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T07_arxiv_preprint.pdf",
+      "content_key_count": 53
+    },
+    {
+      "template_id": "T08_table_heavy",
+      "label": "Table-heavy（4 张表）",
+      "role": "表格结构压力测试",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 4,
+      "element_count": 61,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "list_item": 3,
+        "page_number": 4,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 4,
+        "table_caption": 4
+      },
+      "pdf_sha256": "99552e8f8554487bf1078df68bcf4e5e4e5b3601e2a3781dfab6f7cef45f465b",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T08_table_heavy.pdf",
+      "content_key_count": 57
+    },
+    {
+      "template_id": "T09_formula_heavy",
+      "label": "Formula-heavy（11 个行间公式）",
+      "role": "公式检测压力测试",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 4,
+      "element_count": 65,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 11,
+        "figure": 2,
+        "figure_caption": 2,
+        "list_item": 3,
+        "page_number": 4,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "9704aabe308bfca6284d4b62fb10190b622d3419bf0029ed2babcc30effcda38",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T09_formula_heavy.pdf",
+      "content_key_count": 61
+    },
+    {
+      "template_id": "T10_figure_heavy",
+      "label": "Figure-heavy（5 张图）",
+      "role": "图与图注压力测试",
+      "columns": 2,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 4,
+      "element_count": 63,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 5,
+        "figure_caption": 5,
+        "list_item": 3,
+        "page_number": 4,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "9f7f4a9f9a2dddc94c2cad08ad511d3483cc34c30d9351c11e742e110c4a0440",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T10_figure_heavy.pdf",
+      "content_key_count": 59
+    },
+    {
+      "template_id": "T11_references_heavy",
+      "label": "References-heavy（72 条参考文献）",
+      "role": "参考文献切分压力测试",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": false,
+      "page_count": 6,
+      "element_count": 119,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "list_item": 3,
+        "page_number": 6,
+        "paragraph": 14,
+        "reference_entry": 72,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "362559577adbdc7d4a9d1a684308f016810420975bbb06367376006e6d9603ee",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T11_references_heavy.pdf",
+      "content_key_count": 113
+    },
+    {
+      "template_id": "T12_scanned_image_only",
+      "label": "扫描/纯图像 PDF（无文本层）",
+      "role": "无文本层 -> OCR 触发条件测试",
+      "columns": 1,
+      "page_size": [
+        595.28,
+        841.89
+      ],
+      "rasterized": true,
+      "page_count": 3,
+      "element_count": 56,
+      "type_counts": {
+        "abstract": 1,
+        "author_block": 1,
+        "document_title": 1,
+        "equation": 3,
+        "figure": 2,
+        "figure_caption": 2,
+        "list_item": 3,
+        "page_number": 3,
+        "paragraph": 14,
+        "reference_entry": 12,
+        "section_header": 10,
+        "table": 2,
+        "table_caption": 2
+      },
+      "pdf_sha256": "000d4b43a6c06a9f0cef560afb4d5c7b628a7aeac4393f14e3b5f45b2a9f503e",
+      "pdf_path": "C:\\Users\\chchxh\\AppData\\Local\\Temp\\evidenceflow_phase13c\\synthetic\\T12_scanned_image_only.pdf",
+      "content_key_count": 53
+    }
+  ]
+}

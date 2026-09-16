@@ -1,0 +1,126 @@
+{
+  "artifact_type": "phase13c_b_metrics_fusion",
+  "created_at_utc": "2026-09-14T12:40:29.835076+00:00",
+  "arm_id": "B0_p0_cleaned",
+  "scope": "controlled",
+  "document_count": 12,
+  "arm_summary": {
+    "aligned_element_count": null,
+    "primary_only_count": null,
+    "secondary_only_count": null,
+    "conflict_count": null,
+    "unresolved_conflict_count": null,
+    "duplicate_content_rate": null,
+    "pre_existing_duplicate_pair_count": null
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T02_ieee_two_column": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T03_cvpr_two_column": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T04_acm_two_column": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T05_springer_lncs": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T06_elsevier_journal": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T07_arxiv_preprint": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T08_table_heavy": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T09_formula_heavy": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T10_figure_heavy": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T11_references_heavy": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    },
+    "T12_scanned_image_only": {
+      "aligned_element_count": null,
+      "primary_only_count": null,
+      "secondary_only_count": null,
+      "conflict_count": null,
+      "unresolved_conflict_count": null,
+      "duplicate_content_rate": null,
+      "pre_existing_duplicate_pair_count": null
+    }
+  }
+}

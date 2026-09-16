@@ -1,0 +1,332 @@
+{
+  "translation_version": "phase6-runtime-translations-v1",
+  "model": "Qwen/Qwen3.5-35B-A3B",
+  "calls": 40,
+  "failures": 0,
+  "total_latency_seconds": 686.4857288004132,
+  "token_usage": null,
+  "token_usage_reason": "当前 LLMClient 合同不暴露供应商 usage；未伪造估算值。",
+  "translations": {
+    "ARR-001": {
+      "query": "Why is point cloud completion needed according to PCN?",
+      "translated_query": "Why is point cloud completion needed according to PCN?",
+      "latency_seconds": 18.947821100009605,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-002": {
+      "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+      "translated_query": "What are the three common reasons for incomplete real point clouds according to PoinTr?",
+      "latency_seconds": 28.87109190004412,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-003": {
+      "query": "What acquisition problems motivate ProxyFormer?",
+      "translated_query": "What acquisition problems motivate ProxyFormer?",
+      "latency_seconds": 8.601828500046395,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-004": {
+      "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+      "translated_query": "Which type of sparsity problem does SVDFormer attempt to alleviate in real scans?",
+      "latency_seconds": 20.57775799999945,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-005": {
+      "query": "Why does PointAttN question using a fixed neighborhood parameter?",
+      "translated_query": "Why does PointAttN use a fixed neighborhood parameter?",
+      "latency_seconds": 41.54316849994939,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-006": {
+      "query": "Hyper-PCN 认为只建模成对关系会遗漏什么？",
+      "translated_query": "What does Hyper-PCN think will be missed by only modeling pairwise relationships?",
+      "latency_seconds": 29.322667600004934,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-007": {
+      "query": "What two outputs are shown in the PCN architecture?",
+      "translated_query": "What two outputs are shown in the PCN architecture?",
+      "latency_seconds": 8.068450200022198,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-008": {
+      "query": "PF-Net 的总体架构图由哪三个主要模块组成？",
+      "translated_query": "Which three main modules make up the overall architecture diagram of PF-Net?",
+      "latency_seconds": 29.61661719996482,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-009": {
+      "query": "How does PoinTr represent a point cloud for transformer processing?",
+      "translated_query": "How does PoinTr represent a point cloud for transformer processing?",
+      "latency_seconds": 6.056923400028609,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-010": {
+      "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+      "translated_query": "What kind of point deconvolution module does the SnowflakeNet architecture diagram contain?",
+      "latency_seconds": 16.623492800048552,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-011": {
+      "query": "What new shape representation does SeedFormer introduce?",
+      "translated_query": "What new shape representation does SeedFormer introduce?",
+      "latency_seconds": 11.724547200021334,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-012": {
+      "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+      "translated_query": "How does ProxyFormer utilize proxy alignment to improve missing regions?",
+      "latency_seconds": 32.660199300036766,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-013": {
+      "query": "What two generators make up SVDFormer's dual-generator design?",
+      "translated_query": "What two generators make up SVDFormer's dual-generator design?",
+      "latency_seconds": 5.738333399989642,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-014": {
+      "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+      "translated_query": "What roles do HyperRS and A-HGNN respectively play in the overall framework of Hyper-PCN?",
+      "latency_seconds": 10.749794099945575,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-015": {
+      "query": "How many ShapeNet models and categories are used by PCN?",
+      "translated_query": "How many ShapeNet models and categories are used by PCN?",
+      "latency_seconds": 8.768661500071175,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-016": {
+      "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+      "translated_query": "What main distance loss does SnowflakeNet adopt during training?",
+      "latency_seconds": 18.268084299983457,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-017": {
+      "query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+      "translated_query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+      "latency_seconds": 6.873399600037374,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-018": {
+      "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+      "translated_query": "How many points are in the input point cloud and complete point cloud respectively for ProxyFormer on ShapeNet-55/34?",
+      "latency_seconds": 31.91282070009038,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-019": {
+      "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "translated_query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "latency_seconds": 7.461132399970666,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-020": {
+      "query": "PCN 的合成训练数据来自哪个 CAD 数据集？",
+      "translated_query": "Which CAD dataset is PCN's synthetic training data from?",
+      "latency_seconds": 16.781901499954984,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-021": {
+      "query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+      "translated_query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+      "latency_seconds": 5.367045500082895,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-022": {
+      "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+      "translated_query": "Which two public benchmarks did the main experiments of SnowflakeNet use?",
+      "latency_seconds": 14.054455499979667,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-023": {
+      "query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+      "translated_query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+      "latency_seconds": 7.04445729998406,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-024": {
+      "query": "Hyper-PCN 在哪些主要数据集上进行评估？",
+      "translated_query": "On which major datasets is Hyper-PCN evaluated?",
+      "latency_seconds": 40.548464499996044,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-025": {
+      "query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+      "translated_query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+      "latency_seconds": 5.942844599951059,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-026": {
+      "query": "PoinTr 的 PCN 数据集结果表使用什么指标比较各方法？",
+      "translated_query": "What metrics does the PoinTr PCN dataset results table use to compare the methods?",
+      "latency_seconds": 13.766104100039229,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-027": {
+      "query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+      "translated_query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+      "latency_seconds": 10.214765200042166,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-028": {
+      "query": "ProxyFormer 的 PCN 定量对比表包含哪些物体类别？",
+      "translated_query": "Which object categories are included in ProxyFormer's PCN quantitative comparison table?",
+      "latency_seconds": 21.282197599997744,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-029": {
+      "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "translated_query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "latency_seconds": 11.051770400023088,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-030": {
+      "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+      "translated_query": "What Chamfer Distance scaling does PointAttN's PCN results table adopt?",
+      "latency_seconds": 50.68677339993883,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-031": {
+      "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "translated_query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "latency_seconds": 7.474707300076261,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-032": {
+      "query": "Hyper-PCN 补充材料如何通过替换方式消融核心模块？",
+      "translated_query": "How does the Hyper-PCN supplementary material ablate core modules via replacement?",
+      "latency_seconds": 33.21807639999315,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-033": {
+      "query": "What additional evidence does the PCN supplementary document provide?",
+      "translated_query": "What additional evidence does the PCN supplementary document provide?",
+      "latency_seconds": 8.560226700035855,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-034": {
+      "query": "SeedFormer 补充材料列出了哪些额外实现与实验内容？",
+      "translated_query": "What additional implementations and experimental contents does the SeedFormer supplementary material list?",
+      "latency_seconds": 35.70435160002671,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-035": {
+      "query": "What core approach does SVDFormer summarize in its conclusion?",
+      "translated_query": "What core approach does SVDFormer summarize in its conclusion?",
+      "latency_seconds": 4.9787049000151455,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-036": {
+      "query": "PointAttN 在结论中如何概括其核心网络？",
+      "translated_query": "How does PointAttN summarize its core network in the conclusion?",
+      "latency_seconds": 6.4488863999722525,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-037": {
+      "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "translated_query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "latency_seconds": 4.42430030007381,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-038": {
+      "query": "比较 PF-Net 与 SeedFormer 的层级式点云生成表示。",
+      "translated_query": "Compare hierarchical point cloud generation representations of PF-Net and SeedFormer.",
+      "latency_seconds": 22.173330300021917,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-039": {
+      "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "translated_query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "latency_seconds": 14.764124699984677,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    },
+    "ARR-040": {
+      "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+      "translated_query": "Compare how SVDFormer and Hyper-PCN model point cloud structural relationships.",
+      "latency_seconds": 9.611448899959214,
+      "model_calls": 1,
+      "token_usage": null,
+      "failure": null
+    }
+  },
+  "replay_rankings_equal": true
+}

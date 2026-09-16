@@ -1,0 +1,108 @@
+{
+  "document_id": "W8",
+  "source_format": "docx",
+  "source_file": "W8.docx",
+  "source_sha256": "aa4d71ad78443cbbcb3ddcbca023fe2dddc616bc4b06ad759816b5af8b46f596",
+  "element_count": 5,
+  "elements": [
+    {
+      "document_id": "W8",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Badly Styled Document",
+      "normalized_text": "Badly Styled Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W8",
+      "element_id": "el-docx-p-1",
+      "type": "paragraph",
+      "raw_text": "Introduction",
+      "normalized_text": "Introduction",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W8",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "Body text under the fake heading.",
+      "normalized_text": "Body text under the fake heading.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W8",
+      "element_id": "el-docx-p-3",
+      "type": "paragraph",
+      "raw_text": "1.1 1.1 Background",
+      "normalized_text": "1.1 1.1 Background",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W8",
+      "element_id": "el-docx-p-4",
+      "type": "paragraph",
+      "raw_text": "More body text.",
+      "normalized_text": "More body text.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "W-A0_python_docx"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "retrieval_contract_version": 2,
+  "branch_top_k": 100,
+  "candidate_pool_k": 200,
+  "fusion_output_k": 200,
+  "reranker_input_k": null,
+  "final_retrieval_k": 100,
+  "context_top_k": 100,
+  "chunk_size": 512,
+  "chunk_overlap": 64,
+  "embedding_model": "BAAI/bge-m3",
+  "collection_name": "ef_research_bge_m3_c512_o64_v1",
+  "seed": 20260905,
+  "dataset_id": "research_questions_v2_gold_stable_v1",
+  "corpus_version": "1e48b401aa48fc59d94bba627deaa3005a7627860e4fe5815761d45c6ba68675",
+  "mapping_version": "gold-mapper-v3",
+  "index_version": "ef_research_bge_m3_c512_o64_v1:3f542723409fabf5649dc363f23bfb417f4538c876db1483fd64334916b5d332",
+  "evaluation_version": "2.1",
+  "depths": [
+    1,
+    3,
+    5,
+    10,
+    20,
+    30,
+    50,
+    100
+  ],
+  "variants": [
+    "b0_original_dense",
+    "b1_frozen_translation_dense",
+    "b2_runtime_translation_dense",
+    "b3_hybrid"
+  ],
+  "historical_artifacts_overwritten": false
+}

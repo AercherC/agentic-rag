@@ -1,0 +1,766 @@
+{
+  "format": "xlsx",
+  "primary_arm": "X-A0",
+  "per_case": [
+    {
+      "case_id": "X1",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X1__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X2",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X2__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X3",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X3__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X4",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=True"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X4__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X5",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=True"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X5__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X6",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": [
+              {
+                "cell": "C2",
+                "formula_found": true,
+                "cached_found": true
+              },
+              {
+                "cell": "C3",
+                "formula_found": true,
+                "cached_found": true
+              }
+            ]
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X6__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X7",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=True"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X7__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X8",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": false,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=False"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X8__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X9",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X9__X-A0_a.json"
+        }
+      }
+    },
+    {
+      "case_id": "X10",
+      "arms": {
+        "X-A0": {
+          "status": "OK",
+          "deterministic": true,
+          "metrics": {
+            "cell_recall": 1.0,
+            "formula_recall": 1.0,
+            "cached_value_preservation": 1.0,
+            "merged_range_accuracy": 1.0,
+            "named_table_accuracy": 1.0,
+            "heuristic_subtable_inferred_flag": true,
+            "sheet_metadata_accuracy": 1.0,
+            "hidden_sheet_preserved": true,
+            "hidden_row_preserved": true,
+            "number_format_preserved": true,
+            "fake_provenance_count": 0,
+            "formula_cell_detail": []
+          },
+          "gates": [
+            {
+              "gate": "X-G1 Cell Fidelity",
+              "status": "PASS",
+              "detail": "cell_recall=1.0"
+            },
+            {
+              "gate": "X-G2 Formula Dual Representation",
+              "status": "PASS",
+              "detail": "formula_recall=1.0 cached_preservation=1.0"
+            },
+            {
+              "gate": "X-G3 Merged Range",
+              "status": "PASS",
+              "detail": "merged_range_accuracy=1.0 expects=False"
+            },
+            {
+              "gate": "X-G4 Table/Subtable Boundary",
+              "status": "PASS",
+              "detail": "named_acc=1.0 inferred_flag=True"
+            },
+            {
+              "gate": "X-G5 Sheet Semantics",
+              "status": "PASS",
+              "detail": "sheet_metadata_accuracy=1.0"
+            },
+            {
+              "gate": "X-G6 Hidden Content Policy",
+              "status": "PASS",
+              "detail": "hidden_sheet_preserved=True hidden_row_preserved=True expects=False"
+            },
+            {
+              "gate": "X-G7 Display vs Raw Value",
+              "status": "PASS",
+              "detail": "number_format_preserved=True"
+            },
+            {
+              "gate": "X-G8 Source Traceability",
+              "status": "PASS",
+              "detail": "fake_provenance_count=0 (must be 0; no page/bbox)"
+            },
+            {
+              "gate": "X-Reproducibility",
+              "status": "PASS",
+              "detail": "same-file normalized digest consistent"
+            }
+          ],
+          "all_pass": true,
+          "out_path": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark\\native_outputs\\xlsx\\X10__X-A0_a.json"
+        }
+      }
+    }
+  ],
+  "arm_summaries": [
+    {
+      "arm_id": "X-A0",
+      "status": "RUNNABLE",
+      "cases_passing_all_gates": 10,
+      "cases_total": 10
+    },
+    {
+      "arm_id": "X-A1",
+      "status": "BLOCKED",
+      "reason": "Docling 未安装（同上）。"
+    },
+    {
+      "arm_id": "X-A2",
+      "status": "BLOCKED",
+      "reason": "Unstructured 未安装（同上）。"
+    }
+  ],
+  "blocked_arms": [
+    "X-A1",
+    "X-A2"
+  ],
+  "aggregate": {
+    "cases_total": 10,
+    "cases_passing_all_gates": 10,
+    "fake_provenance_count": 0,
+    "formula_silent_overwrite": 0,
+    "merged_range_loss": 0
+  }
+}

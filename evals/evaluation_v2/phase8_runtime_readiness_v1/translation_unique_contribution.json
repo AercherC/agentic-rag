@@ -1,0 +1,53 @@
+{
+  "depth": 20,
+  "common_gold_count": 19,
+  "left_only_gold_count": 16,
+  "right_only_gold_count": 2,
+  "common_gold": [
+    "ARR-002:G1",
+    "ARR-004:G1",
+    "ARR-006:G1",
+    "ARR-008:G1",
+    "ARR-010:G1",
+    "ARR-012:G1",
+    "ARR-014:G1",
+    "ARR-016:G1",
+    "ARR-018:G1",
+    "ARR-020:G1",
+    "ARR-022:G1",
+    "ARR-024:G1",
+    "ARR-026:G1",
+    "ARR-028:G1",
+    "ARR-030:G1",
+    "ARR-032:G1",
+    "ARR-034:G1",
+    "ARR-036:G1",
+    "ARR-040:G1"
+  ],
+  "left_only_gold": [
+    "ARR-001:G1",
+    "ARR-003:G1",
+    "ARR-005:G1",
+    "ARR-009:G1",
+    "ARR-011:G1",
+    "ARR-013:G1",
+    "ARR-017:G1",
+    "ARR-019:G1",
+    "ARR-023:G1",
+    "ARR-027:G1",
+    "ARR-029:G1",
+    "ARR-031:G1",
+    "ARR-035:G1",
+    "ARR-037:G1",
+    "ARR-039:G1",
+    "ARR-039:G2"
+  ],
+  "right_only_gold": [
+    "ARR-038:G2",
+    "ARR-040:G2"
+  ],
+  "translation_only_required_evidence_groups": [
+    "ARR-038:G2",
+    "ARR-040:G2"
+  ]
+}

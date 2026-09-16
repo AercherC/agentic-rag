@@ -1,0 +1,19 @@
+{
+  "phase9_expected": {
+    "recall_at_5": 0.5625,
+    "recall_at_10": 0.7375,
+    "mrr_at_5": 0.4320833333333334,
+    "ndcg_at_5": 0.46339982650599376,
+    "all_required_evidence_at_5": 0.55,
+    "all_required_evidence_at_10": 0.725
+  },
+  "inference_mode_quality": {
+    "recall_at_5": 0.5625,
+    "recall_at_10": 0.7375,
+    "mrr_at_5": 0.4320833333333334,
+    "ndcg_at_5": 0.46339982650599376,
+    "all_required_evidence_at_5": 0.55,
+    "all_required_evidence_at_10": 0.725
+  },
+  "runtime_config_promoted": null
+}

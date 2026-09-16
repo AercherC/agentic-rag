@@ -1,0 +1,26 @@
+{
+  "artifact_type": "phase13c_b_cleaner_contract",
+  "created_at_utc": "2026-09-14T12:40:18.153555+00:00",
+  "cleaner_version": "phase13c-b-cleaner-1.1.0",
+  "fusion_version": "phase13c-b-fusion-1.0.0",
+  "gate_definition_version": "phase13c-b-gate-definitions-v2.2.0",
+  "pure_function_violations": [],
+  "math_normalization_probe": {
+    "input": "obtain $N _ { p } = 1 2 8$ patterns",
+    "output": "obtain Np = 128 patterns",
+    "applied": true,
+    "idempotent": true
+  },
+  "cleaner_functions": [
+    "normalize_body_text",
+    "normalize_math_spans",
+    "classify_furniture / furniture_subtype_for_unknown",
+    "normalize_table",
+    "normalize_figure",
+    "normalize_equation",
+    "normalize_reference",
+    "clean_document"
+  ],
+  "runtime_dependency": false,
+  "external_llm_calls": false
+}

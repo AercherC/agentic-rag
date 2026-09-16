@@ -1,0 +1,72 @@
+{
+  "artifact_type": "phase13b_audit_decision",
+  "stage": "Step 8 — Success Criteria Decision",
+  "created_at_utc": "2026-09-10T14:04:25.168548+00:00",
+  "per_candidate": {
+    "SECTION_AWARE_MINIMAL": {
+      "candidate": "SECTION_AWARE_MINIMAL",
+      "recall_vs_baseline": {
+        "recall_at_10_improved": false,
+        "recall_at_20_improved": false,
+        "mrr_not_degraded": true,
+        "ndcg_not_degraded": true
+      },
+      "recovered_failures": {
+        "ARR-007": false,
+        "ARR-037": false,
+        "ARR-040": false
+      },
+      "recovered_count": 0,
+      "criteria": {
+        "criterion_1_recall": false,
+        "criterion_2_ranking_not_degraded": true,
+        "criterion_3_partial_recovery": false,
+        "criterion_4_generation": "NOT_EVALUATED"
+      },
+      "passed": false
+    },
+    "ELEMENT_AWARE": {
+      "candidate": "ELEMENT_AWARE",
+      "recall_vs_baseline": {
+        "recall_at_10_improved": false,
+        "recall_at_20_improved": false,
+        "mrr_not_degraded": true,
+        "ndcg_not_degraded": true
+      },
+      "recovered_failures": {
+        "ARR-007": true,
+        "ARR-037": false,
+        "ARR-040": false
+      },
+      "recovered_count": 1,
+      "criteria": {
+        "criterion_1_recall": false,
+        "criterion_2_ranking_not_degraded": true,
+        "criterion_3_partial_recovery": true,
+        "criterion_4_generation": "NOT_EVALUATED"
+      },
+      "passed": true
+    }
+  },
+  "focus_failure_verdict": {
+    "ARR-007": {
+      "root_cause_in_13A": "DENSE_CANDIDATE_RECALL (dense rank 25)",
+      "recovered_by": "ELEMENT_AWARE (rank 1)",
+      "structure_causal": true
+    },
+    "ARR-037": {
+      "root_cause_in_13A": "DENSE_CANDIDATE_RECALL (G2 rank 77)",
+      "recovered_by": null,
+      "structure_causal": false,
+      "note": "G2（adapointr 的 dynamic query）跨文献词汇不匹配，结构切分未修复"
+    },
+    "ARR-040": {
+      "root_cause_in_13A": "DENSE_CANDIDATE_RECALL (G2 rank 43)",
+      "recovered_by": null,
+      "structure_causal": false,
+      "note": "G2（hypergraph）同样未恢复，指向 sparse/lexical 而非结构"
+    }
+  },
+  "conclusion": "结构切分对'caption 被正文稀释'类失败（ARR-007）有可证因果收益（rank 25→1），但对'跨文献第二篇词汇不匹配'类失败（ARR-037 G2 / ARR-040 G2）无效。",
+  "generation_metrics_status": "NOT_EVALUATED（受控变量冻结 LLM/Runtime，生成层留待切分定案后）"
+}

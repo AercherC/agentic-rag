@@ -1,0 +1,63 @@
+{
+  "artifact_type": "phase11c_documentation_fingerprint_reconciliation",
+  "created_at": "2026-09-09T05:10:06.642198+00:00",
+  "fingerprint_scope": {
+    "includes": [
+      "PROJECT_SPEC.md",
+      "src/evidenceflow/**/*.py"
+    ],
+    "excludes": [
+      "README.md",
+      "docs/**",
+      "evals/**",
+      "experiments/**",
+      "tests/**",
+      "tmp/**",
+      "data/**"
+    ],
+    "readme_in_scope": false
+  },
+  "phase11b_claim": {
+    "runtime_fingerprint_changed_files": [
+      "PROJECT_SPEC.md",
+      "src/evidenceflow/eval/dataset.py"
+    ],
+    "runtime_fingerprint_note": "仅 PROJECT_SPEC/README 文档与已删除死代码的 dataset.py；无 Runtime 行为文件变化。",
+    "problem": "note 提到 README，但 changed_files 只有 PROJECT_SPEC.md 与 eval/dataset.py。"
+  },
+  "reconciliation": {
+    "explanation": "README.md 不在 runtime_fingerprint 的采集范围内（scope = PROJECT_SPEC.md + src/evidenceflow/**），因此它在 11B 中被修改也不会出现在 changed_files 里；changed_files 只列出 PROJECT_SPEC.md（在 scope 内，被 Step 12 文档清理改动）与 src/evidenceflow/eval/dataset.py（删除死代码）。两者描述的是不同集合：changed_files 是 scope 内差异，note 是对本次改动的自然语言概述。",
+    "readme_modified_during_11b": true,
+    "readme_mtime_local": "2026-09-09T13:01:47.744844",
+    "spec_mtime_local": "2026-09-09T13:02:11.647613",
+    "ordering_evidence": "11B cleanup_baseline 冻结于 2026-09-08T15:20:34Z（本地 23:20:34），README.md / PROJECT_SPEC.md 的 mtime 分别为 23:41 / 23:44，即文档改动发生在 baseline 冻结之后，属 11B Step 12『documentation cleanup』的预期动作。",
+    "verdict": "报告表述不准确，不是数据冲突；历史实验数据不修改。"
+  },
+  "pseudo_path_check": {
+    "candidates_in_repo_root": [
+      "README.md",
+      "PROJECT_SPEC.md"
+    ],
+    "conclusion": "仓库根目录下只有 README.md 与 PROJECT_SPEC.md 两个真实文档文件，不存在任何带 svg 或其他前缀的同名文档；changed_files 中的条目均为普通相对路径。"
+  },
+  "fingerprint_diff_vs_11b_baseline": {
+    "changed": [
+      "PROJECT_SPEC.md",
+      "src/evidenceflow/eval/dataset.py",
+      "src/evidenceflow/inspection.py"
+    ],
+    "added": [
+      "src/evidenceflow/inspection.py"
+    ],
+    "removed": [],
+    "note": "该 diff 是相对 11B baseline 的累计差异，包含两部分：(a) 11B 自身在 baseline 冻结之后的改动（PROJECT_SPEC.md 文档清理、src/evidenceflow/eval/dataset.py 删除死代码）；(b) 11C 的改动（新增 src/evidenceflow/inspection.py）。11C 未修改任何既有生产源码文件，因此 changed 列表中没有出现除上述 11B 项以外的既有文件。"
+  },
+  "current_hashes": {
+    "README.md": "63b7287e56b572fa7923219b68bd218702127a6100e9f3909c376159b2a345fe",
+    "PROJECT_SPEC.md": "dcd8c14c170d666b9c606de11102ce81af3dbb85199c08b3c14d72f460b187b7"
+  },
+  "baseline_11b_readme_hash": null,
+  "baseline_11b_readme_hash_note": "11B baseline 未记录 README hash（不在 scope），故无法做 before/after 直接比对。",
+  "action_taken": "只在 11B report.md 追加 11C 校正说明；不修改 11B 的实验数据 JSON。",
+  "gate": "PASS"
+}

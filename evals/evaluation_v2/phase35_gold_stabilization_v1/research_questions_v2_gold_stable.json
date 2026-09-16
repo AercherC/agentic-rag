@@ -1,0 +1,1536 @@
+{
+  "schema_version": "2.1",
+  "dataset_id": "research_questions_v2_gold_stable_v1",
+  "split": "legacy_dev_diagnostic",
+  "corpus_version": "1e48b401aa48fc59d94bba627deaa3005a7627860e4fe5815761d45c6ba68675",
+  "questions": [
+    {
+      "question_id": "ARR-001",
+      "family_id": "ARR-001",
+      "query": "Why is point cloud completion needed according to PCN?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+              "content_version": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "available at https://wentaoyuan.github.io/pcn. 1. introduction",
+                "right_context": ", causing loss in geometric and semantic information. for exampl",
+                "occurrence": 1,
+                "source_span_start": 1148,
+                "source_span_end": 1187
+              },
+              "evidence_anchor": "Real-world 3D data are often incomplete"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-002",
+      "family_id": "ARR-002",
+      "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+              "content_version": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ed in real-world applications are of- ten incomplete due to the",
+                "right_context": ", and occlusion. therefore, recovering the com- plete point clou",
+                "occurrence": 1,
+                "source_span_start": 558,
+                "source_span_end": 601
+              },
+              "evidence_anchor": "limited sensor resolution, single viewpoint"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-003",
+      "family_id": "ARR-003",
+      "query": "What acquisition problems motivate ProxyFormer?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+              "content_version": "35f91130124e55fd5bce3bcdc046c505cab5c71015af7f8bae923dbabf568653",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "i, pan.gao, x.tan, mqwei}@nuaa.edu.cn abstract problems such as",
+                "right_context": "will lead the captured point clouds to be incomplete. therefore",
+                "occurrence": 1,
+                "source_span_start": 317,
+                "source_span_end": 356
+              },
+              "evidence_anchor": "equipment defects or limited viewpoints"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-004",
+      "family_id": "ARR-004",
+      "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+              "content_version": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+              "locator": {
+                "page_start": 2,
+                "page_end": 2,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "cal synthetic models with various degrees of incompleteness and",
+                "right_context": "scans. extensive experiments demonstrate that svdformer achieve",
+                "occurrence": 1,
+                "source_span_start": 4045,
+                "source_span_end": 4069
+              },
+              "evidence_anchor": "highly sparse real-world"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-005",
+      "family_id": "ARR-005",
+      "query": "Why does PointAttN question using a fixed neighborhood parameter?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+              "content_version": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "niformly distributed in different local region. thus, using the",
+                "right_context": ", which makes it hard to depict a well local geometric structure",
+                "occurrence": 1,
+                "source_span_start": 3218,
+                "source_span_end": 3273
+              },
+              "evidence_anchor": "fixed parameter to process point clouds is unreasonable"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-006",
+      "family_id": "ARR-006",
+      "query": "Hyper-PCN 认为只建模成对关系会遗漏什么？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+              "content_version": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "gnificant progress, they often struggle to capture the complex,",
+                "right_context": "in- herent in point clouds. to address this limitation, we pro-",
+                "occurrence": 1,
+                "source_span_start": 863,
+                "source_span_end": 886
+              },
+              "evidence_anchor": "high-order correlations"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-007",
+      "family_id": "ARR-007",
+      "query": "What two outputs are shown in the PCN architecture?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+              "content_version": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+              "locator": {
+                "page_start": 3,
+                "page_end": 3,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": null,
+                "right_context": ". the encoder abstracts the input point cloud x as a feature vec",
+                "occurrence": 1,
+                "source_span_start": 0,
+                "source_span_end": 26
+              },
+              "evidence_anchor": "Figure 2: PCN architecture"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-008",
+      "family_id": "ARR-008",
+      "query": "PF-Net 的总体架构图由哪三个主要模块组成？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+              "content_version": "7055d83ede3b651eeb18a093ea007472be3b2da33418ddcfbc213ba9ef4689b9",
+              "locator": {
+                "page_start": 3,
+                "page_end": 3,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "figure 2.",
+                "right_context": ". the input of pf-net is incomplete point cloud and it predicts",
+                "occurrence": 1,
+                "source_span_start": 10,
+                "source_span_end": 36
+              },
+              "evidence_anchor": "The architecture of PF-Net"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-009",
+      "family_id": "ARR-009",
+      "query": "How does PoinTr represent a point cloud for transformer processing?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+              "content_version": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "oints with position embeddings, we convert the point cloud to a",
+                "right_context": "and employ the transform- ers for point cloud generation. to fa",
+                "occurrence": 1,
+                "source_span_start": 1121,
+                "source_span_end": 1146
+              },
+              "evidence_anchor": "sequence of point proxies"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-010",
+      "family_id": "ARR-010",
+      "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+              "content_version": "464e66a054d4eea8dea5fb2c64505530b9766b2cae9c640111f0590b99ac8d68",
+              "locator": {
+                "page_start": 3,
+                "page_end": 3,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ni x cʹ duplicate nc x (c + cʹ ) ... figure 3. (a) the overall",
+                "right_context": ", which consists of three modules: feature extraction, seed gene",
+                "occurrence": 1,
+                "source_span_start": 723,
+                "source_span_end": 751
+              },
+              "evidence_anchor": "architecture of SnowflakeNet"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-011",
+      "family_id": "ARR-011",
+      "query": "What new shape representation does SeedFormer introduce?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+              "content_version": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "us methods based on a global feature vector, we introduce a new",
+                "right_context": ", which not only captures general structures from partial inputs",
+                "occurrence": 1,
+                "source_span_start": 705,
+                "source_span_end": 745
+              },
+              "evidence_anchor": "shape representation, namely Patch Seeds"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-012",
+      "family_id": "ARR-012",
+      "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+              "content_version": "35f91130124e55fd5bce3bcdc046c505cab5c71015af7f8bae923dbabf568653",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "mal distribution into reasonable position information, and uses",
+                "right_context": "to refine the missing proxies. it makes the predicted point pro",
+                "occurrence": 2,
+                "source_span_start": 1210,
+                "source_span_end": 1225
+              },
+              "evidence_anchor": "proxy alignment"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-013",
+      "family_id": "ARR-013",
+      "query": "What two generators make up SVDFormer's dual-generator design?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+              "content_version": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "led structures, we then introduce a re- finement module, called",
+                "right_context": ", in which we incorporate learned shape priors and geomet- ric s",
+                "occurrence": 2,
+                "source_span_start": 1840,
+                "source_span_end": 1869
+              },
+              "evidence_anchor": "self-structure dual-generator"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-014",
+      "family_id": "ARR-014",
+      "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "evidence_type": "figure_caption",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+              "content_version": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+              "locator": {
+                "page_start": 3,
+                "page_end": 3,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "anchors top-k point set hypergraph convolution figure 2. a) the",
+                "right_context": ", consisting of a hypergraph encoder and a two-stage decoder. b)",
+                "occurrence": 1,
+                "source_span_start": 800,
+                "source_span_end": 827
+              },
+              "evidence_anchor": "overall Hyper-PCN framework"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-015",
+      "family_id": "ARR-015",
+      "query": "How many ShapeNet models and categories are used by PCN?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+              "content_version": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+              "locator": {
+                "page_start": 4,
+                "page_end": 4,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "artial and complete point clouds (x, y ). specifically, we take",
+                "right_context": ": airplane, cabi- net, car, chair, lamp, sofa, table, vessel. th",
+                "occurrence": 1,
+                "source_span_start": 3377,
+                "source_span_end": 3407
+              },
+              "evidence_anchor": "30974 models from 8 categories"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-016",
+      "family_id": "ARR-016",
+      "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+              "content_version": "464e66a054d4eea8dea5fb2c64505530b9766b2cae9c640111f0590b99ac8d68",
+              "locator": {
+                "page_start": 5,
+                "page_end": 5,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "query and key. 3.4. training loss in our implementation, we use",
+                "right_context": "(cd) as the primary loss function. to explicitly constrain poin",
+                "occurrence": 1,
+                "source_span_start": 3696,
+                "source_span_end": 3712
+              },
+              "evidence_anchor": "Chamfer distance"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-017",
+      "family_id": "ARR-017",
+      "query": "What values are used for the number of patches and seed feature dimensions in SeedFormer?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+              "content_version": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+              "locator": {
+                "page_start": 8,
+                "page_end": 8,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "r encoder applies two layers of set abstraction [22] and obtain",
+                "right_context": "patches of the incomplete point cloud. then, in the seed genera",
+                "occurrence": 1,
+                "source_span_start": 1503,
+                "source_span_end": 1511
+              },
+              "evidence_anchor": "Np = 128"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-018",
+      "family_id": "ARR-018",
+      "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+              "content_version": "35f91130124e55fd5bce3bcdc046c505cab5c71015af7f8bae923dbabf568653",
+              "locator": {
+                "page_start": 6,
+                "page_end": 6,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "[41]. in the two datasets, the input incomplete point cloud has",
+                "right_context": ", and the complete point cloud contains 8192 points. like [41],",
+                "occurrence": 1,
+                "source_span_start": 3435,
+                "source_span_end": 3446
+              },
+              "evidence_anchor": "2048 points"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-019",
+      "family_id": "ARR-019",
+      "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+              "content_version": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+              "locator": {
+                "page_start": 6,
+                "page_end": 6,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "s less than 2048 points. each ground-truth point cloud contains",
+                "right_context": ", which are evenly sampled from 6",
+                "occurrence": 1,
+                "source_span_start": 4650,
+                "source_span_end": 4662
+              },
+              "evidence_anchor": "16384 points"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-020",
+      "family_id": "ARR-020",
+      "query": "PCN 的合成训练数据来自哪个 CAD 数据集？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+              "content_version": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+              "locator": {
+                "page_start": 4,
+                "page_end": 4,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": ". data generation and model training to train our model, we use",
+                "right_context": "to create a large-scale dataset containing pairs of partial and",
+                "occurrence": 1,
+                "source_span_start": 3225,
+                "source_span_end": 3259
+              },
+              "evidence_anchor": "synthetic CAD models from ShapeNet"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-021",
+      "family_id": "ARR-021",
+      "query": "How many ShapeNet categories are used in PoinTr's ShapeNet-55 benchmark?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+              "content_version": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "int cloud), more diverse categories (i.e., from 8 categories to",
+                "right_context": "), more diverse viewpoints (i.e., from 8 viewpoints to all possi",
+                "occurrence": 1,
+                "source_span_start": 2958,
+                "source_span_end": 2971
+              },
+              "evidence_anchor": "55 categories"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-022",
+      "family_id": "ARR-022",
+      "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+              "content_version": "464e66a054d4eea8dea5fb2c64505530b9766b2cae9c640111f0590b99ac8d68",
+              "locator": {
+                "page_start": 5,
+                "page_end": 5,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "uct comprehensive experiments under two widely used benchmarks:",
+                "right_context": "[43], both",
+                "occurrence": 1,
+                "source_span_start": 4736,
+                "source_span_end": 4761
+              },
+              "evidence_anchor": "PCN [57] and Completion3D"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-023",
+      "family_id": "ARR-023",
+      "query": "Which projected ShapeNet datasets does AdaPoinTr introduce?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+              "content_version": "1fde4c0d2a246f4cb0c941049198fd8f5d67318029c7623d243bd886364b6153",
+              "locator": {
+                "page_start": 2,
+                "page_end": 2,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "is noised back-projecting method and obtain two new vari- ants:",
+                "right_context": "and projected-shapenet-34. we show some samples of incomplete p",
+                "occurrence": 1,
+                "source_span_start": 4687,
+                "source_span_end": 4708
+              },
+              "evidence_anchor": "Projected-ShapeNet-55"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-024",
+      "family_id": "ARR-024",
+      "query": "Hyper-PCN 在哪些主要数据集上进行评估？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+              "content_version": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+              "locator": {
+                "page_start": 5,
+                "page_end": 5,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ely adopted datasets for training and evaluation, including the",
+                "right_context": "[46], mvp dataset[26], and shapenet55/34 dataset[35]. additional",
+                "occurrence": 1,
+                "source_span_start": 4066,
+                "source_span_end": 4077
+              },
+              "evidence_anchor": "PCN dataset"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-025",
+      "family_id": "ARR-025",
+      "query": "Which methods are compared with AdaPoinTr in its ShapeNet-55 results table?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+              "content_version": "1fde4c0d2a246f4cb0c941049198fd8f5d67318029c7623d243bd886364b6153",
+              "locator": {
+                "page_start": 9,
+                "page_end": 9,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "9 table 1",
+                "right_context": ". we report the detailed results for each method on 10 categorie",
+                "occurrence": 1,
+                "source_span_start": 10,
+                "source_span_end": 32
+              },
+              "evidence_anchor": "Results on ShapeNet-55"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-026",
+      "family_id": "ARR-026",
+      "query": "PoinTr 的 PCN 数据集结果表使用什么指标比较各方法？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+              "content_version": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+              "locator": {
+                "page_start": 7,
+                "page_end": 7,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "the existing benchmarks including the pcn dataset [51] table 3:",
+                "right_context": ". we use the l1 chamfer distance to compare with other methods.",
+                "occurrence": 1,
+                "source_span_start": 1086,
+                "source_span_end": 1112
+              },
+              "evidence_anchor": "Results on the PCN dataset"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-027",
+      "family_id": "ARR-027",
+      "query": "What variants are reported in SeedFormer's ShapeNet-55 completion table?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+              "content_version": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+              "locator": {
+                "page_start": 10,
+                "page_end": 10,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "10 h. zhou et al. table 2:",
+                "right_context": "dataset evaluated as l2 chamfer distance ×1000 (lower is better",
+                "occurrence": 1,
+                "source_span_start": 27,
+                "source_span_end": 60
+              },
+              "evidence_anchor": "Completion results on ShapeNet-55"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-028",
+      "family_id": "ARR-028",
+      "query": "ProxyFormer 的 PCN 定量对比表包含哪些物体类别？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+              "content_version": "35f91130124e55fd5bce3bcdc046c505cab5c71015af7f8bae923dbabf568653",
+              "locator": {
+                "page_start": 6,
+                "page_end": 6,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "d distribution density while complementing the object. table 1.",
+                "right_context": "of pcn dataset. point resolu- tions for the output and gt are 1",
+                "occurrence": 1,
+                "source_span_start": 853,
+                "source_span_end": 876
+              },
+              "evidence_anchor": "Quantitative comparison"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-029",
+      "family_id": "ARR-029",
+      "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+              "content_version": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+              "locator": {
+                "page_start": 7,
+                "page_end": 7,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "table 3.",
+                "right_context": ". methods 34 seen categories 21 unseen categories cd-s cd-m cd-h",
+                "occurrence": 1,
+                "source_span_start": 9,
+                "source_span_end": 44
+              },
+              "evidence_anchor": "Quantitative results on ShapeNet-34"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-030",
+      "family_id": "ARR-030",
+      "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "evidence_type": "table",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+              "content_version": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+              "locator": {
+                "page_start": 8,
+                "page_end": 8,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "j. wang et al. table 2:",
+                "right_context": "in terms of l1 chamfer distance (cd). the best results are high",
+                "occurrence": 1,
+                "source_span_start": 24,
+                "source_span_end": 73
+              },
+              "evidence_anchor": "Point cloud completion results on the PCN dataset"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-031",
+      "family_id": "ARR-031",
+      "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+              "content_version": "1fde4c0d2a246f4cb0c941049198fd8f5d67318029c7623d243bd886364b6153",
+              "locator": {
+                "page_start": 18,
+                "page_end": 18,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "is because there are only 2048 points in the input point cloud.",
+                "right_context": ": as for the presentation of point proxies, we have conducted ab",
+                "occurrence": 1,
+                "source_span_start": 471,
+                "source_span_end": 511
+              },
+              "evidence_anchor": "Ablation on formulation of point proxies"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-032",
+      "family_id": "ARR-032",
+      "query": "Hyper-PCN 补充材料如何通过替换方式消融核心模块？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+              "content_version": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+              "locator": {
+                "page_start": 12,
+                "page_end": 12,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ffec- tive than deep stacks of pair-wise convolutions. table 9.",
+                "right_context": ". (a) hyperrs. base flops(g) params(m) cd(↓) gcn (l=6) 6.47 12.6",
+                "occurrence": 1,
+                "source_span_start": 517,
+                "source_span_end": 556
+              },
+              "evidence_anchor": "Ablation of core modules by replacement"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-033",
+      "family_id": "ARR-033",
+      "query": "What additional evidence does the PCN supplementary document provide?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+              "content_version": "9d9c4c1bb9e9d565323f7ddb68927460bc3fd012c4c8d449e50229377ec30504",
+              "locator": {
+                "page_start": 12,
+                "page_end": 12,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "a. overview in this document we provide",
+                "right_context": "and qualitative results to the main paper. in section b, we des",
+                "occurrence": 1,
+                "source_span_start": 40,
+                "source_span_end": 85
+              },
+              "evidence_anchor": "technical details and additional quantitative"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-034",
+      "family_id": "ARR-034",
+      "query": "SeedFormer 补充材料列出了哪些额外实现与实验内容？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "ablation",
+      "evidence_type": "supplementary",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+              "content_version": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+              "locator": {
+                "page_start": 18,
+                "page_end": 18,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "18 h. zhou et al. in this",
+                "right_context": ", we provide additional information to com- plement the manuscri",
+                "occurrence": 1,
+                "source_span_start": 26,
+                "source_span_end": 48
+              },
+              "evidence_anchor": "supplementary material"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-035",
+      "family_id": "ARR-035",
+      "query": "What core approach does SVDFormer summarize in its conclusion?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "conclusion_limitation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+              "content_version": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+              "locator": {
+                "page_start": 9,
+                "page_end": 9,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "chieves a trade-off between cost and performance. 5. conclusion",
+                "right_context": "for point cloud completion. we start by identifying the main ch",
+                "occurrence": 1,
+                "source_span_start": 1040,
+                "source_span_end": 1060
+              },
+              "evidence_anchor": "We propose SVDFormer"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-036",
+      "family_id": "ARR-036",
+      "query": "PointAttN 在结论中如何概括其核心网络？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "conclusion_limitation",
+      "evidence_type": "body_text",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+              "content_version": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+              "locator": {
+                "page_start": 10,
+                "page_end": 10,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "tly designed without useless part. 5 conclusions in this paper,",
+                "right_context": ", namely pointattn, which has fully exploited the attention mech",
+                "occurrence": 1,
+                "source_span_start": 2312,
+                "source_span_end": 2350
+              },
+              "evidence_anchor": "we present a novel deep neural network"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-037",
+      "family_id": "ARR-037",
+      "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+              "content_version": "883b9964d90c160275b19fb3a219bb6adb6701a04e82c12e6e8f70b52ee79021",
+              "locator": {
+                "page_start": 2,
+                "page_end": 2,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "the geometric relations explicitly; 4) query generator: we use",
+                "right_context": "instead of fixed queirs in the decoder, which are generated by",
+                "occurrence": 1,
+                "source_span_start": 2344,
+                "source_span_end": 2359
+              },
+              "evidence_anchor": "dynamic queries"
+            }
+          ]
+        },
+        {
+          "group_id": "G2",
+          "alternatives": [
+            {
+              "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+              "content_version": "1fde4c0d2a246f4cb0c941049198fd8f5d67318029c7623d243bd886364b6153",
+              "locator": {
+                "page_start": 4,
+                "page_end": 4,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "edict the point proxies of the missing parts, we propose to use",
+                "right_context": "embeddings, which is different from the learnable static query",
+                "occurrence": 1,
+                "source_span_start": 5220,
+                "source_span_end": 5233
+              },
+              "evidence_anchor": "dynamic query"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-038",
+      "family_id": "ARR-038",
+      "query": "比较 PF-Net 与 SeedFormer 的层级式点云生成表示。",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+              "content_version": "7055d83ede3b651eeb18a093ea007472be3b2da33418ddcfbc213ba9ef4689b9",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ue, red and yellow) are made by layers from different depths of",
+                "right_context": "(ppd). the low resolution prediction serves as the center point",
+                "occurrence": 1,
+                "source_span_start": 2487,
+                "source_span_end": 2508
+              },
+              "evidence_anchor": "point pyramid decoder"
+            }
+          ]
+        },
+        {
+          "group_id": "G2",
+          "alternatives": [
+            {
+              "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+              "content_version": "7bdd0f4953ac327989a9d9092fec71564e82509a0ef5bf9c013a8c39e3df8191",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "feature vector, we introduce a new shape representation, namely",
+                "right_context": ", which not only captures general structures from partial inputs",
+                "occurrence": 2,
+                "source_span_start": 734,
+                "source_span_end": 745
+              },
+              "evidence_anchor": "Patch Seeds"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-039",
+      "family_id": "ARR-039",
+      "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+              "content_version": "464e66a054d4eea8dea5fb2c64505530b9766b2cae9c640111f0590b99ac8d68",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "oint splitting patterns which can fit lo- cal regions the best.",
+                "right_context": "leverages attention mechanism to summarize the splitting patter",
+                "occurrence": 3,
+                "source_span_start": 1780,
+                "source_span_end": 1796
+              },
+              "evidence_anchor": "Skip-Transformer"
+            }
+          ]
+        },
+        {
+          "group_id": "G2",
+          "alternatives": [
+            {
+              "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+              "content_version": "e6a9e06c5cd867e4d4ee2e72ec0fb3c2b30383a03021cb2c097d771baaccfd0a",
+              "locator": {
+                "page_start": 2,
+                "page_end": 2,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "ocal and global geometric context in an implicit manner via the",
+                "right_context": "mechanisms. pointattn adopts the encoder-decoder architecture t",
+                "occurrence": 1,
+                "source_span_start": 759,
+                "source_span_end": 793
+              },
+              "evidence_anchor": "self-attention and cross-attention"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    },
+    {
+      "question_id": "ARR-040",
+      "family_id": "ARR-040",
+      "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "evidence_type": "multi_document",
+      "answerability": "answerable",
+      "required_evidence_groups": [
+        {
+          "group_id": "G1",
+          "alternatives": [
+            {
+              "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+              "content_version": "a72fe49e366cda55b2feeee562fde0c365080031512cfa785902b2935a3ebccd",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "led structures, we then introduce a re- finement module, called",
+                "right_context": "dual-generator, in which we incorporate learned shape priors an",
+                "occurrence": 3,
+                "source_span_start": 1840,
+                "source_span_end": 1854
+              },
+              "evidence_anchor": "self-structure"
+            }
+          ]
+        },
+        {
+          "group_id": "G2",
+          "alternatives": [
+            {
+              "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+              "content_version": "8ab471cd11197ad3fc2f110e6feef5c51de974175461441c9f6db86ed4c371c2",
+              "locator": {
+                "page_start": 1,
+                "page_end": 1,
+                "block_index": null,
+                "span_start": null,
+                "span_end": null,
+                "left_context": "se hyper-pcn, a point cloud completion framework that leverages",
+                "right_context": "s to explicitly model complex, higher- order correlations within",
+                "occurrence": 2,
+                "source_span_start": 1017,
+                "source_span_end": 1027
+              },
+              "evidence_anchor": "hypergraph"
+            }
+          ]
+        }
+      ],
+      "reference_claims": [],
+      "reference_answer": null
+    }
+  ]
+}

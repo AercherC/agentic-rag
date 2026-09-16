@@ -1,0 +1,264 @@
+{
+  "phase": "phase12_rag_quality_v1",
+  "status": "COMPLETE",
+  "layer_counts": {
+    "RETRIEVAL": 3,
+    "CONTEXT": 0,
+    "GENERATION": 7,
+    "ABSTENTION": 1,
+    "CITATION": 4,
+    "NONE": 10
+  },
+  "rows": [
+    {
+      "question_id": "ARR-002",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "CITATION"
+    },
+    {
+      "question_id": "ARR-004",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-009",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-010",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "CITATION"
+    },
+    {
+      "question_id": "ARR-011",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-012",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "ARR-013",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-014",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "CITATION"
+    },
+    {
+      "question_id": "ARR-016",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "ARR-018",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-019",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "ARR-022",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-029",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "ARR-030",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "ABSTENTION"
+    },
+    {
+      "question_id": "ARR-031",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "CITATION"
+    },
+    {
+      "question_id": "ARR-036",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": true,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "ARR-039",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": true,
+      "context_evidence_present": true,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "ARR-007",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": false,
+      "grounded": null,
+      "citation_correct": null,
+      "primary_failure_layer": "RETRIEVAL"
+    },
+    {
+      "question_id": "ARR-037",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "RETRIEVAL"
+    },
+    {
+      "question_id": "ARR-040",
+      "answerability": "ANSWERABLE",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": false,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "RETRIEVAL"
+    },
+    {
+      "question_id": "GEN-U01",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": null,
+      "grounded": null,
+      "citation_correct": null,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "GEN-U02",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": null,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    },
+    {
+      "question_id": "GEN-U03",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": null,
+      "grounded": null,
+      "citation_correct": null,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "GEN-U04",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": null,
+      "grounded": null,
+      "citation_correct": null,
+      "primary_failure_layer": "GENERATION"
+    },
+    {
+      "question_id": "GEN-U05",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "retrieval_success": false,
+      "context_evidence_present": false,
+      "answer_correct": null,
+      "grounded": true,
+      "citation_correct": true,
+      "primary_failure_layer": "NONE"
+    }
+  ]
+}

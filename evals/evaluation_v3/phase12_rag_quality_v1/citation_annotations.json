@@ -1,0 +1,688 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "rag_generation_eval_v1",
+  "derived_from": "claim_annotations.json",
+  "annotator": "human (careful manual reading of each answer against its frozen BuiltContext)",
+  "questions": {
+    "ARR-002": {
+      "question_id": "ARR-002",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-004": {
+      "question_id": "ARR-004",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-009": {
+      "question_id": "ARR-009",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-010": {
+      "question_id": "ARR-010",
+      "citations": [
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-011": {
+      "question_id": "ARR-011",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-012": {
+      "question_id": "ARR-012",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-013": {
+      "question_id": "ARR-013",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-014": {
+      "question_id": "ARR-014",
+      "citations": [
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 7,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-016": {
+      "question_id": "ARR-016",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-018": {
+      "question_id": "ARR-018",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-019": {
+      "question_id": "ARR-019",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-022": {
+      "question_id": "ARR-022",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-029": {
+      "question_id": "ARR-029",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-030": {
+      "question_id": "ARR-030",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 1,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-031": {
+      "question_id": "ARR-031",
+      "citations": [
+        {
+          "claim_index": 3,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-036": {
+      "question_id": "ARR-036",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-039": {
+      "question_id": "ARR-039",
+      "citations": [
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 7,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 8,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 9,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-007": {
+      "question_id": "ARR-007",
+      "citations": []
+    },
+    "ARR-037": {
+      "question_id": "ARR-037",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "ARR-040": {
+      "question_id": "ARR-040",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 4,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 5,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 6,
+          "label": "[S5]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "GEN-U01": {
+      "question_id": "GEN-U01",
+      "citations": [
+        {
+          "claim_index": 1,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "GEN-U02": {
+      "question_id": "GEN-U02",
+      "citations": [
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 3,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    },
+    "GEN-U03": {
+      "question_id": "GEN-U03",
+      "citations": []
+    },
+    "GEN-U04": {
+      "question_id": "GEN-U04",
+      "citations": []
+    },
+    "GEN-U05": {
+      "question_id": "GEN-U05",
+      "citations": [
+        {
+          "claim_index": 2,
+          "label": "[S1]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S2]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S3]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        },
+        {
+          "claim_index": 2,
+          "label": "[S4]",
+          "judgment": "SUPPORTS",
+          "supports_claim": true
+        }
+      ]
+    }
+  }
+}

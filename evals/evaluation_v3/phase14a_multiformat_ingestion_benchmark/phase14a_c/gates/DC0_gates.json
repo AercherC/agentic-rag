@@ -1,0 +1,80 @@
+[
+ {
+  "gate": "C-G1_frozen_inputs",
+  "pass": true
+ },
+ {
+  "gate": "C-G2_serialization_coverage",
+  "pass": true,
+  "detail": {
+   "coverage_ratio": 1.0
+  }
+ },
+ {
+  "gate": "C-G3_token_limit",
+  "pass": true,
+  "detail": {
+   "token_max": 112,
+   "limit": 512
+  }
+ },
+ {
+  "gate": "C-G4_anchor_projection",
+  "pass": true,
+  "detail": {
+   "failed_qids": []
+  }
+ },
+ {
+  "gate": "C-G5_run_complete",
+  "pass": true
+ },
+ {
+  "gate": "C-G6_qrels_nonempty",
+  "pass": true,
+  "detail": {
+   "eligible": 36,
+   "expected": 36
+  }
+ },
+ {
+  "gate": "C-G7_determinism",
+  "pass": true
+ },
+ {
+  "gate": "C-G8_provenance",
+  "pass": true,
+  "detail": {
+   "bad_chunks": []
+  }
+ },
+ {
+  "gate": "D-CG1_heading_path",
+  "pass": true,
+  "detail": {
+   "scope": "N/A_fixed_token"
+  }
+ },
+ {
+  "gate": "D-CG2_table_atomicity",
+  "pass": true,
+  "detail": {
+   "scope": "N/A_inline_table_design"
+  }
+ },
+ {
+  "gate": "D-CG3_no_furniture_hidden",
+  "pass": true,
+  "detail": {
+   "leak_element_ids": []
+  }
+ },
+ {
+  "gate": "D-CG4_baseline_fairness",
+  "pass": true,
+  "detail": {
+   "coverage_ratio": 1.0,
+   "note": "all arms share same indexable element set"
+  }
+ }
+]

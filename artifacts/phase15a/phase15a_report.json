@@ -1,0 +1,99 @@
+{
+  "phase": "15A",
+  "status": "PASS",
+  "baseline_snapshot": "artifacts/phase15a/baseline_snapshot.json",
+  "authoritative_collection": "ef_research_bge_m3_hybrid_c512_v2",
+  "config": {
+    "settings_collection_name": "ef_research_bge_m3_hybrid_c512_v2",
+    "env_collection_name": "ef_research_bge_m3_hybrid_c512_v2",
+    "active_collection_names": [
+      "ef_research_bge_m3_hybrid_c512_v2"
+    ],
+    "collection_metadata": {
+      "storage_contract": "domain_chunk_metadata_v2",
+      "lifecycle": "ACTIVE",
+      "hnsw:space": "cosine",
+      "chunk_strategy": "hybrid"
+    }
+  },
+  "manifest": {
+    "path": "artifacts/phase15a/active_manifest.json",
+    "corpus_signature": "bb184726b7f98756bd519d70e1a2a1f1224b5108e689680b2c328023ba1f4332",
+    "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5",
+    "document_count": 10,
+    "chunk_count": 817,
+    "matches_current_scan": true
+  },
+  "lifecycle": {
+    "state_path": "artifacts/phase15a/index_state.json",
+    "active_collection": "ef_research_bge_m3_hybrid_c512_v2",
+    "previous_collection": null,
+    "staging_collection": null
+  },
+  "counts": {
+    "source_documents": 10,
+    "indexed_documents": 10,
+    "indexed_chunks": 817,
+    "unique_chunk_ids": 817
+  },
+  "phase13f_metric_snapshot": {
+    "precision_at_5": 0.23157894736842108,
+    "recall_at_5": 0.5123862463645745,
+    "recall_at_10": 0.6574985874480742,
+    "recall_at_20": 0.6960852736964844,
+    "mrr_at_5": 0.5521929824561403,
+    "map_at_5": 0.38551310316790194,
+    "ndcg_at_5": 0.49734103517021605,
+    "hit_rate_at_5": 0.7368421052631579,
+    "hit_rate_at_10": 0.868421052631579,
+    "hit_rate_at_20": 0.868421052631579,
+    "eligible_count": 38,
+    "excluded_count": 2
+  },
+  "gates": {
+    "G15A-1_manifest_determinism": true,
+    "G15A-2_signature_sensitivity": "covered_by_targeted_tests",
+    "G15A-3_signature_isolation": "covered_by_targeted_tests",
+    "G15A-4_source_reconciliation": true,
+    "G15A-5_index_reconciliation": true,
+    "G15A-6_no_orphan_state": true,
+    "G15A-7_staging_isolation": "covered_by_targeted_tests",
+    "G15A-8_failed_build_safety": "covered_by_targeted_tests",
+    "G15A-9_activation": "covered_by_targeted_tests",
+    "G15A-10_rollback": "covered_by_targeted_tests",
+    "G15A-11_runtime_parity": true,
+    "G15A-12_frozen_artifacts_intact": true
+  },
+  "phase13f_artifact_hashes_pass": true,
+  "gold_qrels_hashes_pass": true,
+  "phase13f_artifact_hash_checks": {
+    "PLAN.md": true,
+    "chunks/runtime_hybrid.jsonl": true,
+    "embeddings/runtime_hybrid.npz": true,
+    "gates/F_G1_inputs.json": true,
+    "gates/F_G2_structure_parity.json": true,
+    "gates/F_G3_G4_G5_chunking.json": true,
+    "gates/F_G6_protocol.json": true,
+    "gates/F_G7_ir_direction.json": true,
+    "gates/hard_gates.json": true,
+    "metrics/bootstrap.json": true,
+    "metrics/focus_questions.json": true,
+    "metrics/ir_by_arm.json": true,
+    "metrics/ir_per_query.json": true,
+    "metrics/qrels_projection.json": true,
+    "reports/final_report.md": true,
+    "retrieval/runtime_hybrid_run.json": true,
+    "status.json": true
+  },
+  "gold_qrels_hash_checks": {
+    "evals/evaluation_v2/phase35_gold_stabilization_v1/gold_mapping_v3.json": true,
+    "evals/evaluation_v2/phase35_gold_stabilization_v1/research_questions_v2_gold_stable.json": true,
+    "evals/evaluation_v3/standard_ir_v1/qrels.json": true,
+    "evals/evaluation_v3/standard_ir_v1/qrels_manifest.json": true
+  },
+  "known_limitations": [
+    "v1 hybrid Collection remains legacy/read-only and was not modified or deleted.",
+    "This verification does not rebuild production or rerun model inference; runtime parity uses the frozen v2 storage-repair evidence.",
+    "Phase 15B/15C/16/17 were not entered."
+  ]
+}

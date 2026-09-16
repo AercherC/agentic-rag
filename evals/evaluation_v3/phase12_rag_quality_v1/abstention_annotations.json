@@ -1,0 +1,183 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "rag_generation_eval_v1",
+  "derived_from": "claim_annotations.json",
+  "annotator": "human (careful manual reading of each answer against its frozen BuiltContext)",
+  "questions": {
+    "ARR-002": {
+      "question_id": "ARR-002",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-004": {
+      "question_id": "ARR-004",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-009": {
+      "question_id": "ARR-009",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-010": {
+      "question_id": "ARR-010",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-011": {
+      "question_id": "ARR-011",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-012": {
+      "question_id": "ARR-012",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-013": {
+      "question_id": "ARR-013",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-014": {
+      "question_id": "ARR-014",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-016": {
+      "question_id": "ARR-016",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-018": {
+      "question_id": "ARR-018",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-019": {
+      "question_id": "ARR-019",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-022": {
+      "question_id": "ARR-022",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-029": {
+      "question_id": "ARR-029",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-030": {
+      "question_id": "ARR-030",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "FALSE_ABSTENTION",
+      "confusion": "FP"
+    },
+    "ARR-031": {
+      "question_id": "ARR-031",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-036": {
+      "question_id": "ARR-036",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-039": {
+      "question_id": "ARR-039",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-007": {
+      "question_id": "ARR-007",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null
+    },
+    "ARR-037": {
+      "question_id": "ARR-037",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "ARR-040": {
+      "question_id": "ARR-040",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN"
+    },
+    "GEN-U01": {
+      "question_id": "GEN-U01",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP"
+    },
+    "GEN-U02": {
+      "question_id": "GEN-U02",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP"
+    },
+    "GEN-U03": {
+      "question_id": "GEN-U03",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null
+    },
+    "GEN-U04": {
+      "question_id": "GEN-U04",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null
+    },
+    "GEN-U05": {
+      "question_id": "GEN-U05",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP"
+    }
+  }
+}

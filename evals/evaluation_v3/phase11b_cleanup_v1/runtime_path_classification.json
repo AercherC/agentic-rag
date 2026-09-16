@@ -1,0 +1,87 @@
+{
+  "artifact_type": "phase11b_runtime_path_classification",
+  "created_at": "2026-09-08T15:40:13.636673+00:00",
+  "items": [
+    {
+      "area": "Translation",
+      "symbol": "evidenceflow.translation.base.TranslationProvider",
+      "before_role": "FALLBACK",
+      "after_role": "FALLBACK_ONLY",
+      "action": "KEEP",
+      "reason": "合同保留；rollback 路径需要。",
+      "dependency_evidence": "translation/llm.py 实现；runtime.py 仅在 reranker_enabled=false 分支装配。"
+    },
+    {
+      "area": "Translation",
+      "symbol": "evidenceflow.translation.llm.LLMTranslationProvider",
+      "before_role": "FALLBACK",
+      "after_role": "FALLBACK_ONLY",
+      "action": "KEEP",
+      "reason": "唯一实现，rollback 装配必需。",
+      "dependency_evidence": "runtime.py:108；tests/test_translation.py。"
+    },
+    {
+      "area": "BM25",
+      "symbol": "evidenceflow.retrieval.bm25.BM25Index",
+      "before_role": "FALLBACK",
+      "after_role": "FALLBACK_ONLY",
+      "action": "KEEP",
+      "reason": "§17.3.1 正式 module；Hybrid 与离线实验共用。",
+      "dependency_evidence": "runtime.py:_build_bm25_index；tests/test_lexical.py；experiments/run_research_hybrid_*.py。"
+    },
+    {
+      "area": "BM25",
+      "symbol": "evidenceflow.eval.lexical (re-export)",
+      "before_role": "COMPATIBILITY",
+      "after_role": "COMPATIBILITY_ONLY",
+      "action": "KEEP",
+      "reason": "旧实验脚本按旧路径 import；删除即破坏历史复现。",
+      "dependency_evidence": "eval/__init__.py 导出；experiments 历史脚本。"
+    },
+    {
+      "area": "Hybrid",
+      "symbol": "evidenceflow.retrieval.hybrid_fusion.equal_ranked_rrf_fusion",
+      "before_role": "FALLBACK",
+      "after_role": "KEEP_CONDITIONAL",
+      "action": "KEEP",
+      "reason": "multilingual_hybrid_enabled 时启用；默认关闭不影响主路径。",
+      "dependency_evidence": "retrieval/multilingual.py；tests/test_hybrid_fusion.py。"
+    },
+    {
+      "area": "Hybrid",
+      "symbol": "evidenceflow.eval.hybrid (re-export)",
+      "before_role": "COMPATIBILITY",
+      "after_role": "COMPATIBILITY_ONLY",
+      "action": "KEEP",
+      "reason": "离线 hybrid 实验入口。",
+      "dependency_evidence": "eval/__init__.py 导出。"
+    },
+    {
+      "area": "RRF",
+      "symbol": "evidenceflow.retrieval.fusion.weighted_rrf_fusion",
+      "before_role": "ROLLBACK",
+      "after_role": "ROLLBACK_ONLY",
+      "action": "KEEP",
+      "reason": "rollback 双路 candidate selection 与历史实验复现；不参与当前默认主路径。",
+      "dependency_evidence": "retrieval/multilingual.py:134；tests/test_retrieval_fusion.py。"
+    },
+    {
+      "area": "Runtime",
+      "symbol": "evidenceflow.runtime.build_rag_service",
+      "before_role": "PRODUCTION",
+      "after_role": "PRODUCTION",
+      "action": "KEEP",
+      "reason": "唯一 composition root；已核实 CLI 不复制业务逻辑，不存在第二套 pipeline。",
+      "dependency_evidence": "__main__.py 延迟导入；tests/test_runtime.py。"
+    },
+    {
+      "area": "Eval",
+      "symbol": "evidenceflow.eval.* → production 反向依赖",
+      "before_role": "N/A",
+      "after_role": "N/A",
+      "action": "KEEP",
+      "reason": "已核实无反向依赖：eval 不被 runtime/retrieval 导入（tests/test_architecture_boundaries.py 守护）。",
+      "dependency_evidence": "reachability_manifest：eval.* 全部 EXPERIMENT_ONLY / COMPATIBILITY_ONLY。"
+    }
+  ]
+}

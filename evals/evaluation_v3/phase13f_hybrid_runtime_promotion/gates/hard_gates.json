@@ -1,0 +1,19 @@
+{
+ "gate_definitions_version": "phase13f-gates-v1.0",
+ "gates": {
+  "F_G1_inputs": true,
+  "F_G2_structure_parity": true,
+  "F_G3_determinism": true,
+  "F_G4_token_budget": true,
+  "F_G5_provenance": true,
+  "F_G6_protocol": true,
+  "F_G7_ir_direction": true,
+  "F_G8_pytest_baseline": true
+ },
+ "pytest_baseline": {
+  "passed": 612,
+  "failed": 0,
+  "note": "591 基线 + 21 新增；见 reports"
+ },
+ "verdict": "PASS"
+}

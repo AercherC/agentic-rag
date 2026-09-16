@@ -1,0 +1,137 @@
+{
+  "artifact_type": "phase13_run_manifest",
+  "created_at_utc": "2026-09-10T12:49:12.484410+00:00",
+  "stage": "Finalize — 产物清单与冻结复验",
+  "phase": "phase13_kb_chunk_audit_v1",
+  "stage_scope": "第一轮 Step 0–8（Audit only；未进入 Controlled Rebuild）",
+  "runtime_modified": false,
+  "baseline_collection_modified": false,
+  "canonical_gold_modified": false,
+  "project_spec_modified": false,
+  "project_spec_note": "Phase 13 只审计不改设计合同；且 PROJECT_SPEC.md 属 runtime_source_fingerprint 采集范围，为避免破坏 Phase 12 冻结指纹，本阶段不追加 SPEC 章节（与 Phase 12 同一处理）。",
+  "executed_steps": [
+    "Step 0 Freeze Baseline",
+    "Step 1 Chunk Inventory",
+    "Step 2 Automatic Chunk Quality Metrics",
+    "Step 3 PDF Layout Audit (render + per-page visual review)",
+    "Step 4 Table / Figure / Formula Audit",
+    "Step 5 Section Hierarchy Audit",
+    "Step 6 Retrieval Failure Root Cause",
+    "Step 7 Gold Chunk Quality Review",
+    "Step 8 Audit Decision"
+  ],
+  "step_9_and_beyond": "NOT_ENTERED — 计划要求第一轮止于 Step 8",
+  "artifacts": {
+    "baseline.json": {
+      "status": "PRESENT",
+      "sha256": "3a4c0924541c420cf87470b34158279d341728a99554ffd459ed3e3bdc08503d",
+      "bytes": 5932,
+      "created_at_utc": "2026-09-10T12:45:04.387653+00:00",
+      "stage": "Step 0 — Freeze Baseline",
+      "artifact_type": "phase13_baseline"
+    },
+    "chunk_inventory.json": {
+      "status": "PRESENT",
+      "sha256": "f633300b3c93e1848e6f11ae6494cd5127b9450e3c671a1b2a9ff44dbf999b17",
+      "bytes": 571922,
+      "created_at_utc": "2026-09-10T12:41:43.189058+00:00",
+      "stage": "Step 1 — Chunk Inventory",
+      "artifact_type": "phase13_chunk_inventory"
+    },
+    "chunk_quality_metrics.json": {
+      "status": "PRESENT",
+      "sha256": "db62aaede8d7f3fa6553a93120b4a399cc72bfdf9afa3398035be5612327a753",
+      "bytes": 103378,
+      "created_at_utc": "2026-09-10T12:41:43.567063+00:00",
+      "stage": "Step 2 — Automatic Chunk Quality Audit",
+      "artifact_type": "phase13_chunk_quality_metrics"
+    },
+    "layout_review_scaffold.json": {
+      "status": "PRESENT",
+      "sha256": "3d17c551d6f5dc4d604cddc345778bc75a631ad37777f2c1deed9856292e957f",
+      "bytes": 187745,
+      "created_at_utc": "2026-09-10T12:18:15.478134+00:00",
+      "stage": "Step 3 — PDF Layout Audit（渲染 + 机器证据，待人工判定）",
+      "artifact_type": "phase13_layout_review_scaffold"
+    },
+    "layout_review_annotations.json": {
+      "status": "PRESENT",
+      "sha256": "3d2bcf7fa3c083767b91d0a80e993fa531cfd1f1a65a5d62c8d6a414e63cb002",
+      "bytes": 11712,
+      "created_at_utc": "2026-09-10T12:40:00+00:00",
+      "stage": "Step 3 — PDF Layout Audit（逐页看图结论）",
+      "artifact_type": "phase13_layout_review_annotations"
+    },
+    "pdf_layout_audit.json": {
+      "status": "PRESENT",
+      "sha256": "21a8ac7d6bf1e71a94648401828e160da8a7c051da6d1917523b320a5f64894a",
+      "bytes": 196762,
+      "created_at_utc": "2026-09-10T12:33:10.630652+00:00",
+      "stage": "Step 3 — PDF Layout Audit",
+      "artifact_type": "phase13_pdf_layout_audit"
+    },
+    "visual_structural_elements_audit.json": {
+      "status": "PRESENT",
+      "sha256": "50caa097861c68bd57dbf71b303292b731e11e1b491a25bdcdbfda55a10d5e53",
+      "bytes": 853553,
+      "created_at_utc": "2026-09-10T12:33:33.028519+00:00",
+      "stage": "Step 4 — Table / Figure / Formula Audit",
+      "artifact_type": "phase13_visual_structural_elements_audit"
+    },
+    "section_hierarchy_audit.json": {
+      "status": "PRESENT",
+      "sha256": "327694ab0867ee67026baaefe90881735d55c4a44f110bf0d4e9d44e891f3b1e",
+      "bytes": 24257,
+      "created_at_utc": "2026-09-10T12:28:46.733547+00:00",
+      "stage": "Step 5 — Section Hierarchy Audit",
+      "artifact_type": "phase13_section_hierarchy_audit"
+    },
+    "retrieval_failure_root_cause.json": {
+      "status": "PRESENT",
+      "sha256": "b8175e3cee689ca95f1daaa2f41daed909414b14cc2a1c5b149079f88fa6cb9d",
+      "bytes": 29645,
+      "created_at_utc": "2026-09-10T12:29:08.775127+00:00",
+      "stage": "Step 6 — Retrieval Failure Root-Cause Review",
+      "artifact_type": "phase13_retrieval_failure_root_cause"
+    },
+    "gold_chunk_quality.json": {
+      "status": "PRESENT",
+      "sha256": "95604c30df6eecdfe86434ecd3742d1890e383458ab1506f9c96bc939c9e9ee5",
+      "bytes": 55626,
+      "created_at_utc": "2026-09-10T12:29:30.355577+00:00",
+      "stage": "Step 7 — Gold Chunk Quality Review",
+      "artifact_type": "phase13_gold_chunk_quality"
+    },
+    "audit_decision.json": {
+      "status": "PRESENT",
+      "sha256": "bb5e878a3b2f7f0abea10212681c647451ab39514832c1893118f0010cf57627",
+      "bytes": 4045,
+      "created_at_utc": "2026-09-10T12:45:23.857627+00:00",
+      "stage": "Step 8 — Phase 13A Audit Decision",
+      "artifact_type": "phase13_audit_decision"
+    }
+  },
+  "frozen_baseline_recheck": {
+    "collection_name": "ef_research_bge_m3_c512_o64_v1",
+    "chunk_count": 361,
+    "chunk_count_expected": 361,
+    "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0",
+    "baseline_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0",
+    "identity_unchanged": true
+  },
+  "not_run": {
+    "candidate_parser_manifest.json": "NOT_RUN — Step 9 起属第二轮，第一轮不进入",
+    "candidate_chunk_inventory.json": "NOT_RUN — 同上",
+    "candidate_gold_mapping.json": "NOT_RUN — 同上",
+    "candidate_ir_metrics.json": "NOT_RUN — 同上",
+    "failure_specific_comparison.json": "NOT_RUN — 同上",
+    "structure_quality_comparison.json": "NOT_RUN — 同上",
+    "cost_comparison.json": "NOT_RUN — 同上",
+    "phase12_retrieval_replay.json": "NOT_RUN — 同上"
+  },
+  "decision_pointer": {
+    "artifact": "audit_decision.json",
+    "PROCEED_TO_CONTROLLED_REBUILD": "YES",
+    "recommended_candidate": "SECTION_AWARE_MINIMAL"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "artifact_type": "phase14a_b_selected_pipeline",
+  "DOCX": "DOCX-B1",
+  "XLSX": "XLSX-B1",
+  "rationale": "硬门全过前提下，按方案 §22 顺序（Source Fidelity → Semantic Structure → Provenance → Explainability）优先 semantic cleaner（B1）：其保留 B0 全部事实，并额外提供 heading 推断留痕 / list 归组 / 表格序列化 / 区域推断与表头层级。"
+}

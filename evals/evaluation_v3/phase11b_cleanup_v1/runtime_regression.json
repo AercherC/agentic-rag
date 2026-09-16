@@ -1,0 +1,127 @@
+{
+  "artifact_type": "phase11b_runtime_regression",
+  "created_at": "2026-09-08T15:40:01.837625+00:00",
+  "method": "Cleanup 不重跑检索：指标以冻结 ranking artifact 为输入，再用 Evaluation v3 真机重算一次并与冻结值比对。",
+  "metrics": [
+    {
+      "metric": "Precision@5",
+      "before": 0.115,
+      "after": 0.11500000000000002,
+      "match": true
+    },
+    {
+      "metric": "Recall@5",
+      "before": 0.5583,
+      "after": 0.5583333333333333,
+      "match": true
+    },
+    {
+      "metric": "Recall@10",
+      "before": 0.7333,
+      "after": 0.7333333333333333,
+      "match": true
+    },
+    {
+      "metric": "MRR@5",
+      "before": 0.4321,
+      "after": 0.4320833333333334,
+      "match": true
+    },
+    {
+      "metric": "MAP@5",
+      "before": 0.4279,
+      "after": 0.42791666666666667,
+      "match": true
+    },
+    {
+      "metric": "nDCG@5",
+      "before": 0.4619,
+      "after": 0.46185080710419263,
+      "match": true
+    }
+  ],
+  "metrics_unchanged": true,
+  "recompute": {
+    "source_artifact": "evals/evaluation_v2/phase9_runtime_promotion_v1/runtime_after.json",
+    "source_hash": "ffc5cff422eb581888a4a5ada9fadf0ee884ff69d8613ae1ca16d9dbf26a3e85",
+    "qrels_hash": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+    "qrels_unchanged": true,
+    "num_questions": 40,
+    "rows": [
+      {
+        "metric": "Precision@5",
+        "frozen": 0.115,
+        "recomputed": 0.11500000000000002,
+        "match": true
+      },
+      {
+        "metric": "Recall@5",
+        "frozen": 0.5583,
+        "recomputed": 0.5583333333333333,
+        "match": true
+      },
+      {
+        "metric": "Recall@10",
+        "frozen": 0.7333,
+        "recomputed": 0.7333333333333333,
+        "match": true
+      },
+      {
+        "metric": "MRR@5",
+        "frozen": 0.4321,
+        "recomputed": 0.4320833333333334,
+        "match": true
+      },
+      {
+        "metric": "MAP@5",
+        "frozen": 0.4279,
+        "recomputed": 0.42791666666666667,
+        "match": true
+      },
+      {
+        "metric": "nDCG@5",
+        "frozen": 0.4619,
+        "recomputed": 0.46185080710419263,
+        "match": true
+      }
+    ],
+    "all_match": true,
+    "ranking_ids_sha256": "648474e70dd77df5eba221043768b5f6ce0e7c33e95bdc53afc3b71e93cfdc78",
+    "per_query_metrics_identical": true,
+    "per_query_diff_count": 0,
+    "per_query_diff_sample": []
+  },
+  "chroma": {
+    "before": {
+      "collection_name": "ef_research_bge_m3_c512_o64_v1",
+      "vector_db_path": "data\\chroma",
+      "chunk_count": 361,
+      "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0"
+    },
+    "after": {
+      "collection_name": "ef_research_bge_m3_c512_o64_v1",
+      "vector_db_path": "data\\chroma",
+      "chunk_count": 361,
+      "sorted_chunk_id_identity_hash": "d81f9bc529b008e8d0cad65a19f33330c81291458341d69362bbc5c7bf31b0e0"
+    },
+    "chunk_count_expected": 361,
+    "identity_unchanged": true
+  },
+  "runtime_ranking": {
+    "frozen_artifact": "evals/evaluation_v2/phase9_runtime_promotion_v1/runtime_after.json",
+    "hash_before": "ffc5cff422eb581888a4a5ada9fadf0ee884ff69d8613ae1ca16d9dbf26a3e85",
+    "hash_after": "ffc5cff422eb581888a4a5ada9fadf0ee884ff69d8613ae1ca16d9dbf26a3e85",
+    "unchanged": true
+  },
+  "qrels": {
+    "hash": "9337c26327097085dd3dc400a73e6c0baa79f375944d2be401edd39d014c9bb9",
+    "unchanged": true
+  },
+  "dataset_hash_unchanged": true,
+  "ranking_unchanged": true,
+  "recall_at_20": {
+    "value": null,
+    "note": "继续 N/A；Cleanup 不得重新发明历史 @20 数据。"
+  },
+  "gate": "PASS"
+}

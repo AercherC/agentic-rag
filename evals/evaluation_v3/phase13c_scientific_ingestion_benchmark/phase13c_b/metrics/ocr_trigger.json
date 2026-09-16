@@ -1,0 +1,145 @@
+{
+  "artifact_type": "phase13c_b_conditional_ocr_probe",
+  "created_at_utc": "2026-09-14T12:40:39.808961+00:00",
+  "rule": {
+    "page_has_no_text_layer": "整页无可抽取文本",
+    "native_text_is_garbled": "替换字符/控制字符占比 > 10%，或平均 token 长度 < 2（且 token >= 20）",
+    "block_missing_but_visual_region_exists": "无文本且可视区域占页面 >= 30%",
+    "policy": "本阶段禁止 force OCR；只在命中上述规则的页面上运行，OCR 输出必须重新进入同一 schema。"
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "page_count": 3,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T02_ieee_two_column": {
+      "page_count": 3,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T03_cvpr_two_column": {
+      "page_count": 4,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T04_acm_two_column": {
+      "page_count": 3,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T05_springer_lncs": {
+      "page_count": 3,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T06_elsevier_journal": {
+      "page_count": 3,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T07_arxiv_preprint": {
+      "page_count": 4,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T08_table_heavy": {
+      "page_count": 4,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T09_formula_heavy": {
+      "page_count": 4,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T10_figure_heavy": {
+      "page_count": 4,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T11_references_heavy": {
+      "page_count": 6,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "T12_scanned_image_only": {
+      "page_count": 3,
+      "triggered_pages": [
+        1,
+        2,
+        3
+      ],
+      "reasons": [
+        "block_missing_but_visual_region_exists",
+        "page_has_no_text_layer"
+      ]
+    },
+    "adapointr": {
+      "page_count": 22,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "hyper_pcn": {
+      "page_count": 17,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "pcn_point_completion_network": {
+      "page_count": 17,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "pfnet_point_fractal_network": {
+      "page_count": 9,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "pointattn": {
+      "page_count": 12,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "pointr_geometry_aware_transformers": {
+      "page_count": 14,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "proxyformer": {
+      "page_count": 10,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "seedformer": {
+      "page_count": 22,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "snowflakenet": {
+      "page_count": 11,
+      "triggered_pages": [],
+      "reasons": []
+    },
+    "svdformer": {
+      "page_count": 11,
+      "triggered_pages": [],
+      "reasons": []
+    }
+  },
+  "triggered_page_count": 3,
+  "born_digital_trigger_count": 0,
+  "born_digital_triggers": [],
+  "ocr_validation": {
+    "T12_scanned_image_only": {
+      "status": "VALIDATED_AGAINST_CACHED_OCR",
+      "ocr_element_count": 35,
+      "ocr_pages": [
+        1,
+        2,
+        3
+      ],
+      "ocr_text_token_count": 1027
+    }
+  },
+  "verdict": "PASS"
+}

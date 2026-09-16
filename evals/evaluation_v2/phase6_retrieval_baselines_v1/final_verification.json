@@ -1,0 +1,16 @@
+{
+  "phase": 6,
+  "candidate_contract_gate": "PASS",
+  "baseline_gate": "PASS",
+  "evaluation_gate": "PASS",
+  "reproducibility_gate": "PASS",
+  "eligible_equals_overall": true,
+  "runtime_translation_replay_equal": true,
+  "tests": {
+    "passed": 367,
+    "warnings": 17
+  },
+  "decision_artifact": "architecture_ablation_v2.json",
+  "diagnosis_artifact": "bottleneck_diagnosis.json",
+  "gate": "PASS"
+}

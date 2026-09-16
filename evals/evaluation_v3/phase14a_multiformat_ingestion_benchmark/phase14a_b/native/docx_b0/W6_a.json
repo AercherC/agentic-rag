@@ -1,0 +1,211 @@
+{
+  "document_id": "W6",
+  "source_format": "docx",
+  "source_file": "W6.docx",
+  "source_sha256": "4ef8afbd16ef73868c94beb408322fad232f58970d478df2a6c00299660af47f",
+  "element_count": 8,
+  "elements": [
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Header Footer Document",
+      "normalized_text": "Header Footer Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 0
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Section One",
+      "normalized_text": "Section One",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "Content before the page break.",
+      "normalized_text": "Content before the page break.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-3",
+      "type": "paragraph",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-4",
+      "type": "heading",
+      "raw_text": "Section Two",
+      "normalized_text": "Section Two",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-p-5",
+      "type": "paragraph",
+      "raw_text": "Content after the page break.",
+      "normalized_text": "Content after the page break.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 5,
+        "xml_path": "/w:document/w:body/w:p[6]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-h-0",
+      "type": "header",
+      "raw_text": "Running Header Title",
+      "normalized_text": "Running Header Title",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "header",
+        "style_id": null,
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "furniture",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W6",
+      "element_id": "el-docx-f-0",
+      "type": "footer",
+      "raw_text": "Page Footer Confidential",
+      "normalized_text": "Page Footer Confidential",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "footer",
+        "style_id": null,
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "furniture",
+      "metadata": {},
+      "source_parser": "DOCX-B0_python_docx_minimal",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "DOCX-B0_python_docx_minimal",
+    "page_breaks": [
+      3
+    ],
+    "page_break_provenance_kind": "rendered_hint"
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-0",
+      "reason": "explicit_style: Title",
+      "from": "paragraph",
+      "to": "document_title",
+      "source_element_id": "el-docx-p-0"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-1",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-1"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-4",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-4"
+    }
+  ],
+  "unresolved": []
+}

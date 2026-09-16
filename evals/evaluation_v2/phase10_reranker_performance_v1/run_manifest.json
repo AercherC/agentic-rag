@@ -1,0 +1,15 @@
+{
+  "phase": 10,
+  "dataset_id": "research_questions_v2_gold_stable_v1",
+  "candidate_replay_sha256": "f68a45fc7517b4fa63e013ecf9a428531bdc06828ca28601b185898d0506bf62",
+  "environment": {
+    "platform": "Windows-11-10.0.26100-SP0",
+    "python": "3.12.13",
+    "torch": "2.13.0+cpu",
+    "cuda_available": false,
+    "cuda_device_name": null,
+    "initial_intra_op_threads": 16,
+    "initial_inter_op_threads": 16
+  },
+  "gpu_benchmark": null
+}

@@ -1,0 +1,86 @@
+{
+ "generated_at": "2026-09-16T10:32:35.410035+00:00",
+ "production_path": "BGE-M3 Dense Top20 -> Chroma ANN -> Learned Reranker -> Top5",
+ "modules": [
+  {
+   "module": "src/evidenceflow/retrieval/retriever.py",
+   "role": "default",
+   "runtime_reference_count": 6,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/retrieval/reranker.py",
+   "role": "default",
+   "runtime_reference_count": 2,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/retrieval/multilingual.py",
+   "role": "fallback",
+   "runtime_reference_count": 2,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/retrieval/bm25.py",
+   "role": "retired_compatibility",
+   "runtime_reference_count": 4,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": true,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/retrieval/fusion.py",
+   "role": "retired_compatibility",
+   "runtime_reference_count": 4,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/retrieval/hybrid_fusion.py",
+   "role": "fallback",
+   "runtime_reference_count": 2,
+   "test_reference_count": 0,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/eval/lexical.py",
+   "role": "retired_compatibility",
+   "runtime_reference_count": 0,
+   "test_reference_count": 4,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  },
+  {
+   "module": "src/evidenceflow/eval/hybrid.py",
+   "role": "retired_compatibility",
+   "runtime_reference_count": 0,
+   "test_reference_count": 2,
+   "reproduction_required": true,
+   "config_reference_count": 0,
+   "candidate_for_phase15b": false,
+   "decision": "KEEP; historical/fallback/compatibility evidence exists"
+  }
+ ]
+}

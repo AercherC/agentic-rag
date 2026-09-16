@@ -1,0 +1,7 @@
+{
+  "phase7_multi_branch_call_chain": "branch retrieval -> union -> RRF candidate selector -> learned reranker",
+  "phase8_recommended_call_chain": "original dense ANN Top20 -> learned reranker -> Top5",
+  "selector_when_union_exceeds_k": "RRF stage 1 for Translation; RRF stage 2 for Hybrid",
+  "rrf_participates_in_recommended_original_only_candidate_selection": false,
+  "decision": "KEEP_AS_CANDIDATE_SELECTOR for retained multi-branch experiments"
+}

@@ -1,0 +1,159 @@
+{
+  "document_id": "W7",
+  "source_format": "docx",
+  "source_file": "W7.docx",
+  "source_sha256": "1cfd153a9d280023396267880901502636c8fd5a6294ae221a2f4e3a261d3538",
+  "element_count": 6,
+  "elements": [
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Textbox Document",
+      "normalized_text": "Textbox Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 0
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Main Body",
+      "normalized_text": "Main Body",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "structure",
+      "metadata": {
+        "level": 1
+      },
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "This paragraph appears first in the tree.",
+      "normalized_text": "This paragraph appears first in the tree.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-3",
+      "type": "paragraph",
+      "raw_text": "",
+      "normalized_text": "",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-4",
+      "type": "paragraph",
+      "raw_text": "This paragraph appears after the textbox in the tree.",
+      "normalized_text": "This paragraph appears after the textbox in the tree.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 4,
+        "xml_path": "/w:document/w:body/w:p[5]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    },
+    {
+      "document_id": "W7",
+      "element_id": "el-docx-p-5",
+      "type": "paragraph",
+      "raw_text": "Side note rendered as a floating textbox.",
+      "normalized_text": "Side note rendered as a floating textbox.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 5,
+        "xml_path": "/w:document/w:body/w:p[6]",
+        "style_id": "Textbox",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "DOCX-B1_python_docx_semantic",
+      "semantic_inferred": false
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "DOCX-B1_python_docx_semantic",
+    "page_breaks": [],
+    "page_break_provenance_kind": null
+  },
+  "schema_version": "phase14a-b-structured-document-v1",
+  "cleaning_log": [
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-0",
+      "reason": "explicit_style: Title",
+      "from": "paragraph",
+      "to": "document_title",
+      "source_element_id": "el-docx-p-0"
+    },
+    {
+      "action": "reclassify",
+      "target": "el-docx-p-1",
+      "reason": "explicit_style: Heading 1",
+      "from": "paragraph",
+      "to": "heading",
+      "source_element_id": "el-docx-p-1"
+    }
+  ],
+  "unresolved": []
+}

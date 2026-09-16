@@ -1,0 +1,218 @@
+{
+  "artifact_type": "phase11b_eval_cleanup_manifest",
+  "created_at": "2026-09-08T15:40:13.636673+00:00",
+  "principle": "先证明无当前 import/test/runner 依赖，再删除；历史 JSON / report 一律不删。",
+  "items": [
+    {
+      "path": "src/evidenceflow/eval/ir_metrics.py",
+      "symbols": [
+        "precision_at_k",
+        "recall_at_k",
+        "reciprocal_rank_at_k",
+        "average_precision_at_k",
+        "ndcg_at_k",
+        "evaluate_ir_run"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "标准 IR 指标核心；Phase 11A 迁移后唯一权威实现。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/v3.py",
+      "symbols": [
+        "build_qrels",
+        "qrels_hash",
+        "evaluate_v3"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "Evaluation v3 runner；qrels hash 冻结于 cleanup_baseline。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/mapping.py",
+      "symbols": [
+        "normalize_anchor",
+        "_map_alternative",
+        "_occurrences"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "Gold Mapping / mappability；gold_mapping_v3 由其实例化语义定义。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/stable_mapping.py",
+      "symbols": [
+        "_compact"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "Phase 3.5 Gold Stabilization 复现依赖。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/gold.py",
+      "symbols": [
+        "gold_chunk_hit",
+        "gold_chunk_rank",
+        "hits_at_depths",
+        "aggregate_hits_at_depths",
+        "is_hit_at"
+      ],
+      "layer": "COMPATIBILITY",
+      "action": "KEEP",
+      "evidence": "legacy HitRate-as-Recall reader；tests/test_hybrid_fusion.py 依赖。",
+      "behavior_risk": "none（不参与标准 IR 指标）"
+    },
+    {
+      "path": "src/evidenceflow/eval/metrics.py",
+      "symbols": [
+        "is_relevant",
+        "is_relevant_to_any",
+        "calculate_question_metrics",
+        "aggregate_question_metrics"
+      ],
+      "layer": "COMPATIBILITY",
+      "action": "KEEP",
+      "evidence": "eval/runner.py（v1 runner）与 tests/test_eval_metrics.py 依赖。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/metrics.py",
+      "symbols": [
+        "custom_evidence_group_ndcg",
+        "custom_bundle_ndcg",
+        "legacy_research_metrics"
+      ],
+      "layer": "DIAGNOSTIC",
+      "action": "KEEP",
+      "evidence": "自定义诊断指标；tests/test_evaluation_v2.py 与 research 实验脚本依赖。Phase 11A 已明确其非标准 nDCG，仅 diagnostic-only。",
+      "behavior_risk": "none（不进标准 gate）"
+    },
+    {
+      "path": "src/evidenceflow/eval/v2.py",
+      "symbols": [
+        "ranking_metrics",
+        "evaluate_evidence_coverage",
+        "evaluate_rankings"
+      ],
+      "layer": "COMPATIBILITY",
+      "action": "KEEP",
+      "evidence": "eval/v3.py 的 diagnostic block 与 tests/test_gold_stabilization.py 依赖；CompleteEvidenceRR 兼容实现所在。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/quality.py",
+      "symbols": [
+        "CitationJudgment",
+        "ClaimJudgment",
+        "answer_metrics",
+        "abstention_metrics",
+        "context_metrics"
+      ],
+      "layer": "DIAGNOSTIC",
+      "action": "KEEP",
+      "evidence": "校准标注质量指标；tests/test_evaluation_v2.py 依赖。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/runner.py",
+      "symbols": [
+        "EvaluationRunner",
+        "EvaluationReport",
+        "save_evaluation_report"
+      ],
+      "layer": "COMPATIBILITY",
+      "action": "KEEP",
+      "evidence": "v1 Evaluation Runner；tests/test_eval_runner.py 依赖，历史 artifact reader。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/comparison.py",
+      "symbols": [
+        "paired comparison utilities"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "Phase 6/7/9 paired comparison 复现依赖。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/lexical.py",
+      "symbols": [
+        "BM25Index",
+        "BM25RetrievedChunk"
+      ],
+      "layer": "COMPATIBILITY_ONLY",
+      "action": "KEEP",
+      "evidence": "re-export 兼容层；experiments 与历史脚本按旧路径 import retrieval.bm25。",
+      "behavior_risk": "none（删除会破坏旧实验复现）"
+    },
+    {
+      "path": "src/evidenceflow/eval/hybrid.py",
+      "symbols": [
+        "HybridRRFChunk",
+        "RankedChunkCandidate",
+        "equal_ranked_rrf_fusion"
+      ],
+      "layer": "COMPATIBILITY_ONLY",
+      "action": "KEEP",
+      "evidence": "re-export 兼容层；离线 hybrid 实验入口。",
+      "behavior_risk": "none（删除会破坏旧实验复现）"
+    },
+    {
+      "path": "src/evidenceflow/domain/evaluation.py",
+      "symbols": [
+        "EvaluationSource",
+        "EvaluationQuestion"
+      ],
+      "layer": "COMPATIBILITY",
+      "action": "KEEP",
+      "evidence": "v1 Dataset 合同；eval/dataset.py loader 仍消费。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/domain/evaluation_v2.py",
+      "symbols": [
+        "MappingArtifact",
+        "EvaluationDatasetV2",
+        "EvidenceGroup"
+      ],
+      "layer": "STANDARD",
+      "action": "KEEP",
+      "evidence": "qrels / Gold Mapping 的权威域模型。",
+      "behavior_risk": "none"
+    },
+    {
+      "path": "src/evidenceflow/eval/dataset.py",
+      "symbols": [
+        "load_evaluation_v2"
+      ],
+      "layer": "DEAD",
+      "action": "DELETE",
+      "evidence": "静态扫描 src/tests/experiments 全部 0 引用（reachability_manifest 符号级计数），且不在 eval/__init__ 的 __all__ 中；v2 数据集一律经 EvaluationDatasetV2.model_validate 读取。",
+      "behavior_risk": "none；Runtime 与标准 IR 均不经过该函数"
+    }
+  ],
+  "deleted": [
+    {
+      "path": "src/evidenceflow/eval/dataset.py",
+      "symbols": [
+        "load_evaluation_v2"
+      ],
+      "layer": "DEAD",
+      "action": "DELETE",
+      "evidence": "静态扫描 src/tests/experiments 全部 0 引用（reachability_manifest 符号级计数），且不在 eval/__init__ 的 __all__ 中；v2 数据集一律经 EvaluationDatasetV2.model_validate 读取。",
+      "behavior_risk": "none；Runtime 与标准 IR 均不经过该函数"
+    }
+  ],
+  "kept_layers": {
+    "STANDARD": 6,
+    "COMPATIBILITY": 5,
+    "COMPATIBILITY_ONLY": 2,
+    "DIAGNOSTIC": 2,
+    "DEAD": 1
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "artifact_type": "phase13c_b_metrics_body",
+  "created_at_utc": "2026-09-14T12:40:29.905292+00:00",
+  "arm_id": "B1_mineru_cleaned",
+  "scope": "controlled",
+  "document_count": 12,
+  "arm_summary": {
+    "body_token_coverage": 0.996183,
+    "unintended_body_loss_count": 0.166667,
+    "no_text_layer_gt_body_count": 0.083333,
+    "low_coverage_body_element_count": 0.0,
+    "paragraph_text_recall": 0.936171
+  },
+  "per_document": {
+    "T01_single_column_plain": {
+      "body_token_coverage": 0.995012,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.927273
+    },
+    "T02_ieee_two_column": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.947368
+    },
+    "T03_cvpr_two_column": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.95
+    },
+    "T04_acm_two_column": {
+      "body_token_coverage": 0.992519,
+      "unintended_body_loss_count": 1,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.945455
+    },
+    "T05_springer_lncs": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.981818
+    },
+    "T06_elsevier_journal": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.877193
+    },
+    "T07_arxiv_preprint": {
+      "body_token_coverage": 0.990025,
+      "unintended_body_loss_count": 1,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.946429
+    },
+    "T08_table_heavy": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.966102
+    },
+    "T09_formula_heavy": {
+      "body_token_coverage": 0.996259,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.809524
+    },
+    "T10_figure_heavy": {
+      "body_token_coverage": 0.997506,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.965517
+    },
+    "T11_references_heavy": {
+      "body_token_coverage": 0.999083,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 0,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.991453
+    },
+    "T12_scanned_image_only": {
+      "body_token_coverage": 0.996259,
+      "unintended_body_loss_count": 0,
+      "no_text_layer_gt_body_count": 1,
+      "low_coverage_body_element_count": 0,
+      "paragraph_text_recall": 0.925926
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "phase": "phase12_rag_quality_v1",
+  "generated_at_utc": "2026-09-10T05:56:38.649111+00:00",
+  "gate": "PASS",
+  "checks": {
+    "generation_eval_dataset_established": true,
+    "reference_answer_source_truth": true,
+    "required_claims_annotated": true,
+    "answerability_gold_frozen": true,
+    "runtime_outputs_frozen": true,
+    "claim_precision_recall_f1_computable": true,
+    "groundedness_computable": true,
+    "citation_precision_computable": true,
+    "citation_completeness_computable": true,
+    "abstention_metrics_computable": true,
+    "failure_taxonomy_per_question": true,
+    "retrieval_context_generation_citation_attributable": true,
+    "runtime_not_modified": true,
+    "retrieval_gold_not_modified": true,
+    "artifacts_traceable": true,
+    "full_tests_pass": true,
+    "retrieval_metrics_unchanged": true,
+    "chroma_unchanged": true,
+    "rollback_pass": true,
+    "judge_self_scoring_prohibited": true
+  },
+  "details": {
+    "runtime_outputs": "ok=22 contract_error=3 env_error(LLM_REQUEST_ERROR)=0 covered=True"
+  },
+  "tests": {
+    "passed": 418,
+    "failed": 0,
+    "warnings": 17
+  },
+  "runtime_modified": false,
+  "retrieval_gold_modified": false,
+  "annotation": {
+    "method": "human annotation (Phase 12 v1)",
+    "annotator": "human (careful manual reading of each answer against its frozen BuiltContext)",
+    "judge_used": false
+  },
+  "note": "Gate PASS 表示 Evaluation System 建立成功，不代表 RAG Answer Quality 一定优秀（计划 §23）。"
+}

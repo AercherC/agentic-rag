@@ -1,0 +1,18 @@
+{
+  "artifact_type": "phase11b_removed_tests",
+  "created_at": "2026-09-08T15:42:37.320328+00:00",
+  "tests_before": 408,
+  "tests_after": 408,
+  "warnings_before": 17,
+  "warnings_after": 17,
+  "removed": [],
+  "reason": "本阶段未删除任何测试：所有候选删除项均存在 production / fallback / compatibility / historical 守护价值（architecture boundaries、runtime composition、reranker failure semantics、rollback、standard IR metric contract、qrels、Chroma identity、citation chain），删除会降低覆盖能力。",
+  "pytest_summary": {
+    "command": "python -m pytest -q",
+    "exit_code": 0,
+    "passed": 408,
+    "failed": 0,
+    "warnings": 17,
+    "summary_line": "408 passed, 17 warnings in 24.20s"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "artifact_type": "phase11b_execution_result",
+  "created_at": "2026-09-08T15:42:37.320328+00:00",
+  "phase": "11B",
+  "gate": "PASS",
+  "checks": {
+    "production_reachability_audit": true,
+    "runtime_main_path_unique": true,
+    "translation_bm25_hybrid_rrf_classified": true,
+    "eval_layered": true,
+    "settings_classified": true,
+    "dead_code_audit": true,
+    "logging_audit": true,
+    "temp_cache_cleaned": true,
+    "historical_artifacts_preserved": true,
+    "standard_ir_metrics_unchanged": true,
+    "ranking_unchanged": true,
+    "chroma_identity_unchanged": true,
+    "rollback_valid": true,
+    "full_tests_pass": true,
+    "docs_updated": true,
+    "no_new_runtime_behavior": true
+  },
+  "standard_ir_before": {
+    "Precision@5": 0.115,
+    "Recall@5": 0.5583,
+    "Recall@10": 0.7333,
+    "MRR@5": 0.4321,
+    "MAP@5": 0.4279,
+    "nDCG@5": 0.4619
+  },
+  "standard_ir_after": {
+    "Precision@5": 0.11500000000000002,
+    "Recall@5": 0.5583333333333333,
+    "Recall@10": 0.7333333333333333,
+    "MRR@5": 0.4320833333333334,
+    "MAP@5": 0.42791666666666667,
+    "nDCG@5": 0.46185080710419263
+  },
+  "runtime_ranking_changed": "NO",
+  "chroma_changed": "NO",
+  "tests": {
+    "before": 408,
+    "after": 408,
+    "warnings_before": 17,
+    "warnings_after": 17,
+    "failed": 0
+  },
+  "remaining_technical_debt": [
+    "Settings.top_k 仍存在但 Runtime 从不消费（tests/test_config.py 有断言依赖，按『五问』规则不得删除）；建议后续把断言与字段一并下线。",
+    "eval 层仍保留 v1 runner / legacy HitRate reader / custom diagnostic 指标；分层已记录但代码未拆分目录。",
+    "tmp/pdfs 与 tmp/generation_eval_result.json 属一次性审计证据，无代码引用但不可确定性重建，保留在 tmp/ 下。",
+    "experiments/debug/ 下 6 个脚本被 tests 直接 import，debug 与测试边界仍耦合。"
+  ],
+  "runtime_fingerprint_changed_files": [
+    "PROJECT_SPEC.md",
+    "src/evidenceflow/eval/dataset.py"
+  ],
+  "runtime_fingerprint_note": "仅 PROJECT_SPEC/README 文档与已删除死代码的 dataset.py；无 Runtime 行为文件变化。"
+}

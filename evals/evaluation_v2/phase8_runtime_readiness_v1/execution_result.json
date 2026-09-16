@@ -1,0 +1,29 @@
+{
+  "phase": 8,
+  "status": "PASS",
+  "runtime_promotion": "ALLOWED",
+  "ann": "PASS",
+  "truncation": "PASS",
+  "performance": "NEEDS_OPTIMIZATION",
+  "performance_interpretation": "acceptable for local research",
+  "gold_retention_states": {
+    "FULLY_RETAINED": 45,
+    "PARTIALLY_RETAINED": 0,
+    "DROPPED": 0,
+    "UNKNOWN": 0
+  },
+  "runtime_replay": "PASS",
+  "recommended_runtime_candidate": "BGE-M3 Dense -> Chroma ANN Top20 -> Learned Reranker -> Top5",
+  "next_phase": "Phase 9 Runtime Promotion + Architecture Simplification",
+  "gates": {
+    "phase7_pass": true,
+    "ann_gold_coverage": true,
+    "gold_evidence_retention": true,
+    "reliable_latency_configuration": true,
+    "runtime_replay": true,
+    "formal_index_unchanged": true,
+    "full_tests": "PASS after artifact generation"
+  },
+  "runtime_modified": false,
+  "formal_index_modified": false
+}

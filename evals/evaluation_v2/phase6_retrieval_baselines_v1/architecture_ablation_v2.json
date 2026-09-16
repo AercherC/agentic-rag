@@ -1,0 +1,28 @@
+{
+  "supersedes": "architecture_ablation.json",
+  "reason": "v1 仅检查 K=50；v2 按计划同时检查浅层排序、语言切片与 K=100 深层覆盖。",
+  "Original Dense": {
+    "status": "KEEP",
+    "evidence": "B0 micro Recall@50=0.909091，且无需 Translation 模型调用。"
+  },
+  "Translation branch": {
+    "status": "KEEP_CONDITIONAL",
+    "evidence": "Frozen Translation 将中文 Recall@5 从 0.450 提升到 0.525，英文 Recall@5 保持 0.400；全量 micro Recall@50/100 无增益。"
+  },
+  "BM25": {
+    "status": "NEEDS_RERANKER_VALIDATION",
+    "evidence": "B3 将 micro Recall@100 从 B1 的 0.954545 提升到 1.000000，但 nDCG@5 下降 0.049828。"
+  },
+  "Hybrid Fusion": {
+    "status": "NEEDS_RERANKER_VALIDATION",
+    "evidence": "Hybrid 增加深层 Candidate Coverage 且 multi-document AllRequired@20 从 0.25 提升到 0.50，但浅层 MRR/nDCG 下降。"
+  },
+  "RRF stage 1": {
+    "status": "KEEP_CONDITIONAL",
+    "evidence": "只在 Translation 有收益的中文浅层切片保留验证价值。"
+  },
+  "RRF stage 2": {
+    "status": "NEEDS_RERANKER_VALIDATION",
+    "evidence": "只在 B3 中提供深层覆盖，尚未把新增候选稳定排到 Top-5。"
+  }
+}

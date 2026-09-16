@@ -1,0 +1,404 @@
+{
+  "artifact_type": "phase13c_corpus_self_check",
+  "created_at_utc": "2026-09-14T10:31:40.285726+00:00",
+  "method": "解析器无关的 PDF 文本层自证：①GT 文本是否出现在 GT 声称的页（page token recall）；②是否落在 GT 声称的 bbox 内（bbox token recall）；③该页是否存在 GT 未声明的幽灵文字（unclaimed ratio）。三项全部通过才认为语料可用于评测 parser。",
+  "why_not_p0_based": "首版用 P0 当探针会把 parser 的结构性局限（无表格结构、页码归入 furniture）误判成语料缺陷，因此改为直接校验 PDF 文本层。",
+  "threshold": 0.95,
+  "unclaimed_tolerance": 0.02,
+  "graded_template_count": 11,
+  "passing_template_count": 11,
+  "all_passed": true,
+  "failing_templates": [],
+  "checks": [
+    {
+      "template_id": "T01_single_column_plain",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 3,
+      "gt_page_max": 3,
+      "graded_element_count": 55,
+      "skipped_element_count": 2,
+      "graded_token_count": 1074,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T01_single_column_plain-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T01_single_column_plain-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T02_ieee_two_column",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 3,
+      "gt_page_max": 3,
+      "graded_element_count": 57,
+      "skipped_element_count": 2,
+      "graded_token_count": 1079,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T02_ieee_two_column-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T02_ieee_two_column-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T03_cvpr_two_column",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 4,
+      "gt_page_max": 4,
+      "graded_element_count": 60,
+      "skipped_element_count": 3,
+      "graded_token_count": 1103,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T03_cvpr_two_column-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T03_cvpr_two_column-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T03_cvpr_two_column-0038",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T04_acm_two_column",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 3,
+      "gt_page_max": 3,
+      "graded_element_count": 55,
+      "skipped_element_count": 2,
+      "graded_token_count": 1069,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T04_acm_two_column-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T04_acm_two_column-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T05_springer_lncs",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 3,
+      "gt_page_max": 3,
+      "graded_element_count": 55,
+      "skipped_element_count": 2,
+      "graded_token_count": 1076,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T05_springer_lncs-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T05_springer_lncs-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T06_elsevier_journal",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 3,
+      "gt_page_max": 3,
+      "graded_element_count": 57,
+      "skipped_element_count": 2,
+      "graded_token_count": 1086,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T06_elsevier_journal-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T06_elsevier_journal-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T07_arxiv_preprint",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 4,
+      "gt_page_max": 4,
+      "graded_element_count": 56,
+      "skipped_element_count": 2,
+      "graded_token_count": 1073,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T07_arxiv_preprint-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T07_arxiv_preprint-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T08_table_heavy",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 4,
+      "gt_page_max": 4,
+      "graded_element_count": 59,
+      "skipped_element_count": 2,
+      "graded_token_count": 1124,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T08_table_heavy-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T08_table_heavy-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T09_formula_heavy",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 4,
+      "gt_page_max": 4,
+      "graded_element_count": 63,
+      "skipped_element_count": 2,
+      "graded_token_count": 1157,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T09_formula_heavy-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T09_formula_heavy-0043",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T10_figure_heavy",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 4,
+      "gt_page_max": 4,
+      "graded_element_count": 58,
+      "skipped_element_count": 5,
+      "graded_token_count": 1103,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T10_figure_heavy-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T10_figure_heavy-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T10_figure_heavy-0038",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T10_figure_heavy-0040",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T10_figure_heavy-0042",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T11_references_heavy",
+      "excluded": false,
+      "passes": true,
+      "threshold": 0.95,
+      "bbox_pad": 2.0,
+      "unclaimed_tolerance": 0.02,
+      "page_count": 6,
+      "gt_page_max": 6,
+      "graded_element_count": 117,
+      "skipped_element_count": 2,
+      "graded_token_count": 2449,
+      "min_page_token_recall": 1.0,
+      "min_bbox_token_recall": 1.0,
+      "mean_bbox_token_recall": 1.0,
+      "max_unclaimed_ratio": 0.0,
+      "failure_count": 0,
+      "failures": [],
+      "ghost_page_count": 0,
+      "ghost_pages": [],
+      "skipped": [
+        {
+          "element_id": "gt-T11_references_heavy-0021",
+          "type": "figure",
+          "reason": "no text tokens"
+        },
+        {
+          "element_id": "gt-T11_references_heavy-0035",
+          "type": "figure",
+          "reason": "no text tokens"
+        }
+      ]
+    },
+    {
+      "template_id": "T12_scanned_image_only",
+      "excluded": true,
+      "reason": "rasterized template has no text layer by design (OCR 专项 O2 的对照输入)",
+      "page_count": 3,
+      "element_count": 56
+    }
+  ]
+}

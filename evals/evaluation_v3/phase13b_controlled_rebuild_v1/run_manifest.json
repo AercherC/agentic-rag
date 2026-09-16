@@ -1,0 +1,63 @@
+{
+  "artifact_type": "phase13b_run_manifest",
+  "phase": "phase13b_controlled_rebuild_v1",
+  "created_at_utc": "2026-09-10T14:04:25.199260+00:00",
+  "executed_steps": [
+    "Step 0 baseline",
+    "Step 1 parser",
+    "Step 2 cleanup",
+    "Step 3 chunk",
+    "Step 4 build",
+    "Step 5 eval",
+    "Step 6 focus",
+    "Step 7 control",
+    "Step 8 decision"
+  ],
+  "artifacts": {
+    "audit_decision.json": {
+      "sha256": "e1ab6746ce29b3801abcdf7efc9babfbf8a10dad70cccb0e1aacaf22c2b8beb6",
+      "status": "FINAL"
+    },
+    "baseline.json": {
+      "sha256": "09da092d0a5b8e709eb04aabb8c306ca54d055eded9bfcd6c2e994acb309ec5f",
+      "status": "FINAL"
+    },
+    "chunk_variants.json": {
+      "sha256": "ad50cfad918d80705eb27b71287a7bf01fa430ee2b29e705dd70ce4b0fb91a87",
+      "status": "FINAL"
+    },
+    "control_variables.json": {
+      "sha256": "2bbe19d34c028f09a4d020664aafed1929e91f91134decd9cc2ee2873fddabbb",
+      "status": "FINAL"
+    },
+    "execution_result.json": {
+      "sha256": "e31e95ed89b72447e6a78d938a61ea6d8abfd342c55d9172cf9748b7d151a5b2",
+      "status": "FINAL"
+    },
+    "failure_case_verification.json": {
+      "sha256": "32597905e9dfff0095371721d3c4e65fffb719ee245d0d2c4ee9fc4d2b29f4ef",
+      "status": "FINAL"
+    },
+    "index_manifest.json": {
+      "sha256": "4dd8b39667977fc716bcf779c3d243ea0e06ea540bb3a11c8da3584179e00af2",
+      "status": "FINAL"
+    },
+    "pdf_cleanup_audit.json": {
+      "sha256": "c6ce66291f0d70202847d076c4ca42529c09e997002145cb67d6f9cf23d6110f",
+      "status": "FINAL"
+    },
+    "retrieval_runs.json": {
+      "sha256": "4c50e95b884159f358a4a7724e2ae3020e7650b68652aa5e06324ae08e0c443a",
+      "status": "FINAL"
+    },
+    "structured_elements.json": {
+      "sha256": "ee497f693602a61b0fd1db8a02d5e63a7235013c43435da40eb335d6bb61e885",
+      "status": "FINAL"
+    }
+  },
+  "decision_pointer": {
+    "verdict": "结构切分对'caption 被正文稀释'类失败（ARR-007）有可证因果收益（rank 25→1），但对'跨文献第二篇词汇不匹配'类失败（ARR-037 G2 / ARR-040 G2）无效。",
+    "recommended_candidate": "ELEMENT_AWARE（仅当目标为修复 caption 稀释类失败）",
+    "next_phase_suggestion": "对 ARR-037/040 的 G2 失败转向 sparse / lexical candidate augmentation；结构切分可单独保留用于 caption 类问题。"
+  }
+}

@@ -1,0 +1,12 @@
+{
+ "gate_definitions_version": "phase13d-gates-v1.0",
+ "gates": {
+  "D_G1_inputs": true,
+  "D_G2_determinism": true,
+  "D_G3_protocol": true,
+  "D_G4_pool_integrity": true,
+  "D_G5_qrels_identity": true,
+  "D_G6_bootstrap_determinism": true
+ },
+ "verdict": "PASS"
+}

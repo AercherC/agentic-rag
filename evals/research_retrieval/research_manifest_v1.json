@@ -1,0 +1,44 @@
+{
+  "dataset_version": "research-retrieval-v1",
+  "dataset_hash": "be1e8354babef3927163c19e32c614f7639323095900c487d559ade8249e7357",
+  "question_count": 40,
+  "language_distribution": {
+    "en": 20,
+    "zh": 20
+  },
+  "language_group_distribution": {
+    "english_to_english": 18,
+    "chinese_to_english": 18,
+    "mixed_multiple_sources": 4
+  },
+  "question_type_distribution": {
+    "motivation_concept": 6,
+    "method": 8,
+    "implementation": 5,
+    "experiment_setup": 5,
+    "quantitative_results": 6,
+    "ablation": 4,
+    "conclusion_limitation": 2,
+    "multi_document": 4
+  },
+  "evidence_type_distribution": {
+    "body_text": 22,
+    "figure_caption": 4,
+    "table": 6,
+    "supplementary": 4,
+    "multi_document": 4
+  },
+  "paper_coverage": {
+    "pcn_point_completion_network.pdf": 5,
+    "pointr_geometry_aware_transformers.pdf": 5,
+    "proxyformer.pdf": 4,
+    "svdformer.pdf": 5,
+    "pointattn.pdf": 5,
+    "hyper_pcn.pdf": 5,
+    "pfnet_point_fractal_network.pdf": 2,
+    "snowflakenet.pdf": 4,
+    "seedformer.pdf": 5,
+    "adapointr.pdf": 4
+  },
+  "frozen_before_retrieval": true
+}

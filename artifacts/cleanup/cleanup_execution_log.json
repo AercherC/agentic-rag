@@ -1,0 +1,26 @@
+{
+ "executed_at": "2026-09-15T06:00:31.045866+00:00",
+ "dry_run": false,
+ "removed": [
+  "src/evidenceflow/domain/__pycache__/",
+  "src/evidenceflow/embedding/__pycache__/",
+  "src/evidenceflow/eval/__pycache__/",
+  "src/evidenceflow/generation/__pycache__/",
+  "src/evidenceflow/ingestion/__pycache__/",
+  "src/evidenceflow/llm/__pycache__/",
+  "src/evidenceflow/rag/__pycache__/",
+  "src/evidenceflow/retrieval/__pycache__/",
+  "src/evidenceflow/storage/__pycache__/",
+  "src/evidenceflow/translation/__pycache__/",
+  "tests/__pycache__/",
+  "evals/evaluation_v3/phase14a_multiformat_ingestion_benchmark/phase14a_c/chroma/"
+ ],
+ "errors": [],
+ "summary": {
+  "cache_files_removed": 104,
+  "cache_bytes_removed": 1438164,
+  "chroma_bytes_removed": 18864544,
+  "chroma_files_removed": 161,
+  "total_bytes_reclaimed": 20302708
+ }
+}

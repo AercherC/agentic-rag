@@ -1,0 +1,34 @@
+{
+ "PC0": {
+  "collection": "ef_13cc_pc0",
+  "chunk_count": 436,
+  "query_count": 40,
+  "embed_seconds": 0.0,
+  "query_seconds": 5.5,
+  "dim": 1024
+ },
+ "PC1": {
+  "collection": "ef_13cc_pc1",
+  "chunk_count": 960,
+  "query_count": 40,
+  "embed_seconds": 0.0,
+  "query_seconds": 3.6,
+  "dim": 1024
+ },
+ "PC2": {
+  "collection": "ef_13cc_pc2",
+  "chunk_count": 795,
+  "query_count": 40,
+  "embed_seconds": 0.0,
+  "query_seconds": 3.5,
+  "dim": 1024
+ },
+ "PC3": {
+  "collection": "ef_13cc_pc3",
+  "chunk_count": 973,
+  "query_count": 40,
+  "embed_seconds": 0.0,
+  "query_seconds": 3.5,
+  "dim": 1024
+ }
+}

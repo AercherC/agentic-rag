@@ -1,0 +1,1252 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "rag_generation_eval_v1",
+  "created_at_utc": "2026-09-09T07:24:32.335641+00:00",
+  "derived_from": {
+    "canonical_retrieval_dataset": "evals/evaluation_v2/phase35_gold_stabilization_v1/research_questions_v2_gold_stable.json",
+    "canonical_question_count": 40,
+    "qrels": "evals/evaluation_v3/standard_ir_v1/qrels.json",
+    "note": "canonical 40Q 未被修改；新增 5 题使用独立 GEN-U* ID 空间。"
+  },
+  "question_count": 25,
+  "answerable_count": 20,
+  "insufficient_context_count": 5,
+  "coverage": {
+    "query_language": {
+      "en": 11,
+      "zh": 14
+    },
+    "corpus_language": {
+      "en": 20,
+      "n/a": 5
+    },
+    "question_type": {
+      "ablation": 1,
+      "conclusion_limitation": 1,
+      "corpus_absent_hardware_fact": 1,
+      "corpus_absent_metadata": 1,
+      "experiment_setup": 1,
+      "implementation": 3,
+      "method": 7,
+      "motivation_concept": 2,
+      "multi_document": 3,
+      "out_of_corpus_fact": 1,
+      "out_of_corpus_method": 1,
+      "quantitative_results": 2,
+      "unsupported_task_fact": 1
+    },
+    "cross_lingual_zh_query_en_corpus": 11,
+    "multi_document": 3,
+    "expected_retrieval_failure": 3,
+    "chinese_corpus": 0,
+    "chinese_corpus_note": "语料 10 篇论文均为英文，无法覆盖 Chinese corpus，记为已知限制。"
+  },
+  "questions": [
+    {
+      "question_id": "ARR-002",
+      "source": "canonical_40q",
+      "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "PoinTr 指出，真实应用中采集的点云常因三个原因而不完整：传感器分辨率有限（limited sensor resolution）、单一视角（single viewpoint）与遮挡（occlusion）。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "传感器分辨率有限会导致点云不完整。",
+          "required": true,
+          "acceptable_evidence": [
+            "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "单一视角会导致点云不完整。",
+          "required": true,
+          "acceptable_evidence": [
+            "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "遮挡会导致点云不完整。",
+          "required": true,
+          "acceptable_evidence": [
+            "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "page_start": 1,
+          "page_end": 1
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 0.6309297535714575
+      }
+    },
+    {
+      "question_id": "ARR-004",
+      "source": "canonical_40q",
+      "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "motivation_concept",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SVDFormer 针对的是真实扫描点云的稀疏性（sparsity）与大尺度结构不完整性（large structural incompleteness）；其双路径设计还能处理高度稀疏的真实世界扫描（highly sparse real-world scans）。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "捕获的点云存在稀疏性问题。",
+          "required": true,
+          "acceptable_evidence": [
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "捕获的点云存在大尺度结构不完整性问题。",
+          "required": true,
+          "acceptable_evidence": [
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "该方法能够处理高度稀疏的真实世界扫描。",
+          "required": true,
+          "acceptable_evidence": [
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2",
+          "file_name": "svdformer.pdf",
+          "page_start": 2,
+          "page_end": 2
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-009",
+      "source": "canonical_40q",
+      "query": "How does PoinTr represent a point cloud for transformer processing?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "PoinTr represents a point cloud as a set of unordered groups of points with position embeddings, converts it into a sequence of point proxies, and uses those proxies as the inputs of the transformer.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "The point cloud is represented as a set of unordered groups of points with position embeddings.",
+          "required": true,
+          "acceptable_evidence": [
+            "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "The point cloud is converted into a sequence of point proxies.",
+          "required": true,
+          "acceptable_evidence": [
+            "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75",
+            "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "The point proxies are used as the inputs of the transformer model.",
+          "required": true,
+          "acceptable_evidence": [
+            "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da",
+        "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "page_start": 1,
+          "page_end": 1
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-010",
+      "source": "canonical_40q",
+      "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SnowflakeNet 的架构中包含 Snowflake Point Deconvolution（SPD，雪花点反卷积）模块；SPD 中引入 skip-transformer，用于学习最适合局部区域的点分裂模式。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "点反卷积模块名为 Snowflake Point Deconvolution（SPD）。",
+          "required": true,
+          "acceptable_evidence": [
+            "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "SPD 中引入 skip-transformer 来学习点分裂模式。",
+          "required": false,
+          "acceptable_evidence": [
+            "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e",
+            "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+        "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e",
+          "file_name": "snowflakenet.pdf",
+          "page_start": 2,
+          "page_end": 3
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-011",
+      "source": "canonical_40q",
+      "query": "What new shape representation does SeedFormer introduce?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SeedFormer introduces a new shape representation called Patch Seeds, which captures general structures from partial inputs and also preserves regional information of local patterns.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "The new shape representation is called Patch Seeds.",
+          "required": true,
+          "acceptable_evidence": [
+            "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "Patch Seeds capture general structures from partial inputs.",
+          "required": true,
+          "acceptable_evidence": [
+            "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "Patch Seeds preserve regional information of local patterns.",
+          "required": true,
+          "acceptable_evidence": [
+            "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40",
+          "file_name": "seedformer.pdf",
+          "page_start": 1,
+          "page_end": 1
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-012",
+      "source": "canonical_40q",
+      "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "ProxyFormer 将点云划分为已有（输入）与缺失（待预测）两部分，两部分通过各自的 proxy 交换信息；它设计 missing part sensitive transformer，把随机正态分布转换为合理的位置信息，并用 proxy alignment 精修缺失 proxy，使预测结果对缺失部分的特征与位置更敏感。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "点云被划分为已有（输入）部分与缺失（待预测）部分，两部分通过 proxy 进行信息交互。",
+          "required": true,
+          "acceptable_evidence": [
+            "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "设计 missing part sensitive transformer，将随机正态分布转换为合理的位置信息。",
+          "required": true,
+          "acceptable_evidence": [
+            "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "使用 proxy alignment 精修缺失 proxy，使预测的 proxy 对缺失部分的特征与位置更敏感。",
+          "required": true,
+          "acceptable_evidence": [
+            "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b",
+          "file_name": "proxyformer.pdf",
+          "page_start": 1,
+          "page_end": 1
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-013",
+      "source": "canonical_40q",
+      "query": "What two generators make up SVDFormer's dual-generator design?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "The Self-structure Dual-Generator (SDG) consists of a pair of parallel refinement units called Structure Analysis and Similarity Alignment.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "The refinement module is called Self-structure Dual-Generator (SDG).",
+          "required": true,
+          "acceptable_evidence": [
+            "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "SDG contains a pair of parallel refinement units.",
+          "required": true,
+          "acceptable_evidence": [
+            "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "The two units are named Structure Analysis and Similarity Alignment.",
+          "required": true,
+          "acceptable_evidence": [
+            "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+          "file_name": "svdformer.pdf",
+          "page_start": 1,
+          "page_end": 2
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 0.6309297535714575
+      }
+    },
+    {
+      "question_id": "ARR-014",
+      "source": "canonical_40q",
+      "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "HyperRS（Hyper Refinement Stack）通过一系列超图学习阶段由粗到细地逐步捕获高阶相关性；A-HGNN（Anchor-based Hypergraph Neural Network）采用两阶段采样策略构建协同超图，以稳健地建模全局结构。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "HyperRS 即 Hyper Refinement Stack。",
+          "required": true,
+          "acceptable_evidence": [
+            "ae8a725ffac5dbc99b3ea90759af0600f7dc0685b2ef500fd4720bbdaad09838"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "HyperRS 通过一系列超图学习阶段，由粗到细逐步捕获高阶相关性。",
+          "required": true,
+          "acceptable_evidence": [
+            "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "A-HGNN 即 Anchor-based Hypergraph Neural Network。",
+          "required": true,
+          "acceptable_evidence": [
+            "ae8a725ffac5dbc99b3ea90759af0600f7dc0685b2ef500fd4720bbdaad09838",
+            "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "A-HGNN 采用两阶段采样策略构建协同超图，以稳健建模全局结构。",
+          "required": true,
+          "acceptable_evidence": [
+            "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "ae8a725ffac5dbc99b3ea90759af0600f7dc0685b2ef500fd4720bbdaad09838"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "ae8a725ffac5dbc99b3ea90759af0600f7dc0685b2ef500fd4720bbdaad09838",
+          "file_name": "hyper_pcn.pdf",
+          "page_start": 2,
+          "page_end": 3
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 0.43067655807339306
+      }
+    },
+    {
+      "question_id": "ARR-016",
+      "source": "canonical_40q",
+      "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SnowflakeNet 主要使用 Chamfer distance（CD）作为损失函数：completion loss 是 {Pc, P1, P2, P3} 上四个 CD 损失之和，再与 partial matching loss 形式的 preservation loss 组合为 L = Lcompletion + λLpreservation。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "主要损失函数是 Chamfer distance（CD）。",
+          "required": true,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "completion loss 定义为 {Pc, P1, P2, P3} 上四个 CD 损失之和。",
+          "required": true,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "额外使用 partial matching loss 作为 preservation loss。",
+          "required": true,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "总损失为 L = Lcompletion + λLpreservation。",
+          "required": false,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f",
+          "file_name": "snowflakenet.pdf",
+          "page_start": 5,
+          "page_end": 6
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-018",
+      "source": "canonical_40q",
+      "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "在 ShapeNet-55/34 上，ProxyFormer 输入的不完整点云为 2048 个点，完整点云包含 8192 个点。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "输入的不完整点云有 2048 个点。",
+          "required": true,
+          "acceptable_evidence": [
+            "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "完整点云包含 8192 个点。",
+          "required": true,
+          "acceptable_evidence": [
+            "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3",
+          "file_name": "proxyformer.pdf",
+          "page_start": 6,
+          "page_end": 7
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-019",
+      "source": "canonical_40q",
+      "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "implementation",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "Each ground-truth point cloud contains 16384 points, evenly sampled from the shape surface.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "Each ground-truth point cloud contains 16384 points.",
+          "required": true,
+          "acceptable_evidence": [
+            "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "The ground-truth points are evenly sampled from the shape surface.",
+          "required": true,
+          "acceptable_evidence": [
+            "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1",
+          "file_name": "pointattn.pdf",
+          "page_start": 6,
+          "page_end": 7
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-022",
+      "source": "canonical_40q",
+      "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "experiment_setup",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SnowflakeNet 的主要实验在两个广泛使用的基准上进行：PCN 与 Completion3D。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "两个基准之一是 PCN。",
+          "required": true,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "另一个基准是 Completion3D。",
+          "required": true,
+          "acceptable_evidence": [
+            "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f",
+          "file_name": "snowflakenet.pdf",
+          "page_start": 5,
+          "page_end": 6
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-029",
+      "source": "canonical_40q",
+      "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SVDFormer reports ShapeNet-34 results in Table 3 separately for 34 seen categories and 21 unseen categories with three metrics (CD, DCD and F1), and states it achieves the best performance in terms of all three metrics.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "Results are reported separately for 34 seen categories and 21 unseen categories.",
+          "required": true,
+          "acceptable_evidence": [
+            "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "Three metrics are used: CD, DCD and F1.",
+          "required": true,
+          "acceptable_evidence": [
+            "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "SVDFormer achieves the best performance in terms of all three metrics.",
+          "required": true,
+          "acceptable_evidence": [
+            "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e",
+          "file_name": "svdformer.pdf",
+          "page_start": 6,
+          "page_end": 7
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 0.38685280723454163
+      }
+    },
+    {
+      "question_id": "ARR-030",
+      "source": "canonical_40q",
+      "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "quantitative_results",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "PointAttN 的 PCN 结果表采用 L1 版本的 Chamfer distance（CD）作为指标。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "PCN 结果表使用 L1 版本的 Chamfer distance（CD）。",
+          "required": true,
+          "acceptable_evidence": [
+            "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "PointAttN 在该表上的 Average 结果为 6.86。",
+          "required": false,
+          "acceptable_evidence": [
+            "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98",
+          "file_name": "pointattn.pdf",
+          "page_start": 7,
+          "page_end": 9
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 0.6309297535714575
+      }
+    },
+    {
+      "question_id": "ARR-031",
+      "source": "canonical_40q",
+      "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "ablation",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "AdaPoinTr ablates the point-proxy formulation Fi = F'i + φ(pi): removing the positional embedding drops performance by 0.48, and replacing the mini-DGCNN feature extractor with PointNet drops it by 0.23.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "Point proxies are built as Fi = F'i + φ(pi), where F'i is the local structure feature and φ(pi) is the positional embedding.",
+          "required": true,
+          "acceptable_evidence": [
+            "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "Abandoning the positional embedding degrades performance by 0.48.",
+          "required": true,
+          "acceptable_evidence": [
+            "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "Replacing mini-DGCNN with PointNet as the feature extractor degrades performance by 0.23.",
+          "required": true,
+          "acceptable_evidence": [
+            "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9",
+          "file_name": "adapointr.pdf",
+          "page_start": 17,
+          "page_end": 18
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-036",
+      "source": "canonical_40q",
+      "query": "PointAttN 在结论中如何概括其核心网络？",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "conclusion_limitation",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "PointAttN 是一个充分利用于点云补全的注意力机制的深度神经网络；其动机是扩大处理三维点云时的感受野，以更好地保留几何结构与上下文信息；它通过 cross-attention 与 self-attention 感知局部细节与全局上下文，从而消除了 kNN 之类的显式局部区域划分。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "PointAttN 是一个充分利用注意力机制完成点云补全的深度神经网络。",
+          "required": true,
+          "acceptable_evidence": [
+            "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "其动机是扩大处理三维点云时的感受野，以更好保留几何结构与上下文信息。",
+          "required": true,
+          "acceptable_evidence": [
+            "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "通过 cross-attention 与 self-attention 分别感知局部细节与全局上下文。",
+          "required": true,
+          "acceptable_evidence": [
+            "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "该方法消除了 kNN 之类的显式局部区域划分。",
+          "required": true,
+          "acceptable_evidence": [
+            "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1",
+          "file_name": "pointattn.pdf",
+          "page_start": 10,
+          "page_end": 10
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 1.0,
+        "recall_at_10": 1.0,
+        "ndcg_at_5": 1.0
+      }
+    },
+    {
+      "question_id": "ARR-039",
+      "source": "canonical_40q",
+      "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SnowflakeNet uses a skip-transformer inside Snowflake Point Deconvolution (SPD): attention summarizes the point-splitting patterns used in the previous SPD layer to produce the splitting in the current layer. PointAttN instead uses self-attention and cross-attention to capture local details and global context, with a geometric details perception (GDP) block applying cross-attention between original and down-sampled features, which removes explicit local region partition such as kNN.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "SnowflakeNet uses a skip-transformer inside SPD.",
+          "required": true,
+          "acceptable_evidence": [
+            "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+            "4eeb3b90eb7dfde4e31aeee6d4e68eec27e275588c374dd135d865d366a2d050"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "Skip-transformer uses attention to summarize splitting patterns of the previous SPD layer to produce the current splitting.",
+          "required": true,
+          "acceptable_evidence": [
+            "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "PointAttN uses self-attention and cross-attention to capture both local and global geometric context.",
+          "required": true,
+          "acceptable_evidence": [
+            "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "PointAttN's GDP block applies cross-attention between the original point cloud feature and the down-sampled point cloud feature.",
+          "required": true,
+          "acceptable_evidence": [
+            "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb"
+          ]
+        },
+        {
+          "claim_id": "C5",
+          "text": "PointAttN eliminates explicit local region partition such as kNN.",
+          "required": true,
+          "acceptable_evidence": [
+            "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+        "4eeb3b90eb7dfde4e31aeee6d4e68eec27e275588c374dd135d865d366a2d050",
+        "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "11aa04fab98fca440e7246f80aeda9ca16537ac31ed4f46d425e27235f5cba72",
+          "file_name": "snowflakenet.pdf",
+          "page_start": 1,
+          "page_end": 1
+        },
+        {
+          "chunk_id": "4eeb3b90eb7dfde4e31aeee6d4e68eec27e275588c374dd135d865d366a2d050",
+          "file_name": "snowflakenet.pdf",
+          "page_start": 1,
+          "page_end": 1
+        },
+        {
+          "chunk_id": "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb",
+          "file_name": "pointattn.pdf",
+          "page_start": 1,
+          "page_end": 2
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 0.3333333333333333,
+        "recall_at_10": 0.3333333333333333,
+        "ndcg_at_5": 0.20210734650054757
+      }
+    },
+    {
+      "question_id": "ARR-007",
+      "source": "canonical_40q",
+      "query": "What two outputs are shown in the PCN architecture?",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "method",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "The PCN decoder produces two outputs: a coarse output point cloud Ycoarse and a detailed output point cloud Ydetail, with the coarse output generated first.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "The decoder produces a coarse output Ycoarse.",
+          "required": true,
+          "acceptable_evidence": [
+            "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "The decoder produces a detailed output Ydetail.",
+          "required": true,
+          "acceptable_evidence": [
+            "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "The encoder abstracts the input X into a feature vector v and the coarse output is generated before the detailed output.",
+          "required": true,
+          "acceptable_evidence": [
+            "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "d3e2a9c3420293f9599a61ebbf8648a482677af54bc95727e3aea09acf5d9eec",
+          "file_name": "pcn_point_completion_network.pdf",
+          "page_start": 2,
+          "page_end": 3
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "ndcg_at_5": 0.0
+      }
+    },
+    {
+      "question_id": "ARR-037",
+      "source": "canonical_40q",
+      "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "query_language": "en",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "PoinTr replaces fixed queries with dynamic queries generated by a query generation module that summarizes encoder features and represents the initial sketch of the missing points. AdaPoinTr likewise adopts dynamic query embeddings in the decoder, in contrast to the learnable static query embedding of prior work, which makes the decoder more flexible and adjustable for different objects and their missing information.",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "PoinTr uses dynamic queries instead of fixed queries, generated by a query generation module that summarizes encoder features.",
+          "required": true,
+          "acceptable_evidence": [
+            "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "PoinTr's dynamic queries represent the initial sketch of the missing points.",
+          "required": true,
+          "acceptable_evidence": [
+            "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "AdaPoinTr uses dynamic query embeddings in the decoder, unlike the learnable static query embedding in prior work.",
+          "required": true,
+          "acceptable_evidence": [
+            "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "AdaPoinTr's dynamic query scheme makes the decoder more flexible and adjustable for different object types and missing information.",
+          "required": true,
+          "acceptable_evidence": [
+            "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da",
+        "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "425d2d1a15013139130ec492c388c51212c2de586178c9a4b4b776a2ada916da",
+          "file_name": "pointr_geometry_aware_transformers.pdf",
+          "page_start": 2,
+          "page_end": 2
+        },
+        {
+          "chunk_id": "a5063069a6d735deea5c04ff98c65e444c50f0b91f1a75d756a5c7244792fbf9",
+          "file_name": "adapointr.pdf",
+          "page_start": 4,
+          "page_end": 5
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "ndcg_at_5": 0.0
+      }
+    },
+    {
+      "question_id": "ARR-040",
+      "source": "canonical_40q",
+      "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+      "query_language": "zh",
+      "corpus_language": "en",
+      "question_type": "multi_document",
+      "answerability": "ANSWERABLE",
+      "reference_answer": "SVDFormer 通过 Self-structure Dual-Generator 结合学习到的形状先验与几何自相似性建模结构关系：Structure Analysis 单元显式编码粗点云的局部不完整性，Similarity Alignment 单元为每个点寻找相似结构的特征。Hyper-PCN 则用超图显式建模点云内部复杂的高阶相关性：HyperRS 由粗到细逐步捕获高阶相关性，A-HGNN 以两阶段采样构建协同超图来稳健建模全局结构。",
+      "required_claims": [
+        {
+          "claim_id": "C1",
+          "text": "SVDFormer 引入 Self-structure Dual-Generator，结合学习到的形状先验与几何自相似性。",
+          "required": true,
+          "acceptable_evidence": [
+            "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        },
+        {
+          "claim_id": "C2",
+          "text": "Structure Analysis 单元显式编码生成粗点云的局部不完整性。",
+          "required": true,
+          "acceptable_evidence": [
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        },
+        {
+          "claim_id": "C3",
+          "text": "Similarity Alignment 单元为每个点寻找相似结构的特征。",
+          "required": true,
+          "acceptable_evidence": [
+            "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+          ]
+        },
+        {
+          "claim_id": "C4",
+          "text": "Hyper-PCN 使用超图显式建模点云内部复杂的高阶相关性。",
+          "required": true,
+          "acceptable_evidence": [
+            "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+          ]
+        },
+        {
+          "claim_id": "C5",
+          "text": "HyperRS 由粗到细逐步捕获高阶相关性；A-HGNN 以两阶段采样构建协同超图来稳健建模全局结构。",
+          "required": true,
+          "acceptable_evidence": [
+            "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209"
+          ]
+        }
+      ],
+      "acceptable_source_ids": [
+        "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+        "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+        "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+      ],
+      "forbidden_claims": [],
+      "gold_evidence": [
+        {
+          "chunk_id": "0b3ae8015e616361339bb0e9bfc9e8da97564dd7df51d9e975b1e6f9feb84209",
+          "file_name": "hyper_pcn.pdf",
+          "page_start": 1,
+          "page_end": 1
+        },
+        {
+          "chunk_id": "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee",
+          "file_name": "svdformer.pdf",
+          "page_start": 1,
+          "page_end": 2
+        }
+      ],
+      "expected_retrieval_phase9": {
+        "recall_at_5": 0.0,
+        "recall_at_10": 0.0,
+        "ndcg_at_5": 0.0
+      }
+    },
+    {
+      "question_id": "GEN-U01",
+      "source": "phase12_new_unanswerable",
+      "query": "What BLEU score did the original Transformer paper report on WMT 2014 English-to-German translation?",
+      "query_language": "en",
+      "corpus_language": "n/a",
+      "question_type": "out_of_corpus_fact",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "reference_answer": null,
+      "required_claims": [],
+      "acceptable_source_ids": [],
+      "forbidden_claims": [
+        "给出任何具体数值、型号、许可证名称或比例作为确定答案（而非说明语料未提供）"
+      ],
+      "gold_evidence": [],
+      "expected_retrieval_phase9": null
+    },
+    {
+      "question_id": "GEN-U02",
+      "source": "phase12_new_unanswerable",
+      "query": "SnowflakeNet 的训练使用了多少块 A100 GPU？",
+      "query_language": "zh",
+      "corpus_language": "n/a",
+      "question_type": "corpus_absent_hardware_fact",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "reference_answer": null,
+      "required_claims": [],
+      "acceptable_source_ids": [],
+      "forbidden_claims": [
+        "给出任何具体数值、型号、许可证名称或比例作为确定答案（而非说明语料未提供）"
+      ],
+      "gold_evidence": [],
+      "expected_retrieval_phase9": null
+    },
+    {
+      "question_id": "GEN-U03",
+      "source": "phase12_new_unanswerable",
+      "query": "Which software license is the SeedFormer source code released under?",
+      "query_language": "en",
+      "corpus_language": "n/a",
+      "question_type": "corpus_absent_metadata",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "reference_answer": null,
+      "required_claims": [],
+      "acceptable_source_ids": [],
+      "forbidden_claims": [
+        "给出任何具体数值、型号、许可证名称或比例作为确定答案（而非说明语料未提供）"
+      ],
+      "gold_evidence": [],
+      "expected_retrieval_phase9": null
+    },
+    {
+      "question_id": "GEN-U04",
+      "source": "phase12_new_unanswerable",
+      "query": "Point-BERT 的自监督预训练掩码比例（mask ratio）是多少？",
+      "query_language": "zh",
+      "corpus_language": "n/a",
+      "question_type": "out_of_corpus_method",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "reference_answer": null,
+      "required_claims": [],
+      "acceptable_source_ids": [],
+      "forbidden_claims": [
+        "给出任何具体数值、型号、许可证名称或比例作为确定答案（而非说明语料未提供）"
+      ],
+      "gold_evidence": [],
+      "expected_retrieval_phase9": null
+    },
+    {
+      "question_id": "GEN-U05",
+      "source": "phase12_new_unanswerable",
+      "query": "PCN 论文报告的点云法向量估计（normal estimation）准确率是多少？",
+      "query_language": "zh",
+      "corpus_language": "n/a",
+      "question_type": "unsupported_task_fact",
+      "answerability": "INSUFFICIENT_CONTEXT",
+      "reference_answer": null,
+      "required_claims": [],
+      "acceptable_source_ids": [],
+      "forbidden_claims": [
+        "给出任何具体数值、型号、许可证名称或比例作为确定答案（而非说明语料未提供）"
+      ],
+      "gold_evidence": [],
+      "expected_retrieval_phase9": null
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "artifact_type": "phase14a_manifest",
+  "artifact_root": "D:\\Agent_learn\\evidenceFlow\\evals\\evaluation_v3\\phase14a_multiformat_ingestion_benchmark",
+  "created_at_utc": "2026-09-14T14:21:37.877926+00:00",
+  "entries": [
+    {
+      "relative_path": "controlled_corpus/build_summary.json",
+      "sha256": "5355f07226b1699a0424354a22939e9dd4ca9ee91331bd46768f7827fa2fbead",
+      "size_bytes": 416
+    },
+    {
+      "relative_path": "ground_truth/controlled_corpus_gold.json",
+      "sha256": "f6c9534ef81c6f94ccd4a370565362c63439f938b092265f2afb6a99855346f9",
+      "size_bytes": 17299
+    },
+    {
+      "relative_path": "manifests/invariance.json",
+      "sha256": "ab1a78b42725610a34188a2074ea56a34d6aa583a3e757841a5f3b1d7a40c867",
+      "size_bytes": 211
+    },
+    {
+      "relative_path": "manifests/manifest.json",
+      "sha256": "6171f46f4f5271bfd128b03918affdb7b98808c325985fcfe81bf1871dd54cb5",
+      "size_bytes": 8687
+    },
+    {
+      "relative_path": "metrics/corpus_self_check.json",
+      "sha256": "97edbac7a197305e3adb878e83e50853c81bb44fcde83212ca3b56b8ed1a7f9e",
+      "size_bytes": 4074
+    },
+    {
+      "relative_path": "metrics/docx_metrics.json",
+      "sha256": "273afd0109f417d3823f717e34b7b78e30df566c7afd94cfde89aad91d093389",
+      "size_bytes": 20430
+    },
+    {
+      "relative_path": "metrics/xlsx_metrics.json",
+      "sha256": "4d6a177b322d11aa531cba46686bd98fcd694f9b5a681879005c342c7e2ba6dc",
+      "size_bytes": 26473
+    },
+    {
+      "relative_path": "native_outputs/docx/W1__W-A0_a.json",
+      "sha256": "428c081eba94e78570cba6eeaaa19b42892670ef97b3d0c1695d9188d4047b21",
+      "size_bytes": 4756
+    },
+    {
+      "relative_path": "native_outputs/docx/W1__W-A0_b.json",
+      "sha256": "428c081eba94e78570cba6eeaaa19b42892670ef97b3d0c1695d9188d4047b21",
+      "size_bytes": 4756
+    },
+    {
+      "relative_path": "native_outputs/docx/W2__W-A0_a.json",
+      "sha256": "51cfe4b08e03c4825dbd01e95ccdd3f2d77bbbb3e0cd64969cd146e7f1d583ef",
+      "size_bytes": 3565
+    },
+    {
+      "relative_path": "native_outputs/docx/W2__W-A0_b.json",
+      "sha256": "51cfe4b08e03c4825dbd01e95ccdd3f2d77bbbb3e0cd64969cd146e7f1d583ef",
+      "size_bytes": 3565
+    },
+    {
+      "relative_path": "native_outputs/docx/W3__W-A0_a.json",
+      "sha256": "b32a1f3a761077d0af33c4a3e3f925fbb84d2129ae556dc5cfbdd0e9e591aca4",
+      "size_bytes": 8574
+    },
+    {
+      "relative_path": "native_outputs/docx/W3__W-A0_b.json",
+      "sha256": "b32a1f3a761077d0af33c4a3e3f925fbb84d2129ae556dc5cfbdd0e9e591aca4",
+      "size_bytes": 8574
+    },
+    {
+      "relative_path": "native_outputs/docx/W4__W-A0_a.json",
+      "sha256": "c3e191810456e6ffdb64a5f991dfccb2bf1ee1a00eeb6d1f300499e934a17600",
+      "size_bytes": 3601
+    },
+    {
+      "relative_path": "native_outputs/docx/W4__W-A0_b.json",
+      "sha256": "c3e191810456e6ffdb64a5f991dfccb2bf1ee1a00eeb6d1f300499e934a17600",
+      "size_bytes": 3601
+    },
+    {
+      "relative_path": "native_outputs/docx/W5__W-A0_a.json",
+      "sha256": "40328554b7566e7684bee4fbe9447dd88956af9881ce1c2c138f4cb7a408d382",
+      "size_bytes": 3678
+    },
+    {
+      "relative_path": "native_outputs/docx/W5__W-A0_b.json",
+      "sha256": "40328554b7566e7684bee4fbe9447dd88956af9881ce1c2c138f4cb7a408d382",
+      "size_bytes": 3678
+    },
+    {
+      "relative_path": "native_outputs/docx/W6__W-A0_a.json",
+      "sha256": "25906887e88feb2551339d5a733b7f90f7c54bc7feaec04def3c5450a14a6b31",
+      "size_bytes": 4613
+    },
+    {
+      "relative_path": "native_outputs/docx/W6__W-A0_b.json",
+      "sha256": "25906887e88feb2551339d5a733b7f90f7c54bc7feaec04def3c5450a14a6b31",
+      "size_bytes": 4613
+    },
+    {
+      "relative_path": "native_outputs/docx/W7__W-A0_a.json",
+      "sha256": "c36ae5600e1fb945d2cc57507c43e68a10d3b90d3e0a99e5f96c14e03a5e5381",
+      "size_bytes": 4202
+    },
+    {
+      "relative_path": "native_outputs/docx/W7__W-A0_b.json",
+      "sha256": "c36ae5600e1fb945d2cc57507c43e68a10d3b90d3e0a99e5f96c14e03a5e5381",
+      "size_bytes": 4202
+    },
+    {
+      "relative_path": "native_outputs/docx/W8__W-A0_a.json",
+      "sha256": "b86cd6295d8937ef04730bf40a504475642971404a074706194c9e2b8a541702",
+      "size_bytes": 3036
+    },
+    {
+      "relative_path": "native_outputs/docx/W8__W-A0_b.json",
+      "sha256": "b86cd6295d8937ef04730bf40a504475642971404a074706194c9e2b8a541702",
+      "size_bytes": 3036
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X10__X-A0_a.json",
+      "sha256": "003cbc0cab2931d72d65a0dce750899c9ffd7869f9137103f5eed5cdac50093e",
+      "size_bytes": 8154
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X10__X-A0_b.json",
+      "sha256": "003cbc0cab2931d72d65a0dce750899c9ffd7869f9137103f5eed5cdac50093e",
+      "size_bytes": 8154
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X1__X-A0_a.json",
+      "sha256": "ed536e6ca5a7e3b44358fbdcd1cbee7d52dcd2b67c1a7c6b7afd866acd97388a",
+      "size_bytes": 8946
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X1__X-A0_b.json",
+      "sha256": "ed536e6ca5a7e3b44358fbdcd1cbee7d52dcd2b67c1a7c6b7afd866acd97388a",
+      "size_bytes": 8946
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X2__X-A0_a.json",
+      "sha256": "701862a8ee3de5006ddf7810dde81ed769d645f3d9ae36486333014dca0998a2",
+      "size_bytes": 11618
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X2__X-A0_b.json",
+      "sha256": "701862a8ee3de5006ddf7810dde81ed769d645f3d9ae36486333014dca0998a2",
+      "size_bytes": 11618
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X3__X-A0_a.json",
+      "sha256": "8c39f802c7b8d3ffa976a9d11ecdcbbfd0b73daa237dbedf8c08bd7956070d29",
+      "size_bytes": 16715
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X3__X-A0_b.json",
+      "sha256": "8c39f802c7b8d3ffa976a9d11ecdcbbfd0b73daa237dbedf8c08bd7956070d29",
+      "size_bytes": 16715
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X4__X-A0_a.json",
+      "sha256": "53c65aa389d72f3f1a53e78d0e5ae34d5d5d505798578b5a010335a4e6dedce2",
+      "size_bytes": 15036
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X4__X-A0_b.json",
+      "sha256": "53c65aa389d72f3f1a53e78d0e5ae34d5d5d505798578b5a010335a4e6dedce2",
+      "size_bytes": 15036
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X5__X-A0_a.json",
+      "sha256": "8dd71e80040d464cd336050257e7a4e356f91323eb76ad0359c3e8e42832d8dd",
+      "size_bytes": 5195
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X5__X-A0_b.json",
+      "sha256": "8dd71e80040d464cd336050257e7a4e356f91323eb76ad0359c3e8e42832d8dd",
+      "size_bytes": 5195
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X6__X-A0_a.json",
+      "sha256": "f2e4c052f7fb3a554a38397eed8b811db247e46f81240a88530983ba19450eef",
+      "size_bytes": 8866
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X6__X-A0_b.json",
+      "sha256": "f2e4c052f7fb3a554a38397eed8b811db247e46f81240a88530983ba19450eef",
+      "size_bytes": 8866
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X7__X-A0_a.json",
+      "sha256": "361eeb719c8f736a0addbeb7fbb4a9782ec00ff4aee91a62465b8a2d782bb414",
+      "size_bytes": 9406
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X7__X-A0_b.json",
+      "sha256": "361eeb719c8f736a0addbeb7fbb4a9782ec00ff4aee91a62465b8a2d782bb414",
+      "size_bytes": 9406
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X8__X-A0_a.json",
+      "sha256": "cc2dc00ff63d3a74fbfa1b150c0d448963c47772e7d07fdddd0e0d3fe75c3ea2",
+      "size_bytes": 8980
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X8__X-A0_b.json",
+      "sha256": "cc2dc00ff63d3a74fbfa1b150c0d448963c47772e7d07fdddd0e0d3fe75c3ea2",
+      "size_bytes": 8980
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X9__X-A0_a.json",
+      "sha256": "ed4e4216938117c4a8e50d24241a3ba411025a45521283586a732371f16ea303",
+      "size_bytes": 9791
+    },
+    {
+      "relative_path": "native_outputs/xlsx/X9__X-A0_b.json",
+      "sha256": "ed4e4216938117c4a8e50d24241a3ba411025a45521283586a732371f16ea303",
+      "size_bytes": 9791
+    },
+    {
+      "relative_path": "phase14a_a_status.json",
+      "sha256": "b88456479ef6f33dbb01780da29f3d889d6eeddbe4629e0e88e237dee4443fc0",
+      "size_bytes": 1966
+    },
+    {
+      "relative_path": "selected_adapters.json",
+      "sha256": "3e98043866101177c61127b213d5bde8140c42a2416ba041d0a3ec01438b7c5b",
+      "size_bytes": 534
+    }
+  ]
+}

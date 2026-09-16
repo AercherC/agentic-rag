@@ -1,0 +1,987 @@
+{
+  "artifact_type": "phase13_section_hierarchy_audit",
+  "created_at_utc": "2026-09-10T12:28:46.733547+00:00",
+  "stage": "Step 5 — Section Hierarchy Audit",
+  "chunk_count": 361,
+  "documents": [
+    {
+      "file_name": "adapointr.pdf",
+      "document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb",
+      "page_count": 22,
+      "heading_count": 7,
+      "top_level_sections": [
+        "Introduction",
+        "Related Work",
+        "Experiments",
+        "Conclusion",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "Related Work",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "Experiments",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "15.25 G 292 pc/s",
+          "level": 2,
+          "page": 13
+        },
+        {
+          "title": "6.72 G 248 pc/s",
+          "level": 2,
+          "page": 13
+        },
+        {
+          "title": "Conclusion",
+          "level": 1,
+          "page": 14
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 15
+        }
+      ],
+      "chunk_count": 75,
+      "chunks_with_section": 73,
+      "chunks_with_subsection": 5,
+      "chunks_crossing_section_boundary": 6,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "hyper_pcn.pdf",
+      "document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5",
+      "page_count": 17,
+      "heading_count": 24,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Works",
+        "3 Method",
+        "4 Experiment",
+        "5 Conclusion",
+        "6 Acknowledgment",
+        "References",
+        "Supplementary Material",
+        "7 More Results on KITTI",
+        "8 Additional Ablation Studies",
+        "10 Additional Visualizations"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Works",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "2.1 Point Cloud Completion",
+          "level": 2,
+          "page": 2
+        },
+        {
+          "title": "2.2 Hypergraph Learning",
+          "level": 2,
+          "page": 2
+        },
+        {
+          "title": "3 Method",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 Overall Framework",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.2 Hypergraph Neural Network",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.3 Feature Embedding",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.4 Hyper Refinement Stack",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.5 Anchor-based Hypergraph Neural Network",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "3.6 CFG Transformer",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4 Experiment",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Experiment Settings",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "0.16 A-HGNN comprises two stages with anchors/top-k",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.3 Visualization of HyperRS",
+          "level": 2,
+          "page": 8
+        },
+        {
+          "title": "4.4 Ablation Study",
+          "level": 2,
+          "page": 8
+        },
+        {
+          "title": "5 Conclusion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "6 Acknowledgment",
+          "level": 1,
+          "page": 9
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 9
+        },
+        {
+          "title": "Supplementary Material",
+          "level": 1,
+          "page": 11
+        },
+        {
+          "title": "7 More Results on KITTI",
+          "level": 1,
+          "page": 11
+        },
+        {
+          "title": "8 Additional Ablation Studies",
+          "level": 1,
+          "page": 11
+        },
+        {
+          "title": "10 Additional Visualizations",
+          "level": 1,
+          "page": 12
+        }
+      ],
+      "chunk_count": 33,
+      "chunks_with_section": 32,
+      "chunks_with_subsection": 17,
+      "chunks_crossing_section_boundary": 18,
+      "first_chunk_section": null,
+      "last_chunk_section": "10 Additional Visualizations"
+    },
+    {
+      "file_name": "pcn_point_completion_network.pdf",
+      "document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e",
+      "page_count": 17,
+      "heading_count": 17,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 Problem Statement",
+        "4 Point Completion Network",
+        "5 Experiments",
+        "6 Discussion",
+        "7 Conclusion",
+        "Acknowledgements",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "3 Problem Statement",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "4 Point Completion Network",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "4.1 Point Feature Encoding",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "4.2 Multistage Point Generation",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "4.3 Loss Function",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "5 Experiments",
+          "level": 1,
+          "page": 4
+        },
+        {
+          "title": "5.1 Data Generation and Model Training",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "5.2 Completion Results on ShapeNet",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "5.3 Completion Results on KITTI",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "5.4 Point Cloud Registration with Completion",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "6 Discussion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "7 Conclusion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "Acknowledgements",
+          "level": 1,
+          "page": 10
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 10
+        }
+      ],
+      "chunk_count": 34,
+      "chunks_with_section": 33,
+      "chunks_with_subsection": 12,
+      "chunks_crossing_section_boundary": 13,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "pfnet_point_fractal_network.pdf",
+      "document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b",
+      "page_count": 9,
+      "heading_count": 16,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 Method",
+        "4 Experiments",
+        "5 Conclusion",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "2.1 Shape Completion and Deep Learning",
+          "level": 2,
+          "page": 2
+        },
+        {
+          "title": "2.2 Context Encoder and Feature Pyramid Net-",
+          "level": 2,
+          "page": 2
+        },
+        {
+          "title": "3 Method",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 Feature Points Sampling",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.2 Multi-Resolution Encoder",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.3 Point Pyramid Decoder",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.4 Loss Function",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "4 Experiments",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Data Generation and Implementation detail",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.2 Point Cloud Completion Results",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.3 Quantitative Evaluations of PF-Net",
+          "level": 2,
+          "page": 6
+        },
+        {
+          "title": "5 Conclusion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 9
+        }
+      ],
+      "chunk_count": 25,
+      "chunks_with_section": 24,
+      "chunks_with_subsection": 16,
+      "chunks_crossing_section_boundary": 11,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "pointattn.pdf",
+      "document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41",
+      "page_count": 12,
+      "heading_count": 7,
+      "top_level_sections": [
+        "Abstract",
+        "Introduction",
+        "Related Work",
+        "Experiments",
+        "Ablation study",
+        "Conclusions",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "Related Work",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "Experiments",
+          "level": 1,
+          "page": 6
+        },
+        {
+          "title": "Ablation study",
+          "level": 1,
+          "page": 9
+        },
+        {
+          "title": "Conclusions",
+          "level": 1,
+          "page": 10
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 10
+        }
+      ],
+      "chunk_count": 25,
+      "chunks_with_section": 24,
+      "chunks_with_subsection": 0,
+      "chunks_crossing_section_boundary": 6,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "pointr_geometry_aware_transformers.pdf",
+      "document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6",
+      "page_count": 14,
+      "heading_count": 20,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 Approach",
+        "4 Experiments",
+        "5 Conclusion",
+        "Acknowledgements",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "3 Approach",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 Set-to-Set Translation with Transformers",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.2 Point Proxy",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.3 Geometry-aware Transformer Block",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.4 Query Generator",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.5 Multi-Scale Point Cloud Generation",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.6 Optimization",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "4 Experiments",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Benchmarks for Diverse Point Completion",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.2 Evaluation Metric",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.3 Results on ShapeNet-55",
+          "level": 2,
+          "page": 6
+        },
+        {
+          "title": "4.4 Results on ShapeNet-34",
+          "level": 2,
+          "page": 6
+        },
+        {
+          "title": "4.6 Model Design Analysis",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "4.7 Qualitative Results",
+          "level": 2,
+          "page": 8
+        },
+        {
+          "title": "5 Conclusion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "Acknowledgements",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 11
+        }
+      ],
+      "chunk_count": 39,
+      "chunks_with_section": 38,
+      "chunks_with_subsection": 14,
+      "chunks_crossing_section_boundary": 18,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "proxyformer.pdf",
+      "document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686",
+      "page_count": 10,
+      "heading_count": 16,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 Method",
+        "4 Experiments",
+        "5 Conclusion",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "3 Method",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 Proxy Formation",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.2 Missing Part Sensitive Transformer",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.3 Proxy Alignment",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "3.4 Training Loss",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4 Experiments",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Point Cloud Completeion on PCN Dataset",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.2 Point Cloud Completion on ShapeNet-55/34",
+          "level": 2,
+          "page": 6
+        },
+        {
+          "title": "4.3 Point Cloud Completion on KITTI",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "4.4 Ablation Studies",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "4.5 Complexity Analysis",
+          "level": 2,
+          "page": 8
+        },
+        {
+          "title": "5 Conclusion",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 9
+        }
+      ],
+      "chunk_count": 31,
+      "chunks_with_section": 30,
+      "chunks_with_subsection": 16,
+      "chunks_crossing_section_boundary": 13,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "seedformer.pdf",
+      "document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362",
+      "page_count": 22,
+      "heading_count": 5,
+      "top_level_sections": [
+        "Introduction",
+        "Related Work",
+        "Method",
+        "Conclusion",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "Related Work",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "Method",
+          "level": 1,
+          "page": 4
+        },
+        {
+          "title": "Conclusion",
+          "level": 1,
+          "page": 14
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 15
+        }
+      ],
+      "chunk_count": 39,
+      "chunks_with_section": 38,
+      "chunks_with_subsection": 0,
+      "chunks_crossing_section_boundary": 4,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "snowflakenet.pdf",
+      "document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a",
+      "page_count": 11,
+      "heading_count": 14,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 SnowﬂakeNet",
+        "4 Experiments",
+        "5 Conclusions",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "3 SnowﬂakeNet",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 Overview",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3.2 Snowﬂake Point Deconvolution (SPD)",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.3 Skip-Transformer",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "3.4 Training Loss",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4 Experiments",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Evaluation on PCN Dataset",
+          "level": 2,
+          "page": 6
+        },
+        {
+          "title": "4.2 Evaluation on Completion3D Dataset",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "4.3 Ablation studies",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "5 Conclusions",
+          "level": 1,
+          "page": 8
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 9
+        }
+      ],
+      "chunk_count": 31,
+      "chunks_with_section": 30,
+      "chunks_with_subsection": 12,
+      "chunks_crossing_section_boundary": 14,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    },
+    {
+      "file_name": "svdformer.pdf",
+      "document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8",
+      "page_count": 11,
+      "heading_count": 16,
+      "top_level_sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Related Work",
+        "3 Method",
+        "4 Experiment",
+        "5 Conclusion",
+        "Acknowledgements",
+        "References"
+      ],
+      "structure_tree": [
+        {
+          "title": "Abstract",
+          "level": 1,
+          "page": 1
+        },
+        {
+          "title": "1 Introduction",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "2 Related Work",
+          "level": 1,
+          "page": 2
+        },
+        {
+          "title": "2.1 Learning-based Shape Completion",
+          "level": 2,
+          "page": 2
+        },
+        {
+          "title": "2.2 Multi-view fusion for Shape Learning",
+          "level": 2,
+          "page": 3
+        },
+        {
+          "title": "3 Method",
+          "level": 1,
+          "page": 3
+        },
+        {
+          "title": "3.1 SVFNet",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.2 SDG",
+          "level": 2,
+          "page": 4
+        },
+        {
+          "title": "3.3 Loss Function",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4 Experiment",
+          "level": 1,
+          "page": 5
+        },
+        {
+          "title": "4.1 Dataset and Evaluation Metric",
+          "level": 2,
+          "page": 5
+        },
+        {
+          "title": "4.4 Results on Real-world Scans",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "4.5 Ablation Studies and Discussions",
+          "level": 2,
+          "page": 7
+        },
+        {
+          "title": "5 Conclusion",
+          "level": 1,
+          "page": 9
+        },
+        {
+          "title": "Acknowledgements",
+          "level": 1,
+          "page": 9
+        },
+        {
+          "title": "References",
+          "level": 1,
+          "page": 9
+        }
+      ],
+      "chunk_count": 29,
+      "chunks_with_section": 28,
+      "chunks_with_subsection": 15,
+      "chunks_crossing_section_boundary": 11,
+      "first_chunk_section": null,
+      "last_chunk_section": "References"
+    }
+  ],
+  "section_attribution_rate": 0.969529,
+  "subsection_attribution_rate": 0.296399,
+  "chunks_crossing_section_boundary": 114,
+  "chunks_with_heading_context": 350,
+  "chunks_with_section_metadata_in_store": 0,
+  "section_metadata_coverage_in_store": 0.0,
+  "attribution_vs_store_note": "section_attribution_rate 衡量的是「审计期能否离线推断出章节」（本阶段旁路重建的结果）；知识库中 chunk 实际携带的 section metadata 覆盖率为 0.0，因为 Chroma metadata 只有 document_id / content_hash / file_name / chunk_index / token_count / page_start / page_end。",
+  "heading_detection_method": "在 cleaned 文本上识别'独立成行的编号标题'与'独立成行的具名标题'；该结构是审计期**旁路重建**的结果，并未写入知识库 metadata。",
+  "stored_metadata_fields": [
+    "document_id",
+    "content_hash",
+    "file_name",
+    "chunk_index",
+    "token_count",
+    "page_start",
+    "page_end",
+    "domain_metadata_json"
+  ],
+  "required_structure_fields": [
+    "section",
+    "subsection",
+    "chunk_type",
+    "source_element_type",
+    "parent_section"
+  ],
+  "missing_structure_fields": [
+    "section",
+    "subsection",
+    "chunk_type",
+    "source_element_type",
+    "parent_section"
+  ],
+  "structure_metadata_present": false
+}

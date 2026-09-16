@@ -1,0 +1,22 @@
+"""提供正式 Dense Retrieval 与 Learned Reranker 公共接口。"""
+
+from evidenceflow.retrieval.reranker import (
+    DenseRerankerRetriever,
+    LearnedReranker,
+    RerankerError,
+    RerankedChunk,
+    TransformersCrossEncoderScorer,
+    rank_scored_candidates,
+)
+from evidenceflow.retrieval.retriever import DenseRetriever, InvalidQueryError
+
+__all__ = [
+    "DenseRetriever",
+    "DenseRerankerRetriever",
+    "InvalidQueryError",
+    "LearnedReranker",
+    "RerankerError",
+    "RerankedChunk",
+    "TransformersCrossEncoderScorer",
+    "rank_scored_candidates",
+]

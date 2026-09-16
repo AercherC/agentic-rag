@@ -1,0 +1,1370 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "rag_generation_eval_v1",
+  "created_at_utc": "2026-09-10T05:31:25.392825+00:00",
+  "annotator": "human (careful manual reading of each answer against its frozen BuiltContext)",
+  "annotation_note": "Phase 12 v1 采用人工标注（计划 §5A/§14/§20）。判定单位 = 最小可独立验证断言；脱离知识点（如“根据提供的上下文”）不计为独立 claim。非事实性/元陈述 claim 的 grounding 记为 NOT_APPLICABLE，不计入 factual 分母。契约错误题不进入 abstention 混淆矩阵。",
+  "questions": {
+    "ARR-002": {
+      "question_id": "ARR-002",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "PoinTr 认为真实点云不完整的三个常见原因是有限的传感器分辨率、单一视角和遮挡",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "这些原因在论文摘要部分被明确指出，用于解释为什么从部分点云恢复完整点云是一项不可或缺的任务",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "C1-C3 三条原因在同一句中被完整给出且与 Gold Chunk(S2) 摘要原文一致。claim2 为论文动机陈述（S2 摘要可支持），无 [Sx] 标注 → CITATION_MISSING。"
+    },
+    "ARR-004": {
+      "question_id": "ARR-004",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SVDFormer 试图缓解真实扫描中高度稀疏且包含生成细节的有限信息的问题",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "真实世界扫描（例如 KITTI LiDAR）输入极度稀疏且与训练分布不同，导致现有细化策略产生不可信的几何细节（线状形状）",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "SVDFormer 通过 SDG 等方法处理包括高度稀疏真实世界扫描在内的各种输入形状，生成具有详细结构和清晰边缘的形状",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "该方法致力于解决捕获点云普遍存在的稀疏性与大的结构不完整这一核心挑战",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "C1/C2 由 claim4(S2) 覆盖，C3 由 claim1/claim3(S4/S1) 覆盖。全部引用均指向确实包含对应内容的 chunk。"
+    },
+    "ARR-009": {
+      "question_id": "ARR-009",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "PoinTr converts the point cloud into a sequence of point proxies",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "The point cloud is represented as a set of unordered groups of points with position embeddings",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "Point proxies are feature vectors representing local regions in the point clouds",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "The approach partitions point clouds into patches to apply self-attention",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "Point proxies serve as the inputs for the transformer encoder-decoder architecture to facilitate set-to-set translation",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "C1/C2 由 claim2/claim1(S1=Gold) 覆盖；C3 由 claim5(S4/S5) 覆盖——Gold 证据 chunk 425d2d1a15 未进入 Context，但表述等价的 S5(adapointr) 在 Context 中，故判为已答且 grounded。"
+    },
+    "ARR-010": {
+      "question_id": "ARR-010",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SnowflakeNet 的架构图包含 Snowflake Point Deconvolution (SPD) 模块",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "图 3 展示整体架构且标注 (c) 为 Snowflake point deconvolution (SPD)",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "SnowflakeNet 主要由 SPD 层构成，模拟点云在 3D 空间中的雪花状生长过程",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "notes": "C1 完整回答；C2（SPD 中引入 skip-transformer 学习点分裂模式）在答案中完全缺失——虽然 Context 的 S1/S4 均含该事实（图 3 图例含 ST Skip-transformer；S4 明文 'introduce skip-transformer in SPD to learn point splitting patterns'）。claim1 无引用 → CITATION_MISSING。"
+    },
+    "ARR-011": {
+      "question_id": "ARR-011",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SeedFormer introduces a new shape representation called Patch Seeds",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "Patch Seeds capture both global shape structure and fine-grained local details by learning regional features stored in several local seeds",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "C1 直答；C2/C3 由 claim2 合并表述（'global shape structure'≈general structures，'regional features stored in several local seeds'≈preserves regional information of local patterns），判为已覆盖。"
+    },
+    "ARR-012": {
+      "question_id": "ARR-012",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "ProxyFormer 设计缺失部分敏感 Transformer，将随机正态分布转换为合理位置信息，并用 proxy alignment 细化缺失代理，使其对缺失部分的特征与位置更敏感",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "模型生成 pre-MP 与 true-MP，施加代理对齐约束并以 MSE 损失 l_p 计算二者差异",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "对齐操作有助于纠正偏差值",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "训练时把真实缺失部分转换为代理，以增强先验知识并细化预测的缺失代理",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "修正后的 pre-MP 送入 FoldingNet 做由粗到细转换，再与粗略缺失部分结合得到稠密缺失部分",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "text": "真实缺失部分仅用于训练且阻断反向传播，直接用预训练 FAPE 在不完整点云上生成代理，真值用于计算对齐损失",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "C2/C3 完整；C1（点云被划分为已有/缺失两部分且两部分通过 proxy 交互）未被显式表述 → ANSWER_MISSING_CLAIM。8 条引用全部正确指向支持该句的 chunk。"
+    },
+    "ARR-013": {
+      "question_id": "ARR-013",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SVDFormer 的 Self-structure Dual-Generator (SDG) 由一对并行细化单元组成，名为 Structure Analysis 与 Similarity Alignment",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "单句同时覆盖 C1(模块名 SDG)、C2(一对并行细化单元)、C3(两个单元名)。引用的 S1 原文与该句逐字对应。"
+    },
+    "ARR-014": {
+      "question_id": "ARR-014",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "HyperRS 与 A-HGNN 是超编码器(Hyper Encoder)的两个关键组件",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "Hyper Refinement Stack (HyperRS) 构建基于距离的超图并执行渐进式细化，生成超特征和粗略形状",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "HyperRS 通过一系列超图建模和卷积操作，逐步从不完整点云中挖掘粗到细的高阶相关性信息",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "HyperRS 通过分层超图卷积捕获粗到细的结构关系",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "Anchor-based Hypergraph Neural Network (A-HGNN) 采用两阶段采样策略，通过关键点与锚点的协作构建协同超图",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "text": "A-HGNN 有效提取全局高阶关系，并引导超图学习朝向更全面的全局特征",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "text": "两个组件共同工作，使编码器输出粗糙点、超特征和关键点特征，供解码器精细重建",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT",
+        "C4": "CORRECT"
+      },
+      "notes": "C1-C4 全部覆盖，且每条描述都能在 Context 中找到对应原文。claim1 无引用 → CITATION_MISSING（该句由 S1 支持）。"
+    },
+    "ARR-016": {
+      "question_id": "ARR-016",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SnowflakeNet 训练时使用 Chamfer distance (CD) 作为主要损失函数",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "总训练损失由完成损失（基于 Chamfer distance）与保留损失组成，L = L_completion + λL_preservation",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING",
+        "C3": "MISSING",
+        "C4": "CORRECT"
+      },
+      "notes": "C2（completion loss = {Pc,P1,P2,P3} 上四个 CD 损失之和）与 C3（partial matching loss 作为 preservation loss）在答案中缺失——答案只笼统称“保留损失”，未指认其为 partial matching loss。Context 中 S1 原文完整包含 C2/C3，属 Generation 层遗漏。"
+    },
+    "ARR-018": {
+      "question_id": "ARR-018",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "ProxyFormer 在 ShapeNet-55/34 中输入的不完整点云为 2048 个点，完整点云为 8192 个点",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT"
+      },
+      "notes": "与 Gold Chunk(S1) 原文逐字一致。"
+    },
+    "ARR-019": {
+      "question_id": "ARR-019",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "In PointAttN's PCN benchmark, each ground-truth point cloud contains 16384 points",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "notes": "C2（ground-truth 点从表面均匀采样）未在答案中出现，尽管 Gold Chunk(S1) 明文含 'evenly sampled from the shape surface'。"
+    },
+    "ARR-022": {
+      "question_id": "ARR-022",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SnowflakeNet 的主要实验使用两个广泛使用的公开基准：PCN 与 Completion3D",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "为证明有效性，研究者在 PCN 与 Completion3D 上进行了全面的实验",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "相关实验在稀疏(Completion3D)与密集(PCN)点云补全数据集上进行",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT"
+      },
+      "notes": "claims 2/3 存在语义重叠（同一事实的两次陈述），按答案实际句子逐条计入 factual claims。"
+    },
+    "ARR-029": {
+      "question_id": "ARR-029",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SVDFormer 将 ShapeNet-34 结果分为两组报告：34 个 seen 类别与 21 个 unseen 类别",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "每个类别组按三个难度级别报告 CD-S/CD-M/CD-H/CD-Avg/DCD-Avg/F1 等指标",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "ShapeNet-34 含 34 训练类别与 21 测试类别，训练 46765 个形状，seen 测试 3400，unseen 测试 2305",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "MISSING"
+      },
+      "notes": "C3（SVDFormer 在三个指标上均取得最佳性能）未被表述——Context 的 S5 原文含 'SVDFormer achieves the best performance in terms of all three metrics'，属 Generation 层遗漏。"
+    },
+    "ARR-030": {
+      "question_id": "ARR-030",
+      "abstention_judgment": "FALSE_ABSTENTION",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "PointAttN 相关文本明确指出采用 L1 版本的 Chamfer Distance",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "PointAttN 相关文本未明确说明具体缩放系数（例如 ×1000）",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 3,
+          "text": "SeedFormer 论文上下文明确提到报告的是 L1 范数 (×1000)",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "notes": "系统给出了 C1（L1 版本）却仍以 INSUFFICIENT_CONTEXT 收尾 → FALSE_ABSTENTION。C2（PointAttN PCN Average = 6.86）在答案中缺失，尽管 Gold Chunk(S2) 原文含 'ours 6.86'，属 Context 内证据未被利用的 Generation 层遗漏。claim2 无引用 → CITATION_MISSING。"
+    },
+    "ARR-031": {
+      "question_id": "ARR-031",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "AdaPoinTr Appendix D 的 point-proxy 消融研究考察两个方面",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "标准形式将 point proxies 构造为 Fi = F′i + φ(pi)，其中 F′i 为局部结构特征、φ(pi) 为位置嵌入",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 3,
+          "text": "放弃位置嵌入（改为 Fi = F′i）导致性能下降 0.48",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "将特征提取器由 mini-DGCNN 换成 PointNet 导致性能下降 0.23",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "这两项消融表明位置嵌入与 mini-DGCNN 特征提取器都很重要",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "notes": "内容完整且与 Gold Chunk(S1) 逐字一致；但 claims 1/2（含公式与设定）没有标注引用 → CITATION_MISSING。"
+    },
+    "ARR-036": {
+      "question_id": "ARR-036",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "PointAttN 被概括为一种新颖的深度神经网络，充分利用注意力机制用于点云补全",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "其核心动机是扩大处理 3D 点云时的感受野，以更好保留几何结构与上下文信息",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "通过 cross-attention 与 self-attention 感知局部细节与全局上下文，从而消除显式局部区域划分（如 kNNs）",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "广泛的比较与消融研究证明 PointAttN 在 Completion3D 与 PCN 上优于最先进方法",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT",
+        "C4": "CORRECT"
+      },
+      "notes": "四句几乎逐字对应 Gold Chunk(S1) 的 Conclusions 段落，引用完整，无失败类型。"
+    },
+    "ARR-039": {
+      "question_id": "ARR-039",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SnowflakeNet 与 PointAttN 都使用基于 Transformer 的注意力机制，但在局部几何上下文与 kNN 必要性上差异显著",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "PointAttN 同时利用 cross-attention 与 self-attention 来感知局部细节与全局上下文",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "PointAttN 框架建立于 GDP 与 SFA 两个模块之上，引入 cross-attention 与 self-attention",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "PointAttN 消除了 kNN 这类显式局部区域划分，从而以隐式方式捕获局部与全局几何上下文",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "SnowflakeNet 被描述为通过 Transformer 架构特别关注解码过程的 Transformer 方法",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "text": "与 PointAttN 不同，SnowflakeNet 仍使用显式 kNN 来捕获点云中的几何关系",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "text": "受内存约束或显式局部部件需求，SnowflakeNet 这类方法继续依赖显式局部划分",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "text": "PointAttN 因去除 kNN 依赖而区别于保留 kNN 的 SnowflakeNet",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "text": "PointAttN 的无 kNN 方案消除了显式局部划分的受限感受野，从而更好地感知局部细节与全局结构",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "MISSING",
+        "C3": "CORRECT",
+        "C4": "MISSING",
+        "C5": "CORRECT"
+      },
+      "notes": "系统性遗漏 SnowflakeNet 侧机制：C1/C2（SPD 内 skip-transformer 及其作用）与 C4（GDP 在原特征与下采样特征间做 cross-attention）完全未提。C1/C2 的 Gold 证据 chunk 11aa04fab9/4eeb3b90eb 未进入 Context，但 S3/S4 含 'skip-transformer' 相关线索有限——主因仍为 Generation 层未展开 SnowflakeNet 内部机制。claim1 无引用 → CITATION_MISSING。"
+    },
+    "ARR-007": {
+      "question_id": "ARR-007",
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "answer_claims": [],
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "MISSING",
+        "C3": "MISSING"
+      },
+      "no_factual_claim_reason": "LLM 未遵守 rag-generator-v2 控制格式，Parser 抛 ValueError，Runtime 未产出任何 answer_text。",
+      "notes": "GENERATION_CONTRACT_ERROR。该题历史上即检索失败（R@10=0），Gold 证据未进入 Context；即便证据缺失，本应走 INSUFFICIENT_CONTEXT，实际却因格式违约无任何输出。"
+    },
+    "ARR-037": {
+      "question_id": "ARR-037",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "PoinTr 使用动态查询，其由编码器输出特征生成",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "AdaPoinTr 引入 adaptive denoising queries，从 dynamic query bank 中选取",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "AdaPoinTr 提出自适应查询生成机制以应对多样情形（如缺失 90% 与 50% 的车扫描）",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "PoinTr 在 R3 空间做拼接（可能导致外观不连续），AdaPoinTr 改在嵌入空间 RQ 拼接对应查询",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "这使 AdaPoinTr 能在补全过程中以统一方式联合考虑已知与未知部分",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "text": "AdaPoinTr 拼接两组 point proxies 而非两组部分点云",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING",
+        "C3": "MISSING",
+        "C4": "MISSING"
+      },
+      "notes": "C2（PoinTr 动态查询代表缺失点的初始草图）与 C3（AdaPoinTr 相对既有 learnable static query 的差异）在答案中缺失；C4（动态查询使解码器对不同物体类型/缺失信息更灵活可调）未表述，虽 Context 的 S4 含 'the model can be more flexible when dealing with diverse categories and situations'。"
+    },
+    "ARR-040": {
+      "question_id": "ARR-040",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "SVDFormer 设计自视图融合网络，利用多视图深度图像信息观察不完整形状并生成紧凑的全局形状",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "text": "SVDFormer 引入自结构双生成器(SDG)作为细化模块，协同利用几何相似性与形状先验进行形状细化",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "SDG 中包含 Similarity Alignment 与 Structure Analysis 路径，以感知各部分的不完整性程度",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "text": "SVDFormer 通过 SVFNet 融合跨模态特征并利用多视角定位缺失区域",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "text": "Hyper-PCN 是基于超图的点云补全方法，通过高阶相关性建模实现",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "text": "SVDFormer 侧重自视图增强/SDG/几何相似性与形状先验，Hyper-PCN 侧重基于超图的高阶相关性建模",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S5]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "text": "上下文仅提供 Hyper-PCN 的方法名称及核心概念，未提供如 SVDFormer 般详细的内部组件描述",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": []
+        }
+      ],
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "MISSING",
+        "C4": "CORRECT",
+        "C5": "MISSING"
+      },
+      "notes": "Hyper-PCN 侧只命中了题名（S1 为该论文 Supplementary 的标题页），C3（Similarity Alignment 为每个点寻找相似结构特征）与 C5（HyperRS/A-HGNN 具体角色）未答。两侧的 Gold 证据 chunk（d9b0f28a30 / 0b3ae8015e）均未进入 Context —— 属 Retrieval+Generation 复合缺失，答案自身也如实说明了这一限制。claim7 无引用 → CITATION_MISSING。"
+    },
+    "GEN-U01": {
+      "question_id": "GEN-U01",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "上下文描述的是使用 Transformer 架构的点云补全方法(PoinTr/SnowflakeNet/SVDFormer)，并提到 Transformer 最初用于 NLP；但未报告原论文在 WMT 2014 En-De 上的 BLEU 分数",
+          "is_factual": false,
+          "grounding": "NOT_APPLICABLE",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {},
+      "notes": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答。该句为拒答理由（关于知识库内容的元陈述），按协议不计入 factual claim 分母。"
+    },
+    "GEN-U02": {
+      "question_id": "GEN-U02",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "无法确定 SnowflakeNet 训练使用了多少块 A100 GPU",
+          "is_factual": false,
+          "grounding": "NOT_APPLICABLE",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "来源 [S1] 中的「4 NVIDIA 2080Ti GPUs」是 PointAttN 的训练设置，而非 SnowflakeNet",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "text": "来源 [S2][S3][S4] 介绍了 SnowflakeNet 的实验与评估，但未包含训练所用 GPU 型号或数量",
+          "is_factual": false,
+          "grounding": "NOT_APPLICABLE",
+          "citations": [
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {},
+      "notes": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答，且正确区分了 PointAttN 的 2080Ti 配置（避免张冠李戴）。claim2 是唯一的正向领域断言。"
+    },
+    "GEN-U03": {
+      "question_id": "GEN-U03",
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "answer_claims": [],
+      "required_claim_status": {},
+      "no_factual_claim_reason": "LLM 未遵守 rag-generator-v2 控制格式，Runtime 未产出 answer_text。",
+      "notes": "GENERATION_CONTRACT_ERROR。Gold 为 INSUFFICIENT_CONTEXT，若格式合规本应正确拒答；现因契约违约无法计入 abstention 混淆矩阵。"
+    },
+    "GEN-U04": {
+      "question_id": "GEN-U04",
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "answer_claims": [],
+      "required_claim_status": {},
+      "no_factual_claim_reason": "LLM 未遵守 rag-generator-v2 控制格式，Runtime 未产出 answer_text。",
+      "notes": "GENERATION_CONTRACT_ERROR。同上，属技术失败而非拒答决策。"
+    },
+    "GEN-U05": {
+      "question_id": "GEN-U05",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "answer_claims": [
+        {
+          "index": 1,
+          "text": "无法回答 PCN 论文报告的点云法向量估计准确率",
+          "is_factual": false,
+          "grounding": "NOT_APPLICABLE",
+          "citations": []
+        },
+        {
+          "index": 2,
+          "text": "上下文主要涉及点云补全结果指标，如 PCN 上的 Chamfer distance(L1/L2)、Fidelity、MMD、F-Score，未包含法向量估计准确率",
+          "is_factual": true,
+          "judgment": "CORRECT",
+          "grounding": "SUPPORTED",
+          "citations": [
+            {
+              "label": "[S1]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S2]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S3]",
+              "judgment": "SUPPORTS"
+            },
+            {
+              "label": "[S4]",
+              "judgment": "SUPPORTS"
+            }
+          ]
+        }
+      ],
+      "required_claim_status": {},
+      "notes": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答并给出合理的知识库内容概括。"
+    }
+  }
+}

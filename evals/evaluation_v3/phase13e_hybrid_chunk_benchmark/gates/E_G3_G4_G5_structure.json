@@ -1,0 +1,64 @@
+{
+ "gate3": {
+  "PH1": {
+   "pass": true
+  },
+  "PH2": {
+   "pass": true
+  },
+  "PH3": {
+   "pass": true
+  }
+ },
+ "gate4": {
+  "PH1": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  },
+  "PH2": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  },
+  "PH3": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  }
+ },
+ "gate5": {
+  "PH1": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  },
+  "PH2": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  },
+  "PH3": {
+   "violations": [],
+   "violation_count": 0,
+   "pass": true
+  }
+ },
+ "arm_stats": {
+  "PH1": {
+   "chunk_count": 1219,
+   "token_mean": 147.9,
+   "token_max": 512
+  },
+  "PH2": {
+   "chunk_count": 1230,
+   "token_mean": 151.7,
+   "token_max": 512
+  },
+  "PH3": {
+   "chunk_count": 816,
+   "token_mean": 232.7,
+   "token_max": 512
+  }
+ }
+}

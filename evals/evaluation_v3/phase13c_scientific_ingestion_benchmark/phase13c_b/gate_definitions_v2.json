@@ -1,0 +1,155 @@
+{
+  "artifact_type": "phase13c_b_gate_definitions",
+  "gate_definition_version": "phase13c-b-gate-definitions-v2.2.0",
+  "measurement_notes": {
+    "version": "v2.2.0",
+    "principle": "以下为测量语义修订（修正计数空间/方向错误），不是为让某 arm 通过而放宽阈值；全部硬门阈值与 v2.1 完全一致。",
+    "items": [
+      "body_metrics：token 覆盖 >= 0.90 的未对齐正文元素计入 preserved_but_unaligned_count，不计入 unintended_body_loss_count。",
+      "body_matched_to_furniture_rate = 「GT 正文被误标为装饰」的比例（13C-A 语义）；装饰文本滞留正文的方向保留为诊断项 furniture_text_retained_in_body_rate，不参与门判定。",
+      "reference merge/fragment/pollution 用覆盖 >= 0.90 判定，替代在近似重复合成条目上必然误报的相似度判据。",
+      "整页无文本层的文档在 5A 的 UNTRACEABLE 检查与 REF 门中豁免（解析器能力边界），逐文档记录于 evidence.excluded_no_text_layer_documents。"
+    ]
+  },
+  "supersedes": {
+    "phase": "Phase 13C-A",
+    "gate": "furniture_isolated_or_filtered",
+    "problem": "该门把「装饰可分性」与「正文完整性」压进同一个 false_removal 数字，导致全语料 body_matched_to_furniture=0（无人把正文当装饰）时门仍然 fail。",
+    "replaced_by": [
+      "5A_furniture_separability",
+      "5B_body_preservation"
+    ]
+  },
+  "cleaning_gates": [
+    {
+      "gate_id": "5A",
+      "name": "furniture_separability",
+      "target": "页面装饰能被识别、隔离、过滤，且不把正文误判成装饰。",
+      "metrics": [
+        "furniture_precision",
+        "furniture_recall",
+        "body_matched_to_furniture_rate",
+        "traceable_filtered_furniture_rate"
+      ],
+      "pass_condition": "body_matched_to_furniture_rate == 0 AND (explicit_furniture_detection exists OR traceable_filter_record exists)",
+      "explicit_rules": [
+        "`furniture_traceability == 'NO_FURNITURE_OBSERVED'` 视为通过（该文档确实没有装饰）。",
+        "`furniture_traceability == 'UNTRACEABLE'` 视为失败（GT 有装饰，输出既没声明也没记录）。",
+        "不再要求 `parsed_furniture_count > 0` 作为唯一合法路径。"
+      ],
+      "furniture_types": [
+        "page_number",
+        "header",
+        "footer",
+        "watermark",
+        "arxiv_sidebar",
+        "copyright",
+        "publisher_chrome",
+        "running_header"
+      ],
+      "notes": [
+        "arxiv_sidebar / copyright / publisher_chrome / running_header 在本 schema 中分别落在 sidebar / watermark / watermark / header 四类上，指标按 schema 类型统计。"
+      ]
+    },
+    {
+      "gate_id": "5B",
+      "name": "body_preservation",
+      "target": "清洗后正文是否完整。",
+      "metrics": [
+        "canonical_anchor_recall",
+        "body_token_coverage",
+        "paragraph_text_recall",
+        "low_coverage_body_elements",
+        "unintended_body_loss_count"
+      ],
+      "hard_condition": "canonical_anchor_new_loss == 0",
+      "soft_condition": "body_token_coverage / paragraph_text_recall / low_coverage_body_elements 只作诊断，不单独决定门是否通过。",
+      "explicit_rules": [
+        "扫描页无文本层（该页解析器整页零产出）单独计入 no_text_layer_gt_body_count，不计入 unintended_body_loss_count。",
+        "unintended_body_loss_count 只统计「解析器在该页有产出、但 GT 正文未被覆盖」的元素。"
+      ]
+    },
+    {
+      "gate_id": "REF",
+      "name": "reference_preservation",
+      "target": "References 独立成 reference_entry[]，不污染正文、不被当噪声删除。",
+      "metrics": [
+        "reference_section_detected",
+        "reference_entry_count",
+        "reference_entry_recall",
+        "reference_pollution_into_body_rate",
+        "reference_merge_rate",
+        "reference_fragment_rate"
+      ],
+      "pass_condition": "reference_section_detected == True AND reference_entry_recall >= 0.9 AND reference_pollution_into_body_rate <= 0.05 AND reference_merge_rate <= 0.05",
+      "explicit_rules": [
+        "参考文献元素必须保留在 elements 中（retrieval_role=reference），只从正文通道移出，不允许删除。",
+        "reference_entry_recall 的分子分母都限定 reference_entry 两侧，构造上恒 <= 1。"
+      ]
+    }
+  ],
+  "hard_gates": [
+    {
+      "gate_id": "B1",
+      "name": "no_new_canonical_evidence_loss",
+      "condition": "new_anchor_loss_count == 0"
+    },
+    {
+      "gate_id": "B2",
+      "name": "body_preservation",
+      "condition": "canonical_anchor_hits == 44 AND unintended_body_loss_count == 0"
+    },
+    {
+      "gate_id": "B3",
+      "name": "no_systematic_column_interleave",
+      "condition": "column_interleave_rate <= 0.05"
+    },
+    {
+      "gate_id": "B4",
+      "name": "furniture_separability",
+      "condition": "同 5A：body_matched_to_furniture_rate == 0 AND (显式检测 OR 可追溯记录)"
+    },
+    {
+      "gate_id": "B5",
+      "name": "structured_elements_available",
+      "condition": "Table / Caption / Equation 至少各存在一个真实结构化元素，不得全部退化成 plain text"
+    },
+    {
+      "gate_id": "B6",
+      "name": "reference_isolation",
+      "condition": "reference_pollution_into_body_rate <= 0.05 AND reference_entry_recall >= 0.9"
+    },
+    {
+      "gate_id": "B7",
+      "name": "provenance_complete",
+      "condition": "min page_provenance_coverage == 1.0，且核心结构元素带 bbox 与 source reference"
+    },
+    {
+      "gate_id": "B8",
+      "name": "deterministic_reproducible",
+      "condition": "同输入同版本同配置下 normalized ScientificDocument digest 一致"
+    },
+    {
+      "gate_id": "B9",
+      "name": "no_hidden_external_llm",
+      "condition": "无远程 API / LLM 调用"
+    },
+    {
+      "gate_id": "B10",
+      "name": "sandbox_integrity",
+      "condition": "源 PDF / src/evidenceflow / 13B 冻结产物 / baseline Chroma / 项目 env 全部未变"
+    }
+  ],
+  "thresholds": {
+    "reference_recall_min": 0.9,
+    "reference_pollution_max": 0.05,
+    "reference_merge_rate_max": 0.05,
+    "body_token_coverage_target": 0.95,
+    "column_interleave_max": 0.05,
+    "anchor_total": 44
+  },
+  "decision_order": [
+    "Hard Gates -> Body Completeness -> Structure Quality -> Conflict / Duplication -> Cost / Complexity",
+    "不做加权总分（方案 §15）。"
+  ]
+}

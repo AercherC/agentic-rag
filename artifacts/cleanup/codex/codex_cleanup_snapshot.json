@@ -1,0 +1,518 @@
+{
+  "generated_at": "2026-09-15T14:23:47.306045+00:00",
+  "codex_home": "D:\\codex\\app-data",
+  "sessions_file_count": 149,
+  "archived_sessions_file_count": 0,
+  "history": null,
+  "state_sqlite": [
+    {
+      "path": "goals_1.sqlite",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T14:15:20.719969+00:00"
+    },
+    {
+      "path": "logs_2.sqlite",
+      "size_bytes": 71970816,
+      "mtime": "2026-09-15T13:45:08.669596+00:00"
+    },
+    {
+      "path": "logs_2.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T13:05:35.686166+00:00"
+    },
+    {
+      "path": "logs_2.sqlite-wal",
+      "size_bytes": 24752,
+      "mtime": "2026-09-15T14:18:05.804812+00:00"
+    },
+    {
+      "path": "memories_1.sqlite",
+      "size_bytes": 40960,
+      "mtime": "2026-09-15T12:55:20.503814+00:00"
+    },
+    {
+      "path": "memories_1.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T13:45:08.663595+00:00"
+    },
+    {
+      "path": "memories_1.sqlite-wal",
+      "size_bytes": 4152,
+      "mtime": "2026-09-15T13:45:08.664596+00:00"
+    },
+    {
+      "path": "queue_1.sqlite",
+      "size_bytes": 28672,
+      "mtime": "2026-08-21T04:20:47.736051+00:00"
+    },
+    {
+      "path": "queue_1.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T11:25:04.944141+00:00"
+    },
+    {
+      "path": "queue_1.sqlite-wal",
+      "size_bytes": 2097112,
+      "mtime": "2026-09-15T13:45:10.639313+00:00"
+    },
+    {
+      "path": "sqlite/goals_1.sqlite",
+      "size_bytes": 24576,
+      "mtime": "2026-06-19T04:43:29.464378+00:00"
+    },
+    {
+      "path": "sqlite/logs_2.sqlite",
+      "size_bytes": 39309312,
+      "mtime": "2026-06-19T05:30:04.776738+00:00"
+    },
+    {
+      "path": "sqlite/logs_2.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-06-19T05:31:32.777727+00:00"
+    },
+    {
+      "path": "sqlite/logs_2.sqlite-wal",
+      "size_bytes": 650992,
+      "mtime": "2026-06-19T05:33:20.767798+00:00"
+    },
+    {
+      "path": "sqlite/memories_1.sqlite",
+      "size_bytes": 40960,
+      "mtime": "2026-06-15T13:31:37.176806+00:00"
+    },
+    {
+      "path": "sqlite/state_5.sqlite",
+      "size_bytes": 569344,
+      "mtime": "2026-06-19T04:43:29.464378+00:00"
+    },
+    {
+      "path": "sqlite/state_5.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-06-19T06:39:25.884808+00:00"
+    },
+    {
+      "path": "sqlite/state_5.sqlite-wal",
+      "size_bytes": 8272,
+      "mtime": "2026-06-19T05:33:14.171022+00:00"
+    },
+    {
+      "path": "state_5.sqlite",
+      "size_bytes": 1077248,
+      "mtime": "2026-09-15T14:19:43.466742+00:00"
+    },
+    {
+      "path": "state_5.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T13:05:36.119151+00:00"
+    },
+    {
+      "path": "state_5.sqlite-wal",
+      "size_bytes": 4206552,
+      "mtime": "2026-09-15T14:23:42.716259+00:00"
+    },
+    {
+      "path": "thread_history_1.sqlite",
+      "size_bytes": 117616640,
+      "mtime": "2026-09-15T14:12:54.355669+00:00"
+    },
+    {
+      "path": "thread_history_1.sqlite-shm",
+      "size_bytes": 32768,
+      "mtime": "2026-09-15T14:12:54.365516+00:00"
+    },
+    {
+      "path": "thread_history_1.sqlite-wal",
+      "size_bytes": 2513232,
+      "mtime": "2026-09-15T14:23:42.977777+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_add_and_round_trip_pdf_an0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.610261+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_add_input_validation_and_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.338057+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_clear_recreates_usable_co0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.126701+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_contains_document_disting0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.914358+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_cosine_order_similarity_a0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.664575+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_delete_document_preserves0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.054026+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_duplicate_chunk_id_is_rej0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.965566+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_empty_collection_and_inva0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.738796+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_existing_collection_dimen0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.401682+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_existing_non_cosine_colle0/wrong-space/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.445403+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_iter_all_chunks_handles_p0/chroma/chroma.sqlite3",
+      "size_bytes": 241664,
+      "mtime": "2026-09-05T09:06:03.260796+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_iter_all_chunks_returns_i0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.198826+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_persistence_across_adapte0/persistent-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.785929+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_service_integrates_with_t0/isolated-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:02.045834+00:00"
+    },
+    {
+      "path": "tmp/ef-phase35/test_vector_store_protocol_is_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T09:06:03.493963+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_add_and_round_trip_pdf_an0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:44.918140+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_add_input_validation_and_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.785441+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_clear_recreates_usable_co0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.611127+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_contains_document_disting0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.321360+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_cosine_order_similarity_a0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.022272+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_delete_document_preserves0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.527815+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_duplicate_chunk_id_is_rej0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.414541+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_empty_collection_and_inva0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.112554+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_existing_collection_dimen0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.831209+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_existing_non_cosine_colle0/wrong-space/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.878234+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_iter_all_chunks_handles_p0/chroma/chroma.sqlite3",
+      "size_bytes": 241664,
+      "mtime": "2026-09-05T03:57:45.721112+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_iter_all_chunks_returns_i0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.663108+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_persistence_across_adapte0/persistent-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.198600+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_service_integrates_with_t0/isolated-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:44.248433+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase1/test_vector_store_protocol_is_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:57:45.922586+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_add_and_round_trip_pdf_an0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.327730+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_add_input_validation_and_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.864339+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_clear_recreates_usable_co0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.714503+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_contains_document_disting0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.528336+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_cosine_order_similarity_a0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.375997+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_delete_document_preserves0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.642496+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_duplicate_chunk_id_is_rej0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.577178+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_empty_collection_and_inva0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.417813+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_existing_collection_dimen0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.910465+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_existing_non_cosine_colle0/wrong-space/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.949987+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_iter_all_chunks_handles_p0/chroma/chroma.sqlite3",
+      "size_bytes": 241664,
+      "mtime": "2026-09-05T04:08:28.824057+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_iter_all_chunks_returns_i0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.764979+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_persistence_across_adapte0/persistent-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.467915+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_service_integrates_with_t0/isolated-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:27.996646+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase2/test_vector_store_protocol_is_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:08:28.993428+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_add_and_round_trip_pdf_an0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.788477+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_add_input_validation_and_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.314189+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_clear_recreates_usable_co0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.167279+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_contains_document_disting0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.987694+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_cosine_order_similarity_a0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.840330+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_delete_document_preserves0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.100538+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_duplicate_chunk_id_is_rej0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.038143+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_empty_collection_and_inva0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.883881+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_existing_collection_dimen0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.359905+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_existing_non_cosine_colle0/wrong-space/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.399317+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_iter_all_chunks_handles_p0/chroma/chroma.sqlite3",
+      "size_bytes": 241664,
+      "mtime": "2026-09-05T04:16:41.275188+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_iter_all_chunks_returns_i0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.218596+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_persistence_across_adapte0/persistent-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.927416+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_service_integrates_with_t0/isolated-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:40.465562+00:00"
+    },
+    {
+      "path": "tmp/ef-v2-phase3/test_vector_store_protocol_is_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T04:16:41.443340+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_add_and_round_trip_pdf_an0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.518015+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_add_input_validation_and_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:51.082579+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_clear_recreates_usable_co0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.933829+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_contains_document_disting0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.734235+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_cosine_order_similarity_a0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.574263+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_delete_document_preserves0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.863272+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_duplicate_chunk_id_is_rej0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.794410+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_empty_collection_and_inva0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.620359+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_existing_collection_dimen0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:51.129944+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_existing_non_cosine_colle0/wrong-space/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:51.169797+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_iter_all_chunks_handles_p0/chroma/chroma.sqlite3",
+      "size_bytes": 241664,
+      "mtime": "2026-09-05T03:24:51.040484+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_iter_all_chunks_returns_i0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.982874+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_persistence_across_adapte0/persistent-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.667800+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_service_integrates_with_t0/isolated-chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:50.160567+00:00"
+    },
+    {
+      "path": "tmp/evidenceflow-readonly-audit-20260905c/test_vector_store_protocol_is_0/chroma/chroma.sqlite3",
+      "size_bytes": 188416,
+      "mtime": "2026-09-05T03:24:51.217140+00:00"
+    }
+  ],
+  "auth": {
+    "path": "auth.json",
+    "size_bytes": 4236,
+    "mtime": "2026-09-12T10:29:37.761219+00:00",
+    "sha256": "b0d562dcde1b27348f638d57f4e115332fedd1d582a543e0ca095c743ef71a0d"
+  },
+  "config": {
+    "path": "config.toml",
+    "size_bytes": 7150,
+    "mtime": "2026-09-15T12:36:36.522429+00:00",
+    "sha256": "a3da346786d1ce15aba133556acebf53a78e06ce40555010c9d2d123b0a9fefb"
+  },
+  "protected_paths_hash": "f4a566b4598f7f000d6ae18756d65774fb72cd991392d3dad4377add4e9f7cde",
+  "safe_candidate_count": 917
+}

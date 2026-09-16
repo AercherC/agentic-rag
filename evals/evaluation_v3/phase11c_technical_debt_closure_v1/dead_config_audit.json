@@ -1,0 +1,178 @@
+{
+  "artifact_type": "phase11c_dead_config_audit",
+  "created_at": "2026-09-09T05:10:06.633291+00:00",
+  "field": "Settings.top_k",
+  "questionnaire": {
+    "runtime_reads": false,
+    "cli_reads": false,
+    "env_example_published": true,
+    "readme_published": true,
+    "rollback_path_reads": false,
+    "fallback_path_reads": false,
+    "experiments_reads": true,
+    "historical_artifact_reader_reads": false,
+    "settings_snapshot_requires": true
+  },
+  "consumers_by_kind": {
+    "PRODUCTION(src)": [],
+    "EXPERIMENT(experiments)": [
+      {
+        "file": "experiments/debug/inspect_retrieval.py",
+        "line": 54,
+        "kind": "EXPERIMENT",
+        "code": "BgeM3EmbeddingProvider(settings.embedding_model), store, top_k=settings.top_k"
+      },
+      {
+        "file": "experiments/debug/inspect_retrieval.py",
+        "line": 75,
+        "kind": "EXPERIMENT",
+        "code": "top_k = settings.top_k if args.top_k is None else args.top_k"
+      }
+    ],
+    "TEST(tests)": [
+      {
+        "file": "tests/test_config.py",
+        "line": 57,
+        "kind": "TEST",
+        "code": "assert settings.top_k == 5"
+      },
+      {
+        "file": "tests/test_config.py",
+        "line": 96,
+        "kind": "TEST",
+        "code": "assert settings.top_k == 3"
+      }
+    ],
+    "DOCUMENTATION": [
+      {
+        "file": "README.md",
+        "line": 106,
+        "kind": "DOC",
+        "code": "| `dead_config_audit.json` | `Settings.top_k` 消费者审计与分类更正 |"
+      },
+      {
+        "file": "README.md",
+        "line": 118,
+        "kind": "DOC",
+        "code": "技术债状态：`tests_debug_dependency` = CLOSED，`settings_top_k` = KEEP（存在 experiments 真实消费者），"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 784,
+        "kind": "DOC",
+        "code": "TOP_K = 5"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 787,
+        "kind": "DOC",
+        "code": "`TOP_K` 可以通过 Settings 修改。"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 842,
+        "kind": "DOC",
+        "code": "`retrieve(query, top_k=...)` 中的单次 `top_k` 只覆盖最终返回深度，不改变每路"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 863,
+        "kind": "DOC",
+        "code": "- `branch_top_k`：Original、Translation 及可选 BM25 单分支各自请求深度；现有"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 864,
+        "kind": "DOC",
+        "code": "`multilingual_candidate_top_k` 配置字段承载该语义，默认 10。"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 870,
+        "kind": "DOC",
+        "code": "- `final_retrieval_k`：调用方最终要求的检索深度；现有 `multilingual_final_top_k` 承载"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 872,
+        "kind": "DOC",
+        "code": "- `context_top_k`：当前 Context 接收完整 Final Retrieval 输出，因此等于"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 875,
+        "kind": "DOC",
+        "code": "固定约束为 `final_retrieval_k <= candidate_pool_k <= 2 * branch_top_k`。违反约束时"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 876,
+        "kind": "DOC",
+        "code": "配置加载或单次 `retrieve(top_k=...)` 明确抛出 `ValueError`，不静默 clamp。Translation"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 1840,
+        "kind": "DOC",
+        "code": "TOP_K = 5"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 1843,
+        "kind": "DOC",
+        "code": "MULTILINGUAL_CANDIDATE_TOP_K = 10"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 1844,
+        "kind": "DOC",
+        "code": "MULTILINGUAL_FINAL_TOP_K = 5"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 2278,
+        "kind": "DOC",
+        "code": "TOP_K"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 2468,
+        "kind": "DOC",
+        "code": "- Settings：31 个字段分类完成；`top_k` 在 Phase 11B 标记为 UNUSED，**Phase 11C 更正为 EXPERIMENT_ONLY**"
+      },
+      {
+        "file": "PROJECT_SPEC.md",
+        "line": 2487,
+        "kind": "DOC",
+        "code": "- **`Settings.top_k`：KEEP。** 存在 experiments 层真实消费者（`experiments/debug/inspect_retrieval.py`"
+      },
+      {
+        "file": ".env.example",
+        "line": 13,
+        "kind": "CONFIG_TEMPLATE",
+        "code": "TOP_K=5"
+      },
+      {
+        "file": ".env.example",
+        "line": 15,
+        "kind": "CONFIG_TEMPLATE",
+        "code": "MULTILINGUAL_CANDIDATE_TOP_K=10"
+      },
+      {
+        "file": ".env.example",
+        "line": 16,
+        "kind": "CONFIG_TEMPLATE",
+        "code": "MULTILINGUAL_FINAL_TOP_K=5"
+      }
+    ]
+  },
+  "decision": "KEEP",
+  "decision_reason": "experiments/debug/inspect_retrieval.py 把 settings.top_k 作为 Inspector 的默认检索深度（`DenseRetriever(..., top_k=settings.top_k)` 与 `--top-k` 缺省值）。这是 experiments 层的真实消费者，按本阶段规则必须停止删除并标记 KEEP。",
+  "classification_correction": {
+    "phase11b_classification": "UNUSED",
+    "phase11c_classification": "EXPERIMENT_ONLY",
+    "reason": "11B 只检查了 Runtime 与 tests，未扫描 experiments/debug；该字段实际被 Debug Inspector 消费，因此 UNUSED 分类不准确，更正为 EXPERIMENT_ONLY。"
+  },
+  "action_taken": "NONE（保留字段、保留 tests/test_config.py 断言、不修改 .env.example / README）",
+  "gate": "PASS"
+}

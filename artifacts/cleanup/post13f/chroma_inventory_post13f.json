@@ -1,0 +1,149 @@
+{
+ "generated_at": "2026-09-16T10:32:29.263807+00:00",
+ "database": "data/chroma/chroma.sqlite3",
+ "configured_collection_from_env": "ef_research_bge_m3_hybrid_c512_v2",
+ "production_collection_from_phase13f": "ef_research_bge_m3_hybrid_c512_v1",
+ "database_size_bytes": 68153344,
+ "collections": [
+  {
+   "collection": "ef_research_bge_m3_c512_o64_refmeta_v1",
+   "active": false,
+   "rollback": false,
+   "phase": "historical/experimental",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 361,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "EXPERIMENTAL",
+   "role": "historical experiment",
+   "frozen_metrics_ranking_manifest_complete": false,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "f32f608b-ad2c-447a-8e7c-3cb87d2e28c7"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_bge_m3_c512_o64_v1",
+   "active": false,
+   "rollback": true,
+   "phase": "fixed rollback",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 361,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "ROLLBACK",
+   "role": "fixed rollback",
+   "frozen_metrics_ranking_manifest_complete": true,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "beb2c4ac-514f-414b-94fe-712cc18ac379"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_bge_m3_hybrid_c512_v1",
+   "active": true,
+   "rollback": false,
+   "phase": "Phase 13F",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 817,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "ACTIVE",
+   "role": "production",
+   "frozen_metrics_ranking_manifest_complete": true,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "ccb26c71-216d-42d9-9391-ae8479caffe2"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_bge_m3_hybrid_c512_v2",
+   "active": false,
+   "rollback": false,
+   "phase": "historical/experimental",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 817,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "UNKNOWN",
+   "role": "unclassified",
+   "frozen_metrics_ranking_manifest_complete": false,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "7429ba3c-7e2f-4835-973e-e37fe3034832"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_bge_m3_hybrid_c512_v2_staging",
+   "active": false,
+   "rollback": false,
+   "phase": "historical/experimental",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 817,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "UNKNOWN",
+   "role": "unclassified",
+   "frozen_metrics_ranking_manifest_complete": false,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "928e9c57-83df-4191-b11e-36151d59da7e"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_structure_v1",
+   "active": false,
+   "rollback": false,
+   "phase": "historical/experimental",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 385,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "EXPERIMENTAL",
+   "role": "historical experiment",
+   "frozen_metrics_ranking_manifest_complete": false,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "5d5d025e-d9b1-4199-a0ae-bee85794fd95"
+   ],
+   "schema_space": "cosine"
+  },
+  {
+   "collection": "ef_research_structure_v1_elemaware",
+   "active": false,
+   "rollback": false,
+   "phase": "historical/experimental",
+   "rebuildable": true,
+   "document_count": 10,
+   "chunk_count": 935,
+   "size_bytes": 424100,
+   "dimension": 1024,
+   "classification": "EXPERIMENTAL",
+   "role": "historical experiment",
+   "frozen_metrics_ranking_manifest_complete": false,
+   "delete_candidate": false,
+   "config_json": {},
+   "vector_segment_ids": [
+    "edd92cf6-6f2c-4a51-9594-906705b0b628"
+   ],
+   "schema_space": "cosine"
+  }
+ ]
+}

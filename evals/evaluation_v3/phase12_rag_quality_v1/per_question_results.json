@@ -1,0 +1,1507 @@
+{
+  "phase": "phase12_rag_quality_v1",
+  "generated_at_utc": "2026-09-10T06:00:17.254595+00:00",
+  "annotator": "human (careful manual reading of each answer against its frozen BuiltContext)",
+  "per_question": [
+    {
+      "question_id": "ARR-002",
+      "query": "PoinTr 认为真实点云不完整的三个常见原因是什么？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 2,
+      "answer_factual_claims_correct": 2,
+      "grounding": {
+        "supported": 2,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 2,
+      "citations_supporting": 2,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.5,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S2]",
+          "[S4]"
+        ],
+        "cited_chunk_ids": [
+          "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75",
+          "321bd270c847bdfe67af8b846c055d2faa7cdc7d40686b0a02b3bc2d7b2a1dd8"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2660
+      },
+      "failure_types": [
+        "CITATION_MISSING"
+      ],
+      "annotator_note": "C1-C3 三条原因在同一句中被完整给出且与 Gold Chunk(S2) 摘要原文一致。claim2 为论文动机陈述（S2 摘要可支持），无 [Sx] 标注 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "ARR-004",
+      "query": "SVDFormer 试图缓解真实扫描中的哪类稀疏性问题？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 4,
+      "answer_factual_claims_correct": 4,
+      "grounding": {
+        "supported": 4,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 6,
+      "citations_supporting": 6,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S4]",
+          "[S3]",
+          "[S1]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "800a5ac097215ef2470617407caf493b021cb7ce78dde0d2150ce535f01b4023",
+          "88f5834dc27bf7b7fb99d5410617e11d017809819084825b903f7e60fe7f0db6",
+          "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2",
+          "2f992241e43d9c1f83512214f15b2a00970b549cfd4ea3707efb7c368489b6ee"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2640
+      },
+      "failure_types": [],
+      "annotator_note": "C1/C2 由 claim4(S2) 覆盖，C3 由 claim1/claim3(S4/S1) 覆盖。全部引用均指向确实包含对应内容的 chunk。"
+    },
+    {
+      "question_id": "ARR-009",
+      "query": "How does PoinTr represent a point cloud for transformer processing?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 5,
+      "answer_factual_claims_correct": 5,
+      "grounding": {
+        "supported": 5,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 6,
+      "citations_supporting": 6,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S4]",
+          "[S5]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "55f90c54fa70c4dd62db33133da79a71a7c0a841978fa845c5116aa88c833a75",
+          "605bd91dd761285c62a23194145f4ac080666cafdfe5fb965ea3762651e8dce7",
+          "457acca2896ea780d537b8c2614efd746478b44dc3482f7ccc28d6736bbfad3c",
+          "f89e848088b3e1f1b44f757844dcf8bfa4f565f539261db8802297c25a505622"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2662
+      },
+      "failure_types": [],
+      "annotator_note": "C1/C2 由 claim2/claim1(S1=Gold) 覆盖；C3 由 claim5(S4/S5) 覆盖——Gold 证据 chunk 425d2d1a15 未进入 Context，但表述等价的 S5(adapointr) 在 Context 中，故判为已答且 grounded。"
+    },
+    {
+      "question_id": "ARR-010",
+      "query": "SnowflakeNet 的架构图包含哪种点反卷积模块？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 1,
+      "required_claims_correct": 1,
+      "optional_claims_total": 1,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "answer_factual_claim_count": 3,
+      "answer_factual_claims_correct": 3,
+      "grounding": {
+        "supported": 3,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 2,
+      "citations_supporting": 2,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.6666666666666666,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S4]"
+        ],
+        "cited_chunk_ids": [
+          "49d718c954f9fbf2c684f5ba1aa040c19f575ee98002bc7bc73757abff2ccf6e",
+          "ef0320a7eae79938a18b0dfdecb31e8e58e9f8129037af79df039e49274b2b9d"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2646
+      },
+      "failure_types": [
+        "CITATION_MISSING"
+      ],
+      "annotator_note": "C1 完整回答；C2（SPD 中引入 skip-transformer 学习点分裂模式）在答案中完全缺失——虽然 Context 的 S1/S4 均含该事实（图 3 图例含 ST Skip-transformer；S4 明文 'introduce skip-transformer in SPD to learn point splitting patterns'）。claim1 无引用 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "ARR-011",
+      "query": "What new shape representation does SeedFormer introduce?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 2,
+      "answer_factual_claims_correct": 2,
+      "grounding": {
+        "supported": 2,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 7,
+      "citations_supporting": 7,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]",
+          "[S3]",
+          "[S4]",
+          "[S5]"
+        ],
+        "cited_chunk_ids": [
+          "b46ad0c4c4c67119a5829125c997c1a52147318c77566860d4053c94f79c0d40",
+          "668c3de0e8c496ea60f7fbd13307c45e3b12b81896a19fcc87a660a96dda4c1a",
+          "fe0eb02b4ad76ee1257f7e8a7688f75d79c6597673be9fb9eb8b30b0588f7b0c",
+          "b8eb85a75c6a5a6ada57bfe7f4038dc0d7026d2cf61879914b87e975f624986b",
+          "1c1269aef443c8b14a3c401bbcda13b4b40ca677ae12543e97a4cbdf31111f55"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [],
+      "annotator_note": "C1 直答；C2/C3 由 claim2 合并表述（'global shape structure'≈general structures，'regional features stored in several local seeds'≈preserves regional information of local patterns），判为已覆盖。"
+    },
+    {
+      "question_id": "ARR-012",
+      "query": "ProxyFormer 如何利用 proxy alignment 改善缺失区域？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 2,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 6,
+      "answer_factual_claims_correct": 6,
+      "grounding": {
+        "supported": 6,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 8,
+      "citations_supporting": 8,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.6666666666666666,
+        "claim_f1": 0.8,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]",
+          "[S5]",
+          "[S3]",
+          "[S4]"
+        ],
+        "cited_chunk_ids": [
+          "9119edb32f2d167f94d37f0a7a85997653ed1ef6bfc8a5e50595e324809c085b",
+          "160bc8b560da00bf9dea0091f6f2f5bafe5fcfffecda1c6ebd9968a827c2ae91",
+          "65f98f09666a7e7c4000e0b6269cb2dc1f7185bb53e8d388cbc715fd268cd9d3",
+          "ea58983371c57ed600950dee7c51c0bea074e42a0f16bac98eaa9bb6166bc61c",
+          "a434b74bd045015dcc24f644d1cb654f21e5347f03ec4e4b365db7b1f64ce244"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2638
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ],
+      "annotator_note": "C2/C3 完整；C1（点云被划分为已有/缺失两部分且两部分通过 proxy 交互）未被显式表述 → ANSWER_MISSING_CLAIM。8 条引用全部正确指向支持该句的 chunk。"
+    },
+    {
+      "question_id": "ARR-013",
+      "query": "What two generators make up SVDFormer's dual-generator design?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 1,
+      "answer_factual_claims_correct": 1,
+      "grounding": {
+        "supported": 1,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 1,
+      "citations_supporting": 1,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "d9b0f28a3094deb4266f52c1f16fdb1a941559bee89e0e48c45466f4a4da79e2"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2644
+      },
+      "failure_types": [],
+      "annotator_note": "单句同时覆盖 C1(模块名 SDG)、C2(一对并行细化单元)、C3(两个单元名)。引用的 S1 原文与该句逐字对应。"
+    },
+    {
+      "question_id": "ARR-014",
+      "query": "Hyper-PCN 总体框架中的 HyperRS 与 A-HGNN 分别承担什么角色？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 4,
+      "required_claims_correct": 4,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT",
+        "C4": "CORRECT"
+      },
+      "answer_factual_claim_count": 7,
+      "answer_factual_claims_correct": 7,
+      "grounding": {
+        "supported": 7,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 7,
+      "citations_supporting": 7,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.8571428571428571,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S5]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "019a358e9110a2df4a240c3e04e64223917efcb624397689f0e042bd6310f6f0",
+          "4954e58a4835aee6ea3b9bbb8a9389ed5014808bd3265876718e07ff432d46bb",
+          "7200d49ee2244deb1fe25941acf68f3d11ec90b535068bebef0dc5589904077e"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2647
+      },
+      "failure_types": [
+        "CITATION_MISSING"
+      ],
+      "annotator_note": "C1-C4 全部覆盖，且每条描述都能在 Context 中找到对应原文。claim1 无引用 → CITATION_MISSING（该句由 S1 支持）。"
+    },
+    {
+      "question_id": "ARR-016",
+      "query": "SnowflakeNet 训练时采用什么主要距离损失？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 1,
+      "optional_claims_total": 1,
+      "optional_claims_correct": 1,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING",
+        "C3": "MISSING",
+        "C4": "CORRECT"
+      },
+      "answer_factual_claim_count": 2,
+      "answer_factual_claims_correct": 2,
+      "grounding": {
+        "supported": 2,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 2,
+      "citations_supporting": 2,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.3333333333333333,
+        "claim_f1": 0.5,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2646
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ],
+      "annotator_note": "C2（completion loss = {Pc,P1,P2,P3} 上四个 CD 损失之和）与 C3（partial matching loss 作为 preservation loss）在答案中缺失——答案只笼统称“保留损失”，未指认其为 partial matching loss。Context 中 S1 原文完整包含 C2/C3，属 Generation 层遗漏。"
+    },
+    {
+      "question_id": "ARR-018",
+      "query": "ProxyFormer 在 ShapeNet-55/34 中输入点云和完整点云各有多少点？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 2,
+      "required_claims_correct": 2,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT"
+      },
+      "answer_factual_claim_count": 1,
+      "answer_factual_claims_correct": 1,
+      "grounding": {
+        "supported": 1,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 1,
+      "citations_supporting": 1,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "b00784ef0d513559fea37a9db3b78770333c66280ad6e14e189456deddd5b1c3"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2650
+      },
+      "failure_types": [],
+      "annotator_note": "与 Gold Chunk(S1) 原文逐字一致。"
+    },
+    {
+      "question_id": "ARR-019",
+      "query": "How many ground-truth points are used in PointAttN's PCN benchmark?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 2,
+      "required_claims_correct": 1,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "answer_factual_claim_count": 1,
+      "answer_factual_claims_correct": 1,
+      "grounding": {
+        "supported": 1,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 1,
+      "citations_supporting": 1,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.5,
+        "claim_f1": 0.6666666666666666,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ],
+      "annotator_note": "C2（ground-truth 点从表面均匀采样）未在答案中出现，尽管 Gold Chunk(S1) 明文含 'evenly sampled from the shape surface'。"
+    },
+    {
+      "question_id": "ARR-022",
+      "query": "SnowflakeNet 的主要实验使用哪两个公开基准？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 2,
+      "required_claims_correct": 2,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT"
+      },
+      "answer_factual_claim_count": 3,
+      "answer_factual_claims_correct": 3,
+      "grounding": {
+        "supported": 3,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 3,
+      "citations_supporting": 3,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f",
+          "73b670b77736283c752ad9cc70b3ecc38ecf072f028e8dcac79af77792846118"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2648
+      },
+      "failure_types": [],
+      "annotator_note": "claims 2/3 存在语义重叠（同一事实的两次陈述），按答案实际句子逐条计入 factual claims。"
+    },
+    {
+      "question_id": "ARR-029",
+      "query": "How does SVDFormer report results on seen and unseen ShapeNet-34 categories?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 2,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "MISSING"
+      },
+      "answer_factual_claim_count": 3,
+      "answer_factual_claims_correct": 3,
+      "grounding": {
+        "supported": 3,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 4,
+      "citations_supporting": 4,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.6666666666666666,
+        "claim_f1": 0.8,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S5]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "7deb840710709e2e4cf7754fcd19ad49eae80912bffecd7d027e1fbff90ddb2e",
+          "128052e86edfeaa5d50c21302872b290e9bffa8230d48f3e3fb275f036306ec3"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2651
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM"
+      ],
+      "annotator_note": "C3（SVDFormer 在三个指标上均取得最佳性能）未被表述——Context 的 S5 原文含 'SVDFormer achieves the best performance in terms of all three metrics'，属 Generation 层遗漏。"
+    },
+    {
+      "question_id": "ARR-030",
+      "query": "PointAttN 的 PCN 结果表采用什么 Chamfer Distance 缩放？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "FALSE_ABSTENTION",
+      "confusion": "FP",
+      "required_claims_total": 1,
+      "required_claims_correct": 1,
+      "optional_claims_total": 1,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING"
+      },
+      "answer_factual_claim_count": 3,
+      "answer_factual_claims_correct": 3,
+      "grounding": {
+        "supported": 3,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 3,
+      "citations_supporting": 3,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.6666666666666666,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]",
+          "[S3]"
+        ],
+        "cited_chunk_ids": [
+          "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1",
+          "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98",
+          "975fab800fedf7158b3fcf3f97ec48ac8758cfa094144cb6e938c9727bcdce8d"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2652
+      },
+      "failure_types": [
+        "CITATION_MISSING",
+        "FALSE_ABSTENTION"
+      ],
+      "annotator_note": "系统给出了 C1（L1 版本）却仍以 INSUFFICIENT_CONTEXT 收尾 → FALSE_ABSTENTION。C2（PointAttN PCN Average = 6.86）在答案中缺失，尽管 Gold Chunk(S2) 原文含 'ours 6.86'，属 Context 内证据未被利用的 Generation 层遗漏。claim2 无引用 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "ARR-031",
+      "query": "What point-proxy formulation is ablated in AdaPoinTr's appendix?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 3,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT"
+      },
+      "answer_factual_claim_count": 5,
+      "answer_factual_claims_correct": 5,
+      "grounding": {
+        "supported": 5,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 3,
+      "citations_supporting": 3,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.6,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "8cc960f0638dbfbaeea2f7e8bd4e755bdfc2e3673933ea05df94f10243733be9"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2645
+      },
+      "failure_types": [
+        "CITATION_MISSING"
+      ],
+      "annotator_note": "内容完整且与 Gold Chunk(S1) 逐字一致；但 claims 1/2（含公式与设定）没有标注引用 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "ARR-036",
+      "query": "PointAttN 在结论中如何概括其核心网络？",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 4,
+      "required_claims_correct": 4,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "CORRECT",
+        "C4": "CORRECT"
+      },
+      "answer_factual_claim_count": 4,
+      "answer_factual_claims_correct": 4,
+      "grounding": {
+        "supported": 4,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 4,
+      "citations_supporting": 4,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 1.0,
+        "claim_f1": 1.0,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [],
+      "annotator_note": "四句几乎逐字对应 Gold Chunk(S1) 的 Conclusions 段落，引用完整，无失败类型。"
+    },
+    {
+      "question_id": "ARR-039",
+      "query": "Compare the attention mechanisms used by SnowflakeNet and PointAttN.",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 5,
+      "required_claims_correct": 2,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "MISSING",
+        "C3": "CORRECT",
+        "C4": "MISSING",
+        "C5": "CORRECT"
+      },
+      "answer_factual_claim_count": 9,
+      "answer_factual_claims_correct": 9,
+      "grounding": {
+        "supported": 9,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 10,
+      "citations_supporting": 10,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.4,
+        "claim_f1": 0.5714285714285715,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.8888888888888888,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S3]",
+          "[S4]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "77534607e4448672ba4ec88c1b93eb49cc39e5d7d07258dbe98103e0e2513ac1",
+          "f0e7e3a2f4fc09cdfd1503313ce60a3c0e5a24be66d112557f8900840d924e1a",
+          "c9943c80def4d71fc8519ff60d1e82e04da20ac36c772a63c7c49741a218acfb",
+          "90165e8d49b73e512ba6b2b9812bab76d0f8534596e78fc10b6f03afc299f3a9"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": true,
+        "gold_evidence_in_context": true,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "CITATION_MISSING"
+      ],
+      "annotator_note": "系统性遗漏 SnowflakeNet 侧机制：C1/C2（SPD 内 skip-transformer 及其作用）与 C4（GDP 在原特征与下采样特征间做 cross-attention）完全未提。C1/C2 的 Gold 证据 chunk 11aa04fab9/4eeb3b90eb 未进入 Context，但 S3/S4 含 'skip-transformer' 相关线索有限——主因仍为 Generation 层未展开 SnowflakeNet 内部机制。claim1 无引用 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "ARR-007",
+      "query": "What two outputs are shown in the PCN architecture?",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null,
+      "required_claims_total": 3,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "MISSING",
+        "C2": "MISSING",
+        "C3": "MISSING"
+      },
+      "answer_factual_claim_count": 0,
+      "answer_factual_claims_correct": 0,
+      "grounding": {
+        "supported": 0,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 0,
+      "citations_supporting": 0,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": null,
+        "claim_recall": 0.0,
+        "claim_f1": null,
+        "groundedness": null,
+        "unsupported_claim_rate": null,
+        "citation_precision": null,
+        "citation_completeness": null,
+        "valid_citation_label_rate": null,
+        "invalid_citation_label_rate": null
+      },
+      "structure": {
+        "cited_labels": [],
+        "cited_chunk_ids": [],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2645
+      },
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR",
+        "RETRIEVAL_FAILURE"
+      ],
+      "annotator_note": "GENERATION_CONTRACT_ERROR。该题历史上即检索失败（R@10=0），Gold 证据未进入 Context；即便证据缺失，本应走 INSUFFICIENT_CONTEXT，实际却因格式违约无任何输出。"
+    },
+    {
+      "question_id": "ARR-037",
+      "query": "Compare how PoinTr and AdaPoinTr construct or adapt transformer queries.",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 4,
+      "required_claims_correct": 1,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "MISSING",
+        "C3": "MISSING",
+        "C4": "MISSING"
+      },
+      "answer_factual_claim_count": 6,
+      "answer_factual_claims_correct": 6,
+      "grounding": {
+        "supported": 6,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 6,
+      "citations_supporting": 6,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.25,
+        "claim_f1": 0.4,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S5]",
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "692001cef7b11527dd73ecf15c4b22b75f1284249649a1c2d455dc6838bc0f3b",
+          "1b8b3b2f675b6a0e018020b1c1a6f8e950fd1e86653be1546ad60771348a9d4b"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "RETRIEVAL_FAILURE"
+      ],
+      "annotator_note": "C2（PoinTr 动态查询代表缺失点的初始草图）与 C3（AdaPoinTr 相对既有 learnable static query 的差异）在答案中缺失；C4（动态查询使解码器对不同物体类型/缺失信息更灵活可调）未表述，虽 Context 的 S4 含 'the model can be more flexible when dealing with diverse categories and situations'。"
+    },
+    {
+      "question_id": "ARR-040",
+      "query": "比较 SVDFormer 与 Hyper-PCN 如何建模点云结构关系。",
+      "answerability_gold": "ANSWERABLE",
+      "generated_status": "answered",
+      "abstention_judgment": "CORRECT_ANSWER",
+      "confusion": "TN",
+      "required_claims_total": 5,
+      "required_claims_correct": 3,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {
+        "C1": "CORRECT",
+        "C2": "CORRECT",
+        "C3": "MISSING",
+        "C4": "CORRECT",
+        "C5": "MISSING"
+      },
+      "answer_factual_claim_count": 7,
+      "answer_factual_claims_correct": 7,
+      "grounding": {
+        "supported": 7,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 8,
+      "citations_supporting": 8,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": 0.6,
+        "claim_f1": 0.7499999999999999,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 0.8571428571428571,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S2]",
+          "[S5]",
+          "[S1]"
+        ],
+        "cited_chunk_ids": [
+          "25bab32eca74a173b04d9acf2fca21972bf66eeb591a95de67d5d4b0270cece1",
+          "edd0e6b83957ec5e51413db8bceff185629f370ed1af0274795b5fa71c3c8ddc",
+          "166fb73ca627b6af60146b7aae66a422a63df5ebae9e46c63e2916abbc9610a8"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2642
+      },
+      "failure_types": [
+        "ANSWER_MISSING_CLAIM",
+        "CITATION_MISSING",
+        "RETRIEVAL_FAILURE"
+      ],
+      "annotator_note": "Hyper-PCN 侧只命中了题名（S1 为该论文 Supplementary 的标题页），C3（Similarity Alignment 为每个点寻找相似结构特征）与 C5（HyperRS/A-HGNN 具体角色）未答。两侧的 Gold 证据 chunk（d9b0f28a30 / 0b3ae8015e）均未进入 Context —— 属 Retrieval+Generation 复合缺失，答案自身也如实说明了这一限制。claim7 无引用 → CITATION_MISSING。"
+    },
+    {
+      "question_id": "GEN-U01",
+      "query": "What BLEU score did the original Transformer paper report on WMT 2014 English-to-German translation?",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP",
+      "required_claims_total": 0,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {},
+      "answer_factual_claim_count": 0,
+      "answer_factual_claims_correct": 0,
+      "grounding": {
+        "supported": 0,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 0,
+      "citations_supporting": 0,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": null,
+        "claim_recall": null,
+        "claim_f1": null,
+        "groundedness": null,
+        "unsupported_claim_rate": null,
+        "citation_precision": null,
+        "citation_completeness": null,
+        "valid_citation_label_rate": null,
+        "invalid_citation_label_rate": null
+      },
+      "structure": {
+        "cited_labels": [
+          "[S2]"
+        ],
+        "cited_chunk_ids": [
+          "3de26523d5d1abebfbdb3e8caf7529c00adbc1524d5cdf48837b8d616a3c806c"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2655
+      },
+      "failure_types": [],
+      "annotator_note": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答。该句为拒答理由（关于知识库内容的元陈述），按协议不计入 factual claim 分母。"
+    },
+    {
+      "question_id": "GEN-U02",
+      "query": "SnowflakeNet 的训练使用了多少块 A100 GPU？",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP",
+      "required_claims_total": 0,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {},
+      "answer_factual_claim_count": 1,
+      "answer_factual_claims_correct": 1,
+      "grounding": {
+        "supported": 1,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 1,
+      "citations_supporting": 1,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": null,
+        "claim_f1": null,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]",
+          "[S3]",
+          "[S4]"
+        ],
+        "cited_chunk_ids": [
+          "c2aa4e84fe52064ea46657e7cce4d02fa8de4726a13fa839b83e97d1197090b8",
+          "33a55dc642bf871c09ba912087e848db82aea083697a7033f21a6f1503a7a481",
+          "e4ca9a1eef186bb3f3b72c02122d1a0fc83148cb93d1f5acf19ff30ee6b49b8f",
+          "73b670b77736283c752ad9cc70b3ecc38ecf072f028e8dcac79af77792846118"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2645
+      },
+      "failure_types": [],
+      "annotator_note": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答，且正确区分了 PointAttN 的 2080Ti 配置（避免张冠李戴）。claim2 是唯一的正向领域断言。"
+    },
+    {
+      "question_id": "GEN-U03",
+      "query": "Which software license is the SeedFormer source code released under?",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null,
+      "required_claims_total": 0,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {},
+      "answer_factual_claim_count": 0,
+      "answer_factual_claims_correct": 0,
+      "grounding": {
+        "supported": 0,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 0,
+      "citations_supporting": 0,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": null,
+        "claim_recall": null,
+        "claim_f1": null,
+        "groundedness": null,
+        "unsupported_claim_rate": null,
+        "citation_precision": null,
+        "citation_completeness": null,
+        "valid_citation_label_rate": null,
+        "invalid_citation_label_rate": null
+      },
+      "structure": {
+        "cited_labels": [],
+        "cited_chunk_ids": [],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2644
+      },
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR"
+      ],
+      "annotator_note": "GENERATION_CONTRACT_ERROR。Gold 为 INSUFFICIENT_CONTEXT，若格式合规本应正确拒答；现因契约违约无法计入 abstention 混淆矩阵。"
+    },
+    {
+      "question_id": "GEN-U04",
+      "query": "Point-BERT 的自监督预训练掩码比例（mask ratio）是多少？",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": null,
+      "abstention_judgment": "NOT_APPLICABLE_CONTRACT_ERROR",
+      "confusion": null,
+      "required_claims_total": 0,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {},
+      "answer_factual_claim_count": 0,
+      "answer_factual_claims_correct": 0,
+      "grounding": {
+        "supported": 0,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 0,
+      "citations_supporting": 0,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": null,
+        "claim_recall": null,
+        "claim_f1": null,
+        "groundedness": null,
+        "unsupported_claim_rate": null,
+        "citation_precision": null,
+        "citation_completeness": null,
+        "valid_citation_label_rate": null,
+        "invalid_citation_label_rate": null
+      },
+      "structure": {
+        "cited_labels": [],
+        "cited_chunk_ids": [],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2652
+      },
+      "failure_types": [
+        "GENERATION_CONTRACT_ERROR"
+      ],
+      "annotator_note": "GENERATION_CONTRACT_ERROR。同上，属技术失败而非拒答决策。"
+    },
+    {
+      "question_id": "GEN-U05",
+      "query": "PCN 论文报告的点云法向量估计（normal estimation）准确率是多少？",
+      "answerability_gold": "INSUFFICIENT_CONTEXT",
+      "generated_status": "insufficient_context",
+      "abstention_judgment": "CORRECT_ABSTENTION",
+      "confusion": "TP",
+      "required_claims_total": 0,
+      "required_claims_correct": 0,
+      "optional_claims_total": 0,
+      "optional_claims_correct": 0,
+      "required_claim_status": {},
+      "answer_factual_claim_count": 1,
+      "answer_factual_claims_correct": 1,
+      "grounding": {
+        "supported": 1,
+        "partially_supported": 0,
+        "unsupported": 0
+      },
+      "citations_total": 4,
+      "citations_supporting": 4,
+      "citations_wrong_source": 0,
+      "citations_invalid": 0,
+      "metrics": {
+        "claim_precision": 1.0,
+        "claim_recall": null,
+        "claim_f1": null,
+        "groundedness": 1.0,
+        "unsupported_claim_rate": 0.0,
+        "citation_precision": 1.0,
+        "citation_completeness": 1.0,
+        "valid_citation_label_rate": 1.0,
+        "invalid_citation_label_rate": 0.0
+      },
+      "structure": {
+        "cited_labels": [
+          "[S1]",
+          "[S2]",
+          "[S3]",
+          "[S4]"
+        ],
+        "cited_chunk_ids": [
+          "a6783f529ec135c6b5a7a4a49d36ba95a1ef5b41fc16a23d637e6d92643c5d98",
+          "96ccc34ef9060bab4a14396fe585eac35f4335cf19d5f44f4fc818b9726e34ad",
+          "1f3496dd2435d89ddd5c255fbe1a2a5ffa2140f6ec8f7bbc70a2c4d3f9ce8c86",
+          "1d7ad9b065662919cc4c4019d04a1df7d39a06798bbddd3b499890b10221cfc1"
+        ],
+        "labels_not_in_context": [],
+        "answered_without_citation": 0
+      },
+      "layers": {
+        "gold_evidence_in_retrieved": false,
+        "gold_evidence_in_context": false,
+        "context_included_count": 5,
+        "context_total_tokens": 2663
+      },
+      "failure_types": [],
+      "annotator_note": "Gold 为 INSUFFICIENT_CONTEXT，系统正确拒答并给出合理的知识库内容概括。"
+    }
+  ]
+}

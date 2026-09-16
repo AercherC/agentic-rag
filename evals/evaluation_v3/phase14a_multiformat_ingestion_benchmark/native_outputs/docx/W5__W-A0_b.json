@@ -1,0 +1,127 @@
+{
+  "document_id": "W5",
+  "source_format": "docx",
+  "source_file": "W5.docx",
+  "source_sha256": "c7a8770925c7737fd2a3a787924cd2e168481e64c3d3999ac966bcf81a6ba8f8",
+  "element_count": 6,
+  "elements": [
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-p-0",
+      "type": "document_title",
+      "raw_text": "Footnote Document",
+      "normalized_text": "Footnote Document",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 0,
+        "xml_path": "/w:document/w:body/w:p[1]",
+        "style_id": "Title",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-p-1",
+      "type": "heading",
+      "raw_text": "Claims",
+      "normalized_text": "Claims",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 1,
+        "xml_path": "/w:document/w:body/w:p[2]",
+        "style_id": "Heading 1",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-p-2",
+      "type": "paragraph",
+      "raw_text": "The method improves SOTA performance.",
+      "normalized_text": "The method improves SOTA performance.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 2,
+        "xml_path": "/w:document/w:body/w:p[3]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-p-3",
+      "type": "paragraph",
+      "raw_text": "Another claim with a second note.",
+      "normalized_text": "Another claim with a second note.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": 3,
+        "xml_path": "/w:document/w:body/w:p[4]",
+        "style_id": "Normal",
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "body",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-fn-0",
+      "type": "footnote",
+      "raw_text": "See Smith et al. 2020 for the original formulation.",
+      "normalized_text": "See Smith et al. 2020 for the original formulation.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "footnotes",
+        "style_id": null,
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "footnote",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    },
+    {
+      "document_id": "W5",
+      "element_id": "el-docx-fn-1",
+      "type": "footnote",
+      "raw_text": "Additional ablation in the appendix.",
+      "normalized_text": "Additional ablation in the appendix.",
+      "parent_id": null,
+      "children": [],
+      "source_ref": {
+        "paragraph_index": null,
+        "xml_path": "footnotes",
+        "style_id": null,
+        "table_index": null,
+        "cell": null
+      },
+      "retrieval_role": "footnote",
+      "metadata": {},
+      "source_parser": "W-A0_python_docx"
+    }
+  ],
+  "relationships": [],
+  "document_metadata": {
+    "parser": "W-A0_python_docx"
+  }
+}

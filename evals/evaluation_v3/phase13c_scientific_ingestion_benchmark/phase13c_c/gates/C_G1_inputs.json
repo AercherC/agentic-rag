@@ -1,0 +1,71 @@
+{
+ "checks": {
+  "dataset_hash_matches_frozen": true,
+  "corpus_hash_matches_frozen": true,
+  "question_count": 40,
+  "english_query_nonempty": true,
+  "doc_ids_consistent": true,
+  "document_id_remap": {
+   "adapointr": {
+    "b2_fused_document_id": "adapointr",
+    "production_document_id": "7543233a797cf3d800bb891378f8c1e74374cb55f38b6a89662c1ed7a6f714fb"
+   },
+   "hyper_pcn": {
+    "b2_fused_document_id": "hyper_pcn",
+    "production_document_id": "6bf0ee25dc6983e545742333c1061a04aa480ee95ab8c8b26c68f33431bdf2e5"
+   },
+   "pcn_point_completion_network": {
+    "b2_fused_document_id": "pcn_point_completion_network",
+    "production_document_id": "9af0f27d4063c30f7885b220da789bddefa42a896d58d3ebf8342e033c7a938e"
+   },
+   "pfnet_point_fractal_network": {
+    "b2_fused_document_id": "pfnet_point_fractal_network",
+    "production_document_id": "06aab3a8284d083710cd74bf928e6ed6f87b119b1bf4c6ba789a41ffc6892d4b"
+   },
+   "pointattn": {
+    "b2_fused_document_id": "pointattn",
+    "production_document_id": "9821011e76f5dde3301d87fc6c210057c0d4d9d7dabc5502b7280321bbc30c41"
+   },
+   "pointr_geometry_aware_transformers": {
+    "b2_fused_document_id": "pointr_geometry_aware_transformers",
+    "production_document_id": "82a7084a1bca79e7cac5ccb5c5559b755a5180b40499d149cf7e5b88323d37e6"
+   },
+   "proxyformer": {
+    "b2_fused_document_id": "proxyformer",
+    "production_document_id": "a72749d2c2baa8304a3e9c60e87c85ce754a219ddca691bb1bd8c7b38cfc7686"
+   },
+   "seedformer": {
+    "b2_fused_document_id": "seedformer",
+    "production_document_id": "5f5f49c841dd78b9d9b4030419cf3586c2f1de2c2e8aa4f7ad40d4830047f362"
+   },
+   "snowflakenet": {
+    "b2_fused_document_id": "snowflakenet",
+    "production_document_id": "035460783ca713f7b7e72409f5b81c7786d872eecf526d5b89bc14766f4f668a"
+   },
+   "svdformer": {
+    "b2_fused_document_id": "svdformer",
+    "production_document_id": "5b4ad74b82844993dc5288944fb736d83e750f290ba07ed588658fe6e2e278a8"
+   }
+  },
+  "gold_doc_ids_covered": true,
+  "pass": true
+ },
+ "inputs_manifest": {
+  "artifact_type": "phase13c_c_frozen_inputs",
+  "created_at": "2026-09-15T07:53:54.234730+00:00",
+  "files": {
+   "b2_fused/adapointr.json": "3e0ab1ede3c630ed340debf66f33fc1cc21649936ee23ca624fef475260a5296",
+   "b2_fused/hyper_pcn.json": "7253738e85eb37cab7d8a1ba21b1db610f4747c88de712043052055e08436c46",
+   "b2_fused/pcn_point_completion_network.json": "e6915f8f61ced64159b13acbc0b89a32c480ad4a0726acb710755892442f291a",
+   "b2_fused/pfnet_point_fractal_network.json": "023896ddb824adb6897e4c13645ca66f76b7241a11eae84ac9ecbebcc7dcdf93",
+   "b2_fused/pointattn.json": "e0309b6f6987456f395aa2ebece1230e0596228acfe6c997897710c1b672acfd",
+   "b2_fused/pointr_geometry_aware_transformers.json": "9e551315602103a2715e44328d812fa07bb43512b2fd91e58ef7f0febbb370fc",
+   "b2_fused/proxyformer.json": "69dceaf4bda94acb0c7385a4757dda92cc30e17159ac36508e992a463fc9b955",
+   "b2_fused/seedformer.json": "b2d3204bd5fc1df74f5d5d82905a35028fe80b4f89c823e1f27da21a68fb2ce0",
+   "b2_fused/snowflakenet.json": "21f227bed4d30778179bdf800f35bb4f7f741a219dc0dab07b481e0f6d458cbb",
+   "b2_fused/svdformer.json": "e753421de1204c1d9613b90af6bb2993330e7e9ad3d6f69b6dd0e39d5904202f"
+  },
+  "questions_file_sha256": "1a750a64849adcc5c461972df5140d2285f9ab175340ce8fa42f7673f888c7d5"
+ },
+ "pass": true
+}
