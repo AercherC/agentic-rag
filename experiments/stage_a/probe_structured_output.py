@@ -34,6 +34,7 @@ from evidenceflow.domain import (  # noqa: E402
     generator_output_json_schema,
 )
 from evidenceflow.generation import (  # noqa: E402
+    GENERATOR_PROMPT_VERSION,
     GenerationContractError,
     Generator,
     parse_generator_output,
@@ -44,8 +45,12 @@ from experiments.stage_a.online_common import (  # noqa: E402
     FatalServiceError,
     PolicyLLMClient,
     RequestPolicy,
+    ResumeIdentityError,
     append_jsonl,
+    check_resume_identity,
+    identity_fields,
     read_jsonl,
+    thinking_ignored_calls,
 )
 
 OUTPUT = ROOT / "artifacts/stage_a/A2_probe.json"
@@ -147,14 +152,30 @@ def aggregate_probe(records: list[dict[str, Any]]) -> dict[str, Any]:
     return {"modes": by_mode, "usable": usable_map, "selected_mode": selected}
 
 
+def _identity(mode: str, model: str, llm_thinking: str) -> dict[str, str]:
+    return identity_fields(
+        structured_output_mode=mode, prompt_version=GENERATOR_PROMPT_VERSION,
+        model=model, llm_thinking=llm_thinking,
+    )
+
+
 def run_probe(
     make_client: Callable[[str], Any],
     policy: RequestPolicy,
     jsonl_path: Path,
+    *,
+    model: str,
+    llm_thinking: str,
 ) -> list[dict[str, Any]]:
     """逐项探测并追加写入 JSONL；返回全部记录。403 时抛出 FatalServiceError（已完成项已落盘）。"""
 
     records = read_jsonl(jsonl_path)
+    # 探测里 structured_output_mode 是被探测的模式，每条记录各不相同：按记录自身的模式校验。
+    for mode in STRUCTURED_OUTPUT_MODES:
+        check_resume_identity(
+            [r for r in records if r.get("mode") == mode],
+            _identity(mode, model, llm_thinking), jsonl_path,
+        )
     done = {(r["mode"], r["request"]) for r in records if r.get("completed")}
     schema = generator_output_json_schema()
     for mode in STRUCTURED_OUTPUT_MODES:
@@ -164,7 +185,10 @@ def run_probe(
                 continue
             client.begin()
             messages = build_probe_messages(item)
-            record: dict[str, Any] = {"mode": mode, "request": item["name"], "error": None}
+            record: dict[str, Any] = {
+                **_identity(mode, model, llm_thinking),
+                "mode": mode, "request": item["name"], "error": None,
+            }
             try:
                 raw = client.generate_json(messages, schema_name="generator_output", json_schema=schema)
             except FatalServiceError:
@@ -216,17 +240,26 @@ def main() -> int:
             timeout_seconds=settings.llm_timeout_seconds,
             max_attempts=1,
             structured_output_mode=mode,
+            thinking=settings.llm_thinking,
         )
 
     try:
-        records = run_probe(make_client, policy, args.jsonl)
+        records = run_probe(
+            make_client, policy, args.jsonl, model=settings.llm_model, llm_thinking=settings.llm_thinking
+        )
     except FatalServiceError as exc:
         print(f"STOP: {exc}. Completed items are kept in {args.jsonl}.", file=sys.stderr)
         return 3
+    except ResumeIdentityError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 4
     summary = aggregate_probe(records)
     payload = {
         "base_url_host": urlparse(settings.llm_base_url).netloc,
         "model": settings.llm_model,
+        "llm_thinking": settings.llm_thinking,
+        "prompt_version": GENERATOR_PROMPT_VERSION,
+        "thinking_ignored_calls": thinking_ignored_calls(records),
         "temperature": settings.llm_temperature,
         "min_interval_seconds": args.min_interval_seconds,
         "rate_limit_events": policy.rate_limit_events,

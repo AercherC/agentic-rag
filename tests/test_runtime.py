@@ -58,8 +58,8 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
             events.append(("dense_reranker", contract))
 
     class FakeLLM:
-        def __init__(self, *, api_key, base_url, model, temperature, timeout_seconds, max_attempts):
-            events.append(("llm", (model, temperature, timeout_seconds, max_attempts)))
+        def __init__(self, *, api_key, base_url, model, temperature, timeout_seconds, max_attempts, thinking):
+            events.append(("llm", (model, temperature, timeout_seconds, max_attempts, thinking)))
 
     class FakeTokenizer:
         def __init__(self, model): events.append(("tokenizer", model))
@@ -115,7 +115,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
         ),
         ("tokenizer", "test-bge"),
         ("context", 1234),
-        ("llm", ("test-llm", 0.0, 60.0, 2)),
+        ("llm", ("test-llm", 0.0, 60.0, 2, "auto")),
         ("generator", "FakeLLM"),
     ]
 

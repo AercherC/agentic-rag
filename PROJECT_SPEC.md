@@ -74,6 +74,19 @@
   `client.last_usage` 汇总）、`raw_response_lengths: list[int]`。空 Context 时为
   `llm_called=False` 且列表为空。每次 `generate()` 开始时重置。
 - `GenerationContractError` 在 CLI 中渲染为 `Generation format error: …`。
+- **生成模型与 thinking 开关（A2a.1）**：生成模型由 ModelScope 的 Qwen/Qwen3.5-35B-A3B 改为 api.deepseek.com 的
+  `deepseek-flash`。Phase 12 的 v2 基线（3/25 格式错误）是 Qwen3.5-35B-A3B 上的结果，与本次 v3 冒烟只能做
+  参考对比；同模型下 v2 与 v3 的对比留到阶段 B。
+  `Settings.llm_thinking` 取值 `auto` / `enabled` / `disabled`，默认 `auto`。`auto` 表示不发送 thinking
+  参数；`enabled` / `disabled` 时通过 `extra_body={"thinking": {"type": ...}}` 发送（DeepSeek 格式）。
+  非 DeepSeek 服务应保持 `auto`，否则可能返回 400。本阶段运行时使用 `disabled`。
+  `OpenAICompatibleLLMClient` 的构造参数 `structured_output_mode` 只供探测脚本逐个模式创建客户端；线上始终
+  使用模块常量，它不是运行时开关。
+- **在线脚本记录与续跑保护**：探测与冒烟的每条 JSONL 记录都写入 `structured_output_mode`、`prompt_version`、
+  `model`、`llm_thinking`。续跑时已有记录的这 4 个字段与当前运行不一致则报错退出（退出码 4），提示删除旧
+  JSONL 或改用新的输出路径。`PolicyLLMClient` 构造时要求 inner 客户端 `max_attempts == 1`，否则抛
+  `LLMConfigurationError`。统计中记录 `thinking_ignored_calls`（`llm_thinking=disabled` 但 reasoning_content
+  非空的调用次数）。
 
 # Current Architecture Summary（Phase 15B.5）
 

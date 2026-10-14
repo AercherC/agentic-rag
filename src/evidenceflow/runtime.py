@@ -32,6 +32,7 @@ def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
         temperature=settings.llm_temperature,
         timeout_seconds=settings.llm_timeout_seconds,
         max_attempts=settings.llm_max_attempts,
+        thinking=settings.llm_thinking,
     )
 
 

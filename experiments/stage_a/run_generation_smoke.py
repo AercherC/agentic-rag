@@ -26,12 +26,15 @@ for extra in (ROOT, ROOT / "src"):
         sys.path.insert(0, str(extra))
 
 from evidenceflow.config import Settings  # noqa: E402
-from evidenceflow.generation import Generator  # noqa: E402
+from evidenceflow.generation import GENERATOR_PROMPT_VERSION, Generator  # noqa: E402
 from evidenceflow.llm import STRUCTURED_OUTPUT_MODE  # noqa: E402
 from evidenceflow.model_device import resolve_model_device  # noqa: E402
 from experiments.stage_a.online_common import (  # noqa: E402
     FatalServiceError,
     PolicyLLMClient,
+    ResumeIdentityError,
+    check_resume_identity,
+    identity_fields,
     RequestPolicy,
     append_jsonl,
     extract_allowed_labels,
@@ -71,6 +74,7 @@ def process_question(
     llm: PolicyLLMClient,
     recorder: RecordingRetriever,
     device: str,
+    identity: dict[str, str],
 ) -> dict[str, Any]:
     """处理一题并返回可直接落盘的记录。403 的 FatalServiceError 不在此捕获，向上终止脚本。"""
 
@@ -88,6 +92,7 @@ def process_question(
     elapsed = round(time.perf_counter() - started, 3)
     calls = llm.calls
     return {
+        **identity,
         "question_id": item["question_id"],
         "query": item["query"],
         "answerability": item.get("answerability"),
@@ -116,11 +121,13 @@ def run_smoke(
     recorder: RecordingRetriever,
     device: str,
     jsonl_path: Path,
+    identity: dict[str, str],
     retry_llm_errors: bool = False,
 ) -> list[dict[str, Any]]:
     """逐题运行并即时追加写入；已完成的题在重跑时被跳过。"""
 
     records = read_jsonl(jsonl_path)
+    check_resume_identity(records, identity, jsonl_path)
     if retry_llm_errors:
         kept = [r for r in records if r.get("failure_class") not in _RETRYABLE_CLASSES]
         if len(kept) != len(records):
@@ -129,7 +136,8 @@ def run_smoke(
     done = {r["question_id"] for r in records}
     for item in pending(items, done, key=lambda i: i["question_id"]):
         record = process_question(
-            item, service=service, generator=generator, llm=llm, recorder=recorder, device=device
+            item, service=service, generator=generator, llm=llm, recorder=recorder, device=device,
+            identity=identity,
         )
         append_jsonl(jsonl_path, record)
         records.append(record)
@@ -192,16 +200,25 @@ def main() -> int:
         "min_interval_seconds": args.min_interval_seconds,
         "dataset": str(args.dataset.relative_to(ROOT)) if args.dataset.is_relative_to(ROOT) else str(args.dataset),
         "query_field": "query",
+        "llm_thinking": settings.llm_thinking,
+        "prompt_version": GENERATOR_PROMPT_VERSION,
         "structured_output_mode": STRUCTURED_OUTPUT_MODE,
     }
+    identity = identity_fields(
+        structured_output_mode=STRUCTURED_OUTPUT_MODE, prompt_version=GENERATOR_PROMPT_VERSION,
+        model=settings.llm_model, llm_thinking=settings.llm_thinking,
+    )
     try:
         records = run_smoke(
             items, service=service, generator=generator, llm=llm, recorder=recorder,
-            device=actual_device, jsonl_path=args.jsonl, retry_llm_errors=args.retry_llm_errors,
+            device=actual_device, jsonl_path=args.jsonl, identity=identity, retry_llm_errors=args.retry_llm_errors,
         )
     except FatalServiceError as exc:
         print(f"STOP: {exc}. Completed questions are kept in {args.jsonl}.", file=sys.stderr)
         return 3
+    except ResumeIdentityError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 4
     payload = write_summary(args.output, records, meta)
     print(json.dumps(payload["summary"], ensure_ascii=False, indent=2))
     return 0

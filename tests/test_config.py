@@ -15,6 +15,7 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
         "LLM_MODEL",
         "LLM_TEMPERATURE",
         "LLM_TIMEOUT_SECONDS",
+        "LLM_THINKING",
         "EMBEDDING_MODEL",
         "SOURCE_DOCS_PATH",
         "CHUNK_SIZE",
@@ -39,6 +40,7 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
     assert settings.llm_model == "Qwen/Qwen3.5-35B-A3B"
     assert settings.llm_temperature == 0.0
     assert settings.llm_timeout_seconds == 60.0
+    assert settings.llm_thinking == "auto"
     assert settings.embedding_model == "BAAI/bge-m3"
     assert settings.source_docs_path == Path("data/source_docs")
     assert settings.chunk_size == 512
@@ -62,6 +64,7 @@ def test_environment_variables_override_defaults(monkeypatch) -> None:
     monkeypatch.setenv("VECTOR_DB_PATH", "custom/vector-db")
     monkeypatch.setenv("SOURCE_DOCS_PATH", "custom/source-docs")
     monkeypatch.setenv("MODEL_DEVICE", "cpu")
+    monkeypatch.setenv("LLM_THINKING", "disabled")
 
     settings = Settings(_env_file=None)
 
@@ -73,6 +76,7 @@ def test_environment_variables_override_defaults(monkeypatch) -> None:
     assert settings.vector_db_path == Path("custom/vector-db")
     assert settings.source_docs_path == Path("custom/source-docs")
     assert settings.model_device == "cpu"
+    assert settings.llm_thinking == "disabled"
 
 
 def test_sensitive_setting_has_no_hardcoded_default(monkeypatch) -> None:
@@ -91,6 +95,7 @@ def test_sensitive_setting_has_no_hardcoded_default(monkeypatch) -> None:
         {"llm_temperature": float("nan")},
         {"llm_timeout_seconds": 0},
         {"llm_timeout_seconds": float("inf")},
+        {"llm_thinking": "maybe"},
     ],
 )
 def test_invalid_llm_settings_are_rejected(overrides) -> None:

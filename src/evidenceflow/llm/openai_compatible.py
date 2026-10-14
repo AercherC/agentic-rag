@@ -20,6 +20,9 @@ from evidenceflow.llm.diagnostics import classify_llm_failure
 STRUCTURED_OUTPUT_MODE = "prompt_only"
 STRUCTURED_OUTPUT_MODES = ("json_schema", "json_object", "prompt_only")
 
+# thinking 开关（DeepSeek 等）：auto = 不发送，沿用服务端默认；enabled/disabled 显式开或关。
+THINKING_MODES = ("auto", "enabled", "disabled")
+
 
 def build_structured_request_params(
     mode: str,
@@ -65,6 +68,7 @@ class OpenAICompatibleLLMClient:
         timeout_seconds: float = 60.0,
         max_attempts: int = 2,
         structured_output_mode: str = STRUCTURED_OUTPUT_MODE,
+        thinking: str = "auto",
         _client: Any | None = None,
     ) -> None:
         """验证配置并建立无自动重试、带显式超时的同步 SDK Client。"""
@@ -94,7 +98,10 @@ class OpenAICompatibleLLMClient:
 
         if structured_output_mode not in STRUCTURED_OUTPUT_MODES:
             raise LLMConfigurationError("unknown structured output mode")
+        if thinking not in THINKING_MODES:
+            raise LLMConfigurationError("unknown thinking mode")
         self._structured_output_mode = structured_output_mode
+        self._thinking = thinking
         # 只表示最近一次调用；调用开始时重置，由上层（Generator）负责汇总多次调用。
         self._last_usage: dict | None = None
         # 诊断用：最近一次响应是否带 reasoning_content、结束原因；不进入业务合同。
@@ -110,6 +117,12 @@ class OpenAICompatibleLLMClient:
             # 本阶段错误直接向上报告，不引入隐藏的 SDK 自动重试与额外等待。
             max_retries=0,
         )
+
+    @property
+    def max_attempts(self) -> int:
+        """单次调用的最大尝试次数（在线脚本要求为 1，由脚本策略负责重试）。"""
+
+        return self._max_attempts
 
     @property
     def last_usage(self) -> dict | None:
@@ -145,6 +158,10 @@ class OpenAICompatibleLLMClient:
         if not messages:
             raise LLMRequestError("LLM messages must not be empty")
         request_messages = [message.model_dump() for message in messages]
+        request_extra = dict(extra)
+        if self._thinking != "auto":
+            # DeepSeek 的 thinking 开关（OpenAI 格式）必须走 extra_body 透传。
+            request_extra["extra_body"] = {"thinking": {"type": self._thinking}}
         self._last_usage = None
         self.last_response_info = {}
         content: Any = None
@@ -154,7 +171,7 @@ class OpenAICompatibleLLMClient:
                     model=self._model,
                     messages=request_messages,
                     temperature=self._temperature,
-                    **extra,
+                    **request_extra,
                 )
                 # Chat Completion 正常路径要求至少一个 Choice 且 content 是非空纯文本。
                 choice = response.choices[0]

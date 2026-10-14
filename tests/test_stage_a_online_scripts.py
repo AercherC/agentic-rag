@@ -15,12 +15,17 @@ from evidenceflow.domain import (
     SourceReference,
 )
 from evidenceflow.generation import Generator
-from evidenceflow.llm import LLMRequestError
+from evidenceflow.llm import LLMConfigurationError, LLMRequestError, OpenAICompatibleLLMClient
 from experiments.stage_a.online_common import (
     FatalServiceError,
     PolicyLLMClient,
     RequestPolicy,
+    ResumeIdentityError,
     append_jsonl,
+    check_resume_identity,
+    failure_class,
+    identity_fields,
+    thinking_ignored_calls,
     extract_allowed_labels,
     read_jsonl,
     summarize_smoke,
@@ -34,6 +39,10 @@ from experiments.stage_a.probe_structured_output import (
 from experiments.stage_a.reparse_smoke_offline import reparse_all, reparse_record
 from experiments.stage_a.run_generation_smoke import RecordingRetriever, run_smoke
 
+IDENTITY = identity_fields(
+    structured_output_mode="prompt_only", prompt_version="rag-generator-v3",
+    model="deepseek-flash", llm_thinking="disabled",
+)
 VALID = json.dumps({"status": "answered", "answer": "Fact [S1]."})
 
 
@@ -160,6 +169,8 @@ def test_policy_does_not_retry_other_errors() -> None:
 class FakeInner:
     """按顺序返回回复/异常，并提供 last_usage 与 last_response_info。"""
 
+    max_attempts = 1  # PolicyLLMClient 要求 inner 的 max_attempts == 1
+
     def __init__(self, *replies) -> None:
         self.replies = list(replies)
         self.last_usage = None
@@ -275,6 +286,7 @@ ITEMS = [{"question_id": f"Q{i}", "query": f"query {i}"} for i in range(1, 5)]
 
 
 def run(items, service, generator, llm, recorder, path, **kwargs):
+    kwargs.setdefault("identity", IDENTITY)
     return run_smoke(items, service=service, generator=generator, llm=llm, recorder=recorder,
                      device="cpu", jsonl_path=path, **kwargs)
 
@@ -298,8 +310,8 @@ def test_smoke_records_top5_diagnostics_status_and_raw_calls(tmp_path) -> None:
 
 def test_smoke_resumes_and_skips_completed_questions(tmp_path) -> None:
     service, generator, llm, recorder, path = build_smoke([VALID, VALID], tmp_path)
-    append_jsonl(path, {"question_id": "Q1", "failure_class": None})
-    append_jsonl(path, {"question_id": "Q2", "failure_class": None})
+    append_jsonl(path, {**IDENTITY, "question_id": "Q1", "failure_class": None})
+    append_jsonl(path, {**IDENTITY, "question_id": "Q2", "failure_class": None})
 
     records = run(ITEMS, service, generator, llm, recorder, path)
 
@@ -416,6 +428,9 @@ def test_analyze_raw_flags_think_and_fence_and_parse_errors() -> None:
     assert unclosed["think_closed"] is False and unclosed["schema_valid_after_cleanup"] is False
 
 
+PROBE_ID = {"model": "deepseek-flash", "llm_thinking": "disabled"}
+
+
 def probe_client_factory(per_mode: dict):
     def make_client(mode: str):
         return FakeInner(*per_mode[mode])
@@ -433,7 +448,7 @@ def test_probe_selects_best_usable_mode_and_resumes(tmp_path) -> None:
         "prompt_only": [VALID] * len(REQUESTS),
     }
 
-    records = run_probe(probe_client_factory(per_mode), policy, jsonl)
+    records = run_probe(probe_client_factory(per_mode), policy, jsonl, **PROBE_ID)
     summary = aggregate_probe(records)
 
     assert summary["usable"] == {"json_schema": False, "json_object": True, "prompt_only": True}
@@ -441,7 +456,7 @@ def test_probe_selects_best_usable_mode_and_resumes(tmp_path) -> None:
     assert len(read_jsonl(jsonl)) == 9
 
     # 续跑：全部已完成，不再创建任何请求。
-    again = run_probe(probe_client_factory({m: [] for m in per_mode}), policy, jsonl)
+    again = run_probe(probe_client_factory({m: [] for m in per_mode}), policy, jsonl, **PROBE_ID)
     assert len(again) == 9
 
 
@@ -456,7 +471,7 @@ def test_probe_stops_on_403_and_keeps_completed_items(tmp_path) -> None:
     }
 
     with pytest.raises(FatalServiceError):
-        run_probe(probe_client_factory(per_mode), policy, jsonl)
+        run_probe(probe_client_factory(per_mode), policy, jsonl, **PROBE_ID)
 
     assert len(read_jsonl(jsonl)) == 1
 
@@ -467,12 +482,175 @@ def test_probe_rate_limit_exhaustion_is_retried_on_rerun_not_treated_as_unusable
     jsonl = tmp_path / "probe.jsonl"
     first = {"json_schema": [wrapped(429)] * 4 + [VALID, VALID], "json_object": [VALID] * 3, "prompt_only": [VALID] * 3}
 
-    records = run_probe(probe_client_factory(first), policy, jsonl)
+    records = run_probe(probe_client_factory(first), policy, jsonl, **PROBE_ID)
     exhausted = [r for r in records if r.get("rate_limit_exhausted")]
     assert len(exhausted) == 1 and exhausted[0]["completed"] is False
     assert aggregate_probe(records)["usable"]["json_schema"] is False  # 缺一项，不算完整
 
     # 重跑只补上未完成的那一项。
     second = {"json_schema": [VALID], "json_object": [], "prompt_only": []}
-    records = run_probe(probe_client_factory(second), policy, jsonl)
+    records = run_probe(probe_client_factory(second), policy, jsonl, **PROBE_ID)
     assert aggregate_probe(records)["selected_mode"] == "json_schema"
+
+
+# ---- A2a.1：续跑身份保护 / max_attempts 保护 / 真实 SDK 异常 / thinking 统计 ------------------
+
+
+def test_smoke_records_carry_identity_fields(tmp_path) -> None:
+    service, generator, llm, recorder, path = build_smoke([VALID], tmp_path)
+
+    (record,) = run(ITEMS[:1], service, generator, llm, recorder, path)
+
+    for key, value in IDENTITY.items():
+        assert record[key] == value
+        assert read_jsonl(path)[0][key] == value
+
+
+@pytest.mark.parametrize(
+    "changed", ["structured_output_mode", "prompt_version", "model", "llm_thinking"]
+)
+def test_smoke_resume_refuses_records_from_a_different_run(tmp_path, changed) -> None:
+    service, generator, llm, recorder, path = build_smoke([VALID, VALID], tmp_path)
+    run(ITEMS[:1], service, generator, llm, recorder, path)
+
+    other = {**IDENTITY, changed: "something-else"}
+    with pytest.raises(ResumeIdentityError, match=changed):
+        run(ITEMS[:2], service, generator, llm, recorder, path, identity=other)
+
+    assert len(read_jsonl(path)) == 1  # 旧记录原样保留，没有混入新记录
+
+
+def test_smoke_resume_refuses_legacy_records_without_identity(tmp_path) -> None:
+    service, generator, llm, recorder, path = build_smoke([VALID], tmp_path)
+    append_jsonl(path, {"question_id": "Q1", "status": "answered"})
+
+    with pytest.raises(ResumeIdentityError):
+        run(ITEMS[:2], service, generator, llm, recorder, path)
+
+
+def test_check_resume_identity_accepts_matching_records(tmp_path) -> None:
+    check_resume_identity([{**IDENTITY}], IDENTITY, tmp_path / "x.jsonl")
+
+
+def test_probe_resume_refuses_records_from_a_different_model(tmp_path) -> None:
+    policy = make_policy(FakeClock(), min_interval_seconds=0.0)
+    jsonl = tmp_path / "probe.jsonl"
+    per_mode = {m: [VALID] * len(REQUESTS) for m in ("json_schema", "json_object", "prompt_only")}
+    run_probe(probe_client_factory(per_mode), policy, jsonl, **PROBE_ID)
+
+    with pytest.raises(ResumeIdentityError, match="model"):
+        run_probe(probe_client_factory(per_mode), policy, jsonl, model="other", llm_thinking="disabled")
+    with pytest.raises(ResumeIdentityError, match="llm_thinking"):
+        run_probe(probe_client_factory(per_mode), policy, jsonl, model="deepseek-flash", llm_thinking="auto")
+
+
+def test_probe_records_carry_per_mode_identity(tmp_path) -> None:
+    policy = make_policy(FakeClock(), min_interval_seconds=0.0)
+    per_mode = {m: [VALID] * len(REQUESTS) for m in ("json_schema", "json_object", "prompt_only")}
+
+    records = run_probe(probe_client_factory(per_mode), policy, tmp_path / "p.jsonl", **PROBE_ID)
+
+    assert {r["structured_output_mode"] for r in records} == set(per_mode)
+    assert all(r["structured_output_mode"] == r["mode"] for r in records)
+    assert all(r["model"] == "deepseek-flash" and r["llm_thinking"] == "disabled" for r in records)
+
+
+class _MaxAttempts2:
+    max_attempts = 2
+
+
+def test_policy_client_rejects_inner_client_with_internal_retries() -> None:
+    policy = make_policy(FakeClock(), min_interval_seconds=0.0)
+
+    with pytest.raises(LLMConfigurationError, match="max_attempts"):
+        PolicyLLMClient(_MaxAttempts2(), policy)
+    with pytest.raises(LLMConfigurationError):
+        PolicyLLMClient(object(), policy)  # 没有 max_attempts 属性也不放行
+
+
+def test_real_client_exposes_max_attempts() -> None:
+    policy = make_policy(FakeClock(), min_interval_seconds=0.0)
+    one = OpenAICompatibleLLMClient(
+        api_key="k", base_url="http://localhost:1", model="m", max_attempts=1, _client=object()
+    )
+    assert one.max_attempts == 1
+    PolicyLLMClient(one, policy)
+    two = OpenAICompatibleLLMClient(
+        api_key="k", base_url="http://localhost:1", model="m", max_attempts=2, _client=object()
+    )
+    assert two.max_attempts == 2
+    with pytest.raises(LLMConfigurationError):
+        PolicyLLMClient(two, policy)
+
+
+class _CountingSdk:
+    """替代 SDK 对象：每次 chat.completions.create 调用都计数，并抛出真实的 openai 异常。"""
+
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.http_requests = 0
+        self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+
+    def _create(self, **kwargs):
+        self.http_requests += 1
+        raise self.error
+
+
+def _sdk_error(cls, status_code: int) -> Exception:
+    import httpx
+
+    request = httpx.Request("POST", "https://api.example.invalid/chat/completions")
+    response = httpx.Response(status_code, request=request, json={"error": {"message": "x"}})
+    return cls("boom", response=response, body=None)
+
+
+def _real_policy_client(sdk, clock):
+    inner = OpenAICompatibleLLMClient(
+        api_key="k", base_url="https://api.example.invalid", model="m", max_attempts=1, _client=sdk
+    )
+    return PolicyLLMClient(inner, make_policy(clock, min_interval_seconds=0.0))
+
+
+def test_real_sdk_403_sends_one_http_request_and_stops_the_script() -> None:
+    import openai
+
+    sdk = _CountingSdk(_sdk_error(openai.PermissionDeniedError, 403))
+    client = _real_policy_client(sdk, FakeClock())
+    client.begin()
+
+    with pytest.raises(FatalServiceError):
+        client.generate_json(messages(), schema_name="x", json_schema={})
+
+    assert sdk.http_requests == 1
+
+
+def test_real_sdk_429_is_retried_by_policy_only_and_classified_as_rate_limit_exhausted() -> None:
+    import openai
+
+    clock = FakeClock()
+    sdk = _CountingSdk(_sdk_error(openai.RateLimitError, 429))
+    client = _real_policy_client(sdk, clock)
+    client.begin()
+
+    with pytest.raises(LLMRequestError) as caught:
+        client.generate_json(messages(), schema_name="x", json_schema={})
+
+    assert sdk.http_requests == 4  # 1 次原始请求 + 策略的 3 次重试；客户端内部不再重试
+    assert clock.sleeps == [30, 60, 120]
+    assert failure_class(caught.value) == "rate_limit_exhausted"
+    assert len(client.question_rate_limit_events) == 4  # 3 次等待 + 最后一次耗尽记录
+
+
+def test_thinking_ignored_calls_counts_non_empty_reasoning_when_disabled() -> None:
+    def call(non_empty):
+        return {"reasoning_content_present": True, "reasoning_content_non_empty": non_empty}
+
+    records = [
+        {"llm_thinking": "disabled", "calls": [call(False), call(True)]},
+        {"llm_thinking": "disabled", "calls": [call(True)]},
+        {"llm_thinking": "auto", "calls": [call(True)]},  # 未关闭 thinking 时不算“被忽略”
+        {"llm_thinking": "disabled", "error": None, **call(True)},  # 探测记录：本身就是一次调用
+    ]
+
+    assert thinking_ignored_calls(records) == 3
+    assert summarize_smoke(records[:2])["thinking_ignored_calls"] == 2

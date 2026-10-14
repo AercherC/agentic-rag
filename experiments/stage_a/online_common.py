@@ -100,6 +100,9 @@ class PolicyLLMClient:
     """
 
     def __init__(self, inner: Any, policy: RequestPolicy) -> None:
+        # 客户端内部重试会让一次逻辑请求变成多次 HTTP 请求，破坏节流与 429 计数。
+        if getattr(inner, "max_attempts", None) != 1:
+            raise LLMConfigurationError("PolicyLLMClient requires an inner client with max_attempts=1")
         self._inner = inner
         self.policy = policy
         self.calls: list[dict[str, Any]] = []
@@ -180,6 +183,35 @@ def extract_allowed_labels(messages: Sequence[dict[str, str]]) -> list[str]:
 
 # ---- JSONL 断点续跑 -------------------------------------------------------------------------
 
+IDENTITY_KEYS = ("structured_output_mode", "prompt_version", "model", "llm_thinking")
+
+
+class ResumeIdentityError(RuntimeError):
+    """续跑时已有记录与当前运行的模式/Prompt/模型/thinking 不一致；脚本以退出码 4 结束。"""
+
+
+def identity_fields(*, structured_output_mode: str, prompt_version: str, model: str, llm_thinking: str) -> dict[str, str]:
+    """每条 JSONL 记录都要带的运行身份。"""
+
+    return {
+        "structured_output_mode": structured_output_mode,
+        "prompt_version": prompt_version,
+        "model": model,
+        "llm_thinking": llm_thinking,
+    }
+
+
+def check_resume_identity(records: Iterable[dict[str, Any]], identity: dict[str, str], path: Path) -> None:
+    """已有记录的身份字段（缺失视为不一致）必须与当前运行一致，否则拒绝续跑。"""
+
+    for record in records:
+        diff = {k: (record.get(k), identity[k]) for k in IDENTITY_KEYS if record.get(k) != identity[k]}
+        if diff:
+            raise ResumeIdentityError(
+                f"existing records in {path} were produced with different settings {diff} "
+                "(existing, current); delete the old JSONL or use a new output path"
+            )
+
 
 def append_jsonl(path: Path, record: dict[str, Any]) -> None:
     """每完成一项就追加写入一行；即使中途被 403 终止，已完成的结果也不会丢。"""
@@ -241,6 +273,21 @@ def failure_class(exc: BaseException | None) -> str | None:
     return "other"
 
 
+def thinking_ignored_calls(records: Sequence[dict[str, Any]]) -> int:
+    """llm_thinking=disabled 但回复仍带非空 reasoning_content 的调用次数（开关未生效的证据）。
+
+    兼容两种记录：冒烟（每题有 calls 列表）与探测（每条记录就是一次调用）。
+    """
+
+    total = 0
+    for r in records:
+        calls = r.get("calls") if "calls" in r else [r]
+        for call in calls or []:
+            if r.get("llm_thinking") == "disabled" and call.get("reasoning_content_non_empty"):
+                total += 1
+    return total
+
+
 def summarize_smoke(records: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """汇总冒烟记录：状态分布、格式失败、修复、Citation、服务错误、限流、usage、耗时。"""
 
@@ -263,6 +310,7 @@ def summarize_smoke(records: Sequence[dict[str, Any]]) -> dict[str, Any]:
             completion += usage.get("completion_tokens") or 0
     elapsed = [r["elapsed_seconds"] for r in records if "elapsed_seconds" in r]
     return {
+        "thinking_ignored_calls": thinking_ignored_calls(records),
         "question_count": len(records),
         "status_counts": statuses,
         "generation_contract_errors": count("generation_contract_error"),

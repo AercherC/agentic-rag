@@ -170,6 +170,56 @@ def test_failed_call_resets_last_usage() -> None:
     assert client.last_usage is None
 
 
+def _client_with_thinking(completions: RecordingCompletions, thinking: str) -> OpenAICompatibleLLMClient:
+    return OpenAICompatibleLLMClient(
+        api_key="test-only-key",
+        base_url="https://example.test/v1",
+        model="test-model",
+        thinking=thinking,
+        _client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+    )
+
+
+def test_thinking_disabled_adds_extra_body_and_auto_does_not() -> None:
+    disabled = RecordingCompletions(["x"])
+    _client_with_thinking(disabled, "disabled").generate(PLAIN_MESSAGES)
+    assert disabled.calls[0]["extra_body"] == {"thinking": {"type": "disabled"}}
+
+    enabled = RecordingCompletions(["x"])
+    _client_with_thinking(enabled, "enabled").generate(PLAIN_MESSAGES)
+    assert enabled.calls[0]["extra_body"] == {"thinking": {"type": "enabled"}}
+
+    auto = RecordingCompletions(["x"])
+    _client_with_thinking(auto, "auto").generate(PLAIN_MESSAGES)
+    assert "extra_body" not in auto.calls[0]
+
+
+def test_thinking_disabled_applies_to_generate_json() -> None:
+    completions = RecordingCompletions(['{"status": "answered", "answer": "x [S1]"}'])
+    client = OpenAICompatibleLLMClient(
+        api_key="test-only-key",
+        base_url="https://example.test/v1",
+        model="test-model",
+        structured_output_mode="json_object",
+        thinking="disabled",
+        _client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
+    )
+    client.generate_json(JSON_MESSAGES, schema_name="generator_output", json_schema=SCHEMA)
+    assert completions.calls[0]["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert completions.calls[0]["response_format"] == {"type": "json_object"}
+
+
+def test_unknown_thinking_mode_is_rejected() -> None:
+    with pytest.raises(LLMConfigurationError, match="thinking"):
+        OpenAICompatibleLLMClient(
+            api_key="test-only-key",
+            base_url="https://example.test/v1",
+            model="m",
+            thinking="maybe",
+            _client=object(),
+        )
+
+
 def test_reasoning_content_presence_is_recorded() -> None:
     present = RecordingCompletions(["x"], message_extra={"reasoning_content": "thinking"})
     client = make_client(present, "prompt_only")

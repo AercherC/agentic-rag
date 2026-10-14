@@ -61,6 +61,13 @@ class Settings(BaseSettings):
         le=2,
         description="单次 LLM 业务调用的最大尝试次数；仅瞬态错误允许第二次尝试。",
     )
+    llm_thinking: Literal["auto", "enabled", "disabled"] = Field(
+        default="auto",
+        description=(
+            "是否向 OpenAI-compatible 服务发送 thinking 开关。auto = 不发送，沿用服务端默认"
+            "（DeepSeek 下思考默认开启）；enabled/disabled 显式开或关。"
+        ),
+    )
 
     embedding_model: str = Field(
         default="BAAI/bge-m3",

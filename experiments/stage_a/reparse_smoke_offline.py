@@ -31,6 +31,7 @@ from experiments.stage_a.online_common import (  # noqa: E402
     failure_class,
     read_jsonl,
     summarize_smoke,
+    thinking_ignored_calls,
 )
 
 JSONL = ROOT / "artifacts/stage_a/A2_generation_smoke.jsonl"
@@ -136,8 +137,11 @@ def reparse_all(records: list[dict[str, Any]]) -> dict[str, Any]:
         if r["reparsable"]
         and (r["original_status"] != r["status"] or r["original_failure_class"] != r["failure_class"])
     }
+    summary = summarize_smoke(reparsed)
+    # 重解析记录不含原始调用详情，thinking 统计取自原始记录。
+    summary["thinking_ignored_calls"] = thinking_ignored_calls(records)
     return {
-        "summary": summarize_smoke(reparsed),
+        "summary": summary,
         "changed_vs_original": changed,
         "not_reparsable": [r["question_id"] for r in reparsed if not r["reparsable"]],
         "records": reparsed,
