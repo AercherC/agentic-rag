@@ -118,3 +118,25 @@ def test_renderer_shows_insufficient_context_status() -> None:
     rendered = render_rag_answer(make_answer())
 
     assert "Status: insufficient_context\nAnswer:\n知识库信息不足。" in rendered
+
+
+def test_ask_cli_renders_index_configuration_error_with_exit_code_1(tmp_path, capsys, monkeypatch) -> None:
+    """A3.1：走真实 build_rag_service；显式 INDEX_STATE_PATH 缺失时抛 ActiveCollectionError。
+
+    该错误在加载任何模型之前抛出，CLI 输出必须以 ``Index configuration error`` 开头，退出码 1。
+    """
+
+    monkeypatch.delenv("COLLECTION_NAME", raising=False)
+    settings = Settings(
+        _env_file=None,
+        vector_db_path=tmp_path / "db",
+        index_state_path=tmp_path / "missing_state.json",
+    )
+
+    exit_code = main(["ask", "question"], settings=settings)
+    captured = capsys.readouterr()
+
+    assert exit_code == 1
+    assert captured.out == ""
+    assert captured.err.startswith("Index configuration error: ")
+    assert "missing_state.json" in captured.err

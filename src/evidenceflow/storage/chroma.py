@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import chromadb
+from chromadb.errors import NotFoundError
 
 from evidenceflow.domain.chunk import DocumentChunk, RetrievedChunk
 
@@ -30,6 +31,32 @@ class VectorStoreWriteError(VectorStoreError):
 
 class VectorStoreQueryError(VectorStoreError):
     """表示 Chroma 查询结果无法转换为项目 Domain Model。"""
+
+
+def read_collection_metadata(
+    persist_path: str | Path, collection_name: str
+) -> dict[str, Any] | None:
+    """只读查询 Collection 的 metadata；Collection 不存在时返回 None。
+
+    用于 lifecycle 校验与 ingest 保护：必须在加载任何模型之前执行，且绝不创建 Collection。
+    持久化目录不存在时直接返回 None，不为了“查询”而在磁盘上新建 Chroma 目录。
+    """
+
+    _require_non_empty_text(collection_name, field_name="collection_name")
+    path = Path(persist_path)
+    if not path.is_dir():
+        return None
+    try:
+        client = chromadb.PersistentClient(path=str(path))
+        # 用 get_collection 而不是 get_or_create_collection：查询不能产生副作用。
+        collection = client.get_collection(name=collection_name)
+    except NotFoundError:
+        return None
+    except Exception as exc:
+        raise VectorStoreConfigurationError(
+            f"Failed to read metadata of collection {collection_name!r} at: {path}"
+        ) from exc
+    return dict(collection.metadata or {})
 
 
 def _require_non_empty_text(value: str, *, field_name: str) -> None:
@@ -188,17 +215,21 @@ class ChromaVectorStore:
         collection_name: str,
         *,
         collection_metadata: Mapping[str, Any] | None = None,
+        create_if_missing: bool = True,
     ) -> None:
         """打开本地 PersistentClient，并确保 Collection 使用 cosine。
 
         `collection_metadata` 只用于新建 staging 等 Collection 的生命周期标记；
         未提供时保持既有 Collection 的 metadata 和运行语义不变。
+        `create_if_missing=False` 时只打开已存在的 Collection（线上按 active 指针读取时使用），
+        不存在则抛 `VectorStoreConfigurationError`，不会留下一个空 Collection。
         """
 
         _require_non_empty_text(collection_name, field_name="collection_name")
         self.persist_path = Path(persist_path)
         self.collection_name = collection_name
         self.collection_metadata = dict(collection_metadata or {})
+        self.create_if_missing = create_if_missing
         try:
             self.persist_path.mkdir(parents=True, exist_ok=True)
             self._client = chromadb.PersistentClient(path=str(self.persist_path))
@@ -213,6 +244,17 @@ class ChromaVectorStore:
     def _create_collection(self):
         """创建或打开不绑定 Chroma Embedding Function 的 cosine Collection。"""
 
+        if not self.create_if_missing:
+            try:
+                collection = self._client.get_collection(
+                    name=self.collection_name, embedding_function=None
+                )
+            except NotFoundError as exc:
+                raise VectorStoreConfigurationError(
+                    f"Collection {self.collection_name!r} does not exist at: {self.persist_path}"
+                ) from exc
+            self._require_cosine(collection)
+            return collection
         kwargs: dict[str, Any] = {
             "name": self.collection_name,
             "configuration": COSINE_CONFIGURATION,
@@ -222,12 +264,17 @@ class ChromaVectorStore:
             # metadata 只在 Collection 创建时提供，避免打开 active 时意外覆盖身份信息。
             kwargs["metadata"] = self.collection_metadata
         collection = self._client.get_or_create_collection(**kwargs)
+        self._require_cosine(collection)
+        return collection
+
+    def _require_cosine(self, collection: Any) -> None:
+        """项目的相似度分数语义依赖 cosine；配置不符时拒绝使用该 Collection。"""
+
         hnsw_configuration = collection.configuration.get("hnsw") or {}
         if hnsw_configuration.get("space") != "cosine":
             raise VectorStoreConfigurationError(
                 f"Collection {self.collection_name!r} is not configured for cosine"
             )
-        return collection
 
     @property
     def metadata(self) -> dict[str, Any]:

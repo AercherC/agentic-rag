@@ -23,7 +23,11 @@ from evidenceflow.retrieval import (
     LearnedReranker,
     TransformersCrossEncoderScorer,
 )
-from evidenceflow.storage import ChromaVectorStore
+from evidenceflow.storage import (
+    ChromaVectorStore,
+    VectorStoreConfigurationError,
+    read_collection_metadata,
+)
 
 # BGE-M3 Dense 向量维度；Exact 索引维度不符说明 collection 与当前 Embedding 模型不匹配。
 EMBEDDING_DIMENSION = 1024
@@ -44,9 +48,23 @@ def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
 
 
 def _lifecycle_governed(settings: Settings) -> bool:
-    """lifecycle 状态文件存在时，线上 collection 由 active 指针决定。"""
+    """lifecycle 状态文件存在时，线上 collection 由 active 指针决定。
 
-    return Path(settings.index_state_path).is_file()
+    ``INDEX_STATE_PATH`` 被显式设置（环境变量、.env 或构造参数）而文件不存在时抛
+    ``ActiveCollectionError``：显式路径写错或文件丢失时若静默回落到 ``Settings.collection_name``
+    （其默认值就是线上 v2），active 指针与 ingest 保护都会被悄悄绕过。
+    只有未显式设置、默认路径下也没有文件时，才视为全新环境。
+    """
+
+    path = Path(settings.index_state_path)
+    if path.is_file():
+        return True
+    if "index_state_path" in settings.model_fields_set:
+        raise ActiveCollectionError(
+            f"INDEX_STATE_PATH={str(path)!r} is set explicitly but the lifecycle state file "
+            "does not exist; fix the path or unset INDEX_STATE_PATH"
+        )
+    return False
 
 
 def _load_lifecycle_state(settings: Settings) -> LifecycleState:
@@ -84,20 +102,57 @@ def resolve_active_collection(settings: Settings) -> str:
 
 
 def guard_ingest_target(settings: Settings, collection_name: str) -> None:
-    """拒绝直接向 lifecycle active 指针指向的 collection 摄取。
+    """拒绝直接向 ACTIVE 索引摄取。
 
     ACTIVE 索引只能经 staging 构建 + 校验 + activate 变更；直接 ingest 会走
-    IngestionService 的“先删后写”路径，失败时留下半更新的线上索引。
+    IngestionService 的“先删后写”路径，失败时留下半更新的线上索引。两道检查：
+    1. 状态文件存在时，目标等于 active 指针 → 拒绝；
+    2. 纵深防御（与状态文件无关）：只读查询目标 collection 的 metadata，``lifecycle == "ACTIVE"``
+       → 拒绝。用于状态文件缺失或被误删的情况。collection 不存在时放行，保证全新环境的首次
+       ingest 可用。该查询不加载模型、不创建 collection。
     """
 
-    if not _lifecycle_governed(settings):
-        return
-    active = _load_lifecycle_state(settings).active.collection_name
-    if collection_name == active:
+    if _lifecycle_governed(settings):
+        active = _load_lifecycle_state(settings).active.collection_name
+        if collection_name == active:
+            raise ActiveIndexProtectedError(
+                f"Refusing to ingest into the ACTIVE collection {active!r}; "
+                "build a staging index with scripts/build_staging_index.py instead"
+            )
+    metadata = read_collection_metadata(settings.vector_db_path, collection_name)
+    if metadata is not None and metadata.get("lifecycle") == "ACTIVE":
         raise ActiveIndexProtectedError(
-            f"Refusing to ingest into the ACTIVE collection {active!r}; "
-            "build a staging index with scripts/build_staging_index.py instead"
+            f"Refusing to ingest into collection {collection_name!r}: its metadata is "
+            "lifecycle=ACTIVE; build a staging index with scripts/build_staging_index.py instead"
         )
+
+
+def _open_active_store(settings: Settings, collection_name: str) -> ChromaVectorStore:
+    """打开由 active 指针解析出的 collection，校验在加载任何模型之前完成。
+
+    先只读查询 metadata：collection 不存在时报配置错误（而不是像 get_or_create 那样留下一个空
+    collection，再以“大小为 0”之类的间接错误失败）；``lifecycle`` 不是 ACTIVE 时同样拒绝。
+    随后以 ``create_if_missing=False`` 打开，确保读取路径绝不创建 collection。
+    """
+
+    metadata = read_collection_metadata(settings.vector_db_path, collection_name)
+    if metadata is None:
+        raise ActiveCollectionError(
+            f"Lifecycle active collection {collection_name!r} does not exist in "
+            f"{settings.vector_db_path}; check {settings.index_state_path} and VECTOR_DB_PATH"
+        )
+    lifecycle = metadata.get("lifecycle")
+    if lifecycle != "ACTIVE":
+        raise ActiveCollectionError(
+            f"Collection {collection_name!r} has metadata lifecycle={lifecycle!r}, "
+            "expected 'ACTIVE'"
+        )
+    try:
+        return ChromaVectorStore(settings.vector_db_path, collection_name, create_if_missing=False)
+    except VectorStoreConfigurationError as exc:
+        raise ActiveCollectionError(
+            f"Cannot open lifecycle active collection {collection_name!r}: {exc}"
+        ) from exc
 
 
 def build_ingestion_service(settings: Settings) -> IngestionService:
@@ -127,20 +182,18 @@ def build_retriever(settings: Settings) -> DenseRerankerRetriever:
     而 817 个向量的全量内积成本可以忽略。Chroma 仍是唯一持久化来源。
     """
 
+    collection_name = resolve_active_collection(settings)
+    # collection 的存在性与 lifecycle 校验先于 Embedding 模型加载：配置错误应立即暴露，
+    # 不必先等模型加载完成。由 active 指针解析出的 collection 必须带 lifecycle=ACTIVE 标记，
+    # 防止指针指向未激活或被标记为 STAGING 的 collection；无状态文件的全新环境没有该标记，
+    # 不校验，且沿用原有的打开方式与顺序（get_or_create）。
+    governed = _lifecycle_governed(settings)
+    vector_store = _open_active_store(settings, collection_name) if governed else None
     embedding_provider = BgeM3EmbeddingProvider(
         settings.embedding_model, device=settings.model_device
     )
-    collection_name = resolve_active_collection(settings)
-    vector_store = ChromaVectorStore(settings.vector_db_path, collection_name)
-    # 由 active 指针解析出的 collection 必须带 lifecycle=ACTIVE 标记，防止指针指向
-    # 未激活或被标记为 STAGING 的 collection；无状态文件的全新环境没有该标记，不校验。
-    if _lifecycle_governed(settings):
-        lifecycle = vector_store.metadata.get("lifecycle")
-        if lifecycle != "ACTIVE":
-            raise ActiveCollectionError(
-                f"Collection {collection_name!r} has metadata lifecycle={lifecycle!r}, "
-                "expected 'ACTIVE'"
-            )
+    if vector_store is None:
+        vector_store = ChromaVectorStore(settings.vector_db_path, collection_name)
     # 启动时从 Chroma 全量读出向量并构建索引；不写出任何第二份持久化向量文件。
     pairs = list(vector_store.iter_all_chunks_with_embeddings())
     exact_index = ExactDenseIndex(

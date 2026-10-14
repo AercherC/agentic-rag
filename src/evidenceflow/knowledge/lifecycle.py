@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import tempfile
 from collections import Counter
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Collection, Iterator, Sequence
 from pathlib import Path
 from typing import Any, Literal, Protocol
 
@@ -195,14 +196,55 @@ class StagingBuildCoordinator:
             return tracker.job, None
 
 
-def build_staging_collection_name(base_collection: str, index_signature: str) -> str:
-    """为 staging 生成稳定、可读且不依赖随机 UUID 的 Collection 名称。"""
+# staging 名称的组成长度：base 前缀 24 + "-" + base 短哈希 8 + "__staging__" 11 + signature 前缀 16 = 60，
+# 低于 Chroma 名称上限 63。
+_STAGING_BASE_PREFIX = 24
+_STAGING_BASE_HASH = 8
+_STAGING_SIGNATURE_PREFIX = 16
+# 避让 reserved 名称时最多尝试的候选数；超过说明输入异常，直接报错而不是无限尝试。
+_STAGING_NAME_ATTEMPTS = 8
+
+
+def build_staging_collection_name(
+    base_collection: str,
+    index_signature: str,
+    *,
+    reserved: Collection[str] = (),
+) -> str:
+    """为 staging 生成确定性、可读且不依赖随机 UUID 的 Collection 名称。
+
+    名称 = 截断的 base 前缀 + 完整 base 的短哈希 + ``__staging__`` + signature 前缀。
+    短哈希基于**完整** base 计算：仅靠截断前缀时，对生成结果再生成一次会得到它本身（A3 审查发现），
+    激活后重建的 staging 名就会等于 active。加入完整 base 的哈希后，以生成结果为 base 再生成
+    得到的名称必然不同于它自身（除非 32 位哈希碰撞）。
+
+    ``reserved``（通常是 active 与 previous）中的名称会被避让：同一 base + signature 在 rollback
+    之后重建时，首选名称恰好等于 previous（它就是上一次的 staging），此时按固定顺序改用带序号盐的
+    候选，结果仍只由输入决定。所有候选都被占用时抛 ``ValueError``。
+    """
 
     if not base_collection.strip() or not index_signature.strip():
         raise ValueError("base_collection and index_signature must not be empty")
-    # Chroma 名称长度有限；保留稳定 base 前缀和 signature 前缀即可完成审计绑定。
-    safe_base = re.sub(r"[^A-Za-z0-9._-]", "-", base_collection)[:32].strip(".-") or "evidenceflow"
-    return f"{safe_base}__staging__{index_signature[:16]}"
+    # 只保留 Chroma 允许的字符，并截断以满足名称长度上限；首尾的 . 和 - 不允许，去掉。
+    safe_base = (
+        re.sub(r"[^A-Za-z0-9._-]", "-", base_collection)[:_STAGING_BASE_PREFIX].strip(".-")
+        or "evidenceflow"
+    )
+    taken = set(reserved)
+    for attempt in range(_STAGING_NAME_ATTEMPTS):
+        # 第 0 个候选只哈希 base 本身，使首次构建的名称是 (base, signature) 的纯函数；
+        # 之后的候选在哈希输入里追加序号，仅用于避让 reserved。
+        salt = "" if attempt == 0 else f"#{attempt}"
+        digest = hashlib.sha256(f"{base_collection}{salt}".encode("utf-8")).hexdigest()
+        name = (
+            f"{safe_base}-{digest[:_STAGING_BASE_HASH]}"
+            f"__staging__{index_signature[:_STAGING_SIGNATURE_PREFIX]}"
+        )
+        if name not in taken:
+            return name
+    raise ValueError(
+        f"cannot derive a staging collection name for {base_collection!r} that avoids {sorted(taken)}"
+    )
 
 
 def _read_embedding_dimension(store: Any) -> int | None:

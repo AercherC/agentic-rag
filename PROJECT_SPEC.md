@@ -91,6 +91,8 @@
 - **LLM 默认值（A3 修订，用户决定）**：`Settings.llm_base_url` 默认 `https://api.deepseek.com`，`llm_model` 默认
   `deepseek-flash`，`llm_thinking` 默认 `disabled`（此前为 ModelScope / Qwen3.5-35B-A3B / `auto`）；`.env.example`
   与之一致。使用非 DeepSeek 服务时必须同时覆盖这三项（尤其是 `LLM_THINKING=auto`，否则可能返回 400）。
+  **这是用户本人的决定，2026-10-14 确认**。执行计划 A3 表格中 `.env.example` 一行写的是“与代码默认值一致
+  （ModelScope / Qwen/Qwen3.5-35B-A3B）”；本条与该字面要求的偏离已获用户认可，以本条为准。
 
 ## §S.3 索引生命周期接到线上（A3）
 
@@ -110,10 +112,33 @@
   （`artifacts/stage_a/A0_verify_active_index.txt`）。
 - **激活时同步 metadata**：Chroma 的 `lifecycle` 标记在 collection 创建时写入；`--activate` 在切换 active 指针**之前**
   通过 Chroma API 把新 active collection 的 metadata 改为 `lifecycle=ACTIVE`，否则新 active 会被上一条校验拒绝。
+  `mark_collection_lifecycle` 合并 metadata 时去掉旧键 `hnsw:space`：Chroma 的 `modify` 只是拒绝**含**该键的
+  metadata，去掉即可修改带该键创建的 collection（如 v2），cosine 由 configuration 决定、保持不变（Chroma 1.5.9 实测，
+  有临时目录测试）。改写后该 collection 的 metadata 不再含 `hnsw:space`。新建的 staging 不写这个键，原因是源码中没有
+  任何地方读取它，cosine 由 `ChromaVectorStore` 的 configuration 保证——**不是**“Chroma 拒绝所以只能不写”。
+- **待决（留给 A5）**：激活后**旧 active 的 metadata 仍为 `lifecycle=ACTIVE`**，rollback 依赖这一点（rollback 只切指针，
+  不改 metadata；旧 active 若被改成 PREVIOUS，rollback 后会被 runtime 的 lifecycle 校验拒绝）。由此带来的后果：
+  同时可能有多个 collection 标为 ACTIVE，纵深防御会把它们都当作 ACTIVE 保护。是否在 activate/rollback 时同步改写
+  metadata，属于 rollback 语义的变更，A3.1 不改。
+- **待决（留给 A5）**：`artifacts/phase15a/index_state.json` 被 git 跟踪。以后真正执行 activate/rollback 会改动这个被跟踪
+  的文件；`git restore` / `git checkout` / 切换分支都可能把线上 active 指针改回旧值。是否移出版本控制（或改为只跟踪
+  初始快照）留待 A5 决定。
 - **ingest 保护**：状态文件存在时，`ingest` 的目标即 active collection，`build_ingestion_service` 在构造任何模型之前
   抛出 `ActiveIndexProtectedError`，CLI 打印“请使用 scripts/build_staging_index.py”并以**退出码 2**退出。
   `ActiveCollectionError`（配置冲突）仍沿用既有失败路径（退出码 1）。保护函数
-  `runtime.guard_ingest_target(settings, collection_name)` 可单独调用。无状态文件时保持原行为。
+  `runtime.guard_ingest_target(settings, collection_name)` 可单独调用。
+- **显式状态文件路径缺失（A3.1）**：`INDEX_STATE_PATH` 被显式设置（`"index_state_path" in settings.model_fields_set`）
+  但文件不存在时，`resolve_active_collection` / `guard_ingest_target` 抛 `ActiveCollectionError`，不回落到
+  `Settings.collection_name`（其默认值就是线上 v2，回落会静默绕过 active 指针与 ingest 保护）。只有未显式设置、
+  默认路径下也没有文件时才视为全新环境。
+- **ingest 纵深防御（A3.1）**：不论状态文件是否存在，`guard_ingest_target` 都用只读的
+  `storage.read_collection_metadata(vector_db_path, name)`（`get_collection`，不加载模型、不创建 collection；存储目录
+  不存在时直接返回 None）读取目标 collection 的 metadata，`lifecycle == "ACTIVE"` 时抛 `ActiveIndexProtectedError`
+  （CLI 退出码 2）。collection 不存在或没有该标记时放行，全新环境的首次 ingest 不受影响。
+- **按指针读取不创建 collection（A3.1）**：由 active 指针解析出的 collection 先经 `read_collection_metadata` 校验
+  “存在且 `lifecycle == ACTIVE`”，再以 `ChromaVectorStore(..., create_if_missing=False)`（`get_collection`）打开；
+  不存在时抛 `ActiveCollectionError`，不再经 `get_or_create_collection` 留下空 collection。上述校验在加载 Embedding
+  模型之前完成。无状态文件的全新环境仍用 `get_or_create`，构造顺序不变。
 - **`IndexLifecycle.discard_staging() -> LifecycleState`**（新增，第 5 个状态方法）：只把 `staging` 指针置为 null，
   不改动 `active`/`previous`；沿用 `_write_json_atomic`；`staging` 本来为 null 时直接返回当前状态、不重写文件；
   **不删除 Chroma collection**——删除由调用方通过 Chroma API 完成，且必须先确认它不是 active 或 previous。
@@ -122,8 +147,21 @@
   builder 回调）与 `validate_collection`，不复制 ingestion 逻辑。参数：`--expected-chunk-ids-from-active`（chunk ID 集合
   必须与 active 完全一致）、`--activate`（默认不激活）、`--discard-after-validate`（校验**通过**后通过 Chroma API
   删除 staging collection，再调用 `discard_staging()`；校验失败时保留 staging collection 与指针供诊断；与
-  `--activate` 互斥）。staging collection 名由 `build_staging_collection_name` 生成；已存在同名 collection 或状态中已有
-  staging 指针时拒绝开始。`BuildJobStore` 输出放在 `artifacts/stage_a/A3_staging_jobs/`。manifest 的文档数与 chunk 数
+  `--activate` 互斥）、`--discard-staging`（A3.1：不构建，只删除已登记的 staging 并清指针，用于恢复中途失败的 discard；
+  不能与其他选项组合）。已存在同名 collection 或状态中已有 staging 指针时拒绝开始。
+- **staging 命名（A3.1）**：`build_staging_collection_name(base, signature, *, reserved=())` =
+  `base[:24]`（清洗后）+ `-` + `sha256(完整 base)[:8]` + `__staging__` + `signature[:16]`，共 60 字符以内（Chroma 上限 63）。
+  哈希基于完整 base，因此以生成结果为 base 再生成必然得到不同名称（修复“激活后重建 staging 名等于 active”）。`reserved`
+  中的名称被避让：首选名被占用时按固定顺序改用哈希输入加序号盐（`#1`、`#2`…，最多 8 个候选）的候选，结果仍只由输入
+  决定（修复“rollback 后同 signature 重建，首选名等于 previous”）；全被占用抛 `ValueError`。脚本传入
+  `reserved = {active, previous}`，并在生成后再次检查：若等于 active 或 previous，构建前以 `StagingBuildRefused`
+  拒绝（退出码 2），提示中明确**不要**删除或修改该 collection。
+- **discard 幂等（A3.1）**：`discard_staging_collection(lifecycle, delete_collection, list_collections)` 在 staging 指针
+  存在但 collection 已不存在时只清指针并成功返回；staging 指针为 null 时仍拒绝（退出码 2，什么都不改）。
+- **退出码（A3.1 修订）**：0 = 成功；1 = 构建或校验失败（staging 与指针保留）；2 = 拒绝开始（没有构建、没有删除、
+  没有改动状态文件）；**3 = 校验已通过，但构建后的收尾动作被保护拒绝**（`--discard-after-validate` 时遇到
+  `ProtectedCollectionError`，只可能因状态文件在构建期间被外部改动；staging 与指针保留）。A3 中这种情况返回 2，与
+  “2 = 拒绝开始”矛盾。能前置的保护检查（生成名与 active/previous 重名）已移到构建之前。`BuildJobStore` 输出放在 `artifacts/stage_a/A3_staging_jobs/`。manifest 的文档数与 chunk 数
   取 active 的数量（本脚本当前只支持“同一 corpus 的全量重建”）。
 - **IngestionService 的“先删后写”不变**：ACTIVE 已不允许 ingest，staging 又总是全新的空 collection，该分支不会被触发；
   本阶段不修改 `ingestion/service.py` 内部逻辑。

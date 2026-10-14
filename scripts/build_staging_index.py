@@ -5,8 +5,15 @@
 
     python scripts/build_staging_index.py --expected-chunk-ids-from-active --discard-after-validate
 
-退出码：0 = 校验通过且所选动作完成；1 = 构建或校验失败（staging 与指针原样保留供诊断）；
-2 = 拒绝开始（已有 staging 指针、同名 collection 已存在、参数冲突）。
+上次 discard 中途失败（例如 collection 已删、指针未清）时，可单独清理已登记的 staging：
+
+    python scripts/build_staging_index.py --discard-staging
+
+退出码：0 = 校验通过且所选动作完成（或 --discard-staging 完成）；1 = 构建或校验失败（staging 与指针
+原样保留供诊断）；2 = 拒绝开始，没有构建、没有删除、没有改动状态文件（已有 staging 指针、生成的
+staging 名与 active/previous 或已有 collection 重名、参数冲突、--discard-staging 时没有登记的
+staging 或其名称是 active/previous）；3 = 校验已通过，但构建之后的收尾动作被保护拒绝（staging
+collection 与指针保留，状态文件在构建期间被外部改动时才可能发生）。
 """
 
 from __future__ import annotations
@@ -55,7 +62,11 @@ class StagingBuildRefused(RuntimeError):
 
 
 class ProtectedCollectionError(RuntimeError):
-    """试图删除 active 或 previous 的 collection 时抛出；这两个是线上与回滚依赖的索引。"""
+    """试图删除 active 或 previous 的 collection 时抛出；这两个是线上与回滚依赖的索引。
+
+    能前置的场景（生成的 staging 名与它们重名）在构建前以 ``StagingBuildRefused`` 拒绝；
+    构建之后仍抛出本异常说明状态文件在构建期间被改动，退出码 3。
+    """
 
 
 class StageReporter:
@@ -107,40 +118,54 @@ class StagingPorts:
     mark_collection_active: Callable[[str], None]
 
 
+def _protected_names(state: LifecycleState) -> set[str]:
+    """active 与 previous 是线上与回滚依赖的 collection，任何删除或复用都必须避开。"""
+
+    names = {state.active.collection_name}
+    if state.previous is not None:
+        names.add(state.previous.collection_name)
+    return names
+
+
 def discard_staging_collection(
     lifecycle: IndexLifecycle,
     delete_collection: Callable[[str], None],
+    list_collections: Callable[[], set[str]],
 ) -> LifecycleState:
-    """删除已登记的 staging collection，然后清空 staging 指针。
+    """删除已登记的 staging collection，然后清空 staging 指针；可重复执行（幂等）。
 
     删除前先确认目标不是 active 或 previous：这两个 collection 一旦被删，线上或回滚就会失效。
     顺序是先删 collection、后清指针；删除失败时指针保持不变，状态仍与实际一致。
+    若上次执行已删掉 collection 但清指针失败，再次执行时 collection 已不存在，只清指针并成功返回，
+    否则这种半完成状态会让后续构建永远因“已有 staging 指针”被拒绝。
     """
 
     state = lifecycle.load_state()
     if state.staging is None:
         raise StagingBuildRefused("no staging pointer is registered; nothing to discard")
     name = state.staging.collection_name
-    protected = {state.active.collection_name}
-    if state.previous is not None:
-        protected.add(state.previous.collection_name)
-    if name in protected:
+    if name in _protected_names(state):
         raise ProtectedCollectionError(
             f"refusing to delete collection {name!r}: it is the active or previous index"
         )
-    delete_collection(name)
+    # collection 已不存在（上次删除成功、清指针失败）时跳过删除，只补做清指针。
+    if name in list_collections():
+        delete_collection(name)
     return lifecycle.discard_staging()
 
 
 def mark_collection_lifecycle(client: Any, collection_name: str, lifecycle: str) -> None:
-    """通过 Chroma API 改写 collection metadata 中的 lifecycle 标记，其余 metadata 原样保留。
+    """通过 Chroma API 改写 collection metadata 中的 lifecycle 标记，其余业务 metadata 原样保留。
 
-    Chroma 的 modify 以整体替换方式写 metadata，且拒绝包含 ``hnsw:space`` 的 metadata；
-    因此被改写的 collection 必须是不带该旧键创建的（本脚本创建的 staging 即如此）。
+    Chroma 的 modify 以整体替换方式写 metadata，且拒绝**包含** ``hnsw:space`` 键的 metadata。
+    合并时去掉该旧键即可让带它创建的历史 collection（如 v2）也能被改写：距离度量由 collection
+    的 configuration 决定，modify metadata 不会改变它（Chroma 1.5.9 实测，见对应测试）。
+    改写后 metadata 中不再有 ``hnsw:space``；源码中没有任何地方读取该键。
     """
 
     collection = client.get_collection(name=collection_name)
-    collection.modify(metadata={**(collection.metadata or {}), "lifecycle": lifecycle})
+    merged = {key: value for key, value in (collection.metadata or {}).items() if key != "hnsw:space"}
+    collection.modify(metadata={**merged, "lifecycle": lifecycle})
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
@@ -184,10 +209,25 @@ def run_staging_build(
     sources = ports.scan_sources()
     pipeline: PipelineIdentity = current_pipeline_from_settings(settings)
     index_signature = build_index_signature(build_corpus_signature(sources), pipeline)
-    staging_name = build_staging_collection_name(state.active.collection_name, index_signature)
+    protected = _protected_names(state)
+    # active/previous 作为 reserved 传入，生成器会避让它们（例如 rollback 后同 signature 重建时，
+    # 首选名称恰好是 previous）。
+    staging_name = build_staging_collection_name(
+        state.active.collection_name, index_signature, reserved=protected
+    )
+    # 纵深防御：无论生成规则如何，staging 名绝不能等于线上或回滚依赖的 collection，
+    # 否则构建会写进 ACTIVE/PREVIOUS 索引，discard 还会删除它。
+    if staging_name in protected:
+        raise StagingBuildRefused(
+            f"generated staging name {staging_name!r} equals the active or previous collection; "
+            "refusing to build. Do not delete or modify that collection: it is a live or rollback "
+            "index. This indicates a staging naming bug"
+        )
     if staging_name in ports.list_collections():
         raise StagingBuildRefused(
-            f"collection {staging_name!r} already exists; remove it through the Chroma API first"
+            f"collection {staging_name!r} already exists and is neither active nor previous "
+            "(likely left over from an earlier build); inspect it before deciding what to do. "
+            "This script never reuses or deletes an existing collection"
         )
     expected_ids = (
         ports.active_chunk_ids(state.active.collection_name) if expected_chunk_ids_from_active else None
@@ -238,7 +278,15 @@ def run_staging_build(
         summary["actions"].append("activated")
         summary["outcome"] = "ACTIVATED"
     elif discard_after_validate:
-        discard_staging_collection(lifecycle, ports.delete_collection)
+        try:
+            discard_staging_collection(lifecycle, ports.delete_collection, ports.list_collections)
+        except ProtectedCollectionError as exc:
+            # 构建前已确认 staging 名不是 active/previous；到这里说明状态文件在构建期间被改动。
+            # 此时已经构建完成，不能再用“2 = 拒绝开始”，改用退出码 3，staging 与指针保留。
+            summary["outcome"] = "VALIDATED_DISCARD_REFUSED"
+            summary["error"] = str(exc)
+            _write_json(job_dir / "staging_build_summary.json", summary)
+            return 3, summary
         summary["actions"].append("staging_collection_deleted")
         summary["actions"].append("staging_pointer_cleared")
         summary["outcome"] = "VALIDATED_AND_DISCARDED"
@@ -277,8 +325,8 @@ def make_real_ports(settings: Settings) -> StagingPorts:
         store = ChromaVectorStore(
             settings.vector_db_path,
             collection_name,
-            # 不写旧的 "hnsw:space" 键：Chroma 的 modify 会拒绝它，而 cosine 已由 ChromaVectorStore
-            # 的 configuration 保证；这样激活时改写 lifecycle 不会丢失或冲突其他 metadata。
+            # 不写旧的 "hnsw:space" 键：源码中没有任何地方读取它，cosine 由 ChromaVectorStore 的
+            # configuration 保证。（含该键的 collection 也能改写 lifecycle，见 mark_collection_lifecycle。）
             collection_metadata={
                 "chunk_strategy": settings.chunk_strategy,
                 "storage_contract": "domain_chunk_metadata_v2",
@@ -312,6 +360,28 @@ def make_real_ports(settings: Settings) -> StagingPorts:
     )
 
 
+def run_discard_only(settings: Settings) -> int:
+    """--discard-staging：只连接 Chroma 删除已登记的 staging 并清指针，不加载任何模型。"""
+
+    import chromadb
+
+    try:
+        state = LifecycleState.model_validate_json(Path(settings.index_state_path).read_text(encoding="utf-8"))
+        lifecycle = IndexLifecycle(settings.index_state_path, state.knowledge_base_id)
+        client = chromadb.PersistentClient(path=str(settings.vector_db_path))
+        discard_staging_collection(
+            lifecycle,
+            lambda name: client.delete_collection(name),
+            lambda: {item.name for item in client.list_collections()},
+        )
+    except (StagingBuildRefused, ProtectedCollectionError) as exc:
+        # 尚未删除任何东西、也没有改动状态文件，属于“拒绝开始”。
+        print(f"REFUSED: {exc}", file=sys.stderr)
+        return 2
+    print(json.dumps({"outcome": "STAGING_DISCARDED"}, ensure_ascii=False))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
@@ -325,10 +395,20 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="校验通过后通过 Chroma API 删除 staging collection 并清空 staging 指针；校验失败时保留",
     )
+    parser.add_argument(
+        "--discard-staging",
+        action="store_true",
+        help="不构建，只删除已登记的 staging collection 并清空指针（幂等，用于恢复中途失败的 discard）",
+    )
     parser.add_argument("--job-dir", type=Path, default=DEFAULT_JOB_DIR, help="BuildJob 与摘要输出目录")
     args = parser.parse_args(argv)
 
     settings = Settings()
+    if args.discard_staging:
+        if args.activate or args.discard_after_validate or args.expected_chunk_ids_from_active:
+            print("REFUSED: --discard-staging cannot be combined with build options", file=sys.stderr)
+            return 2
+        return run_discard_only(settings)
     try:
         code, summary = run_staging_build(
             settings,
@@ -338,7 +418,8 @@ def main(argv: list[str] | None = None) -> int:
             activate=args.activate,
             discard_after_validate=args.discard_after_validate,
         )
-    except (StagingBuildRefused, ProtectedCollectionError) as exc:
+    except StagingBuildRefused as exc:
+        # 只有构建前的拒绝会走到这里；构建后的保护拒绝由 run_staging_build 以退出码 3 返回。
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
     validation = summary["validation"] or {}

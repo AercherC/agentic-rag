@@ -1,7 +1,7 @@
 """测试 scripts/build_staging_index.py 的构建、校验、丢弃与保护逻辑（A3）。
 
-全部使用临时目录中的 state 文件、Fake builder 与 Fake collection 操作；唯一的真实 Chroma
-用例只在临时目录里验证 lifecycle metadata 的改写，不触碰仓库的 data/chroma。
+全部使用临时目录中的 state 文件、Fake builder 与 Fake collection 操作；真实 Chroma 用例只在
+临时目录里验证 lifecycle metadata 的改写与 --discard-staging，不触碰仓库的 data/chroma。
 """
 
 import json
@@ -25,6 +25,7 @@ from scripts.build_staging_index import (
     StagingBuildRefused,
     StagingPorts,
     discard_staging_collection,
+    main,
     mark_collection_lifecycle,
     run_staging_build,
 )
@@ -205,7 +206,7 @@ def test_discard_refuses_to_delete_active_or_previous_collection(tmp_path, prote
     deleted: list[str] = []
 
     with pytest.raises(ProtectedCollectionError):
-        discard_staging_collection(env.lifecycle, deleted.append)
+        discard_staging_collection(env.lifecycle, deleted.append, lambda: set(env.existing))
 
     assert deleted == []
     assert env.state().staging is not None  # 指针原样，没有任何删除
@@ -215,7 +216,169 @@ def test_discard_without_staging_pointer_is_refused(tmp_path) -> None:
     env = Env(tmp_path)
 
     with pytest.raises(StagingBuildRefused):
-        discard_staging_collection(env.lifecycle, lambda name: None)
+        discard_staging_collection(env.lifecycle, lambda name: None, lambda: set())
+
+
+def test_discard_is_idempotent_when_collection_was_already_deleted(tmp_path) -> None:
+    """A3.1：上次删掉了 collection 但清指针失败；再次 discard 只清指针并成功。"""
+
+    env = Env(tmp_path)
+    code, summary = env.run()  # 校验通过、保留 staging
+    assert code == 0
+    name = summary["staging_collection"]
+    env.existing.discard(name)  # 模拟 collection 已被删除、指针仍在
+    deleted: list[str] = []
+
+    state = discard_staging_collection(env.lifecycle, deleted.append, lambda: set(env.existing))
+
+    assert deleted == []  # 不再尝试删除不存在的 collection
+    assert state.staging is None and env.state().staging is None
+    env.run()  # 指针已清，可以重新开始构建
+
+
+def test_discard_after_validate_retry_recovers_from_pointer_clear_failure(tmp_path, monkeypatch) -> None:
+    """删除成功、清指针失败 → 再执行一次 discard 即可恢复，不会卡在“已有 staging 指针”。"""
+
+    env = Env(tmp_path)
+    original = IndexLifecycle.discard_staging
+
+    def failing_discard(self):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(IndexLifecycle, "discard_staging", failing_discard)
+    with pytest.raises(OSError):
+        env.run(discard_after_validate=True)
+    assert len(env.deleted) == 1 and env.state().staging is not None
+
+    monkeypatch.setattr(IndexLifecycle, "discard_staging", original)
+    discard_staging_collection(env.lifecycle, env.ports().delete_collection, lambda: set(env.existing))
+
+    assert env.state().staging is None
+    assert len(env.deleted) == 1  # 第二次没有重复删除
+
+
+def test_protected_refusal_after_build_uses_exit_code_3(tmp_path, monkeypatch) -> None:
+    """构建之后的保护拒绝不能再用“2 = 拒绝开始”：返回 3，staging collection 与指针保留。"""
+
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+
+    def tampered_discard(lifecycle, delete_collection, list_collections):
+        raise ProtectedCollectionError("state changed during build")
+
+    monkeypatch.setattr(module, "discard_staging_collection", tampered_discard)
+
+    code, summary = env.run(discard_after_validate=True)
+
+    assert code == 3
+    assert summary["outcome"] == "VALIDATED_DISCARD_REFUSED"
+    assert env.deleted == [] and env.state().staging is not None
+    saved = json.loads((tmp_path / "jobs" / "staging_build_summary.json").read_text(encoding="utf-8"))
+    assert saved["outcome"] == "VALIDATED_DISCARD_REFUSED"
+
+
+def _activate_once(env: Env) -> str:
+    """跑一次 --activate，返回成为新 active 的 staging 名。"""
+
+    code, summary = env.run(activate=True)
+    assert code == 0
+    return summary["staging_collection"]
+
+
+def test_rebuild_after_activation_does_not_reuse_active_name(tmp_path) -> None:
+    """A3.1：激活后以同一 signature 重建，staging 名不得等于新 active 或 previous。"""
+
+    env = Env(tmp_path)
+    first = _activate_once(env)
+    state = env.state()
+    assert state.active.collection_name == first
+
+    code, summary = env.run()
+
+    assert code == 0
+    assert summary["staging_collection"] not in {first, "col-active"}
+    assert env.marked_active == [first]  # 重建没有改写任何已有 collection
+
+
+def test_rebuild_after_rollback_does_not_reuse_previous_name(tmp_path) -> None:
+    """A3.1：rollback 后同 signature 重建，首选名恰好是 previous（上一次的 staging），必须避开。"""
+
+    env = Env(tmp_path)
+    first = _activate_once(env)
+    env.lifecycle.rollback()
+    state = env.state()
+    assert state.active.collection_name == "col-active" and state.previous.collection_name == first
+
+    code, summary = env.run(discard_after_validate=True)
+
+    assert code == 0
+    assert summary["staging_collection"] not in {first, "col-active"}
+    assert env.deleted == [summary["staging_collection"]]  # 只删了新建的 staging
+    assert {"col-active", first} <= env.existing
+
+
+@pytest.mark.parametrize("protected", ["active", "previous"])
+def test_refuses_to_build_when_generated_name_equals_active_or_previous(
+    tmp_path, monkeypatch, protected
+) -> None:
+    """纵深防御：生成名等于 active/previous 时在构建前拒绝，提示中不得建议删除。"""
+
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+    _activate_once(env)
+    state = env.state()
+    target = state.active.collection_name if protected == "active" else state.previous.collection_name
+    monkeypatch.setattr(module, "build_staging_collection_name", lambda *a, **k: target)
+    before = (tmp_path / "index_state.json").read_bytes()
+
+    with pytest.raises(StagingBuildRefused) as excinfo:
+        env.run()
+
+    message = str(excinfo.value)
+    assert "equals the active or previous collection" in message
+    assert "Do not delete" in message and "remove it" not in message
+    assert (tmp_path / "index_state.json").read_bytes() == before  # 未登记 staging 指针
+    assert env.deleted == []
+
+
+def test_cli_maps_pre_build_refusal_to_exit_code_2(tmp_path, monkeypatch, capsys) -> None:
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+    env.run()  # 留下 staging 指针 → 下一次构建在开始前被拒绝
+    monkeypatch.setattr(module, "Settings", lambda: env.settings)
+    monkeypatch.setattr(module, "make_real_ports", lambda settings: env.ports())
+
+    assert main(["--job-dir", str(tmp_path / "jobs")]) == 2
+    assert "REFUSED" in capsys.readouterr().err
+
+
+def test_cli_discard_staging_is_idempotent_in_real_chroma(tmp_path, monkeypatch, capsys) -> None:
+    """--discard-staging（临时目录的真实 Chroma）：删除登记的 staging、清指针；重复执行不出错地拒绝。"""
+
+    import chromadb
+
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+    code, summary = env.run()
+    name = summary["staging_collection"]
+    db = tmp_path / "chroma"
+    ChromaVectorStore(db, name, collection_metadata={"lifecycle": "STAGING"})
+    ChromaVectorStore(db, "col-active", collection_metadata={"lifecycle": "ACTIVE"})
+    settings = Settings(_env_file=None, index_state_path=tmp_path / "index_state.json", vector_db_path=db)
+    monkeypatch.setattr(module, "Settings", lambda: settings)
+
+    assert main(["--discard-staging"]) == 0
+    names = {item.name for item in chromadb.PersistentClient(path=str(db)).list_collections()}
+    assert names == {"col-active"}
+    assert env.state().staging is None
+    # 再执行一次：没有登记的 staging，属于“拒绝开始”，什么都不改。
+    assert main(["--discard-staging"]) == 2
+    assert {item.name for item in chromadb.PersistentClient(path=str(db)).list_collections()} == {"col-active"}
+    assert main(["--discard-staging", "--activate"]) == 2
 
 
 def test_activate_marks_collection_active_before_flipping_pointer(tmp_path) -> None:
@@ -312,4 +475,26 @@ def test_mark_collection_lifecycle_rewrites_only_lifecycle_in_real_chroma(tmp_pa
     reopened = ChromaVectorStore(tmp_path / "chroma", "col-stg")
     assert reopened.metadata == {**metadata, "lifecycle": "ACTIVE"}
     # cosine 来自 configuration 而不是 metadata，改写 metadata 不应影响它。
-    assert ChromaVectorStore(tmp_path / "chroma", "col-stg").count == 0
+    fresh = chromadb.PersistentClient(path=str(tmp_path / "chroma")).get_collection("col-stg")
+    assert fresh.configuration["hnsw"]["space"] == "cosine"
+
+
+def test_mark_collection_lifecycle_handles_legacy_hnsw_space_metadata(tmp_path) -> None:
+    """A3.1：带旧键 hnsw:space 的 cosine collection（如 v2）也能改写 lifecycle，cosine 不变。"""
+
+    import chromadb
+
+    client = chromadb.PersistentClient(path=str(tmp_path / "chroma"))
+    client.create_collection(
+        name="col-legacy",
+        metadata={"hnsw:space": "cosine", "chunk_strategy": "hybrid", "lifecycle": "ACTIVE"},
+        embedding_function=None,
+    )
+    assert client.get_collection("col-legacy").configuration["hnsw"]["space"] == "cosine"
+
+    mark_collection_lifecycle(client, "col-legacy", "PREVIOUS")
+
+    fresh = chromadb.PersistentClient(path=str(tmp_path / "chroma")).get_collection("col-legacy")
+    assert fresh.metadata["lifecycle"] == "PREVIOUS"
+    assert fresh.metadata["chunk_strategy"] == "hybrid"
+    assert fresh.configuration["hnsw"]["space"] == "cosine"

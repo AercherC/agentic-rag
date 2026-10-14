@@ -276,6 +276,56 @@ def test_staging_collection_name_is_deterministic() -> None:
     assert "staging" in first
 
 
+def test_staging_name_regenerated_from_its_own_output_differs() -> None:
+    """A3.1：激活后 active 就是上次的 staging 名；以它为 base 再生成必须得到不同的名称。
+
+    旧实现只截取 base 前 32 字符，``…c512_v2`` 被截成 ``…c512_v``，对结果再生成仍是它本身。
+    """
+
+    v2 = "ef_research_bge_m3_hybrid_c512_v2"
+    signature = "b4e9432c7170615a" + "0" * 48
+    first = build_staging_collection_name(v2, signature)
+    second = build_staging_collection_name(first, signature)
+    third = build_staging_collection_name(second, signature)
+
+    assert len({v2, first, second, third}) == 4
+    assert all(3 <= len(name) <= 63 for name in (first, second, third))  # Chroma 名称上限
+
+
+def test_staging_name_differs_for_bases_sharing_the_truncated_prefix() -> None:
+    """截断前缀相同的不同 base（如 …_v2 与 …_v3）必须得到不同名称：哈希基于完整 base。"""
+
+    signature = "c" * 64
+    names = {
+        build_staging_collection_name(f"ef_research_bge_m3_hybrid_c512_v{n}", signature) for n in range(2, 6)
+    }
+    assert len(names) == 4
+
+
+def test_staging_name_avoids_reserved_names_deterministically() -> None:
+    """rollback 后同 base+signature 的首选名就是 previous；reserved 使其确定性地改用下一个候选。"""
+
+    base, signature = "ef_research_bge_m3_hybrid_c512_v2", "d" * 64
+    preferred = build_staging_collection_name(base, signature)
+    alternative = build_staging_collection_name(base, signature, reserved={base, preferred})
+
+    assert alternative not in {base, preferred}
+    assert alternative == build_staging_collection_name(base, signature, reserved={base, preferred})
+    assert build_staging_collection_name(base, signature, reserved={"unrelated"}) == preferred
+
+
+def test_staging_name_raises_when_every_candidate_is_reserved(monkeypatch) -> None:
+    import evidenceflow.knowledge.lifecycle as module
+
+    base, signature = "kb", "e" * 64
+    monkeypatch.setattr(module, "_STAGING_NAME_ATTEMPTS", 2)
+    taken = {build_staging_collection_name(base, signature)}
+    taken.add(build_staging_collection_name(base, signature, reserved=taken))
+
+    with pytest.raises(ValueError, match="cannot derive"):
+        build_staging_collection_name(base, signature, reserved=taken)
+
+
 def test_chroma_staging_metadata_is_explicit_and_readable(tmp_path) -> None:
     """新建 staging Collection 可写入生命周期 metadata，且不改变旧 Adapter 语义。"""
 
