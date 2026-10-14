@@ -1,8 +1,22 @@
-"""组合 EmbeddingProvider 与 VectorStore 实现 Dense Retrieval。"""
+"""组合 EmbeddingProvider 与 Dense Search 实现 Dense Retrieval。"""
+
+from typing import Protocol
 
 from evidenceflow.domain.chunk import RetrievedChunk
 from evidenceflow.embedding.base import EmbeddingProvider
-from evidenceflow.storage.base import VectorStore
+
+
+class DenseSearch(Protocol):
+    """定义 DenseRetriever 所需的最小候选搜索接口。"""
+
+    def search(
+        self,
+        query_embedding: list[float],
+        top_k: int,
+    ) -> list[RetrievedChunk]:
+        """按项目稳定排序返回 Dense 候选。"""
+
+        ...
 
 
 class InvalidQueryError(ValueError):
@@ -22,7 +36,7 @@ class DenseRetriever:
     def __init__(
         self,
         embedding_provider: EmbeddingProvider,
-        vector_store: VectorStore,
+        vector_store: DenseSearch,
         top_k: int = 5,
     ) -> None:
         """注入已有 Provider 和 Store，并保存经过校验的默认 Top-K。"""
@@ -45,7 +59,7 @@ class DenseRetriever:
         effective_top_k = self.top_k if top_k is None else top_k
         _validate_top_k(effective_top_k)
 
-        # Retriever 不加载模型、计算 cosine 或重排结果，只编排现有稳定接口。
+        # Retriever 不加载索引、计算 cosine 或重排结果，只编排已注入的搜索接口。
         query_embedding = self.embedding_provider.embed_query(query)
         return self.vector_store.search(
             query_embedding=query_embedding,

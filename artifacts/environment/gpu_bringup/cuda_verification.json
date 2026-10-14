@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_runtime": "13.0",
+  "cuda_available": true,
+  "device_count": 1,
+  "gpu_name": "NVIDIA GeForce RTX 5060 Laptop GPU",
+  "driver_version": "616.92",
+  "nvidia_smi_cuda_umd_version": "13.4",
+  "compute_capability": [12, 0],
+  "vram_total_mib": 8151,
+  "tensor_smoke": {
+    "operation": "2048x2048 float32 CUDA matrix multiply",
+    "result_device": "cuda:0",
+    "status": "PASS",
+    "allocated_mib": 80.0,
+    "reserved_mib": 80.0,
+    "peak_allocated_mib": 80.0
+  }
+}

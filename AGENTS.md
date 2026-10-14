@@ -1,23 +1,5 @@
 # EvidenceFlow Codex Instructions
 
-## 1. 文档优先级
-
-在修改本项目代码前，先阅读以下文件：
-
-1. `AGENTS.md`
-2. `PROJECT_SPEC.md`
-3. `PROJECT_VISION.md`
-
-其中：
-
-- `PROJECT_SPEC.md` 是当前阶段的唯一实现规范。
-- `PROJECT_VISION.md` 只用于理解项目长期方向，不构成当前实现要求。
-- 用户当前明确提出的任务优先于文档中的一般说明。
-
-如果 `PROJECT_VISION.md` 中描述了未来能力，但 `PROJECT_SPEC.md` 当前阶段没有要求，则不要提前实现。
-
-首先阅读 PROJECT_SPEC.md。只有当当前实现发现既有规范存在冲突、遗漏或必须修改的设计合同，才更新 PROJECT_SPEC.md；如果当前规范已经足以实现本步骤，则不得仅因为开始新 Step 而修改版本或重复补充内容。
-
 ---
 
 ## 2. 当前开发原则
@@ -100,7 +82,7 @@
 当前项目使用已有 Conda 环境：
 
 ```bash
-conda activate agent
+conda activate agent-gpu
 ```
 
 不需要创建新的 Conda 环境。

@@ -1,0 +1,31 @@
+{
+  "backend": "numpy.exact",
+  "build_ms": 388.9578999951482,
+  "chunk_count": 817,
+  "chunk_id_order": "ASC",
+  "dimension": 1024,
+  "embedding_matrix_nbytes": 3346432,
+  "persistent": false,
+  "record_validation": {
+    "chunk_count_matches": true,
+    "chunk_id_hash": "e87a613ebe65b10262996e83974b55839e0b6c27fbe22053ee7b8826dd1f153d",
+    "embedding_dimensions": [
+      1024
+    ],
+    "embedding_dtype": "float32 at ExactDenseIndex boundary",
+    "expected_chunk_id_hash": "e87a613ebe65b10262996e83974b55839e0b6c27fbe22053ee7b8826dd1f153d",
+    "index_backend": "numpy.exact",
+    "index_dimension": 1024,
+    "index_matrix_nbytes": 3346432,
+    "l2_normalized": true,
+    "max_l2_norm": 1.0000001912477867,
+    "metadata_coverage": 1.0,
+    "min_l2_norm": 0.9999998509911091,
+    "record_count": 817,
+    "unique_chunk_ids": true
+  },
+  "schema_version": "phase15c1-exact-index-manifest-v1",
+  "similarity": "float32 inner product over L2-normalized vectors",
+  "source_of_truth": "active Chroma collection",
+  "stable_order": "similarity_score DESC, chunk_id ASC"
+}

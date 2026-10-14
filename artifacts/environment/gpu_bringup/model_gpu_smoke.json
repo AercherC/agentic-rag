@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "bge_m3": {
+    "model": "BAAI/bge-m3",
+    "effective_device": "cuda:0",
+    "parameter_device": "cuda:0",
+    "parameter_dtype": "torch.float32",
+    "tokenizer_device": "cpu",
+    "input_tensor_devices": {
+      "input_ids": "cuda:0",
+      "attention_mask": "cuda:0"
+    },
+    "forward_pass": "PASS",
+    "output_dimension": 1024,
+    "output_python_float": true,
+    "output_l2_norm": 1.0,
+    "allocated_mib": 2197.94,
+    "reserved_mib": 2220.0,
+    "peak_allocated_mib": 2198.71
+  },
+  "reranker": {
+    "model": "BAAI/bge-reranker-base",
+    "effective_device": "cuda:0",
+    "parameter_device": "cuda:0",
+    "parameter_dtype": "torch.float32",
+    "tokenizer_device": "cpu",
+    "input_tensor_devices": {
+      "input_ids": "cuda:0",
+      "attention_mask": "cuda:0"
+    },
+    "forward_passes": 1,
+    "forward_pass": "PASS",
+    "score": -2.154468059539795,
+    "max_length": 512,
+    "batch_size_setting": 4,
+    "allocated_mib": 1092.73,
+    "reserved_mib": 1150.0,
+    "peak_allocated_mib": 1094.05
+  }
+}

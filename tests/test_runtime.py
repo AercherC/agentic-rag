@@ -11,7 +11,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
     events: list[tuple[str, object]] = []
 
     class FakeEmbedding:
-        def __init__(self, model): events.append(("embedding", model))
+        def __init__(self, model, *, device): events.append(("embedding", (model, device)))
 
     class FakeStore:
         def __init__(self, path, collection): events.append(("store", (path, collection)))
@@ -62,6 +62,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
         vector_db_path=tmp_path,
         collection_name="test-collection",
         reranker_model="test-reranker",
+        model_device="cpu",
         reranker_input_k=20,
         reranker_final_k=5,
         max_context_tokens=1234,
@@ -71,7 +72,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
 
     assert isinstance(service, RAGService)
     assert events == [
-        ("embedding", "test-bge"),
+        ("embedding", ("test-bge", "cpu")),
         ("store", (tmp_path, "test-collection")),
         ("dense", 20),
         ("scorer", ("test-reranker", "cpu", "float32", 512)),
@@ -100,7 +101,7 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
         def __init__(self, model): events.append(("tokenizer", model))
 
     class FakeEmbedding:
-        def __init__(self, model): events.append(("embedding", model))
+        def __init__(self, model, *, device): events.append(("embedding", (model, device)))
 
     class FakeStore:
         def __init__(self, path, collection): events.append(("store", (path, collection)))
@@ -122,6 +123,7 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
         vector_db_path=tmp_path / "db",
         collection_name="test-collection",
         embedding_model="test-bge",
+        model_device="cpu",
         chunk_size=512,
         chunk_overlap=64,
     )
@@ -130,7 +132,7 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
 
     assert events == [
         ("tokenizer", "test-bge"),
-        ("embedding", "test-bge"),
+        ("embedding", ("test-bge", "cpu")),
         ("store", (tmp_path / "db", "test-collection")),
         ("ingestion", (tmp_path / "docs", 512, 64, "hybrid")),
     ]

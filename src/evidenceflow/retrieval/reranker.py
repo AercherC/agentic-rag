@@ -14,6 +14,7 @@ from evidenceflow.domain.chunk import (
     RerankedRetrievedChunk,
     RetrievedChunk,
 )
+from evidenceflow.model_device import resolve_model_device
 from evidenceflow.retrieval.retriever import DenseRetriever, InvalidQueryError
 
 
@@ -148,7 +149,7 @@ class TransformersCrossEncoderScorer:
         self,
         model_name: str,
         *,
-        device: str = "cpu",
+        device: str = "auto",
         dtype: str = "float32",
         max_length: int = 512,
         inference_mode: bool = False,
@@ -162,16 +163,18 @@ class TransformersCrossEncoderScorer:
         if dtype != "float32":
             # Phase 9 只晋升已验证的 CPU float32 路径；低精度属于后续性能阶段。
             raise ValueError("dtype must be float32 in the promoted runtime")
+        effective_device = resolve_model_device(device)
         import torch
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.model_name = model_name
-        self.device = device
+        self.device = effective_device
         self.dtype = dtype
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        self.model.to(device=device, dtype=torch.float32)
+        # Tokenizer 保持 CPU；只有编码后的 batch 在前向前迁移到模型设备。
+        self.model.to(device=self.device, dtype=torch.float32)
         self.model.eval()
         self._torch = torch
         self.forward_passes = 0

@@ -50,6 +50,13 @@ class VectorStore(Protocol):
 
         ...
 
+    def iter_all_chunks_with_embeddings(
+        self,
+    ) -> Iterator[tuple[DocumentChunk, list[float]]]:
+        """按 Chunk ID 升序只读遍历完整 Chunk 与已存 Dense 向量。"""
+
+        ...
+
     def clear(self) -> None:
         """清空当前 Collection，并保持 Adapter 可继续使用。"""
 

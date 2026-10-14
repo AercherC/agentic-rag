@@ -160,11 +160,13 @@ def run_replay(output_path: Path = OUTPUT_PATH) -> dict[str, Any]:
 
     # 这里按现有生产 wrapper 装配单一路径；查询文本使用 benchmark 冻结的
     # english_query，与 Phase 13F active hybrid retrieval 的 40Q 口径相同。
-    embedding_provider = BgeM3EmbeddingProvider(settings.embedding_model)
+    embedding_provider = BgeM3EmbeddingProvider(
+        settings.embedding_model, device=settings.model_device
+    )
     dense = DenseRetriever(embedding_provider, store, top_k=settings.reranker_input_k)
     scorer = TransformersCrossEncoderScorer(
         resolve_local_model(settings),
-        device=settings.reranker_device,
+        device=settings.model_device,
         dtype=settings.reranker_dtype,
         max_length=settings.reranker_max_length,
         inference_mode=False,
@@ -234,7 +236,7 @@ def run_replay(output_path: Path = OUTPUT_PATH) -> dict[str, Any]:
             else resolve_local_model(settings),
             "max_length": settings.reranker_max_length,
             "batch_size": settings.reranker_batch_size,
-            "device": settings.reranker_device,
+            "device": scorer.device,
             "dtype": settings.reranker_dtype,
             "final_top_k": settings.reranker_final_k,
         },

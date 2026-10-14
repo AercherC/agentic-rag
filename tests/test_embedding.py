@@ -50,7 +50,7 @@ def test_provider_loads_once_batches_documents_and_returns_python_floats(
     model = _FakeSentenceTransformer()
     loaded_names: list[str] = []
 
-    def fake_loader(model_name: str) -> _FakeSentenceTransformer:
+    def fake_loader(model_name: str, *, device: str) -> _FakeSentenceTransformer:
         loaded_names.append(model_name)
         return model
 
@@ -77,6 +77,7 @@ def test_provider_loads_once_batches_documents_and_returns_python_floats(
             "convert_to_numpy": True,
             "normalize_embeddings": False,
             "show_progress_bar": False,
+            "device": "cpu",
         }
         for call in model.calls
     )
@@ -88,7 +89,7 @@ def test_empty_inputs_are_handled_without_model_inference(monkeypatch) -> None:
     model = _FakeSentenceTransformer()
     monkeypatch.setattr(
         "evidenceflow.embedding.bge_m3.SentenceTransformer",
-        lambda model_name: model,
+        lambda model_name, *, device: model,
     )
     provider = BgeM3EmbeddingProvider("configured/model")
 
@@ -106,7 +107,7 @@ def test_empty_inputs_are_handled_without_model_inference(monkeypatch) -> None:
 def test_model_loading_failure_is_wrapped(monkeypatch) -> None:
     """底层模型无法加载时应提供带模型上下文的项目异常。"""
 
-    def fail_loading(model_name: str) -> None:
+    def fail_loading(model_name: str, *, device: str) -> None:
         raise OSError(model_name)
 
     monkeypatch.setattr(
@@ -114,6 +115,32 @@ def test_model_loading_failure_is_wrapped(monkeypatch) -> None:
     )
     with pytest.raises(EmbeddingLoadError, match="missing/model"):
         BgeM3EmbeddingProvider("missing/model")
+
+
+def test_embedding_model_and_encoding_share_selected_device(monkeypatch) -> None:
+    """模型初始化与 Query/Document 编码必须使用同一解析设备。"""
+
+    model = _FakeSentenceTransformer()
+    loaded_devices: list[str] = []
+
+    def fake_loader(model_name: str, *, device: str) -> _FakeSentenceTransformer:
+        loaded_devices.append(device)
+        return model
+
+    monkeypatch.setattr(
+        "evidenceflow.embedding.bge_m3.resolve_model_device",
+        lambda requested: "cuda:0",
+    )
+    monkeypatch.setattr("evidenceflow.embedding.bge_m3.SentenceTransformer", fake_loader)
+    provider = BgeM3EmbeddingProvider("configured/model", device="auto")
+
+    document_vector = provider.embed_documents(["document"])[0]
+    query_vector = provider.embed_query("query")
+
+    assert provider.device == "cuda:0"
+    assert loaded_devices == ["cuda:0"]
+    assert all(call[1]["device"] == "cuda:0" for call in model.calls)
+    assert all(type(value) is float for value in document_vector + query_vector)
 
 
 @pytest.fixture(scope="module")

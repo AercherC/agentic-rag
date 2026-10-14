@@ -1481,7 +1481,9 @@ def step4_build_stores(tokenizer: BgeM3Tokenizer) -> dict[str, Any]:
     before_hash = _guard_old_collection()
 
     settings = Settings()
-    embedding = BgeM3EmbeddingProvider(settings.embedding_model)
+    embedding = BgeM3EmbeddingProvider(
+        settings.embedding_model, device=settings.model_device
+    )
 
     build_report: dict[str, Any] = {}
     for name in ("SECTION_AWARE_MINIMAL", "ELEMENT_AWARE"):
@@ -1720,7 +1722,9 @@ def step5_retrieval_eval() -> dict[str, Any]:
     questions = load_json(QUESTIONS_SOURCE)["questions"]
 
     settings = Settings()
-    embedding = BgeM3EmbeddingProvider(settings.embedding_model)
+    embedding = BgeM3EmbeddingProvider(
+        settings.embedding_model, device=settings.model_device
+    )
 
     runs: dict[str, dict[str, list[str]]] = {}
     for name in ("BASELINE_C512_O64", "SECTION_AWARE_MINIMAL", "ELEMENT_AWARE"):
@@ -1781,7 +1785,9 @@ def step6_failure_cases() -> dict[str, Any]:
     questions = {q["question_id"]: q for q in load_json(QUESTIONS_SOURCE)["questions"]}
 
     settings = Settings()
-    embedding = BgeM3EmbeddingProvider(settings.embedding_model)
+    embedding = BgeM3EmbeddingProvider(
+        settings.embedding_model, device=settings.model_device
+    )
 
     rows: list[dict[str, Any]] = []
     for question_id in FOCUS_FAILURES:

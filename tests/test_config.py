@@ -25,7 +25,7 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
         "RERANKER_FINAL_K",
         "RERANKER_BATCH_SIZE",
         "RERANKER_MAX_LENGTH",
-        "RERANKER_DEVICE",
+        "MODEL_DEVICE",
         "RERANKER_DTYPE",
         "VECTOR_DB_PATH",
         "COLLECTION_NAME",
@@ -48,7 +48,7 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
     assert settings.reranker_final_k == 5
     assert settings.reranker_batch_size == 4
     assert settings.reranker_max_length == 512
-    assert settings.reranker_device == "cpu"
+    assert settings.model_device == "auto"
     assert settings.reranker_dtype == "float32"
     assert settings.vector_db_path == Path("data/chroma")
 
@@ -61,6 +61,7 @@ def test_environment_variables_override_defaults(monkeypatch) -> None:
     monkeypatch.setenv("CHUNK_OVERLAP", "32")
     monkeypatch.setenv("VECTOR_DB_PATH", "custom/vector-db")
     monkeypatch.setenv("SOURCE_DOCS_PATH", "custom/source-docs")
+    monkeypatch.setenv("MODEL_DEVICE", "cpu")
 
     settings = Settings(_env_file=None)
 
@@ -71,6 +72,7 @@ def test_environment_variables_override_defaults(monkeypatch) -> None:
     assert settings.chunk_overlap == 32
     assert settings.vector_db_path == Path("custom/vector-db")
     assert settings.source_docs_path == Path("custom/source-docs")
+    assert settings.model_device == "cpu"
 
 
 def test_sensitive_setting_has_no_hardcoded_default(monkeypatch) -> None:
@@ -107,12 +109,12 @@ def test_invalid_llm_settings_are_rejected(overrides) -> None:
         {"reranker_input_k": 4, "reranker_final_k": 5},
         {"reranker_batch_size": 0},
         {"reranker_max_length": 0},
-        {"reranker_device": "cuda"},
+        {"model_device": "gpu"},
         {"reranker_dtype": "float16"},
     ],
 )
-def test_invalid_phase9_reranker_settings_are_rejected(overrides) -> None:
-    """Phase 9 只接受已验证的候选深度与 CPU float32 运行合同。"""
+def test_invalid_reranker_settings_are_rejected(overrides) -> None:
+    """候选深度、模型设备与 float32 精度必须符合显式配置合同。"""
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None, **overrides)

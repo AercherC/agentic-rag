@@ -33,7 +33,9 @@ def _build_dense_retriever():
     settings = Settings()
     store = ChromaVectorStore(settings.vector_db_path, settings.collection_name)
     return settings, DenseRetriever(
-        BgeM3EmbeddingProvider(settings.embedding_model), store, top_k=5
+        BgeM3EmbeddingProvider(settings.embedding_model, device=settings.model_device),
+        store,
+        top_k=5,
     )
 
 

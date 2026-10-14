@@ -46,12 +46,15 @@ def _coerce_embedding(
 ) -> list[float]:
     """将向量转换为有限 Python float；Storage 不重复执行归一化。"""
 
-    if isinstance(embedding, (str, bytes)) or not isinstance(embedding, Sequence):
+    # Chroma 的只读接口返回 NumPy ndarray；在 Storage 边界转成普通序列，避免
+    # 第三方数值对象继续向 Domain/检索层传播。
+    raw_embedding = embedding.tolist() if hasattr(embedding, "tolist") else embedding
+    if isinstance(raw_embedding, (str, bytes)) or not isinstance(raw_embedding, Sequence):
         raise TypeError(f"{field_name} must be a numeric sequence")
-    if not embedding:
+    if not raw_embedding:
         raise ValueError(f"{field_name} must not be empty")
     try:
-        values = [float(value) for value in embedding]
+        values = [float(value) for value in raw_embedding]
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{field_name} contains non-numeric values") from exc
     if not all(math.isfinite(value) for value in values):
@@ -452,6 +455,62 @@ class ChromaVectorStore:
         except Exception as exc:
             raise VectorStoreQueryError(
                 "Failed to iterate Chroma collection chunks"
+            ) from exc
+
+    def iter_all_chunks_with_embeddings(
+        self,
+    ) -> Iterator[tuple[DocumentChunk, list[float]]]:
+        """按 Chunk ID 升序恢复 Chunk 与向量，供进程内 Exact Index 构建。"""
+
+        try:
+            # 与 iter_all_chunks 使用相同分页合同；向量只读出，不复制为第二份持久化真源。
+            page_size = 1024
+            offset = 0
+            while True:
+                result = self._collection.get(
+                    limit=page_size,
+                    offset=offset,
+                    include=["documents", "metadatas", "embeddings"],
+                )
+                ids = result.get("ids") or []
+                documents = result.get("documents") or []
+                metadatas = result.get("metadatas") or []
+                raw_embeddings = result.get("embeddings")
+                embeddings = [] if raw_embeddings is None else raw_embeddings
+                if not ids:
+                    break
+                if not (
+                    len(ids)
+                    == len(documents)
+                    == len(metadatas)
+                    == len(embeddings)
+                ):
+                    raise VectorStoreQueryError(
+                        "Chroma iter_all_chunks_with_embeddings returned misaligned fields"
+                    )
+                restored = [
+                    (
+                        _restore_chunk(chunk_id, document, metadata),
+                        _coerce_embedding(
+                            embedding,
+                            field_name=f"embedding[{index}]",
+                        ),
+                    )
+                    for index, (chunk_id, document, metadata, embedding) in enumerate(
+                        zip(ids, documents, metadatas, embeddings)
+                    )
+                ]
+                # Chroma 的物理返回顺序不是业务合同；这里固定全局可复现的 ID 顺序。
+                restored.sort(key=lambda item: item[0].chunk_id)
+                yield from restored
+                if len(ids) < page_size:
+                    break
+                offset += page_size
+        except VectorStoreQueryError:
+            raise
+        except Exception as exc:
+            raise VectorStoreQueryError(
+                "Failed to iterate Chroma collection chunks with embeddings"
             ) from exc
 
     def clear(self) -> None:

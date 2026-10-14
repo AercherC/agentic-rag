@@ -6,6 +6,8 @@ from typing import Any
 
 from sentence_transformers import SentenceTransformer
 
+from evidenceflow.model_device import resolve_model_device
+
 
 class EmbeddingError(RuntimeError):
     """Embedding 模型加载、执行或输出转换失败的统一基础异常。"""
@@ -75,15 +77,16 @@ def _validate_text(text: str, *, field_name: str) -> None:
 class BgeM3EmbeddingProvider:
     """加载一次配置指定的 BGE-M3 模型并生成归一化 Dense Vector。"""
 
-    def __init__(self, model_name: str) -> None:
+    def __init__(self, model_name: str, *, device: str = "auto") -> None:
         """初始化并缓存模型实例，后续文档和查询共享同一向量空间。"""
 
         if not isinstance(model_name, str) or not model_name.strip():
             raise ValueError("Embedding model name must not be empty")
         self.model_name = model_name
+        self.device = resolve_model_device(device)
         try:
-            # 模型名由 Settings.embedding_model 注入，不在 Provider 内重复硬编码。
-            self._model = SentenceTransformer(model_name)
+            # 文档与 Query 共用该实例及设备；模型库默认加载 float32 权重。
+            self._model = SentenceTransformer(model_name, device=self.device)
         except Exception as exc:
             raise EmbeddingLoadError(
                 f"Failed to load embedding model: {model_name}"
@@ -108,6 +111,7 @@ class BgeM3EmbeddingProvider:
                 convert_to_numpy=True,
                 normalize_embeddings=False,
                 show_progress_bar=False,
+                device=self.device,
             )
         except Exception as exc:
             raise EmbeddingError("Failed to embed document texts") from exc
@@ -124,6 +128,7 @@ class BgeM3EmbeddingProvider:
                 convert_to_numpy=True,
                 normalize_embeddings=False,
                 show_progress_bar=False,
+                device=self.device,
             )
         except Exception as exc:
             raise EmbeddingError("Failed to embed query") from exc

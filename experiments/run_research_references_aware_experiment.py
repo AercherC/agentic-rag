@@ -229,7 +229,7 @@ def run_experiment() -> dict[str, Any]:
         for question in dataset["questions"]
     }
     raw_dense = DenseRetriever(
-        BgeM3EmbeddingProvider(settings.embedding_model),
+        BgeM3EmbeddingProvider(settings.embedding_model, device=settings.model_device),
         variant_store,
         top_k=OVERSAMPLE_TOP_K,
     )

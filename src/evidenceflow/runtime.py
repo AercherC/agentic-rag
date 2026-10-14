@@ -35,7 +35,7 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
     return IngestionService(
         settings.source_docs_path,
         BgeM3Tokenizer(settings.embedding_model),
-        BgeM3EmbeddingProvider(settings.embedding_model),
+        BgeM3EmbeddingProvider(settings.embedding_model, device=settings.model_device),
         ChromaVectorStore(settings.vector_db_path, settings.collection_name),
         chunk_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
@@ -46,7 +46,9 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
 def build_rag_service(settings: Settings) -> RAGService:
     """创建唯一正式 Dense Top20 → Learned Reranker → Top5 Pipeline。"""
 
-    embedding_provider = BgeM3EmbeddingProvider(settings.embedding_model)
+    embedding_provider = BgeM3EmbeddingProvider(
+        settings.embedding_model, device=settings.model_device
+    )
     vector_store = ChromaVectorStore(settings.vector_db_path, settings.collection_name)
     dense_retriever = DenseRetriever(
         embedding_provider,
@@ -55,7 +57,7 @@ def build_rag_service(settings: Settings) -> RAGService:
     )
     scorer = TransformersCrossEncoderScorer(
         settings.reranker_model,
-        device=settings.reranker_device,
+        device=settings.model_device,
         dtype=settings.reranker_dtype,
         max_length=settings.reranker_max_length,
     )

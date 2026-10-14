@@ -225,6 +225,21 @@ def test_iter_all_chunks_handles_pagination_past_page_size(tmp_path) -> None:
     assert len(iterated) == len(chunks)
 
 
+def test_iter_all_chunks_with_embeddings_returns_id_sorted_complete_records(tmp_path) -> None:
+    """Exact Index 构建接口必须同时恢复完整 Chunk 和已存向量，且按 ID 排序。"""
+
+    store = _store(tmp_path)
+    chunks = [_chunk("Z"), _chunk("A", chunk_index=1)]
+    store.add_chunks(chunks, [[0.0, 1.0], [1.0, 0.0]])
+
+    records = list(store.iter_all_chunks_with_embeddings())
+
+    assert [chunk.chunk_id for chunk, _ in records] == ["A", "Z"]
+    assert records[0][0] == chunks[1]
+    assert records[1][0] == chunks[0]
+    assert all(len(vector) == 2 for _, vector in records)
+
+
 def test_add_input_validation_and_metadata_serialization(tmp_path) -> None:
     """数量、维度、空向量和不可 JSON 化 metadata 应在写入前明确失败。"""
 

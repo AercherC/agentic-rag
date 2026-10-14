@@ -1,0 +1,42 @@
+{
+  "environment": {
+    "name": "agent-gpu",
+    "path": "D:\\miniconda\\envs\\agent-gpu",
+    "python": "3.12.14",
+    "pip": "26.2.1",
+    "project_install": "editable EvidenceFlow install with the test extra",
+    "dependency_source": "https://pypi.org/simple",
+    "pip_check": "PASS"
+  },
+  "pytorch": {
+    "version": "2.13.0+cu130",
+    "cuda_runtime": "13.0",
+    "cuda_available": true
+  },
+  "installed_project_dependencies": {
+    "chromadb": "1.5.9",
+    "httpx": "0.28.1",
+    "numpy": "2.5.3",
+    "openai": "2.54.0",
+    "pydantic": "2.13.5",
+    "pydantic-settings": "2.15.0",
+    "pymupdf": "1.28.2",
+    "python-dotenv": "1.2.3",
+    "sentence-transformers": "5.7.0",
+    "transformers": "5.17.0",
+    "tokenizers": "0.23.2",
+    "pytest": "9.1.1",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1"
+  },
+  "not_installed": [
+    "torchvision (not required by the project)",
+    "torchaudio (not required by the project)",
+    "faiss (not declared; Exact Dense NumPy fallback remains available)"
+  ],
+  "scope": {
+    "project_source_modified": false,
+    "evaluation_artifacts_modified": false,
+    "original_agent_environment_targeted": false
+  }
+}

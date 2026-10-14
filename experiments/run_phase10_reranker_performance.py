@@ -87,7 +87,9 @@ def _build_replay(dataset: EvaluationDatasetV2, settings: Settings) -> dict[str,
     """只读地冻结 40Q 的 Dense ANN Top20 候选，禁止 benchmark 重查 Chroma。"""
 
     store = ChromaVectorStore(settings.vector_db_path, settings.collection_name)
-    dense = DenseRetriever(BgeM3EmbeddingProvider(settings.embedding_model), store, top_k=20)
+    dense = DenseRetriever(
+        BgeM3EmbeddingProvider(settings.embedding_model, device="cpu"), store, top_k=20
+    )
     replay: dict[str, list[Any]] = {}
     for question in dataset.questions:
         candidates = dense.retrieve(question.query, top_k=20)

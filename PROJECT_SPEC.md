@@ -1,9 +1,9 @@
 # EvidenceFlow Phase 1 — Project Specification
 
-**Version:** 0.24
+**Version:** 0.26
 **Stage:** Local RAG Knowledge Assistant  
 **Status:** Design Baseline  
-**Last Updated:** 2026-09-16
+**Last Updated:** 2026-09-17
 
 ---
 
@@ -2749,3 +2749,44 @@ Phase 15B.5 只收敛既有职责，不改变 Production 检索排序、active i
 完成 Gate：517 tests / 0 failed；40Q 逐题 Top5 零差异；P@5、Recall@5、MRR@5、MAP@5、
 nDCG@5 全部逐值一致；active 10 documents / 817 chunks、corpus/index signature、Phase13F、
 Gold 与 qrels hash 全部一致。完成后停止，不进入 Dense-K 新实验。
+
+## 42. Phase 15C.1 — Deterministic Exact Dense Architecture
+
+Phase 15C.1 是独立的架构验证与离线评测阶段，不晋升 Production Runtime。阶段开始时必须先
+通过当前 HNSW Dense Top20 → Learned Reranker Top5 的 40Q 回放；失败即 STOP。Production
+在整个阶段保持原路径、`Settings` candidate K=20、active Collection 及其 persisted
+`index_signature` 不变。
+
+- Chroma 仍是唯一持久化 Knowledge Store。新增的
+  `iter_all_chunks_with_embeddings()` 只读恢复按 `chunk_id ASC` 排序的
+  `(DocumentChunk, embedding)`，不引入第二个 Repository 或持久化向量文件。
+- `evidenceflow.retrieval.exact_dense.ExactDenseIndex` 是唯一 exact dense candidate
+  primitive。它在进程内从 active Chroma 全量向量构建；优先使用可用的
+  `faiss.IndexFlatIP`，当前平台无 FAISS 时使用等价的 NumPy float32 全量内积回退，并在
+  评测报告中明确标记后端，禁止把 `.faiss` / `.index` 文件写入长期 artifact。
+- Stored/query vector 必须是有限、同维度、`float32`、L2-normalized；候选最终统一按
+  `similarity_score DESC`、`chunk_id ASC` 排序，保留原始 float32 score，不做 rounding。
+  输出继续使用 `RetrievedChunk`，不得新增 backend-specific Domain Model。
+- Production、Exact 评测与 HNSW audit 共用该 exact primitive；历史脚本中的重复 exact
+  cosine 实现必须删除或改为调用该 primitive。Exact index 不写入 `index_signature`。
+- 评测必须冻结 baseline、active identity、Gold/qrels/mapping/projection 与历史 artifact
+  hashes，完成 independent NumPy reference、fresh-process determinism、HNSW-vs-Exact、
+  E20/E30/E40、latency/memory 与受控清理。任一 baseline drift、exact semantic mismatch、
+  candidate parity mismatch 或 frozen hash 变化都只保留诊断证据并 STOP。
+
+## 43. Shared Model Inference Device
+
+`Settings.model_device` 是 BGE-M3 Embedding 与 `BAAI/bge-reranker-base` 共用的唯一设备配置，
+取值为 `auto`、`cpu`、`cuda`，默认 `auto`。`auto` 在 PyTorch CUDA 可用时解析为 `cuda:0`，
+否则解析为 `cpu`；显式 `cuda` 在 CUDA 不可用时必须报错，不得静默降级。Embedding 与 Query
+共用同一 Provider 及设备；Reranker 模型初始化后常驻该设备。
+
+Tokenizer 始终在 CPU 执行；仅把其生成的模型输入 Batch 在前向前迁移到模型设备。BGE-M3
+继续返回 NumPy 后转为归一化 Python `float`，Reranker 分数继续回到 CPU Python `float`，GPU
+Tensor 不得进入 Domain Model、Vector Store 或 JSON。数值路径保持 float32；Reranker 的
+batch size=4、max_length=512、score semantics、稳定 tie-break 与 Top-5 合同不变。Phase 10
+CPU 性能基准仍显式固定 CPU。
+
+设备改造只影响模型推理，不改变 Chroma、Exact Dense/FAISS、Candidate K、active index、Gold、
+qrels 或 Phase 15C.1 的评测边界。没有 CUDA-enabled PyTorch 环境时，只运行确定性设备解析与
+设备传递单元测试；不得将其表述为真实 GPU parity、质量 Gate 或性能 benchmark 结果。

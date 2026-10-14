@@ -120,10 +120,9 @@ class Settings(BaseSettings):
         gt=0,
         description="Query–Passage 联合编码的最大 Token 长度，超出部分由 tokenizer 截断。",
     )
-    reranker_device: str = Field(
-        default="cpu",
-        pattern="^cpu$",
-        description="Phase 9 已验证的 Reranker 设备；当前仅允许 cpu。",
+    model_device: Literal["auto", "cpu", "cuda"] = Field(
+        default="auto",
+        description="Embedding 与 Reranker 共用的推理设备；auto 优先 CUDA，不可用时回退 CPU。",
     )
     reranker_dtype: str = Field(
         default="float32",
