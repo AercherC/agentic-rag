@@ -28,8 +28,44 @@
   `artifacts/stage_a/A1_exact_baseline.json`，sha256 `422fd629b22f26caf9452e3598bf805d01df9b9cf24e6d42b5a6890e40a1411f`。
   P@5 0.2684 · R@5 0.5103 · MRR@5 0.5175 · MAP@5 0.3631 · nDCG@5 0.4903（40Q，eligible 38），
   与 HNSW B0 逐题 Top5 完全一致、5 项指标差为 0。
+- `experiments/run_phase15c1_exact_dense_architecture.py` 已被 A1 取代，§S.1 之后不可重跑；
+  其冻结产物（`evals/evaluation_v3/phase15c1_exact_dense_architecture_v1/`）保留。该脚本在 A4.3 删除。
+- **离线实验规则**：query 必须逐条调用 `embed_query`，不得用 `embed_documents` 批量编码；
+  批量填充会造成 float32 末位差异（A1 已验证：15C.1 与线上的 Top20 差异全部来源于此），
+  只有逐条编码才能与线上基线（B0'）逐位对齐。
+
 - 数值 Gate 一律在 `MODEL_DEVICE=cpu` 下运行；回放脚本在解析设备不是 cpu 且未传
   `--allow-gpu` 时报错退出。
+
+## §S.2 结构化生成 rag-generator-v3 与 `RAGAnswer.status`（A2）
+
+- Prompt 版本升为 `rag-generator-v3`，只改输出协议；Context 模板、Grounding 规则、Citation
+  标签语法与不可信数据声明沿用 v2。模型必须输出 JSON：
+  `{"status": "answered" | "insufficient_context", "answer": "<含 [S1] 等标签的回答>"}`。
+  Pydantic 模型 `GeneratorOutput`（`extra="forbid"`）定义该合同；发给服务端的 JSON Schema
+  由同一枚举值生成（`additionalProperties: false`，`status`、`answer` 均 required）。
+- v2 控制头（`STATUS:` / `ANSWER:`）解析整体删除，`src/` 与 `tests/` 不保留双路径。
+- 解析顺序：去首尾空白 → 去开头已闭合的 `<think>…</think>`（未闭合视为格式失败）→ 去外层
+  ```json 代码块 → `json.loads` → `GeneratorOutput` 校验。
+- 修复：解析/校验失败时最多重试一次，消息为 原消息 + assistant（模型原始回复）+ user（修复
+  指令：“上一条回复不符合 JSON schema，只返回 JSON”）。仍失败抛出
+  `GenerationContractError(ValueError)`。修复调用与 LLM Client 内部的瞬态重试分开计数。
+- 空 Context：不调用 LLM，直接返回确定性拒答（行为不变）。
+- `RAGAnswer` 新增必填字段 `status: AnswerStatus`，由 `assemble_rag_answer` 从
+  `GeneratedAnswer.status` 透传；Citation 规则不变（answered 至少一个引用；任何状态都不允许
+  未知标签）。
+- LLM Client 协议新增 `generate_json(messages, *, schema_name, json_schema) -> str` 与只读属性
+  `last_usage: dict | None`（最近一次调用的 `prompt_tokens`、`completion_tokens`，无 usage 为
+  None）；`generate()` 保留。
+- 结构化输出模式在 A2.0 探测后固定为 `openai_compatible.py` 的模块常量（依据
+  `artifacts/stage_a/A2_probe.json`），**不实现运行时模式降级或自动探测**。
+  选定模式：（A2.0 完成后填写）。
+- **诊断信息**：`Generator.last_diagnostics`（只读属性，不进入 `GeneratedAnswer`/`RAGAnswer`），
+  字段：`llm_called: bool`、`repair_attempted: bool`、`repair_succeeded: bool`、
+  `usages: list[dict | None]`（每次 LLM 调用一项，由 Generator 在每次调用后读取
+  `client.last_usage` 汇总）、`raw_response_lengths: list[int]`。空 Context 时为
+  `llm_called=False` 且列表为空。每次 `generate()` 开始时重置。
+- `GenerationContractError` 在 CLI 中渲染为 `Generation format error: …`。
 
 # Current Architecture Summary（Phase 15B.5）
 

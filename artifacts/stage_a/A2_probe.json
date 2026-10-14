@@ -1,0 +1,100 @@
+{
+  "base_url_host": "api-inference.modelscope.cn",
+  "model": "Qwen/Qwen3.5-35B-A3B",
+  "modes": {
+    "json_object": [
+      {
+        "elapsed_seconds": 0.162,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': '2d9c2a8c-12a0-49c4-9263-3f1b39c7bcb2'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "answerable_en"
+      },
+      {
+        "elapsed_seconds": 0.118,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': '02e12535-c728-4ded-9449-d021c56ad6a6'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "answerable_zh_multi"
+      },
+      {
+        "elapsed_seconds": 0.095,
+        "http_error": {
+          "message": "Error code: 429 - {'error': {'message': 'We have to rate limit you for model Qwen/Qwen3.5-35B-A3B. If you need higher limits, please consider other (commercial) API providers.', 'request_id': '1e340062-1d43-42d4-bfdb-49092d809a7e'}}",
+          "status_code": 429,
+          "type": "RateLimitError"
+        },
+        "request": "insufficient"
+      }
+    ],
+    "json_schema": [
+      {
+        "elapsed_seconds": 2.759,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': 'eb8b0d59-bb2c-4a01-ab16-cbbedd7e8f40'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "answerable_en"
+      },
+      {
+        "elapsed_seconds": 0.175,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': '4f689820-bb63-4643-a6f6-39970c52df79'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "answerable_zh_multi"
+      },
+      {
+        "elapsed_seconds": 0.137,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': 'f803cba5-d26c-4dce-9f0c-bd6639ff9ea2'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "insufficient"
+      }
+    ],
+    "prompt_only": [
+      {
+        "elapsed_seconds": 0.103,
+        "http_error": {
+          "message": "Error code: 429 - {'error': {'message': 'We have to rate limit you for model Qwen/Qwen3.5-35B-A3B. If you need higher limits, please consider other (commercial) API providers.', 'request_id': 'c35bba4c-6a4f-4fed-b1b6-15461c6aeee1'}}",
+          "status_code": 429,
+          "type": "RateLimitError"
+        },
+        "request": "answerable_en"
+      },
+      {
+        "elapsed_seconds": 0.204,
+        "http_error": {
+          "message": "Error code: 429 - {'error': {'message': 'We have to rate limit you for model Qwen/Qwen3.5-35B-A3B. If you need higher limits, please consider other (commercial) API providers.', 'request_id': '3ae5c611-5e5b-489a-b052-afa8ec20f4e9'}}",
+          "status_code": 429,
+          "type": "RateLimitError"
+        },
+        "request": "answerable_zh_multi"
+      },
+      {
+        "elapsed_seconds": 0.213,
+        "http_error": {
+          "message": "Error code: 403 - {'error': {'message': 'For account security, please complete your profile via email verification. ModelScope Magicubes is only available to verified accounts. Please refer to https://modelscope.cn/my/settings/account', 'request_id': 'dc9a05de-28a5-4dbb-8f25-f517cc096e18'}}",
+          "status_code": 403,
+          "type": "PermissionDeniedError"
+        },
+        "request": "insufficient"
+      }
+    ]
+  },
+  "selected_mode": null,
+  "temperature": 0.0,
+  "usable": {
+    "json_object": false,
+    "json_schema": false,
+    "prompt_only": false
+  }
+}

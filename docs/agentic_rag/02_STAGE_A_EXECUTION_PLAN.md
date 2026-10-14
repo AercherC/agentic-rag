@@ -340,6 +340,7 @@ Move-Item 1.26, src\evidenceflow.zip $bk
 - `experiments/run_phase13c_parser_benchmark.py`
 - `experiments/build_research_reference_metadata_collection.py`
 - `experiments/run_research_references_aware_experiment.py`
+- `experiments/run_phase15c1_exact_dense_architecture.py`（已被 A1 取代，见 PROJECT_SPEC §S.1；其 `evals/` 冻结产物保留）
 - `experiments/archive/`
 - `tests/test_phase13_kb_chunk_audit.py`
 - `tests/test_phase13b_controlled_rebuild.py`
@@ -349,7 +350,7 @@ Move-Item 1.26, src\evidenceflow.zip $bk
 删除前用 AST 或 grep 再确认一次：剩下的 `src`、`tests`、`scripts`、`experiments` 中，没有任何文件 import 上面这些模块。审查时的 import 依赖图显示没有，但执行时要复核。
 
 **保留：**
-- `experiments/run_phase15b1_dense_candidate_depth.py`、`phase15b_active_relevance.py`、`run_phase15c*.py`、`run_production_reranked_baseline_replay.py`、`stabilize_gold_v3.py`、`audit_gold_v2.py`、`prepare_research_corpus.py`、`debug/`
+- `experiments/run_phase15b1_dense_candidate_depth.py`、`phase15b_active_relevance.py`、`run_phase15c_dense30_promotion.py`（`run_phase15c1_exact_dense_architecture.py` 不保留）、`run_production_reranked_baseline_replay.py`、`stabilize_gold_v3.py`、`audit_gold_v2.py`、`prepare_research_corpus.py`、`debug/`
 - `evals/` 下的全部冻结产物，一个都不动。
 
 ### A4.4 eval 中的 legacy 代码
