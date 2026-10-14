@@ -4,7 +4,12 @@ from copy import deepcopy
 
 import pytest
 
-from evidenceflow.citation import CitationValidationError, assemble_rag_answer
+from evidenceflow.citation import (
+    CitationValidationError,
+    assemble_rag_answer,
+    check_citation_rules,
+    classify_citation_labels,
+)
 from evidenceflow.domain import (
     AnswerStatus,
     BuiltContext,
@@ -223,3 +228,55 @@ def test_assembly_rejects_blank_query_before_building_rag_answer() -> None:
             built_context=make_context(),
             retrieved_chunks=[],
         )
+
+
+def test_status_is_passed_through_to_rag_answer() -> None:
+    """answered 与 insufficient_context 都由 GeneratedAnswer 透传到 RAGAnswer.status。"""
+
+    answered = assemble_rag_answer(
+        query="q",
+        generated_answer=GeneratedAnswer(status=AnswerStatus.ANSWERED, answer_text="Fact [S1]."),
+        built_context=make_context(),
+        retrieved_chunks=make_retrieved(),
+    )
+    refused = assemble_rag_answer(
+        query="q",
+        generated_answer=GeneratedAnswer(
+            status=AnswerStatus.INSUFFICIENT_CONTEXT, answer_text="知识库信息不足。"
+        ),
+        built_context=make_context(),
+        retrieved_chunks=make_retrieved(),
+    )
+
+    assert answered.status is AnswerStatus.ANSWERED
+    assert refused.status is AnswerStatus.INSUFFICIENT_CONTEXT
+    assert refused.sources == []
+
+
+def test_refusal_with_unknown_label_is_still_rejected() -> None:
+    """任何状态都不允许未知标签（与 answered 必须引用的规则互相独立）。"""
+
+    with pytest.raises(CitationValidationError, match="unknown citation"):
+        assemble_rag_answer(
+            query="q",
+            generated_answer=GeneratedAnswer(
+                status=AnswerStatus.INSUFFICIENT_CONTEXT, answer_text="Not enough [S9]."
+            ),
+            built_context=make_context(),
+            retrieved_chunks=make_retrieved(),
+        )
+
+
+def test_label_classification_and_rules_work_without_built_context() -> None:
+    """离线重解析使用的 allowlist 版本与 BuiltContext 版本规则一致。"""
+
+    parsed = classify_citation_labels("A [S2]. B [S1]. C [S9]. D [S2].", {"[S1]", "[S2]"})
+
+    assert parsed.valid_labels == ("[S2]", "[S1]")
+    assert parsed.invalid_labels == ("[S9]",)
+    with pytest.raises(CitationValidationError, match="unknown"):
+        check_citation_rules(AnswerStatus.ANSWERED, parsed)
+    ok = classify_citation_labels("no citations", {"[S1]"})
+    with pytest.raises(CitationValidationError, match="at least one"):
+        check_citation_rules(AnswerStatus.ANSWERED, ok)
+    check_citation_rules(AnswerStatus.INSUFFICIENT_CONTEXT, ok)

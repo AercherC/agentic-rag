@@ -59,7 +59,15 @@
   None）；`generate()` 保留。
 - 结构化输出模式在 A2.0 探测后固定为 `openai_compatible.py` 的模块常量（依据
   `artifacts/stage_a/A2_probe.json`），**不实现运行时模式降级或自动探测**。
-  选定模式：（A2.0 完成后填写）。
+  选定模式：**暂定 `prompt_only`（待 A2b 探测后确定）**——所有 OpenAI-compatible 服务都支持，
+  解析器已能处理 `<think>` 与 ```json 代码块。三种模式的请求参数由纯函数
+  `build_structured_request_params` 构造（`json_object` 模式要求 Prompt 含 "JSON"）。
+- 在线脚本（`experiments/stage_a/`）统一策略：请求最小间隔（默认 6 秒）；403/配置类错误立即
+  停止；429 等待后重试至多 3 次并单独统计（与 LLMRequestError 分开）；JSONL 断点续跑；保存每次
+  调用（含修复调用）的原始回复与 reasoning_content 是否存在；`reparse_smoke_offline.py` 用已保存
+  的回复离线重跑 v3 解析与 Citation 校验。脚本中客户端 `max_attempts=1`，限流等待只由脚本策略负责。
+- `runtime.build_rag_service` 新增可选注入参数 `retriever`、`generator`，仅供评测脚本使用；
+  不提供时行为与此前完全一致。
 - **诊断信息**：`Generator.last_diagnostics`（只读属性，不进入 `GeneratedAnswer`/`RAGAnswer`），
   字段：`llm_called: bool`、`repair_attempted: bool`、`repair_succeeded: bool`、
   `usages: list[dict | None]`（每次 LLM 调用一项，由 Generator 在每次调用后读取

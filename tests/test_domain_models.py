@@ -4,6 +4,7 @@ import pytest
 from pydantic import ValidationError
 
 from evidenceflow.domain import (
+    AnswerStatus,
     Document,
     DocumentChunk,
     DocumentSegment,
@@ -61,6 +62,7 @@ def test_domain_models_construct_with_valid_data() -> None:
     )
     answer = RAGAnswer(
         query="What is EvidenceFlow?",
+        status=AnswerStatus.ANSWERED,
         answer="A local RAG assistant. [S1]",
         sources=[source],
         retrieved_chunks=[retrieved],
@@ -163,3 +165,11 @@ def test_chunk_id_is_deterministic_and_each_identity_input_matters() -> None:
         changed = {**base, field: value}
         assert build_chunk_id(**changed) != baseline
 
+
+def test_rag_answer_requires_status() -> None:
+    """RAGAnswer.status 是必填字段，缺失或未知值都被拒绝。"""
+
+    with pytest.raises(ValidationError):
+        RAGAnswer(query="q", answer="a", sources=[], retrieved_chunks=[])
+    with pytest.raises(ValidationError):
+        RAGAnswer(query="q", status="maybe", answer="a", sources=[], retrieved_chunks=[])

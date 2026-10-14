@@ -7,6 +7,7 @@ from evidenceflow.generation import Generator
 from evidenceflow.ingestion import BgeM3Tokenizer, IngestionService
 from evidenceflow.llm import OpenAICompatibleLLMClient
 from evidenceflow.rag import RAGService
+from evidenceflow.rag.service import GeneratorProtocol, RetrieverProtocol
 from evidenceflow.retrieval import (
     DenseRerankerRetriever,
     DenseRetriever,
@@ -100,13 +101,23 @@ def build_retriever(settings: Settings) -> DenseRerankerRetriever:
     )
 
 
-def build_rag_service(settings: Settings) -> RAGService:
-    """创建唯一正式 Exact Dense Top20 → Learned Reranker → Top5 Pipeline。"""
+def build_rag_service(
+    settings: Settings,
+    *,
+    retriever: RetrieverProtocol | None = None,
+    generator: GeneratorProtocol | None = None,
+) -> RAGService:
+    """创建唯一正式 Exact Dense Top20 → Learned Reranker → Top5 Pipeline。
 
-    retriever = build_retriever(settings)
+    ``retriever`` 与 ``generator`` 仅供评测脚本注入（记录 Top5、读取 Generator.last_diagnostics、
+    包装 LLM Client 做限流与原始回复留存），未提供时使用正式装配；其余组件始终由本函数按
+    Settings 创建。
+    """
+
+    retriever = retriever if retriever is not None else build_retriever(settings)
     context_builder = ContextBuilder(
         BgeM3Tokenizer(settings.embedding_model),
         settings.max_context_tokens,
     )
-    generator = Generator(build_llm_client(settings))
+    generator = generator if generator is not None else Generator(build_llm_client(settings))
     return RAGService(retriever, context_builder, generator)

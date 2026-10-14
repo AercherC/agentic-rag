@@ -10,6 +10,7 @@ from typing import Sequence
 from evidenceflow.config import Settings
 from evidenceflow.citation import CitationValidationError
 from evidenceflow.domain import RAGAnswer
+from evidenceflow.generation import GenerationContractError
 from evidenceflow.ingestion.service import IngestionService, IngestionSummary
 from evidenceflow.llm import LLMConfigurationError, LLMRequestError
 from evidenceflow.rag import RAGService
@@ -42,7 +43,19 @@ def render_ingestion_summary(summary: IngestionSummary, root: Path) -> str:
 def render_rag_answer(answer: RAGAnswer) -> str:
     """面向用户渲染 Answer 与实际引用来源，不暴露内部 ID 或检索分数。"""
 
-    lines = ["EvidenceFlow", "", "Question:", answer.query, "", "Answer:", answer.answer, "", "Sources:"]
+    # Status 行让用户和下游区分“已回答”与“证据不足拒答”。
+    lines = [
+        "EvidenceFlow",
+        "",
+        "Question:",
+        answer.query,
+        "",
+        f"Status: {answer.status.value}",
+        "Answer:",
+        answer.answer,
+        "",
+        "Sources:",
+    ]
     if not answer.sources:
         lines.append("No cited sources.")
         return "\n".join(lines)
@@ -69,6 +82,8 @@ def _render_ask_error(exc: Exception) -> str:
         prefix = "LLM configuration error"
     elif isinstance(exc, LLMRequestError):
         prefix = "LLM request failed"
+    elif isinstance(exc, GenerationContractError):
+        prefix = "Generation format error"
     elif isinstance(exc, CitationValidationError):
         prefix = "Citation validation failed"
     else:

@@ -75,11 +75,13 @@ class CitingLLM:
     def __init__(self) -> None:
         self.calls = 0
 
-    def generate(self, messages) -> str:
-        """记录调用并返回可通过 Citation 校验的回答。"""
+    last_usage = None
+
+    def generate_json(self, messages, *, schema_name, json_schema) -> str:
+        """记录调用并返回可通过 Citation 校验的 v3 JSON 回答。"""
 
         self.calls += 1
-        return "STATUS: ANSWERED\nANSWER:\nHighest reranked evidence [S1]."
+        return '{"status": "answered", "answer": "Highest reranked evidence [S1]."}'
 
 
 def _pipeline(dense: FixedDenseRetriever) -> DenseRerankerRetriever:

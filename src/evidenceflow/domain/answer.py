@@ -6,6 +6,7 @@ from evidenceflow.domain.chunk import (
     RerankedRetrievedChunk,
     RetrievedChunk,
 )
+from evidenceflow.domain.generation import AnswerStatus
 
 
 class SourceReference(BaseModel):
@@ -46,6 +47,9 @@ class RAGAnswer(BaseModel):
     """包含实际引用与检索追踪信息的结构化 RAG 回答。"""
 
     query: str = Field(min_length=1, description="原始用户查询。")
+    status: AnswerStatus = Field(
+        description="回答状态：answered 表示有证据回答，insufficient_context 表示知识库证据不足（拒答）。"
+    )
     answer: str = Field(description="LLM 基于 Context 生成的回答文本。")
     sources: list[SourceReference] = Field(
         description="仅包含最终回答中实际出现标签所对应的来源。"

@@ -10,7 +10,13 @@ from evidenceflow.domain.citation import CitationParseResult
 from evidenceflow.domain.context import BuiltContext, ContextEntry
 from evidenceflow.domain.document import Document, DocumentSegment
 from evidenceflow.domain.evaluation import EvaluationQuestion, EvaluationSource
-from evidenceflow.domain.generation import AnswerStatus, GeneratedAnswer, LLMMessage
+from evidenceflow.domain.generation import (
+    AnswerStatus,
+    GeneratedAnswer,
+    GeneratorOutput,
+    LLMMessage,
+    generator_output_json_schema,
+)
 from evidenceflow.domain.ids import build_chunk_id, build_content_hash, build_document_id
 from evidenceflow.domain.query import QueryRequest
 
@@ -25,6 +31,7 @@ __all__ = [
     "EvaluationQuestion",
     "EvaluationSource",
     "GeneratedAnswer",
+    "GeneratorOutput",
     "LLMMessage",
     "QueryRequest",
     "RAGAnswer",
@@ -34,4 +41,5 @@ __all__ = [
     "build_chunk_id",
     "build_content_hash",
     "build_document_id",
+    "generator_output_json_schema",
 ]

@@ -3,7 +3,7 @@
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class LLMMessage(BaseModel):
@@ -46,3 +46,39 @@ class GeneratedAnswer(BaseModel):
         if not value.strip():
             raise ValueError("generated answer must not be blank")
         return value
+
+
+class GeneratorOutput(BaseModel):
+    """rag-generator-v3 要求模型输出的 JSON 合同；多余字段一律拒绝。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: AnswerStatus = Field(description="模型判断：证据足够 answered，否则 insufficient_context。")
+    answer: str = Field(min_length=1, description="面向用户的回答，含 [S1] 等来源标签。")
+
+    @field_validator("answer")
+    @classmethod
+    def validate_answer(cls, value: str) -> str:
+        """与 GeneratedAnswer 一致，禁止空白回答被当作一次成功生成。"""
+
+        if not value.strip():
+            raise ValueError("generator output answer must not be blank")
+        return value
+
+
+def generator_output_json_schema() -> dict:
+    """生成发给服务端的 JSON Schema，枚举值直接取自 AnswerStatus，避免两处手写漂移。
+
+    手工内联而不用 ``model_json_schema()``：后者会产生 ``$defs`` 引用，部分
+    OpenAI-compatible 服务的 strict 模式不支持引用。
+    """
+
+    return {
+        "type": "object",
+        "properties": {
+            "status": {"type": "string", "enum": [item.value for item in AnswerStatus]},
+            "answer": {"type": "string"},
+        },
+        "required": ["status", "answer"],
+        "additionalProperties": False,
+    }

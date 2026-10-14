@@ -214,3 +214,14 @@ def test_blank_query_is_rejected_before_retrieval() -> None:
     with pytest.raises(ValueError, match="query"):
         RAGService(retriever, FakeContextBuilder(), FakeGenerator()).answer("   ")
     assert retriever.calls == []
+
+
+def test_status_flows_from_generator_to_rag_answer() -> None:
+    """拒答状态经 Generator → Citation → RAGAnswer 保持不变。"""
+
+    generator = FakeGenerator(answer="知识库信息不足。", status=AnswerStatus.INSUFFICIENT_CONTEXT)
+
+    result = RAGService(FakeRetriever(), FakeContextBuilder(), generator).answer("query")
+
+    assert result.status is AnswerStatus.INSUFFICIENT_CONTEXT
+    assert result.sources == []

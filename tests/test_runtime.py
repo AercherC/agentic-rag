@@ -224,3 +224,34 @@ def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, t
     )
 
     assert retriever == "retriever"
+
+
+def test_build_rag_service_accepts_injected_retriever_and_generator(monkeypatch, tmp_path) -> None:
+    """评测脚本可注入检索器与 Generator；注入时不得再装配正式检索或创建 LLM Client。"""
+
+    class FakeTokenizer:
+        def __init__(self, model): ...
+
+    class FakeContext:
+        def __init__(self, tokenizer, max_context_tokens): ...
+
+    monkeypatch.setattr("evidenceflow.runtime.BgeM3Tokenizer", FakeTokenizer)
+    monkeypatch.setattr("evidenceflow.runtime.ContextBuilder", FakeContext)
+    monkeypatch.setattr(
+        "evidenceflow.runtime.build_retriever",
+        lambda settings: (_ for _ in ()).throw(AssertionError("must not build retriever")),
+    )
+    monkeypatch.setattr(
+        "evidenceflow.runtime.build_llm_client",
+        lambda settings: (_ for _ in ()).throw(AssertionError("must not build LLM client")),
+    )
+    retriever, generator = object(), object()
+
+    service = build_rag_service(
+        Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu"),
+        retriever=retriever,
+        generator=generator,
+    )
+
+    assert service._retriever is retriever
+    assert service._generator is generator

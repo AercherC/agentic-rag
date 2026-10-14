@@ -4,6 +4,8 @@ from evidenceflow.citation.parser import (
     CitationError,
     CitationValidationError,
     assemble_rag_answer,
+    check_citation_rules,
+    classify_citation_labels,
     parse_citations,
 )
 from evidenceflow.domain.citation import CitationParseResult
@@ -13,5 +15,7 @@ __all__ = [
     "CitationParseResult",
     "CitationValidationError",
     "assemble_rag_answer",
+    "check_citation_rules",
+    "classify_citation_labels",
     "parse_citations",
 ]

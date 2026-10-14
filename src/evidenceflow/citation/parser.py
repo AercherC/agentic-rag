@@ -30,10 +30,18 @@ CitationError = CitationValidationError
 def parse_citations(answer_text: str, built_context: BuiltContext) -> CitationParseResult:
     """按首次出现顺序提取、去重并按 BuiltContext allowlist 分类标签。"""
 
+    allowed_labels = {entry.source_label for entry in built_context.entries}
+    return classify_citation_labels(answer_text, allowed_labels)
+
+
+def classify_citation_labels(
+    answer_text: str, allowed_labels: set[str] | frozenset[str]
+) -> CitationParseResult:
+    """只依赖 allowlist 的标签分类；离线重解析脚本无需重建完整 BuiltContext 即可复用。"""
+
     if not isinstance(answer_text, str) or not answer_text.strip():
         raise CitationValidationError("answer_text must not be blank")
 
-    allowed_labels = {entry.source_label for entry in built_context.entries}
     seen: set[str] = set()
     valid_labels: list[str] = []
     invalid_labels: list[str] = []
@@ -52,6 +60,16 @@ def parse_citations(answer_text: str, built_context: BuiltContext) -> CitationPa
     )
 
 
+def check_citation_rules(status: AnswerStatus, parsed: CitationParseResult) -> None:
+    """Citation 合同：任何状态都不允许未知标签；answered 至少引用一个来源。"""
+
+    if parsed.invalid_labels:
+        labels = ", ".join(parsed.invalid_labels)
+        raise CitationValidationError(f"answer contains unknown citation labels: {labels}")
+    if status is AnswerStatus.ANSWERED and not parsed.valid_labels:
+        raise CitationValidationError("answer must cite at least one supplied source")
+
+
 def assemble_rag_answer(
     *,
     query: str,
@@ -65,11 +83,7 @@ def assemble_rag_answer(
         raise ValueError("query must not be blank")
 
     parsed = parse_citations(generated_answer.answer_text, built_context)
-    if parsed.invalid_labels:
-        labels = ", ".join(parsed.invalid_labels)
-        raise CitationValidationError(f"answer contains unknown citation labels: {labels}")
-    if generated_answer.status is AnswerStatus.ANSWERED and not parsed.valid_labels:
-        raise CitationValidationError("answer must cite at least one supplied source")
+    check_citation_rules(generated_answer.status, parsed)
 
     source_by_label = {
         entry.source_label: entry.source_reference for entry in built_context.entries
@@ -78,6 +92,8 @@ def assemble_rag_answer(
     sources = [source_by_label[label] for label in parsed.valid_labels]
     return RAGAnswer(
         query=query,
+        # status 直接来自 Generator，下游据此区分“已回答”和“拒答”，不再靠自然语言猜测。
+        status=generated_answer.status,
         answer=generated_answer.answer_text,
         sources=sources,
         retrieved_chunks=list(retrieved_chunks),

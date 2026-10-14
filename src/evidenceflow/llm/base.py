@@ -22,6 +22,23 @@ class LLMRequestError(LLMError):
 class LLMClient(Protocol):
     """接受项目消息模型并同步返回原始模型文本。"""
 
+    @property
+    def last_usage(self) -> dict | None:
+        """最近一次调用的 ``prompt_tokens`` / ``completion_tokens``；服务未返回 usage 时为 None。"""
+
+        ...
+
+    def generate_json(
+        self,
+        messages: Sequence[LLMMessage],
+        *,
+        schema_name: str,
+        json_schema: dict,
+    ) -> str:
+        """按已选定的结构化输出模式请求 JSON，返回原始文本，不在此层解析。"""
+
+        ...
+
     def generate(self, messages: Sequence[LLMMessage]) -> str:
         """生成单条非空文本，不承担 RAG 或 Citation 业务逻辑。"""
 

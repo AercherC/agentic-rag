@@ -5,7 +5,8 @@ import pytest
 from evidenceflow.__main__ import main, render_rag_answer
 from evidenceflow.citation import CitationValidationError
 from evidenceflow.config import Settings
-from evidenceflow.domain import RAGAnswer, SourceReference
+from evidenceflow.generation import GenerationContractError
+from evidenceflow.domain import AnswerStatus, RAGAnswer, SourceReference
 from evidenceflow.llm import LLMConfigurationError, LLMRequestError
 
 
@@ -30,6 +31,7 @@ def make_answer(*, sources: list[SourceReference] | None = None) -> RAGAnswer:
 
     return RAGAnswer(
         query="为什么 Agent 需要工具？",
+        status=AnswerStatus.ANSWERED if sources else AnswerStatus.INSUFFICIENT_CONTEXT,
         answer="Agent 通过工具获得外部能力 [S1]。" if sources else "知识库信息不足。",
         sources=[] if sources is None else sources,
         retrieved_chunks=[],
@@ -57,7 +59,7 @@ def test_ask_cli_preserves_quoted_multiword_query_and_renders_answer(capsys) -> 
     assert exit_code == 0
     assert service.calls == ["为什么 Agent 需要工具？"]
     assert "Question:\n为什么 Agent 需要工具？" in captured.out
-    assert "Answer:\nAgent 通过工具获得外部能力 [S1]。" in captured.out
+    assert "Status: answered\nAnswer:\nAgent 通过工具获得外部能力 [S1]。" in captured.out
     assert "[S1]\nFile: agents.pdf\nPages: 7-8" in captured.out
     assert "document_id" not in captured.out and "chunk" not in captured.out
     assert captured.err == ""
@@ -82,6 +84,7 @@ def test_renderer_formats_single_pdf_page_markdown_and_empty_sources() -> None:
     [
         (LLMConfigurationError("missing key"), "LLM configuration error: missing key"),
         (LLMRequestError("timeout"), "LLM request failed: timeout"),
+        (GenerationContractError("bad json"), "Generation format error: bad json"),
         (CitationValidationError("unknown [S9]"), "Citation validation failed: unknown [S9]"),
         (RuntimeError("store unavailable"), "Retrieval or RAG processing failed: store unavailable"),
     ],
@@ -107,3 +110,11 @@ def test_ask_cli_does_not_swallow_keyboard_interrupt() -> None:
     service = FakeRAGService(error=KeyboardInterrupt())
     with pytest.raises(KeyboardInterrupt):
         main(["ask", "question"], settings=Settings(_env_file=None), rag_service=service)
+
+
+def test_renderer_shows_insufficient_context_status() -> None:
+    """拒答状态也要在 CLI 输出中可见，用户不必从自然语言里猜。"""
+
+    rendered = render_rag_answer(make_answer())
+
+    assert "Status: insufficient_context\nAnswer:\n知识库信息不足。" in rendered

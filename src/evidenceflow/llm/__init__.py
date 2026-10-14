@@ -6,7 +6,12 @@ from evidenceflow.llm.base import (
     LLMError,
     LLMRequestError,
 )
-from evidenceflow.llm.openai_compatible import OpenAICompatibleLLMClient
+from evidenceflow.llm.openai_compatible import (
+    STRUCTURED_OUTPUT_MODE,
+    STRUCTURED_OUTPUT_MODES,
+    OpenAICompatibleLLMClient,
+    build_structured_request_params,
+)
 from evidenceflow.llm.diagnostics import classify_llm_failure, serialize_llm_failure
 
 __all__ = [
@@ -15,6 +20,9 @@ __all__ = [
     "LLMError",
     "LLMRequestError",
     "OpenAICompatibleLLMClient",
+    "STRUCTURED_OUTPUT_MODE",
+    "STRUCTURED_OUTPUT_MODES",
+    "build_structured_request_params",
     "classify_llm_failure",
     "serialize_llm_failure",
 ]
