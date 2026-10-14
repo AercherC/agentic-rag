@@ -86,3 +86,23 @@ def test_exact_index_rejects_wrong_query_dimension_and_empty_search() -> None:
     populated = ExactDenseIndex([_chunk("A")], [[1.0, 0.0]])
     with pytest.raises(ValueError, match="dimension"):
         populated.search([1.0, 0.0, 0.0], top_k=1)
+
+
+def test_exact_backend_is_fixed_to_numpy_regardless_of_faiss(monkeypatch) -> None:
+    """后端固定为 numpy.exact：环境里即使存在 faiss 也不得被使用（Stage A §S.1）。"""
+
+    import sys
+
+    import evidenceflow.retrieval.exact_dense as module
+
+    class _ExplodingFaiss:
+        def __getattr__(self, name: str):
+            raise AssertionError("faiss must not be used")
+
+    monkeypatch.setitem(sys.modules, "faiss", _ExplodingFaiss())
+    index = ExactDenseIndex([_chunk("A")], [[1.0, 0.0]])
+
+    assert index.backend == "numpy.exact"
+    # 模块不再导入 faiss，因此没有 faiss 属性可被误用。
+    assert not hasattr(module, "faiss")
+    assert index.search([1.0, 0.0], top_k=1)[0].chunk.chunk_id == "A"

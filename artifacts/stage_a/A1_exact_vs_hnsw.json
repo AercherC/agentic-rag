@@ -1,0 +1,40 @@
+{
+  "compare_replay": {
+    "actual_projection_hash": "6ccf0ffeffb8799429baff192e2de75e57199d1868688ca75ac2479cfb0cc4cd",
+    "compared_question_count": 40,
+    "expected_projection_hash": "6ccf0ffeffb8799429baff192e2de75e57199d1868688ca75ac2479cfb0cc4cd",
+    "identity_matches": true,
+    "parity": true,
+    "pipeline_matches": true,
+    "query_set_matches": true,
+    "run_mismatches": [],
+    "summary_mismatches": []
+  },
+  "delta_exact_minus_hnsw": {
+    "MAP@5": 0.0,
+    "MRR@5": 0.0,
+    "P@5": 0.0,
+    "Recall@5": 0.0,
+    "nDCG@5": 0.0
+  },
+  "differing_questions": {},
+  "gate_max_drop": 0.01,
+  "gate_recall_ndcg_ok": true,
+  "summary_exact": {
+    "MAP@5": 0.36306468629590677,
+    "MRR@5": 0.5175438596491229,
+    "P@5": 0.26842105263157895,
+    "Recall@5": 0.5102789340364703,
+    "nDCG@5": 0.4902576778760202
+  },
+  "summary_hnsw_b0": {
+    "MAP@5": 0.36306468629590677,
+    "MRR@5": 0.5175438596491229,
+    "P@5": 0.26842105263157895,
+    "Recall@5": 0.5102789340364703,
+    "nDCG@5": 0.4902576778760202
+  },
+  "two_replays_mismatch_questions": [],
+  "two_replays_reranker_scores_identical": true,
+  "two_replays_top5_identical": true
+}

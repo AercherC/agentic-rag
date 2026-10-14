@@ -1,4 +1,4 @@
-"""提供确定性的、进程内 exact Dense candidate search primitive。"""
+"""提供确定性的、进程内 exact Dense candidate search primitive（numpy.exact 后端）。"""
 
 from __future__ import annotations
 
@@ -10,10 +10,9 @@ import numpy as np
 
 from evidenceflow.domain.chunk import DocumentChunk, RetrievedChunk
 
-try:  # FAISS 在部分平台没有可用 wheel，保留等价 NumPy 回退以便离线评测。
-    import faiss  # type: ignore[import-not-found]
-except ImportError:  # pragma: no cover - 由环境能力决定
-    faiss = None
+# 后端固定为 numpy.exact（Stage A §S.1）：817 个向量无需 FAISS，且线上后端不应由
+# 运行环境是否安装 FAISS 决定。
+EXACT_BACKEND = "numpy.exact"
 
 
 class ExactDenseIndexError(ValueError):
@@ -55,7 +54,7 @@ class ExactDenseIndex:
         chunks: Sequence[DocumentChunk],
         embeddings: Sequence[Sequence[float]],
     ) -> None:
-        """按 chunk_id 固定记录顺序，构建 FAISS IndexFlatIP 或 NumPy 等价回退。"""
+        """按 chunk_id 固定记录顺序，构建 NumPy float32 全量内积矩阵。"""
 
         chunk_list = list(chunks)
         embedding_list = list(embeddings)
@@ -88,12 +87,8 @@ class ExactDenseIndex:
             if records
             else np.empty((0, 0), dtype=np.float32)
         )
-        self._faiss_index = None
-        if records and faiss is not None:
-            # IndexFlatIP 只在进程内持有派生矩阵；不写出 .faiss/.index 文件。
-            self._faiss_index = faiss.IndexFlatIP(int(self._dimension))
-            self._faiss_index.add(self._matrix)
-        self.backend = "faiss.IndexFlatIP" if self._faiss_index is not None else "numpy.exact"
+        # 矩阵只在进程内持有，不写出任何索引文件；backend 恒为 numpy.exact。
+        self.backend = EXACT_BACKEND
 
     @property
     def chunk_ids(self) -> tuple[str, ...]:
@@ -136,23 +131,12 @@ class ExactDenseIndex:
             expected_dimension=self._dimension,
         )
 
-        if self._faiss_index is not None:
-            # 取全量结果后再由项目层排序，避免 FAISS 原生 tie order 泄漏到业务合同。
-            raw_scores, raw_positions = self._faiss_index.search(
-                query.reshape(1, -1), self.size
-            )
-            scored = [
-                (float(score), self._chunk_ids[int(position)])
-                for score, position in zip(raw_scores[0], raw_positions[0])
-                if int(position) >= 0
-            ]
-        else:
-            # NumPy 回退与 IndexFlatIP 使用同一 float32 矩阵乘法语义。
-            scores = self._matrix @ query
-            scored = [
-                (float(score), chunk_id)
-                for score, chunk_id in zip(scores.tolist(), self._chunk_ids)
-            ]
+        # float32 矩阵乘法得到全量内积；候选顺序完全由下面的项目层排序决定。
+        scores = self._matrix @ query
+        scored = [
+            (float(score), chunk_id)
+            for score, chunk_id in zip(scores.tolist(), self._chunk_ids)
+        ]
 
         scored.sort(key=lambda item: (-item[0], item[1]))
         by_id = dict(zip(self._chunk_ids, self._chunks))

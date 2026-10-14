@@ -1,0 +1,43 @@
+{
+  "backend": "numpy.exact",
+  "candidate_diff_questions_vs_cpu": [
+    "ARR-001"
+  ],
+  "device": "cuda:0",
+  "duration_seconds_cpu": 206.70096190017648,
+  "duration_seconds_gpu": 31.40519480011426,
+  "note": "仅供参考，不作为 Gate",
+  "summary_cpu": {
+    "MAP@5": 0.36306468629590677,
+    "MRR@5": 0.5175438596491229,
+    "P@5": 0.26842105263157895,
+    "Recall@5": 0.5102789340364703,
+    "eligible_count": 38,
+    "excluded_count": 2,
+    "nDCG@5": 0.4902576778760202
+  },
+  "summary_gpu": {
+    "MAP@5": 0.36306468629590677,
+    "MRR@5": 0.5175438596491229,
+    "P@5": 0.26842105263157895,
+    "Recall@5": 0.5102789340364703,
+    "eligible_count": 38,
+    "excluded_count": 2,
+    "nDCG@5": 0.4902576778760202
+  },
+  "timing_cpu": {
+    "build_retriever_seconds": 5.99116210010834,
+    "dense_search_ms_max": 38.98869990371168,
+    "dense_search_ms_mean": 5.6117650179658085,
+    "exact_index_build_seconds": 0.3525945001747459
+  },
+  "timing_gpu": {
+    "build_retriever_seconds": 11.976855899905786,
+    "dense_search_ms_max": 4.615599988028407,
+    "dense_search_ms_mean": 2.163535018917173,
+    "exact_index_build_seconds": 0.35672880010679364
+  },
+  "top5_diff_questions_vs_cpu": [
+    "ARR-023"
+  ]
+}

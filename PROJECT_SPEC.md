@@ -7,6 +7,30 @@
 
 ---
 
+# §S Stage A 合同变更（待 A5 合并）
+
+本节记录阶段 A 对既有合同的修订；A5 把它们并入新的 SPEC 后删除本节。
+
+## §S.1 线上检索使用 ExactDenseIndex，后端固定为 `numpy.exact`（A1）
+
+- **修订 §42**：删除“优先使用可用的 `faiss.IndexFlatIP`”的要求。`ExactDenseIndex` 的后端
+  固定为 `numpy.exact`（float32 全量内积），代码中不再导入 `faiss`，`backend` 恒为
+  `"numpy.exact"`。理由：817 个向量的规模下计算成本可忽略；与 FAISS `IndexFlatIP` 在排序
+  合同（score DESC、chunk_id ASC）下结果等价；线上后端不应由运行环境是否装有 FAISS 决定；
+  不新增依赖。不新增 backend 配置开关，回滚靠 git tag `stage-a-start`。
+- Chroma 仍是唯一持久化来源。`runtime.build_retriever(settings)` 在进程启动时通过
+  `ChromaVectorStore.iter_all_chunks_with_embeddings()` 构建进程内 `ExactDenseIndex`，并作为
+  `DenseRetriever` 的 `DenseSearch`；`build_rag_service` 调用 `build_retriever`。
+- 启动校验：Exact 索引 `size` 必须等于 `store.count`，`dimension` 必须为 1024；不满足时抛出
+  `ExactDenseIndexError` 并拒绝启动。
+- 候选深度 K=20、Final K=5 不变；D30 不在阶段 A 范围内。
+- 新基线 **B0'** = Exact Dense20 → Reranker → Top5（CPU 回放，已冻结）：
+  `artifacts/stage_a/A1_exact_baseline.json`，sha256 `422fd629b22f26caf9452e3598bf805d01df9b9cf24e6d42b5a6890e40a1411f`。
+  P@5 0.2684 · R@5 0.5103 · MRR@5 0.5175 · MAP@5 0.3631 · nDCG@5 0.4903（40Q，eligible 38），
+  与 HNSW B0 逐题 Top5 完全一致、5 项指标差为 0。
+- 数值 Gate 一律在 `MODEL_DEVICE=cpu` 下运行；回放脚本在解析设备不是 cpu 且未传
+  `--allow-gpu` 时报错退出。
+
 # Current Architecture Summary（Phase 15B.5）
 
 本节是当前实现合同；后文 Phase 6–11 的 Translation、Multilingual、BM25、Hybrid 与 RRF

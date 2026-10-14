@@ -1,0 +1,12 @@
+{
+  "backends": [
+    "numpy.exact"
+  ],
+  "devices": [
+    "cpu"
+  ],
+  "identical": true,
+  "mismatches": [],
+  "question_count": 40,
+  "run_count": 10
+}

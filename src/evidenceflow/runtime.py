@@ -10,10 +10,15 @@ from evidenceflow.rag import RAGService
 from evidenceflow.retrieval import (
     DenseRerankerRetriever,
     DenseRetriever,
+    ExactDenseIndex,
+    ExactDenseIndexError,
     LearnedReranker,
     TransformersCrossEncoderScorer,
 )
 from evidenceflow.storage import ChromaVectorStore
+
+# BGE-M3 Dense 向量维度；Exact 索引维度不符说明 collection 与当前 Embedding 模型不匹配。
+EMBEDDING_DIMENSION = 1024
 
 
 def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
@@ -43,16 +48,37 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
     )
 
 
-def build_rag_service(settings: Settings) -> RAGService:
-    """创建唯一正式 Dense Top20 → Learned Reranker → Top5 Pipeline。"""
+def build_retriever(settings: Settings) -> DenseRerankerRetriever:
+    """装配线上检索：Exact Dense Top20 → Learned Reranker → Top5。
+
+    Dense 候选使用进程内 ``ExactDenseIndex``（numpy.exact），而不是 Chroma HNSW：
+    HNSW 的近似结果在不同进程间不保证一致，会让 A/B 实验无法逐题复现；
+    而 817 个向量的全量内积成本可以忽略。Chroma 仍是唯一持久化来源。
+    """
 
     embedding_provider = BgeM3EmbeddingProvider(
         settings.embedding_model, device=settings.model_device
     )
     vector_store = ChromaVectorStore(settings.vector_db_path, settings.collection_name)
+    # 启动时从 Chroma 全量读出向量并构建索引；不写出任何第二份持久化向量文件。
+    pairs = list(vector_store.iter_all_chunks_with_embeddings())
+    exact_index = ExactDenseIndex(
+        [chunk for chunk, _ in pairs], [embedding for _, embedding in pairs]
+    )
+    # 启动校验：索引大小必须等于 collection 记录数，维度必须与 BGE-M3 一致，
+    # 否则说明读到了不完整或不匹配的索引，拒绝启动而不是静默降级。
+    if exact_index.size != vector_store.count:
+        raise ExactDenseIndexError(
+            f"Exact index size {exact_index.size} does not match "
+            f"collection count {vector_store.count}"
+        )
+    if exact_index.dimension != EMBEDDING_DIMENSION:
+        raise ExactDenseIndexError(
+            f"Exact index dimension {exact_index.dimension} != {EMBEDDING_DIMENSION}"
+        )
     dense_retriever = DenseRetriever(
         embedding_provider,
-        vector_store,
+        exact_index,
         top_k=settings.reranker_input_k,
     )
     scorer = TransformersCrossEncoderScorer(
@@ -61,7 +87,7 @@ def build_rag_service(settings: Settings) -> RAGService:
         dtype=settings.reranker_dtype,
         max_length=settings.reranker_max_length,
     )
-    retriever = DenseRerankerRetriever(
+    return DenseRerankerRetriever(
         dense_retriever,
         LearnedReranker(
             scorer,
@@ -72,6 +98,12 @@ def build_rag_service(settings: Settings) -> RAGService:
         reranker_input_k=settings.reranker_input_k,
         final_top_k=settings.reranker_final_k,
     )
+
+
+def build_rag_service(settings: Settings) -> RAGService:
+    """创建唯一正式 Exact Dense Top20 → Learned Reranker → Top5 Pipeline。"""
+
+    retriever = build_retriever(settings)
     context_builder = ContextBuilder(
         BgeM3Tokenizer(settings.embedding_model),
         settings.max_context_tokens,
