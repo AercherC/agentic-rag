@@ -1,0 +1,8 @@
+{
+  "chromadb": "1.5.9",
+  "cuda_available": true,
+  "faiss_importable": false,
+  "platform": "Windows-11-10.0.26100-SP0",
+  "python": "3.12.14 | packaged by Anaconda, Inc. | (main, Aug 27 2026, 14:37:13) [MSC v.1942 64 bit (AMD64)]",
+  "torch": "2.13.0+cu130"
+}

@@ -57,7 +57,8 @@ def test_provider_loads_once_batches_documents_and_returns_python_floats(
     monkeypatch.setattr(
         "evidenceflow.embedding.bge_m3.SentenceTransformer", fake_loader
     )
-    provider = BgeM3EmbeddingProvider("configured/model")
+    # 显式指定 CPU：默认 auto 在有 CUDA 的机器上会解析为 cuda:0，导致断言依赖运行环境。
+    provider = BgeM3EmbeddingProvider("configured/model", device="cpu")
     texts = ["first document", "second document", "third document"]
     vectors = provider.embed_documents(texts)
     query_vector = provider.embed_query("original query")
