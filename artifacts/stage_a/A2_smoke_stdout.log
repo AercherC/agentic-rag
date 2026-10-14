@@ -1,0 +1,45 @@
+﻿python.exe : 
+At line:3 char:1
++ & D:\miniconda\envs\agent-gpu\python.exe experiments/stage_a/run_gene ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 391/391 [00:00<00:00, 43279.05it/s]
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:  11%|█         | 22/201 [00:00<00:00, 215.48it/s]
+Loading weights:  28%|██▊       | 57/201 [00:00<00:00, 280.08it/s]
+Loading weights:  43%|████▎     | 87/201 [00:00<00:00, 286.98it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 491.20it/s]
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (529 >
+ 512). Running this sequence through the model will result in indexing errors
+{
+  "thinking_ignored_calls": 0,
+  "question_count": 25,
+  "status_counts": {
+    "answered": 19,
+    "insufficient_context": 6
+  },
+  "generation_contract_errors": 0,
+  "repair_attempted": 0,
+  "repair_succeeded": 0,
+  "citation_validation_errors": 0,
+  "llm_request_errors": 0,
+  "rate_limit_exhausted": 0,
+  "rate_limit_events": 0,
+  "other_errors": 0,
+  "llm_calls": 25,
+  "usage": {
+    "prompt_tokens": 47376,
+    "completion_tokens": 2708,
+    "calls_without_usage": 0
+  },
+  "latency_seconds": {
+    "median": 6.09,
+    "max": 14.333
+  },
+  "error_questions": {}
+}
+exit=0

@@ -14,10 +14,11 @@ from evidenceflow.llm.base import LLMConfigurationError, LLMRequestError
 from evidenceflow.llm.diagnostics import classify_llm_failure
 
 # 结构化输出模式：json_schema（strict）> json_object > prompt_only。
-# 暂定值（Stage A §S.2）：prompt_only 被所有 OpenAI-compatible 服务支持，且解析器已能处理
-# <think> 与 ```json 代码块；待 A2b 真实探测（artifacts/stage_a/A2_probe.json）后确定。
-# 这里只是固定常量，不做运行时模式降级或自动探测。
-STRUCTURED_OUTPUT_MODE = "prompt_only"
+# 选定值（Stage A §S.2）：依据 artifacts/stage_a/A2_probe.json——deepseek-flash 对 json_schema 返回
+# 400（response_format type unavailable），json_object 与 prompt_only 均通过；按
+# json_schema > json_object > prompt_only 优先级选 json_object（要求 Prompt 含 "JSON"）。
+# 这里只是固定常量，不做运行时模式降级或自动探测；换模型/服务后须重新探测。
+STRUCTURED_OUTPUT_MODE = "json_object"
 STRUCTURED_OUTPUT_MODES = ("json_schema", "json_object", "prompt_only")
 
 # thinking 开关（DeepSeek 等）：auto = 不发送，沿用服务端默认；enabled/disabled 显式开或关。

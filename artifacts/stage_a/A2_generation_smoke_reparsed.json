@@ -1,0 +1,658 @@
+{
+  "changed_vs_original": {},
+  "not_reparsable": [],
+  "records": [
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          156
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 61,
+            "prompt_tokens": 2170
+          }
+        ]
+      },
+      "elapsed_seconds": 3.687,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-002",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          174
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 75,
+            "prompt_tokens": 1451
+          }
+        ]
+      },
+      "elapsed_seconds": 4.679,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-004",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          612
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 133,
+            "prompt_tokens": 1817
+          }
+        ]
+      },
+      "elapsed_seconds": 6.646,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-009",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          265
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 123,
+            "prompt_tokens": 1787
+          }
+        ]
+      },
+      "elapsed_seconds": 6.118,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-010",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          224
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 44,
+            "prompt_tokens": 1875
+          }
+        ]
+      },
+      "elapsed_seconds": 5.268,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-011",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          523
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 260,
+            "prompt_tokens": 1467
+          }
+        ]
+      },
+      "elapsed_seconds": 7.104,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-012",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          211
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 51,
+            "prompt_tokens": 1476
+          }
+        ]
+      },
+      "elapsed_seconds": 5.817,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-013",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          456
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 228,
+            "prompt_tokens": 1680
+          }
+        ]
+      },
+      "elapsed_seconds": 6.491,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-014",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          224
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 105,
+            "prompt_tokens": 1955
+          }
+        ]
+      },
+      "elapsed_seconds": 5.848,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-016",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          99
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 51,
+            "prompt_tokens": 1663
+          }
+        ]
+      },
+      "elapsed_seconds": 4.743,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-018",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          205
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 51,
+            "prompt_tokens": 2841
+          }
+        ]
+      },
+      "elapsed_seconds": 5.784,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-019",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          93
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 38,
+            "prompt_tokens": 1112
+          }
+        ]
+      },
+      "elapsed_seconds": 6.345,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-022",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          491
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 113,
+            "prompt_tokens": 1630
+          }
+        ]
+      },
+      "elapsed_seconds": 14.333,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-029",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          94
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 38,
+            "prompt_tokens": 1598
+          }
+        ]
+      },
+      "elapsed_seconds": 1.005,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-030",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          207
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 63,
+            "prompt_tokens": 1437
+          }
+        ]
+      },
+      "elapsed_seconds": 6.342,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-031",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          196
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 104,
+            "prompt_tokens": 1723
+          }
+        ]
+      },
+      "elapsed_seconds": 6.236,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-036",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          1090
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 236,
+            "prompt_tokens": 1577
+          }
+        ]
+      },
+      "elapsed_seconds": 6.357,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-039",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          170
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 47,
+            "prompt_tokens": 2227
+          }
+        ]
+      },
+      "elapsed_seconds": 5.392,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-007",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          1264
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 253,
+            "prompt_tokens": 2521
+          }
+        ]
+      },
+      "elapsed_seconds": 6.966,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "answered",
+      "question_id": "ARR-037",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "answered"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          488
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 259,
+            "prompt_tokens": 1804
+          }
+        ]
+      },
+      "elapsed_seconds": 6.465,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "ARR-040",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          378
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 85,
+            "prompt_tokens": 2600
+          }
+        ]
+      },
+      "elapsed_seconds": 4.746,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "GEN-U01",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          98
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 36,
+            "prompt_tokens": 2128
+          }
+        ]
+      },
+      "elapsed_seconds": 5.685,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "GEN-U02",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          303
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 57,
+            "prompt_tokens": 1143
+          }
+        ]
+      },
+      "elapsed_seconds": 6.09,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "GEN-U03",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          183
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 82,
+            "prompt_tokens": 2844
+          }
+        ]
+      },
+      "elapsed_seconds": 6.962,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "GEN-U04",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    },
+    {
+      "diagnostics": {
+        "llm_called": true,
+        "raw_response_lengths": [
+          230
+        ],
+        "repair_attempted": false,
+        "repair_succeeded": false,
+        "usages": [
+          {
+            "completion_tokens": 115,
+            "prompt_tokens": 2850
+          }
+        ]
+      },
+      "elapsed_seconds": 5.404,
+      "exception_type": null,
+      "failure_class": null,
+      "original_failure_class": null,
+      "original_status": "insufficient_context",
+      "question_id": "GEN-U05",
+      "rate_limit_events": [],
+      "reparsable": true,
+      "status": "insufficient_context"
+    }
+  ],
+  "summary": {
+    "citation_validation_errors": 0,
+    "error_questions": {},
+    "generation_contract_errors": 0,
+    "latency_seconds": {
+      "max": 14.333,
+      "median": 6.09
+    },
+    "llm_calls": 25,
+    "llm_request_errors": 0,
+    "other_errors": 0,
+    "question_count": 25,
+    "rate_limit_events": 0,
+    "rate_limit_exhausted": 0,
+    "repair_attempted": 0,
+    "repair_succeeded": 0,
+    "status_counts": {
+      "answered": 19,
+      "insufficient_context": 6
+    },
+    "thinking_ignored_calls": 0,
+    "usage": {
+      "calls_without_usage": 0,
+      "completion_tokens": 2708,
+      "prompt_tokens": 47376
+    }
+  }
+}

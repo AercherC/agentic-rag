@@ -59,8 +59,9 @@
   None）；`generate()` 保留。
 - 结构化输出模式在 A2.0 探测后固定为 `openai_compatible.py` 的模块常量（依据
   `artifacts/stage_a/A2_probe.json`），**不实现运行时模式降级或自动探测**。
-  选定模式：**暂定 `prompt_only`（待 A2b 探测后确定）**——所有 OpenAI-compatible 服务都支持，
-  解析器已能处理 `<think>` 与 ```json 代码块。三种模式的请求参数由纯函数
+  选定模式：**`json_object`**（依据 `artifacts/stage_a/A2_probe.json`：deepseek-flash 对 `json_schema`
+  返回 400 “response_format type is unavailable”；`json_object` 与 `prompt_only` 各 3 项请求均通过解析，
+  按 json_schema > json_object > prompt_only 优先级选定）。换模型或服务后必须重新探测。三种模式的请求参数由纯函数
   `build_structured_request_params` 构造（`json_object` 模式要求 Prompt 含 "JSON"）。
 - 在线脚本（`experiments/stage_a/`）统一策略：请求最小间隔（默认 6 秒）；403/配置类错误立即
   停止；429 等待后重试至多 3 次并单独统计（与 LLMRequestError 分开）；JSONL 断点续跑；保存每次

@@ -596,6 +596,12 @@ class _CountingSdk:
         raise self.error
 
 
+def json_messages() -> list[LLMMessage]:
+    """默认模式 json_object 要求 Prompt 含 "JSON"；否则请求在发出前就因配置错误失败。"""
+
+    return [LLMMessage(role="user", content="Return a JSON object.")]
+
+
 def _sdk_error(cls, status_code: int) -> Exception:
     import httpx
 
@@ -619,7 +625,7 @@ def test_real_sdk_403_sends_one_http_request_and_stops_the_script() -> None:
     client.begin()
 
     with pytest.raises(FatalServiceError):
-        client.generate_json(messages(), schema_name="x", json_schema={})
+        client.generate_json(json_messages(), schema_name="x", json_schema={})
 
     assert sdk.http_requests == 1
 
@@ -633,7 +639,7 @@ def test_real_sdk_429_is_retried_by_policy_only_and_classified_as_rate_limit_exh
     client.begin()
 
     with pytest.raises(LLMRequestError) as caught:
-        client.generate_json(messages(), schema_name="x", json_schema={})
+        client.generate_json(json_messages(), schema_name="x", json_schema={})
 
     assert sdk.http_requests == 4  # 1 次原始请求 + 策略的 3 次重试；客户端内部不再重试
     assert clock.sleeps == [30, 60, 120]

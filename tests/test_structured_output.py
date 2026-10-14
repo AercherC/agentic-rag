@@ -20,8 +20,8 @@ JSON_MESSAGES = [LLMMessage(role="user", content="Return a JSON object.")]
 PLAIN_MESSAGES = [LLMMessage(role="user", content="Say hello.")]
 
 
-def test_provisional_mode_is_prompt_only_and_all_modes_are_known() -> None:
-    assert STRUCTURED_OUTPUT_MODE == "prompt_only"
+def test_selected_mode_is_json_object_and_all_modes_are_known() -> None:
+    assert STRUCTURED_OUTPUT_MODE == "json_object"
     assert STRUCTURED_OUTPUT_MODES == ("json_schema", "json_object", "prompt_only")
 
 
@@ -138,7 +138,7 @@ def test_default_client_uses_the_module_constant_mode() -> None:
         _client=SimpleNamespace(chat=SimpleNamespace(completions=completions)),
     )
     client.generate_json(JSON_MESSAGES, schema_name="generator_output", json_schema=SCHEMA)
-    assert "response_format" not in completions.calls[0]  # 暂定 prompt_only
+    assert completions.calls[0]["response_format"] == {"type": "json_object"}
 
 
 def test_last_usage_reflects_only_the_latest_call_and_is_none_without_usage() -> None:
