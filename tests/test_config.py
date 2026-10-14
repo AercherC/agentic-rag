@@ -30,17 +30,18 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
         "RERANKER_DTYPE",
         "VECTOR_DB_PATH",
         "COLLECTION_NAME",
+        "INDEX_STATE_PATH",
     ):
         monkeypatch.delenv(variable, raising=False)
 
     settings = Settings(_env_file=None)
 
     assert settings.llm_api_key is None
-    assert settings.llm_base_url == "https://api-inference.modelscope.cn/v1/"
-    assert settings.llm_model == "Qwen/Qwen3.5-35B-A3B"
+    assert settings.llm_base_url == "https://api.deepseek.com"
+    assert settings.llm_model == "deepseek-flash"
     assert settings.llm_temperature == 0.0
     assert settings.llm_timeout_seconds == 60.0
-    assert settings.llm_thinking == "auto"
+    assert settings.llm_thinking == "disabled"
     assert settings.embedding_model == "BAAI/bge-m3"
     assert settings.source_docs_path == Path("data/source_docs")
     assert settings.chunk_size == 512
@@ -53,6 +54,18 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
     assert settings.model_device == "auto"
     assert settings.reranker_dtype == "float32"
     assert settings.vector_db_path == Path("data/chroma")
+    assert settings.collection_name == "ef_research_bge_m3_hybrid_c512_v2"
+    assert settings.index_state_path == Path("artifacts/phase15a/index_state.json")
+
+
+def test_collection_name_explicit_setting_is_tracked_in_fields_set(monkeypatch) -> None:
+    """runtime 靠 model_fields_set 区分“显式设置”和“默认值”，该语义必须稳定。"""
+
+    monkeypatch.delenv("COLLECTION_NAME", raising=False)
+    assert "collection_name" not in Settings(_env_file=None).model_fields_set
+    assert "collection_name" in Settings(_env_file=None, collection_name="x").model_fields_set
+    monkeypatch.setenv("COLLECTION_NAME", "from-env")
+    assert "collection_name" in Settings(_env_file=None).model_fields_set
 
 
 def test_environment_variables_override_defaults(monkeypatch) -> None:

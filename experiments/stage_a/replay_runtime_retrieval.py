@@ -22,7 +22,7 @@ for extra in (ROOT, ROOT / "src"):
 from evidenceflow.config import Settings  # noqa: E402
 from evidenceflow.eval.ir_metrics import evaluate_ir_run  # noqa: E402
 from evidenceflow.model_device import resolve_model_device  # noqa: E402
-from evidenceflow.runtime import build_retriever  # noqa: E402
+from evidenceflow.runtime import build_retriever, resolve_active_collection  # noqa: E402
 from evidenceflow.storage.chroma import ChromaVectorStore  # noqa: E402
 from experiments.phase15b_active_relevance import project_active_relevance  # noqa: E402
 from experiments.run_production_reranked_baseline_replay import (  # noqa: E402
@@ -70,9 +70,14 @@ def run(output: Path, *, candidates_only: bool, allow_gpu: bool) -> dict[str, An
         raise RuntimeError("replay requires the frozen identical 40Q question order")
     by_id = {q["question_id"]: q for q in questions_v1["questions"]}
 
+    # A3：collection 由 lifecycle active 指针决定（与 build_retriever 同一个解析入口）。
+    active_collection = resolve_active_collection(settings)
     # 只读校验 active collection 身份，并取得 chunk 用于构建 active relevance 投影。
-    identity_store = ChromaVectorStore(settings.vector_db_path, settings.collection_name)
-    chunks = validate_identity(settings, snapshot, identity_store)
+    # validate_identity 属于已冻结的历史脚本，读的是 settings.collection_name，这里传入解析后的副本。
+    identity_store = ChromaVectorStore(settings.vector_db_path, active_collection)
+    chunks = validate_identity(
+        settings.model_copy(update={"collection_name": active_collection}), snapshot, identity_store
+    )
     projection = project_active_relevance(chunks, questions_v2)
 
     # 线上装配路径：与 build_rag_service 使用同一个 build_retriever。
@@ -133,7 +138,7 @@ def run(output: Path, *, candidates_only: bool, allow_gpu: bool) -> dict[str, An
         "mode": "candidates_only" if candidates_only else "full",
         "pipeline": PIPELINE,
         # 身份字段与 compare_replay 对齐；常量来自冻结脚本，chunk_id_hash 另由实际索引复核。
-        "collection_name": settings.collection_name,
+        "collection_name": active_collection,
         "corpus_signature": CORPUS_SIGNATURE,
         "index_signature": INDEX_SIGNATURE,
         "chunk_id_hash": actual_chunk_hash,

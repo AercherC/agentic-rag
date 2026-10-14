@@ -20,6 +20,14 @@ from evidenceflow.knowledge.manifest import KnowledgeBaseManifest
 LifecyclePointerStatus = Literal["ACTIVE", "STAGING", "PREVIOUS"]
 
 
+class ActiveCollectionError(RuntimeError):
+    """线上 collection 的解析或身份校验失败：配置冲突、状态文件损坏或 lifecycle 标记不符。"""
+
+
+class ActiveIndexProtectedError(RuntimeError):
+    """目标 collection 是 lifecycle active 指针指向的索引，禁止直接 ingest。"""
+
+
 class CollectionReader(Protocol):
     """生命周期校验所需的 Vector Store 只读能力。"""
 
@@ -413,5 +421,20 @@ class IndexLifecycle:
             previous=state.active.model_copy(update={"status": "PREVIOUS"}),
             staging=None,
         )
+        _write_json_atomic(self.state_path, next_state.model_dump(mode="json"))
+        return next_state
+
+    def discard_staging(self) -> LifecycleState:
+        """只清空 staging 指针，不改动 active/previous，也不删除 Chroma collection。
+
+        调用方负责先通过 Chroma API 删除 staging collection，并事先确认它不是 active 或
+        previous；本方法只维护指针，避免手工编辑 JSON。staging 本来为 null 时直接返回，
+        不重写状态文件。
+        """
+
+        state = self.load_state()
+        if state.staging is None:
+            return state
+        next_state = state.model_copy(update={"staging": None})
         _write_json_atomic(self.state_path, next_state.model_dump(mode="json"))
         return next_state

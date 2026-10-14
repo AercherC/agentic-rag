@@ -12,6 +12,7 @@ from evidenceflow.citation import CitationValidationError
 from evidenceflow.domain import RAGAnswer
 from evidenceflow.generation import GenerationContractError
 from evidenceflow.ingestion.service import IngestionService, IngestionSummary
+from evidenceflow.knowledge import ActiveCollectionError, ActiveIndexProtectedError
 from evidenceflow.llm import LLMConfigurationError, LLMRequestError
 from evidenceflow.rag import RAGService
 
@@ -78,7 +79,9 @@ def render_rag_answer(answer: RAGAnswer) -> str:
 def _render_ask_error(exc: Exception) -> str:
     """将已知 Public Boundary 失败转成稳定、无敏感值的用户提示。"""
 
-    if isinstance(exc, LLMConfigurationError):
+    if isinstance(exc, ActiveCollectionError):
+        prefix = "Index configuration error"
+    elif isinstance(exc, LLMConfigurationError):
         prefix = "LLM configuration error"
     elif isinstance(exc, LLMRequestError):
         prefix = "LLM request failed"
@@ -118,6 +121,10 @@ def main(
                 ingestion_service = build_ingestion_service(active_settings)
             service = ingestion_service
             summary = service.ingest(args.path)
+        except ActiveIndexProtectedError as exc:
+            # 保护拒绝与执行失败区分：退出码 2 表示“被策略拒绝，没有改动任何索引”。
+            print(f"Ingestion refused: {exc}", file=sys.stderr)
+            return 2
         except Exception as exc:
             print(f"Ingestion failed: {type(exc).__name__}: {exc}", file=sys.stderr)
             return 1

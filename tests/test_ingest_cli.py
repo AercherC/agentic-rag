@@ -50,3 +50,31 @@ def test_summary_never_prints_embedding_values(tmp_path: Path) -> None:
     output = render_ingestion_summary(_summary(), tmp_path)
     assert "embeddings=2" in output
     assert "[1.0" not in output
+
+
+def test_ingest_cli_refuses_active_collection_with_exit_code_2(tmp_path: Path, capsys, monkeypatch) -> None:
+    """lifecycle active 指向的 collection 不允许直接 ingest：退出码 2，且不加载任何模型。"""
+
+    from evidenceflow.knowledge import IndexLifecycle, PipelineIdentity, SourceRecord, build_manifest
+
+    monkeypatch.delenv("COLLECTION_NAME", raising=False)
+    pipeline = PipelineIdentity(
+        parser_version="p", cleaner_version="c", chunker_version="k",
+        chunker_config={"strategy": "hybrid"}, embedding_model="m", embedding_version="e",
+    )
+    manifest = build_manifest(
+        knowledge_base_id="kb-test",
+        sources=[SourceRecord(document_id="d", relative_path="a.pdf", content_hash="h")],
+        pipeline=pipeline, collection_name="col-active", document_count=1, chunk_count=1,
+        status="ACTIVE",
+    )
+    IndexLifecycle(tmp_path / "index_state.json", "kb-test").initialize_active(manifest)
+    settings = Settings(_env_file=None, index_state_path=tmp_path / "index_state.json")
+
+    # 不注入 ingestion_service：走真实 build_ingestion_service，保护必须在构造模型之前触发。
+    exit_code = main(["ingest", "data/source_docs"], settings=settings)
+    captured = capsys.readouterr()
+
+    assert exit_code == 2
+    assert "col-active" in captured.err and "build_staging_index" in captured.err
+    assert captured.out == ""

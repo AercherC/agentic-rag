@@ -1,0 +1,86 @@
+{
+  "active": {
+    "chunk_id_hash": "e87a613ebe65b10262996e83974b55839e0b6c27fbe22053ee7b8826dd1f153d",
+    "content_hash": "615d09ff407bc6fc808219399ddfdb46b3cc3e4e829194db732cf78a80886858",
+    "count": 817,
+    "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5",
+    "metadata": {
+      "chunk_strategy": "hybrid",
+      "hnsw:space": "cosine",
+      "lifecycle": "ACTIVE",
+      "storage_contract": "domain_chunk_metadata_v2"
+    },
+    "name": "ef_research_bge_m3_hybrid_c512_v2"
+  },
+  "active_manifest": {
+    "path": "artifacts/phase15a/active_manifest.json",
+    "sha256": "04c9729ab123d525c89d76c9df474d7771e714811de5591291970be78547a249"
+  },
+  "collection_names": [
+    "ef_research_bge_m3_c512_o64_refmeta_v1",
+    "ef_research_bge_m3_c512_o64_v1",
+    "ef_research_bge_m3_hybrid_c512_v1",
+    "ef_research_bge_m3_hybrid_c512_v2",
+    "ef_research_bge_m3_hybrid_c512_v2_staging",
+    "ef_research_structure_v1",
+    "ef_research_structure_v1_elemaware"
+  ],
+  "collections": {
+    "ef_research_bge_m3_c512_o64_refmeta_v1": {
+      "count": 361,
+      "metadata": {}
+    },
+    "ef_research_bge_m3_c512_o64_v1": {
+      "count": 361,
+      "metadata": {}
+    },
+    "ef_research_bge_m3_hybrid_c512_v1": {
+      "count": 817,
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine"
+      }
+    },
+    "ef_research_bge_m3_hybrid_c512_v2": {
+      "count": 817,
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine",
+        "lifecycle": "ACTIVE",
+        "storage_contract": "domain_chunk_metadata_v2"
+      }
+    },
+    "ef_research_bge_m3_hybrid_c512_v2_staging": {
+      "count": 817,
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine",
+        "lifecycle": "STAGING",
+        "storage_contract": "domain_chunk_metadata_v2"
+      }
+    },
+    "ef_research_structure_v1": {
+      "count": 385,
+      "metadata": {}
+    },
+    "ef_research_structure_v1_elemaware": {
+      "count": 935,
+      "metadata": {}
+    }
+  },
+  "state_file": {
+    "active": {
+      "chunk_count": 817,
+      "collection_name": "ef_research_bge_m3_hybrid_c512_v2",
+      "document_count": 10,
+      "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5",
+      "knowledge_base_id": "evidenceflow-research",
+      "manifest_path": "artifacts/phase15a/active_manifest.json",
+      "status": "ACTIVE"
+    },
+    "path": "artifacts\\phase15a\\index_state.json",
+    "previous": null,
+    "sha256": "5fbad4f02215d120128ffedf83b2708901ba881bbc258f8c86957ebcc63d8809",
+    "staging": null
+  }
+}

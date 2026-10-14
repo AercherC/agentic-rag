@@ -88,6 +88,47 @@
   JSONL 或改用新的输出路径。`PolicyLLMClient` 构造时要求 inner 客户端 `max_attempts == 1`，否则抛
   `LLMConfigurationError`。统计中记录 `thinking_ignored_calls`（`llm_thinking=disabled` 但 reasoning_content
   非空的调用次数）。
+- **LLM 默认值（A3 修订，用户决定）**：`Settings.llm_base_url` 默认 `https://api.deepseek.com`，`llm_model` 默认
+  `deepseek-flash`，`llm_thinking` 默认 `disabled`（此前为 ModelScope / Qwen3.5-35B-A3B / `auto`）；`.env.example`
+  与之一致。使用非 DeepSeek 服务时必须同时覆盖这三项（尤其是 `LLM_THINKING=auto`，否则可能返回 400）。
+
+## §S.3 索引生命周期接到线上（A3）
+
+- **新增配置** `Settings.index_state_path: Path = artifacts/phase15a/index_state.json`（相对当前工作目录，与
+  `vector_db_path` 同口径）。`Settings.collection_name` 默认值由 `ef_bge_m3_hybrid_c512_v1` 改为
+  `ef_research_bge_m3_hybrid_c512_v2`，仅作为“没有 lifecycle 状态文件”时的回落值。
+- **active 指针解析**：`runtime.resolve_active_collection(settings) -> str` 是线上选择 collection 的**唯一**入口，
+  `build_retriever` 与 `build_ingestion_service` 都调用它。规则：
+  1. `index_state_path` 存在 → 返回 `state.active.collection_name`。状态文件无法解析时抛 `ActiveCollectionError`
+     （拒绝启动，不回落）。若用户**显式设置**了 `COLLECTION_NAME`（`"collection_name" in settings.model_fields_set`，
+     包含环境变量、`.env` 与构造参数）且与 active 不一致，同样抛 `ActiveCollectionError`，不静默选择其一；
+     一致则允许。
+  2. 状态文件不存在 → 返回 `settings.collection_name`（测试与全新环境）。
+- **lifecycle metadata 校验**：仅当 collection 由 active 指针解析而来（规则 1）时，`build_retriever` 打开 store 后要求
+  `store.metadata["lifecycle"] == "ACTIVE"`，否则抛 `ActiveCollectionError`。规则 2（全新环境）下 collection 由首次
+  ingest 创建、没有 lifecycle 标记，故不校验。已确认 v2 的 metadata 含 `lifecycle: "ACTIVE"`
+  （`artifacts/stage_a/A0_verify_active_index.txt`）。
+- **激活时同步 metadata**：Chroma 的 `lifecycle` 标记在 collection 创建时写入；`--activate` 在切换 active 指针**之前**
+  通过 Chroma API 把新 active collection 的 metadata 改为 `lifecycle=ACTIVE`，否则新 active 会被上一条校验拒绝。
+- **ingest 保护**：状态文件存在时，`ingest` 的目标即 active collection，`build_ingestion_service` 在构造任何模型之前
+  抛出 `ActiveIndexProtectedError`，CLI 打印“请使用 scripts/build_staging_index.py”并以**退出码 2**退出。
+  `ActiveCollectionError`（配置冲突）仍沿用既有失败路径（退出码 1）。保护函数
+  `runtime.guard_ingest_target(settings, collection_name)` 可单独调用。无状态文件时保持原行为。
+- **`IndexLifecycle.discard_staging() -> LifecycleState`**（新增，第 5 个状态方法）：只把 `staging` 指针置为 null，
+  不改动 `active`/`previous`；沿用 `_write_json_atomic`；`staging` 本来为 null 时直接返回当前状态、不重写文件；
+  **不删除 Chroma collection**——删除由调用方通过 Chroma API 完成，且必须先确认它不是 active 或 previous。
+  理由：现有 `prepare_staging/activate/rollback` 都不能清空 staging 指针，手工编辑 `index_state.json` 容易出错。
+- **staging 构建脚本** `scripts/build_staging_index.py`：复用 `StagingBuildCoordinator`、`IngestionService`（作为
+  builder 回调）与 `validate_collection`，不复制 ingestion 逻辑。参数：`--expected-chunk-ids-from-active`（chunk ID 集合
+  必须与 active 完全一致）、`--activate`（默认不激活）、`--discard-after-validate`（校验**通过**后通过 Chroma API
+  删除 staging collection，再调用 `discard_staging()`；校验失败时保留 staging collection 与指针供诊断；与
+  `--activate` 互斥）。staging collection 名由 `build_staging_collection_name` 生成；已存在同名 collection 或状态中已有
+  staging 指针时拒绝开始。`BuildJobStore` 输出放在 `artifacts/stage_a/A3_staging_jobs/`。manifest 的文档数与 chunk 数
+  取 active 的数量（本脚本当前只支持“同一 corpus 的全量重建”）。
+- **IngestionService 的“先删后写”不变**：ACTIVE 已不允许 ingest，staging 又总是全新的空 collection，该分支不会被触发；
+  本阶段不修改 `ingestion/service.py` 内部逻辑。
+- **`validate_collection` 的校验范围**：只读 staging 的 Chunk（数量、文档集合、chunk ID 重复/缺失/多余、必需 metadata、
+  向量维度、一次 Dense smoke 非空），**不比较**向量数值或检索排序，因此构建设备（CPU/GPU）不影响 Gate。
 
 # Current Architecture Summary（Phase 15B.5）
 

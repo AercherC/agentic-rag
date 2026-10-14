@@ -7,6 +7,8 @@ from evidenceflow.knowledge.job import (
     BuildJobTracker,
 )
 from evidenceflow.knowledge.lifecycle import (
+    ActiveCollectionError,
+    ActiveIndexProtectedError,
     CollectionValidationReport,
     IndexLifecycle,
     IndexPointer,
@@ -40,6 +42,8 @@ from evidenceflow.knowledge.manifest import (
 )
 
 __all__ = [
+    "ActiveCollectionError",
+    "ActiveIndexProtectedError",
     "BUILD_JOB_STATUSES",
     "BuildJob",
     "BuildJobStore",

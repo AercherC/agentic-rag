@@ -35,12 +35,12 @@ class Settings(BaseSettings):
         description="OpenAI-compatible LLM 的 API Key，仅从运行环境读取。",
     )
     llm_base_url: str = Field(
-        default="https://api-inference.modelscope.cn/v1/",
-        description="OpenAI-compatible LLM API 的基础地址。",
+        default="https://api.deepseek.com",
+        description="OpenAI-compatible LLM API 的基础地址；默认 DeepSeek（A3 修订）。",
     )
     llm_model: str = Field(
-        default="Qwen/Qwen3.5-35B-A3B",
-        description="当前 LLM 服务商提供的模型名称。",
+        default="deepseek-flash",
+        description="当前 LLM 服务商提供的模型名称；默认 DeepSeek 的 deepseek-flash（A3 修订）。",
     )
     llm_temperature: float = Field(
         default=0.0,
@@ -62,10 +62,11 @@ class Settings(BaseSettings):
         description="单次 LLM 业务调用的最大尝试次数；仅瞬态错误允许第二次尝试。",
     )
     llm_thinking: Literal["auto", "enabled", "disabled"] = Field(
-        default="auto",
+        default="disabled",
         description=(
             "是否向 OpenAI-compatible 服务发送 thinking 开关。auto = 不发送，沿用服务端默认"
-            "（DeepSeek 下思考默认开启）；enabled/disabled 显式开或关。"
+            "（DeepSeek 下思考默认开启）；enabled/disabled 显式开或关。默认 disabled 匹配 DeepSeek；"
+            "非 DeepSeek 服务必须覆盖为 auto，否则可能返回 400。"
         ),
     )
 
@@ -142,11 +143,19 @@ class Settings(BaseSettings):
         description="本地 Vector Store 持久化数据目录。",
     )
     collection_name: str = Field(
-        default="ef_bge_m3_hybrid_c512_v1",
+        default="ef_research_bge_m3_hybrid_c512_v2",
         min_length=1,
         description=(
-            "按 Embedding 与 Chunk 配置隔离的向量 Collection 名称；"
-            "默认随 hybrid 晋升（Phase 13F）切换为 hybrid 身份，重建后生效。"
+            "按 Embedding 与 Chunk 配置隔离的向量 Collection 名称；仅在不存在 lifecycle 状态文件"
+            "（测试、全新环境）时作为回落值。线上以 index_state_path 的 active 指针为准，"
+            "显式设置且与 active 不一致会拒绝启动（见 runtime.resolve_active_collection）。"
+        ),
+    )
+    index_state_path: Path = Field(
+        default=Path("artifacts/phase15a/index_state.json"),
+        description=(
+            "Phase 15A 索引生命周期状态文件（active/previous/staging 指针）；"
+            "相对路径按当前工作目录解析。文件存在时线上读取的 Collection 由 active 指针决定。"
         ),
     )
 

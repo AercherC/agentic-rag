@@ -1,0 +1,11 @@
+{
+  "outcome": "VALIDATED_AND_DISCARDED",
+  "staging_collection": "ef_research_bge_m3_hybrid_c512_v__staging__b4e9432c7170615a",
+  "job_status": "READY",
+  "validation_passed": true,
+  "actual_chunk_count": 817,
+  "missing_chunk_ids": 0,
+  "unexpected_chunk_ids": 0,
+  "errors": [],
+  "job_error": null
+}

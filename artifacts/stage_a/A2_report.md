@@ -36,6 +36,7 @@ host `api.deepseek.com`，model `deepseek-flash`，`llm_thinking=disabled`。
 ## 3. A2.3 冒烟（25 题，`A2_generation_smoke.json` / `.jsonl`）
 - 链路：Exact Dense20 → Reranker → Top5 → Context → Generator v3（json_object）→ Citation；device `cuda:0`（`--allow-gpu`，已记录）；使用数据集 `query` 字段；每题 Top5 chunk_id 已记录（25 题均为 5 个）；不与 B0' 比较。
 - status 分布：**answered 19，insufficient_context 6**。对照数据集标注：ANSWERABLE 19 题中 18 题 answered、1 题（`ARR-040`，SVDFormer 与 Hyper-PCN 的结构比较）为 insufficient_context；INSUFFICIENT_CONTEXT 5 题全部 insufficient_context。该题回答质量不在本步评估范围，留给阶段 B。
+- **`ARR-040` 的 insufficient_context 是检索漏召回，不是生成问题。** 数据集给出的 3 个可接受证据 chunk（`0b3ae8…`、`2f9922…`、`d9b0f2…`）都不在该题的 Top5 中（Top5 为 `b514a8…`、`4ee5db…`、`084937…`、`b8d95a…`、`496f53…`；A3 复核时已逐个核对）。模型在拿不到所需证据时给出 insufficient_context 是符合 Grounding 规则的。
 - 错误：GenerationContractError 0、修复 0（attempted 0 / succeeded 0）、CitationValidationError 0、LLMRequestError 0、限流耗尽 0、其他 0。
 - usage 合计：prompt 47 376 tokens，completion 2 708 tokens，共 25 次调用（无修复调用），25 次均有 usage。
 - 耗时：总 150.5 秒（含 6 秒最小间隔下的每题处理）；单题中位数 6.09 秒，最大 14.33 秒。
@@ -52,7 +53,9 @@ host `api.deepseek.com`，model `deepseek-flash`，`llm_thinking=disabled`。
 4. `max_attempts=1` 时，超时与 5xx 不会自动重试，只能靠 `--retry-llm-errors` 补跑；本次未出现。
 5. `json_object` 模式只保证“是 JSON”，不保证符合 schema，字段与取值仍由 `GeneratorOutput` 校验（`extra="forbid"`）。
 6. 换模型或服务后必须重新跑探测；`STRUCTURED_OUTPUT_MODE` 是固定常量，没有运行时降级。
-7. 沿用 A2a 报告：`src/evidenceflow.zip` 在 A2a 提交后从磁盘消失，原因未知，待你决定（A4 备份计划相关）。
+7. `src/evidenceflow.zip` 是用户自己删除的，不需要再追查（取代 A2a 报告中“原因未知”的说法）。
+8. **“status 为 insufficient_context，但正文给出了部分有引用的回答”怎么计分，留给阶段 B 决定。** 例如 `ARR-040`：status 为 `insufficient_context`，正文却包含带 `[S1]` 等引用的部分回答。按 status 计会算作拒答，按正文计会算作部分回答。本阶段不裁定。
+9. `experiments/archive/phase12_fallback_metrics.py` 同样使用大写状态值（`"INSUFFICIENT_CONTEXT"`），与 `AnswerStatus` 的小写不一致；该文件在 A4 删除。
 
 ## 6. 产物与提交
 - `A2_probe.json`、`A2_probe.jsonl`、`A2_generation_smoke.json`、`A2_generation_smoke.jsonl`、`A2_generation_smoke_reparsed.json`、`A2_smoke_stdout.log`、`A2_pytest.log`（均不含 API Key）。

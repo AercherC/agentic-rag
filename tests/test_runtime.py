@@ -87,6 +87,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
         _env_file=None,
         embedding_model="test-bge",
         vector_db_path=tmp_path,
+        index_state_path=tmp_path / "absent_state.json",
         collection_name="test-collection",
         reranker_model="test-reranker",
         model_device="cpu",
@@ -115,7 +116,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
         ),
         ("tokenizer", "test-bge"),
         ("context", 1234),
-        ("llm", ("test-llm", 0.0, 60.0, 2, "auto")),
+        ("llm", ("test-llm", 0.0, 60.0, 2, "disabled")),
         ("generator", "FakeLLM"),
     ]
 
@@ -149,6 +150,7 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
         _env_file=None,
         source_docs_path=tmp_path / "docs",
         vector_db_path=tmp_path / "db",
+        index_state_path=tmp_path / "absent_state.json",
         collection_name="test-collection",
         embedding_model="test-bge",
         model_device="cpu",
@@ -202,7 +204,7 @@ def test_build_retriever_rejects_index_size_mismatch(monkeypatch, tmp_path) -> N
     _patch_retriever_deps(monkeypatch, store_count=817, index_size=816, dimension=1024)
 
     with pytest.raises(ExactDenseIndexError, match="size"):
-        build_retriever(Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu"))
+        build_retriever(Settings(_env_file=None, vector_db_path=tmp_path, index_state_path=tmp_path / "absent.json", model_device="cpu"))
 
 
 def test_build_retriever_rejects_wrong_dimension(monkeypatch, tmp_path) -> None:
@@ -211,7 +213,7 @@ def test_build_retriever_rejects_wrong_dimension(monkeypatch, tmp_path) -> None:
     _patch_retriever_deps(monkeypatch, store_count=2, index_size=2, dimension=768)
 
     with pytest.raises(ExactDenseIndexError, match="dimension"):
-        build_retriever(Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu"))
+        build_retriever(Settings(_env_file=None, vector_db_path=tmp_path, index_state_path=tmp_path / "absent.json", model_device="cpu"))
 
 
 def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, tmp_path) -> None:
@@ -220,7 +222,7 @@ def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, t
     _patch_retriever_deps(monkeypatch, store_count=2, index_size=2, dimension=1024)
 
     retriever = build_retriever(
-        Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu")
+        Settings(_env_file=None, vector_db_path=tmp_path, index_state_path=tmp_path / "absent.json", model_device="cpu")
     )
 
     assert retriever == "retriever"
@@ -248,7 +250,7 @@ def test_build_rag_service_accepts_injected_retriever_and_generator(monkeypatch,
     retriever, generator = object(), object()
 
     service = build_rag_service(
-        Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu"),
+        Settings(_env_file=None, vector_db_path=tmp_path, index_state_path=tmp_path / "absent.json", model_device="cpu"),
         retriever=retriever,
         generator=generator,
     )

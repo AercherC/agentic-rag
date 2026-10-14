@@ -289,3 +289,63 @@ def test_chroma_staging_metadata_is_explicit_and_readable(tmp_path) -> None:
     assert store.metadata["index_signature"] == "index"
     assert store.count == 0
     assert store.embedding_dimension is None
+
+
+def _lifecycle_with_staging(tmp_path):
+    """建立带 active、previous 与 staging 三个指针的状态文件。"""
+
+    lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
+    lifecycle.initialize_active(_manifest("active-a", status="ACTIVE", chunk_count=1))
+    staging = _manifest("staging-b", status="STAGING")
+    lifecycle.prepare_staging(staging)
+    lifecycle.activate(staging, _passed_report())
+    lifecycle.prepare_staging(_manifest("staging-c", status="STAGING"))
+    return lifecycle
+
+
+def test_discard_staging_clears_only_staging_pointer(tmp_path) -> None:
+    """discard_staging 只清空 staging，active 与 previous 保持原样。"""
+
+    lifecycle = _lifecycle_with_staging(tmp_path)
+    before = lifecycle.load_state()
+    assert before.staging is not None and before.previous is not None
+
+    after = lifecycle.discard_staging()
+
+    assert after.staging is None
+    assert after.active == before.active
+    assert after.previous == before.previous
+    assert lifecycle.load_state() == after  # 已落盘
+
+
+def test_discard_staging_is_noop_and_does_not_rewrite_file_when_staging_is_null(tmp_path) -> None:
+    lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
+    lifecycle.initialize_active(_manifest("active-a", status="ACTIVE", chunk_count=1))
+    before_bytes = lifecycle.state_path.read_bytes()
+    before_mtime = lifecycle.state_path.stat().st_mtime_ns
+
+    state = lifecycle.discard_staging()
+
+    assert state.staging is None
+    assert lifecycle.state_path.read_bytes() == before_bytes
+    assert lifecycle.state_path.stat().st_mtime_ns == before_mtime
+
+
+def test_discard_staging_uses_atomic_write_and_leaves_no_temp_files(tmp_path, monkeypatch) -> None:
+    """沿用 _write_json_atomic：写入失败时原状态文件不变，且不残留临时文件。"""
+
+    import evidenceflow.knowledge.lifecycle as lifecycle_module
+
+    lifecycle = _lifecycle_with_staging(tmp_path)
+    before_bytes = lifecycle.state_path.read_bytes()
+
+    def failing_replace(source, destination):
+        raise OSError("simulated replace failure")
+
+    monkeypatch.setattr(lifecycle_module.os, "replace", failing_replace)
+    with pytest.raises(OSError):
+        lifecycle.discard_staging()
+    monkeypatch.undo()
+
+    assert lifecycle.state_path.read_bytes() == before_bytes
+    assert [path.name for path in tmp_path.iterdir()] == ["index_state.json"]

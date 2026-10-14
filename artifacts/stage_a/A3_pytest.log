@@ -1,0 +1,19 @@
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 33%]
+........................................................................ [ 44%]
+........................................................................ [ 55%]
+........................................................................ [ 67%]
+........................................................................ [ 78%]
+........................................................................ [ 89%]
+...................................................................      [100%]
+============================== warnings summary ===============================
+tests/test_build_staging_index.py: 3 warnings
+tests/test_ingestion_service.py: 1 warning
+tests/test_phase15a_lifecycle.py: 1 warning
+tests/test_storage.py: 17 warnings
+  D:\miniconda\envs\agent-gpu\Lib\site-packages\chromadb\api\models\CollectionCommon.py:155: DeprecationWarning: legacy embedding function config
+    return load_collection_configuration_from_json(self._model.configuration_json)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+643 passed, 22 warnings in 38.85s
