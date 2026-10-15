@@ -4,6 +4,9 @@
 该脚本只读检查当前配置指向的 Collection：存在性、记录数、metadata 覆盖率、
 Domain Chunk 全量恢复、样本查询以及 Collection 身份。它不会修复、删除或切换
 任何 Collection，适合在 ingestion、runtime promotion 和 cleanup 后重复执行。
+
+默认只把 JSON 结果打印到 stdout，不写任何文件；只有显式传入 ``--output PATH`` 时才额外
+写入该文件（避免误改被 git 跟踪的历史产物）。退出码：0 = 全部检查通过；2 = 有检查失败。
 """
 
 from __future__ import annotations
@@ -144,20 +147,20 @@ def inspect_active_index(
     return result
 
 
-def main() -> int:
-    """执行只读 smoke 并将机器可读结果写入指定路径。"""
+def main(argv: list[str] | None = None) -> int:
+    """执行只读 smoke，结果打印到 stdout；仅在显式给出 ``--output`` 时写文件。"""
 
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--path", type=Path, default=None, help="Chroma 持久化目录")
     parser.add_argument("--collection", default=None, help="待检查 Collection 名称")
     parser.add_argument("--expected-count", type=int, default=None, help="可选的精确记录数")
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "artifacts" / "cleanup" / "active_index_smoke.json",
-        help="JSON 结果路径",
+        default=None,
+        help="可选：同时把 JSON 结果写入该路径（默认不写文件，只输出到 stdout）",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     settings = Settings()
     path = args.path or settings.vector_db_path
     collection = args.collection or settings.collection_name
@@ -166,8 +169,10 @@ def main() -> int:
         collection,
         expected_count=args.expected_count,
     )
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+    if args.output is not None:
+        # 只有用户显式指定路径才落盘；默认保持完全只读。
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["pass"] else 2
 

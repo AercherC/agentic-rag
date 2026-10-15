@@ -7,14 +7,17 @@
 - 动态保护：读取 lifecycle 状态文件，把 active / previous / staging 指针中的 collection 名并入禁止集合；
 - 允许列表与禁止集合有交集、或状态文件读不出时拒绝执行（退出码 2），什么都不删；
 - 只删除实际存在的名字；删除前把全部 collection 的 name / id / count / metadata 导出到 before JSON，
-  ``--execute`` 完成后再导出 after JSON。
+  ``--execute`` 完成后再导出 after JSON；
+- 本次运行要写的输出文件（before；``--execute`` 时还有 after）已存在时拒绝执行（退出码 2），
+  避免覆盖 A4 的审计记录；检查在连接 Chroma 之前完成。确需覆盖时显式传 ``--overwrite``。
 
 用法：
 
     python scripts/prune_chroma_collections.py            # dry-run：只导出 before 并列出将删除的名字
     python scripts/prune_chroma_collections.py --execute  # 真正删除，并导出 after
 
-退出码：0 = 成功（dry-run 或删除完成）；1 = Chroma 操作失败；2 = 拒绝执行（保护冲突或状态文件不可读）。
+退出码：0 = 成功（dry-run 或删除完成）；1 = Chroma 操作失败；2 = 拒绝执行（输出文件已存在且未传
+``--overwrite``、保护冲突或状态文件不可读），此时没有连接 Chroma、什么都没改。
 """
 
 from __future__ import annotations
@@ -72,6 +75,16 @@ def lifecycle_protected_names(state_path: Path) -> set[str]:
     return names
 
 
+def check_outputs_writable(paths: list[Path], *, overwrite: bool) -> None:
+    """本次要写的输出文件已存在且未显式允许覆盖时拒绝：before/after 是不可再生的审计记录。"""
+
+    if overwrite:
+        return
+    existing = [str(path) for path in paths if Path(path).exists()]
+    if existing:
+        raise PruneRefused(f"output file(s) already exist: {existing}; pass --overwrite to replace them")
+
+
 def forbidden_names(state_path: Path) -> set[str]:
     """禁止集合 = 硬编码禁止名单 ∪ 状态文件指针引用的名字。"""
 
@@ -126,10 +139,13 @@ def prune(
     execute: bool,
     before_output: Path,
     after_output: Path,
+    overwrite: bool = False,
 ) -> dict[str, Any]:
     """执行一次清理（或 dry-run），返回摘要；保护冲突时抛 ``PruneRefused``，不删除任何东西。"""
 
     # 先做全部保护检查，再连接 Chroma：拒绝路径上不会打开存储。
+    # 输出覆盖检查只针对本次会写的文件：dry-run 只写 before，--execute 还会写 after。
+    check_outputs_writable([before_output, after_output] if execute else [before_output], overwrite=overwrite)
     forbidden = forbidden_names(state_path)
     check_allowlist(ALLOWED_TO_DELETE, forbidden)
 
@@ -173,6 +189,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--state-path", type=Path, default=None, help="lifecycle 状态文件（默认 Settings.index_state_path）")
     parser.add_argument("--before-output", type=Path, default=DEFAULT_BEFORE)
     parser.add_argument("--after-output", type=Path, default=DEFAULT_AFTER)
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="允许覆盖已存在的 before/after 输出文件（默认拒绝，退出码 2）",
+    )
     args = parser.parse_args(argv)
 
     settings = Settings()
@@ -185,6 +206,7 @@ def main(argv: list[str] | None = None) -> int:
             execute=args.execute,
             before_output=args.before_output,
             after_output=args.after_output,
+            overwrite=args.overwrite,
         )
     except PruneRefused as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)

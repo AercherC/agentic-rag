@@ -177,3 +177,48 @@ def test_hardcoded_lists_do_not_overlap() -> None:
         "ef_research_bge_m3_hybrid_c512_v1",
         "ef_research_bge_m3_c512_o64_v1",
     }
+
+
+@pytest.mark.parametrize("execute", [False, True])
+def test_existing_output_is_refused_and_left_unchanged(env, capsys, execute) -> None:
+    """再次运行不得覆盖 A4 审计记录：before（或 --execute 时的 after）已存在 → 退出码 2，文件与存储均不变。"""
+
+    tmp_path, db, state_path = env
+    existing = tmp_path / ("after.json" if execute else "before.json")
+    existing.write_text("original audit record\n", encoding="utf-8")
+    extra = ("--execute",) if execute else ()
+
+    assert main(_args(tmp_path, db, state_path, *extra)) == 2
+
+    err = capsys.readouterr().err
+    assert err.startswith("REFUSED: output file(s) already exist") and "--overwrite" in err
+    assert existing.read_text(encoding="utf-8") == "original audit record\n"
+    assert _names(db) == set(ALLOWED_TO_DELETE) | set(FORBIDDEN_TO_DELETE)
+    if execute:
+        assert not (tmp_path / "before.json").exists()  # 拒绝发生在连接 Chroma、导出 before 之前
+
+
+def test_existing_output_check_runs_before_opening_chroma(env, monkeypatch) -> None:
+    tmp_path, db, state_path = env
+    (tmp_path / "before.json").write_text("x", encoding="utf-8")
+
+    def fail_client(*args, **kwargs):  # pragma: no cover - 被调用即说明顺序错误
+        raise AssertionError("Chroma must not be opened when outputs already exist")
+
+    monkeypatch.setattr(chromadb, "PersistentClient", fail_client)
+
+    assert main(_args(tmp_path, db, state_path)) == 2
+
+
+def test_overwrite_flag_allows_replacing_existing_outputs(env, capsys) -> None:
+    tmp_path, db, state_path = env
+    (tmp_path / "before.json").write_text("stale\n", encoding="utf-8")
+    (tmp_path / "after.json").write_text("stale\n", encoding="utf-8")
+
+    assert main(_args(tmp_path, db, state_path, "--execute", "--overwrite")) == 0
+
+    before = json.loads((tmp_path / "before.json").read_text(encoding="utf-8"))
+    after = json.loads((tmp_path / "after.json").read_text(encoding="utf-8"))
+    assert before["stage"] == "before" and before["collection_count"] == 7
+    assert after["stage"] == "after" and after["collection_count"] == 3
+    assert _names(db) == set(FORBIDDEN_TO_DELETE)
