@@ -1,7 +1,8 @@
 """PDF 结构解析：block 级元素化、章节归属与页面装饰移除。
 
 Phase 13F 晋升的移植层：全部纯函数与判定规则**逐字**移植自已归档实验脚本，
-保证与冻结产物同一口径（不得在本文件内"顺手改进"任何阈值或正则）：
+保证与冻结产物同一口径（不得在本文件内"顺手改进"任何阈值或正则）。下列来源脚本已在
+Stage A A4 删除，需要对照时可从 git tag ``stage-a-start`` 恢复：
 
 - ``detect_headings`` / ``resolve_section`` / ``detect_document_furniture`` /
   ``page_level_furniture_spans``：来自 ``experiments/run_phase13_kb_chunk_audit.py``

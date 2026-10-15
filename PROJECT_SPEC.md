@@ -1613,8 +1613,8 @@ Generator 与 RAGService；CLI 不加载模型、不截断候选、不重排。C
 其预算、去重、Citation 与生成合同均不变。
 
 Runtime 日志至少包含 `retrieval_strategy`、`candidate_count`、`reranker_enabled`、
-`reranker_input_count`、`reranker_output_count`、`reranker_latency`、
-`reranker_truncated_pair_count` 与 `fallback_branch_used`，不得记录 secret、embedding 或大量
+`reranker_input_count`、`reranker_output_count`、`reranker_latency` 与
+`reranker_truncated_pair_count`（`fallback_branch_used` 已在 Stage A A4 移除），不得记录 secret、embedding 或大量
 Chunk 正文。Phase 8 的 CPU p50≈4.75s、p95≈4.96s 继续定义为 Functional Runtime READY、
 Interactive Performance NEEDS_OPTIMIZATION；性能优化不是 Phase 9 Gate blocker。
 

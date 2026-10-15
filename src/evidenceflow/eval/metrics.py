@@ -1,4 +1,7 @@
-"""实现 Retrieval Gold 匹配、单题指标与聚合指标计算。"""
+"""实现 Retrieval Gold 匹配、单题指标与聚合指标计算。
+
+COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+"""
 
 from dataclasses import dataclass
 from collections.abc import Sequence

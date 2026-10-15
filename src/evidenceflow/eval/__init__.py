@@ -1,4 +1,7 @@
-"""提供 Retrieval Evaluation Dataset、Metrics 与 Runner 公共接口。"""
+"""提供 Retrieval Evaluation Dataset 与 Metrics 公共接口。
+
+legacy ``eval/runner.py``（EvaluationRunner 等）已在 Stage A A4 删除，可从 tag ``stage-a-start`` 恢复。
+"""
 
 from evidenceflow.eval.dataset import EvaluationDatasetError, load_evaluation_questions
 from evidenceflow.eval.metrics import (
@@ -16,24 +19,11 @@ from evidenceflow.eval.gold import (
     hits_at_depths,
     is_hit_at,
 )
-from evidenceflow.eval.runner import (
-    EvaluationReport,
-    EvaluationRunner,
-    MetricSummary,
-    PerQuestionResult,
-    RetrievedResultSummary,
-    save_evaluation_report,
-)
 
 __all__ = [
     "AggregateMetrics",
     "EvaluationDatasetError",
-    "EvaluationReport",
-    "EvaluationRunner",
-    "MetricSummary",
-    "PerQuestionResult",
     "QuestionMetrics",
-    "RetrievedResultSummary",
     "aggregate_hits_at_depths",
     "aggregate_question_metrics",
     "calculate_question_metrics",
@@ -44,5 +34,4 @@ __all__ = [
     "is_relevant",
     "is_relevant_to_any",
     "load_evaluation_questions",
-    "save_evaluation_report",
 ]

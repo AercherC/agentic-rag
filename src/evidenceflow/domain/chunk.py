@@ -73,11 +73,11 @@ class RerankedRetrievedChunk(BaseModel):
     rank: int = Field(ge=1, description="Reranker 输出的 1-based 最终名次。")
     candidate_rank: int = Field(
         ge=1,
-        description="候选进入 Reranker 前的 1-based Dense 或 RRF selector 名次。",
+        description="候选进入 Reranker 前的 1-based Dense 候选名次。",
     )
     similarity_score: float = Field(
         allow_inf_nan=False,
-        description="Original Dense 返回的 cosine 相似度；不得被 RRF 或 Reranker 分数覆盖。",
+        description="Original Dense 返回的 cosine 相似度；不得被 Reranker 分数覆盖。",
     )
     reranker_score: float = Field(
         allow_inf_nan=False,

@@ -1,4 +1,7 @@
-"""Retrieval Evaluation Dataset 使用的 Gold Source Models。"""
+"""Retrieval Evaluation Dataset 使用的 Gold Source Models。
+
+COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+"""
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 

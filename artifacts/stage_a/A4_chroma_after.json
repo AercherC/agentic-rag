@@ -1,0 +1,34 @@
+{
+  "collection_count": 3,
+  "collections": [
+    {
+      "count": 361,
+      "id": "e9224bda-12be-44b3-922c-0771e079377a",
+      "metadata": {},
+      "name": "ef_research_bge_m3_c512_o64_v1"
+    },
+    {
+      "count": 817,
+      "id": "ca555b9c-b709-4999-ba99-de6a0b76cc43",
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine"
+      },
+      "name": "ef_research_bge_m3_hybrid_c512_v1"
+    },
+    {
+      "count": 817,
+      "id": "3f7100e9-b582-4118-95a9-daa3f110487c",
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine",
+        "lifecycle": "ACTIVE",
+        "storage_contract": "domain_chunk_metadata_v2"
+      },
+      "name": "ef_research_bge_m3_hybrid_c512_v2"
+    }
+  ],
+  "db_path": "data\\chroma",
+  "exported_at": "2026-10-15T06:06:07.279769+00:00",
+  "stage": "after"
+}

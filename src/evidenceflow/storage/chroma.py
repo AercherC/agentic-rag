@@ -459,7 +459,7 @@ class ChromaVectorStore:
     def iter_all_chunks(self) -> Iterator[DocumentChunk]:
         """按 chunk_id 升序遍历当前 Collection 中的全部正式 Chunk。
 
-        Hybrid 集成（§17.3.1）需要把同一份 Chunk 喂给 BM25Index，所以该方法只读、
+        用于索引生命周期校验与 Exact Dense 索引构建前的全量读取，所以该方法只读、
         确定性，并且按 chunk_id 升序返回，避免调用方在排序上各自漂移。
         """
 

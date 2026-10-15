@@ -1,0 +1,19 @@
+﻿python : 
+At line:1 char:656
++ ... e-Command { python experiments/stage_a/replay_runtime_retrieval.py -- ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 391/391 [00:00<00:00, 14333.92it/s]
+
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]
+Loading weights:   4%|▍         | 8/201 [00:00<00:02, 71.06it/s]
+Loading weights:  26%|██▋       | 53/201 [00:00<00:00, 271.56it/s]
+Loading weights:  52%|█████▏    | 104/201 [00:00<00:00, 372.54it/s]
+Loading weights:  71%|███████   | 142/201 [00:00<00:00, 310.14it/s]
+Loading weights: 100%|██████████| 201/201 [00:00<00:00, 407.39it/s]
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (525 >
+ 512). Running this sequence through the model will result in indexing errors
+{"status": "PASS", "output": "artifacts\\stage_a\\A4_replay_runtime.json", "device": "cpu", "backend": "numpy.exact"}

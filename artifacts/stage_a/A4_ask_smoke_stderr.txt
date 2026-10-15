@@ -1,0 +1,6 @@
+[observer] resolve_active_collection=ef_research_bge_m3_hybrid_c512_v2
+[observer] runtime opens collection: ef_research_bge_m3_hybrid_c512_v2
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 39087.92it/s]
+Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights:  15%|█▌        | 31/201 [00:00<00:00, 308.90it/s]Loading weights:  31%|███       | 62/201 [00:00<00:00, 307.22it/s]Loading weights:  46%|████▋     | 93/201 [00:00<00:00, 301.56it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 628.71it/s]
+[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (528 > 512). Running this sequence through the model will result in indexing errors
+[observer] llm_http_requests=1 exit_code=0

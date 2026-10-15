@@ -44,8 +44,8 @@ class VectorStore(Protocol):
     def iter_all_chunks(self) -> Iterator[DocumentChunk]:
         """按 Chunk ID 升序遍历当前 Collection 中的全部正式 Chunk。
 
-        §17.3.1 Hybrid 集成依赖该接口把正式 Chunk 灌入 BM25Index，确保离线实验
-        与 Runtime 共用同一份 Chunk 集，避免 document_id/chunk_id 漂移。
+        当前用途：索引生命周期校验（staging 构建后的 chunk ID 集合与规模校验）以及
+        Exact Dense 索引构建前的全量读取；按 Chunk ID 升序保证结果确定。
         """
 
         ...

@@ -1,4 +1,7 @@
-"""读取并校验人工标注的 Retrieval Evaluation Dataset。"""
+"""读取并校验人工标注的 Retrieval Evaluation Dataset。
+
+COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+"""
 
 import json
 from json import JSONDecodeError

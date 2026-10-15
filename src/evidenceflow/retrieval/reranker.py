@@ -1,4 +1,4 @@
-"""提供实验可用的 Learned Cross-Encoder 重排边界与 Transformers 实现。"""
+"""提供线上检索链路使用的 Learned Cross-Encoder 重排边界与 Transformers 实现（Exact Dense20 → Reranker → Top5）。"""
 
 from __future__ import annotations
 
@@ -320,7 +320,6 @@ class DenseRerankerRetriever:
                 "reranker_output_count": len(results),
                 "reranker_latency": latency,
                 "reranker_truncated_pair_count": self.reranker.last_truncated_pair_count,
-                "fallback_branch_used": False,
             },
         )
         return results

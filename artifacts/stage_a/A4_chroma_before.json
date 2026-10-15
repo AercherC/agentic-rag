@@ -1,0 +1,63 @@
+{
+  "collection_count": 7,
+  "collections": [
+    {
+      "count": 361,
+      "id": "83181a3c-97ca-435b-bfbb-3ee68465e117",
+      "metadata": {},
+      "name": "ef_research_bge_m3_c512_o64_refmeta_v1"
+    },
+    {
+      "count": 361,
+      "id": "e9224bda-12be-44b3-922c-0771e079377a",
+      "metadata": {},
+      "name": "ef_research_bge_m3_c512_o64_v1"
+    },
+    {
+      "count": 817,
+      "id": "ca555b9c-b709-4999-ba99-de6a0b76cc43",
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine"
+      },
+      "name": "ef_research_bge_m3_hybrid_c512_v1"
+    },
+    {
+      "count": 817,
+      "id": "3f7100e9-b582-4118-95a9-daa3f110487c",
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine",
+        "lifecycle": "ACTIVE",
+        "storage_contract": "domain_chunk_metadata_v2"
+      },
+      "name": "ef_research_bge_m3_hybrid_c512_v2"
+    },
+    {
+      "count": 817,
+      "id": "6d10b5c0-782a-491e-8171-7d7e709fd814",
+      "metadata": {
+        "chunk_strategy": "hybrid",
+        "hnsw:space": "cosine",
+        "lifecycle": "STAGING",
+        "storage_contract": "domain_chunk_metadata_v2"
+      },
+      "name": "ef_research_bge_m3_hybrid_c512_v2_staging"
+    },
+    {
+      "count": 385,
+      "id": "16331f0c-5674-48ad-92d1-a4e6f906817f",
+      "metadata": {},
+      "name": "ef_research_structure_v1"
+    },
+    {
+      "count": 935,
+      "id": "74ff6718-0d19-41c0-8257-650c18617256",
+      "metadata": {},
+      "name": "ef_research_structure_v1_elemaware"
+    }
+  ],
+  "db_path": "data\\chroma",
+  "exported_at": "2026-10-15T06:06:06.252429+00:00",
+  "stage": "before"
+}

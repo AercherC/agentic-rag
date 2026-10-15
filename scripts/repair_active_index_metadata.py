@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+# 历史一次性脚本（Stage A A4 标注）：不能再运行。
+# 它依赖的 staging collection ef_research_bge_m3_hybrid_c512_v2_staging 已在 Stage A A4 通过
+# scripts/prune_chroma_collections.py 删除；当前索引变更请使用 scripts/build_staging_index.py。
+# 另外，compute_ir_parity 在函数内动态导入的 experiments/phase13c/metrics13cc.py 也已随 A4.3 删除。
+# 保留本文件仅作历史记录；需要对照时可从 tag stage-a-start 恢复上述依赖。
 """修复 EvidenceFlow active Chroma 的 metadata 契约（staging-first）。
 
 旧 active Collection 只读保留；本脚本从 Phase 13F 已冻结的 Chunk JSONL 与
