@@ -291,7 +291,8 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
 
 ### 12.4 其他
 - `scripts/verify_active_index.py`：只读完整性 smoke（存在性、计数、metadata 覆盖率、`iter_all_chunks` 恢复、样本查询、
-  cosine 与 chunk_strategy 身份）。默认只打印 JSON 到 stdout、不写文件；`--output PATH` 时另写文件。0 = 通过，2 = 有检查失败。
+  cosine 与 chunk_strategy 身份）。不创建 Collection（以 `create_if_missing=False` 打开）；持久化目录不存在时直接判失败、
+  不创建目录。默认只打印 JSON 到 stdout、不写文件；`--output PATH` 时另写文件。0 = 通过，2 = 有检查失败。
 - `scripts/verify_phase15a.py` 默认写 `artifacts/phase15a/phase15a_report.json`（被跟踪），运行时应传 `--output`。
 
 ## 13. Evaluation

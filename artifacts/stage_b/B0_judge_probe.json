@@ -1,0 +1,34 @@
+{
+  "generator_host": "api.deepseek.com",
+  "generator_model": "deepseek-flash",
+  "judge_host": "open.bigmodel.cn",
+  "judge_model": "glm-4-flash",
+  "recommended_mode": "json_object",
+  "requests_sent": 2,
+  "results": {
+    "json_object": {
+      "elapsed_seconds": 3.727,
+      "mode": "json_object",
+      "parsed_and_valid": true,
+      "raw_reply": "{\"verdict\":\"SUPPORTED\",\"reason\":\"The statement aligns with the context provided.\"}",
+      "success": true,
+      "usage": {
+        "completion_tokens": 28,
+        "prompt_tokens": 123
+      }
+    },
+    "json_schema": {
+      "elapsed_seconds": 1.822,
+      "mode": "json_schema",
+      "parsed_and_valid": false,
+      "raw_reply": "```json\n{\"verdict\": \"SUPPORTED\", \"reason\": \"The context specifies the library's opening time on weekdays.\"}\n```",
+      "success": true,
+      "usage": {
+        "completion_tokens": 30,
+        "prompt_tokens": 71
+      },
+      "validation_error": "JSONDecodeError: Expecting value: line 1 column 1 (char 0)"
+    }
+  },
+  "same_vendor": false
+}

@@ -5,6 +5,10 @@
 Domain Chunk 全量恢复、样本查询以及 Collection 身份。它不会修复、删除或切换
 任何 Collection，适合在 ingestion、runtime promotion 和 cleanup 后重复执行。
 
+真正只读：持久化目录不存在时直接判失败，不构造 ``PersistentClient``（它会创建目录）；
+打开 ``ChromaVectorStore`` 时传 ``create_if_missing=False``，即使 Collection 在存在性
+检查之后被删除，也不会留下一个空 Collection。
+
 默认只把 JSON 结果打印到 stdout，不写任何文件；只有显式传入 ``--output PATH`` 时才额外
 写入该文件（避免误改被 git 跟踪的历史产物）。退出码：0 = 全部检查通过；2 = 有检查失败。
 """
@@ -75,6 +79,12 @@ def inspect_active_index(
         "expected_count": expected_count,
         "checks": {},
     }
+    # 先检查目录：chromadb.PersistentClient 在目录不存在时会创建它，只读脚本不能有这种副作用。
+    if not Path(persist_path).is_dir():
+        result["checks"]["collection_exists"] = False
+        result["error"] = f"Persist path does not exist: {result['persist_path']}"
+        result["pass"] = False
+        return result
     try:
         client = chromadb.PersistentClient(path=str(persist_path))
         collection_names = {item.name for item in client.list_collections()}
@@ -114,7 +124,8 @@ def inspect_active_index(
             and hnsw.get("space") == "cosine"
         )
 
-        store = ChromaVectorStore(persist_path, collection_name)
+        # create_if_missing=False：存在性检查与打开之间若 Collection 消失，应报错而不是建一个空的。
+        store = ChromaVectorStore(persist_path, collection_name, create_if_missing=False)
         try:
             restored = list(store.iter_all_chunks())
             result["restored_count"] = len(restored)

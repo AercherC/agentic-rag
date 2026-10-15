@@ -59,3 +59,57 @@ def test_failed_check_returns_2(tmp_path, monkeypatch, capsys, fake_inspect) -> 
     monkeypatch.setattr(module, "inspect_active_index", lambda *a, **k: {"checks": {"x": False}, "pass": False})
 
     assert module.main(["--path", str(tmp_path), "--collection", "fake"]) == 2
+
+
+# ---- B0：真正只读（不创建目录、不创建 Collection）----
+
+
+def test_missing_persist_path_fails_without_creating_dir(tmp_path) -> None:
+    missing = tmp_path / "no_such_chroma"
+
+    result = module.inspect_active_index(missing, "anything")
+
+    assert result["pass"] is False
+    assert result["checks"]["collection_exists"] is False
+    assert result["error"].startswith("Persist path does not exist")
+    assert not missing.exists()  # 目录没有被创建
+
+
+def test_missing_collection_is_not_created(tmp_path) -> None:
+    import chromadb
+
+    persist = tmp_path / "chroma"
+    chromadb.PersistentClient(path=str(persist))  # 空库，不打开 data/chroma
+
+    result = module.inspect_active_index(persist, "ghost")
+
+    assert result["pass"] is False
+    assert result["checks"]["collection_exists"] is False
+    assert chromadb.PersistentClient(path=str(persist)).list_collections() == []
+
+
+def test_store_opened_with_create_if_missing_false(tmp_path, monkeypatch) -> None:
+    import chromadb
+
+    persist = tmp_path / "chroma"
+    client = chromadb.PersistentClient(path=str(persist))
+    collection = client.create_collection(
+        name="mini",
+        metadata={"chunk_strategy": "hybrid"},
+        configuration={"hnsw": {"space": "cosine"}},
+        embedding_function=None,
+    )
+    collection.add(ids=["c1"], documents=["doc"], metadatas=[{"k": "v"}], embeddings=[[0.1, 0.2]])
+    seen = []
+
+    class SpyStore:
+        def __init__(self, *args, **kwargs):
+            seen.append(kwargs)
+            raise RuntimeError("spy stops here")
+
+    monkeypatch.setattr(module, "ChromaVectorStore", SpyStore)
+
+    result = module.inspect_active_index(persist, "mini")
+
+    assert seen == [{"create_if_missing": False}]
+    assert result["pass"] is False  # spy 抛错，流程以失败收尾
