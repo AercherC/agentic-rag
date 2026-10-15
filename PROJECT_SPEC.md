@@ -1,7 +1,7 @@
 # EvidenceFlow — Current Specification
 
-**Version:** 0.27
-**Last Updated:** 2026-10-15（Stage A A5）
+**Version:** 0.28
+**Last Updated:** 2026-10-15（Stage B B1）
 **Scope:** 本地科研 PDF 知识库 RAG：ingest / ask 两条正式链路及其评测基线。
 
 本文件只写**当前合同**。数值与规则以代码为准；与代码不一致时视为本文件的缺陷，按 §15 修正。
@@ -295,6 +295,31 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   不创建目录。默认只打印 JSON 到 stdout、不写文件；`--output PATH` 时另写文件。0 = 通过，2 = 有检查失败。
 - `scripts/verify_phase15a.py` 默认写 `artifacts/phase15a/phase15a_report.json`（被跟踪），运行时应传 `--output`。
 
+### 12.5 RunTrace（Stage B 新增；已定合同，B2 实现，当前代码尚无）
+- Domain Model `domain/trace.py`（Pydantic，`extra="forbid"`）：`RunTrace{schema_version="run-trace-v1", run_id,
+  query_sha256（UTF-8 query 的 sha256）, started_at_utc, completed_at_utc（ISO 8601 UTC）, status: completed|failed,
+  events: list[TraceEvent]}`；`TraceEvent{seq（0 起连续）, name, elapsed_ms（相对 run 开始）, duration_ms?, payload: dict}`。
+  `run_id` 由调用方传入，否则 uuid4。trace 不进入 `RAGAnswer` 或任何现有 Domain Model。
+- 事件名（UI 合同 v0 taxonomy 的子集，不用 lexical / pool / blocked）：`run.started`、`retrieval.dense.started/completed`、
+  `rerank.started/completed`、`context.started/completed`、`generation.started/completed`、`citation_validation.completed`、
+  `run.completed`、`run.failed`。
+- payload 白名单（未列出的事件 payload 为 `{}`）：
+  - `retrieval.dense.completed`：`candidate_count`；按 rank 的 `chunk_id`、`similarity_score`。
+  - `rerank.completed`：`input_count`、`output_count`、`truncated_pair_count`（整批一个值）；按 rank 的 `chunk_id`、
+    `candidate_rank`、`reranker_score`。
+  - `context.completed`：`included_count`、`skipped_count`、`total_tokens`、`entries: [{source_label, chunk_id, token_count}]`、
+    `context_text_sha256`（UTF-8 `context_text` 的 sha256）。
+  - `generation.completed`：`status`、`llm_called`、`repair_attempted`、`repair_succeeded`、`usages`（`prompt_tokens`、
+    `completion_tokens`）、`raw_response_lengths`、`prompt_version`（取自 `Generator.last_diagnostics` 与 §9 常量）。
+  - `citation_validation.completed`：`valid_labels`、`invalid_labels`、`source_count`。`run.failed`：`error_type`（异常类名）、`stage`（失败事件所属阶段名）。
+  - 禁止出现：上下文全文、chunk 正文、Prompt 全文、回答全文、API Key、模型思考内容、异常消息全文。
+- `TraceRecorder` 协议：`record(name, **payload)`；默认 `NullTraceRecorder` 不做任何事。`RAGService`、`DenseRerankerRetriever`、
+  `Generator` 可选注入；未注入时行为与开销与当前一致。`runtime.build_rag_service(settings, *, retriever=None, generator=None,
+  trace_recorder=None)`。
+- 不变式：开/关 trace 时 `RAGAnswer` 逐字段相等；recorder 内部异常只记日志，不得改变回答或异常传播。
+- CLI `ask --trace PATH`：写 UTF-8、键排序 JSON；失败时也写出含 `run.failed` 的 trace；trace 写入失败只在 stderr 警告；
+  退出码语义不变（§12.1）。
+
 ## 13. Evaluation
 
 - Canonical 实现：`eval/ir_metrics.py`（标准 IR）、`eval/quality.py`（基于显式人工/校准标注的答案、引用、拒答、Context 指标）、
@@ -302,7 +327,7 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   `eval/metrics.py`、`eval/dataset.py`、`domain/evaluation.py` 为 COMPATIBILITY_ONLY（legacy HitRate 语义）。
 - 标准指标（evaluation_version 3.0，二元相关、TREC/BEIR 语义）：Precision@K、Recall@K（分母为相关总数）、MRR@K、MAP@K、
   nDCG@K（增益 `1/log2(rank+1)`，IDCG 截断到 `min(|relevant|, K)`）。排名单位 `chunk_id`，查询单位 `question_id`。
-  语义由 `tests/test_ir_metrics.py` 的确定性 fixture 固定；不得创造新指标名。
+  语义由 `tests/test_ir_metrics.py` 的确定性 fixture 固定；不得创造新的 IR 指标名（端到端指标名只由 §13.1 定义）。
 - 相关性：canonical qrels 来自冻结 Gold mapping（仅 FULLY_MAPPED / FRAGMENTED_ACROSS_CHUNKS）。当前 hybrid 索引使用冻结
   v2 Gold anchor 对 active chunk 文本的只读投影（`active_relevance_projection_hash`），比较时必须一致。无法映射的题计入
   `question_count` 但不进入均值（40 题，eligible 38）。
@@ -321,13 +346,119 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   `experiments/stage_a/a3_compare_replay.py`。
 - `evals/` 下全部为冻结产物，不得覆盖或修改；Gold、qrels 只能经独立版本化流程变更。
 
+### 13.1 端到端评测 rag_e2e_v1（Stage B 新增；已定合同，B3/B4/B5b 实现，当前代码尚无）
+**(a) 题集 schema（B3 实现）**：`EvalCase`（`extra="forbid"`）：`case_id`（新题 `E2E-M*` / `E2E-U*`）、`family_id`、`query`、
+`query_language`、`question_type`、`tags`、`critical: bool`、`expected_status ∈ AnswerStatus`、`acceptable_abstention: bool`、
+`required_evidence_groups: list[EvidenceGroup]`、`required_claims`、`forbidden_claims`（错误前提题必填；每条
+`claim_id`、`text`、`evidence_anchors`＝与之矛盾的原文锚点）、`unanswerable_kind ∈ {out_of_corpus, near_miss, false_premise} | null`、
+`provenance{drafted_by, approved_by, source}`。`required_claims[*]`：`claim_id`、`text`、`required: bool`、
+`evidence_anchors: list[EvidenceAlternative]`（复用 `domain/evaluation_v2.py`，与 40 题同一锚点协议）、`answer_keys: list[list[str]]`
+（外层组间“与”，组内别名间“或”；空列表 ⇒ `key_matchable=false`）。`acceptable_abstention` 目前只用于分片报告，不改变 (e) 的
+任何分子分母（TODO：是否影响误拒答率待主会话决定）。`fingerprint` = 除 `fingerprint` 字段外整个数据集的规范化 JSON
+（`sort_keys`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8）的 sha256；`dataset.sha256` = 文件字节 sha256，两者都记录。
+
+**(b) 证据映射与题集分离（B3 实现）**：题集只存锚点；对某索引的映射是独立文件 `evals/rag_e2e_v1/mapping_<collection>.json`，
+记录 `index_signature`、`collection_name`、`dataset_fingerprint`，以及每个证据组和每条 claim 锚点的映射状态与 chunk 集合。状态取
+`stable_mapping` 现有 `MappingStatus`；`FULLY_MAPPED` / `FRAGMENTED_ACROSS_CHUNKS` 为可用，其余状态统称 UNMAPPABLE。
+`score` 发现 mapping 与 observations 的三项身份任一不一致即拒绝计分。换索引只重新生成 mapping，不改题集。
+
+**(c) answer_keys 校验（B3，确定性；任一不通过该题不得冻结）**：① 每个要素组至少一个别名经 (d) 规范化后出现在该 claim
+某个锚点的 locator 页源文本中（MD/TXT 为整篇；中文别名可只作补充）；② 任何别名按 (d) 匹配规则不得命中题干 `query`；
+③ 别名去首尾空白非空、规范化后长度 ≥ 2，组内去重。可答题中 key_matchable required claim 的比例写进 B3 报告，不设硬下限，
+低于 60% 须说明原因。
+
+**(d) 关键要素匹配 `key_match`（纯函数，B4 实现）**：规范化 = NFKC → casefold → 连续空白压成一个空格 → 去掉 `[S\d+]` 引用
+标签；别名与回答同样规范化后做子串匹配；别名首/尾字符为 ASCII 字母数字时，命中位置两侧不得是 ASCII 字母数字（防 `1.5`
+命中 `11.5`、`ViT` 命中 `ViTs`），CJK 字符不要求边界。不做数字解析、单位换算或模糊匹配，不同写法（`0.5` / `50%`）只能列为
+显式别名。claim 命中 ⇔ 所有要素组都命中。
+
+**(e) 指标（B4 实现）**：每个指标给出分子、分母，空分母返回 null，带 `status ∈ {primary, diagnostic_uncalibrated, unavailable}`。
+observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequestError` 的题从所有回答类与状态类指标的分母中
+排除并单独计数；上下文层指标对所有记录了 `context.completed` 的题计算（含这些错误题）。“可答题”指
+`expected_status=answered`，“不可答题”指 `insufficient_context`。
+- 上下文层（primary）：`context_all_required` = 所有必需证据组都至少有一个 chunk 集合完整进入上下文的题数 / 可答且无
+  UNMAPPABLE 组的题数；`context_claim_recall` = 至少一个锚点的 chunk 集合完整进入上下文的 required claim 数 / 有可用锚点的
+  required claim 数（UNMAPPABLE 锚点不计入）。
+- 状态层（primary）：期望 × 实际状态混淆矩阵；`unanswerable_false_answer_rate` = 实际 answered / 不可答题；
+  `answerable_false_abstention_rate` = 实际 insufficient_context / 可答题；`status_body_inconsistent_count` = status 为
+  insufficient_context 但 `sources` 非空（至少一个合法引用）的题数（D4）。
+- 关键要素（primary，只算 `expected_status=answered` 且至少有一条 key_matchable required claim 的题）：`key_fact_recall`（macro）
+  = 各题“命中的 key_matchable required claim 数 / key_matchable required claim 数”的平均，配对比较用它；另报 micro =
+  总命中数 / 总数。D4：实际 status 为 insufficient_context 时正文照常匹配。
+- 准确率与精确率（primary，PaperQA2 口径）：答对 ⇔ 实际 answered 且全部 key_matchable required claim 命中；
+  `answer_accuracy` = 答对数 / 可答题数；`answer_precision` = 答对数 / 实际 answered 的可答题数；两数一起报告；无
+  key_matchable claim 的题不进入任何分母。
+- 引用格式（primary）：合法引用数；`cited_source_in_evidence_rate` = 可答题 `sources` 中 chunk 属于该题证据映射 chunk 集合并集
+  的条数 / 可答题 `sources` 总条数。
+- 评委（`diagnostic_uncalibrated`；对应任务 B6 未通过时为 `unavailable`）：评委 claim recall = COVERED / 已判 required claim；
+  groundedness = SUPPORTED / 已判陈述，无依据论断率 = UNSUPPORTED / 已判陈述；引用支持精确率 = SUPPORTS / 已判引用对；
+  另报评委 COVERED 与 key_match 命中在 key_matchable required claim 上的逐条一致率。
+- 成本（primary，只记录、不设合格线）：LLM 调用次数、prompt/completion token、端到端与各阶段 p50/p95 延迟（来自 RunTrace）。
+- 失败层归因（逐题按下列顺序取第一条成立的规则，都不成立为 `PASS`；含 UNMAPPABLE 组的可答题记 `UNATTRIBUTABLE`）：
+  - 错误题：`LLMRequestError` → `ERROR`（不归因）；`GenerationContractError` → `GENERATION`；`CitationValidationError` → `CITATION`。
+  - 不可答题：实际 answered → `STATUS`。以下规则只用于可答题。
+  - `RETRIEVAL`：某必需证据组没有任何 chunk 集合完整落在 `retrieved_chunks`（最终 Top-K）中。
+  - `CONTEXT`：各组都在 `retrieved_chunks` 中，但 `context_all_required` 不成立。
+  - `STATUS`：`context_all_required` 成立但实际 insufficient_context。
+  - `GENERATION`：实际 answered 但有 key_matchable required claim 未命中。
+  - `CITATION`：已答对但 `sources` 中没有任何 chunk 属于证据映射 chunk 集合。
+- 合同变更：`eval/quality.py::abstention_metrics` 改为接受 `AnswerStatus` 小写取值与字面量 `"error"`，大写取值报错；B4 实现并
+  同步修改 `tests/test_evaluation_v2.py` 中的调用。
+
+**(f) 受控上下文检验（B5b，生成器层，不是端到端）**：
+- 输入：B5 observations 中 `expected_status=answered`、原上下文至少含一个证据映射 chunk 的题。原上下文按 chunk ID 从 active
+  索引只读复原（`create_if_missing=False`），按原 `source_label` 顺序作为 rank 用 `ContextBuilder` 重建 `BuiltContext`，并用
+  `context_text_sha256` 校验；再调用 `Generator.generate` + `assemble_rag_answer`。不经过检索，不改线上任何组件。
+- `evidence_ablation`：删除该题所有证据组与 claim 锚点映射到的 chunk，剩余 chunk 按原 rank 用 `ContextBuilder` 重新编号。
+  有效性（任一不满足 → `INVALID`，不调用 LLM，只列出）：剩余上下文经 `stable_mapping` 规范化后不含任何锚点原文；任何
+  key_matchable required claim 都不在剩余上下文中命中（按 (d)）。剩余为空 → `trivially_empty`（§9 确定性拒答），单独计数，
+  不进比率。预期判定 `insufficient_context`。`ablation_false_answer_rate` = 实际 answered 的有效非空变体 / 有效非空变体；
+  另报 D4 不一致数。
+- `counterfactual_number`：选题条件——某 required claim 的某要素组只有 1 个别名、该别名匹配 `^\d+(\.\d+)?%?$`，且按 (d)
+  出现在上下文中；每题按 claim、组顺序取第一个符合者，至多一个变体。替换规则：有小数则最后一位小数 +1（9 变 0 并进位，
+  位数不变）；整数 ≥ 10 则 +1；< 10 的整数不选；新值若出现在原上下文中则再应用一次，最多 3 次，仍冲突 → `INVALID`。
+  在 chunk 正文中按 (d) 的 ASCII 边界替换该别名的全部出现，再用 `ContextBuilder` 重建；纳入的 chunk 集合变化或替换后仍
+  出现原值 → `INVALID`。判定（对回答做 `key_match`，按序）：status 为 insufficient_context → `abstained`；只含新值 →
+  `context_faithful`；只含原值 → `parametric_override`；两者都含 → `mixed`；都不含 → `not_mentioned`。
+  `counterfactual_faithfulness_rate` = faithful / (faithful + parametric_override + mixed)，其余各类单独报告。
+- 两个变体指标都是 primary（标签由构造决定）。已知局限：消融有效性检查只排除原文和要素的重复出现，不排除同义改写，
+  `ablation_false_answer_rate` 偏高方向可能含标签噪声；逐题明细必须保留供抽查。
+- 产物 `artifacts/stage_b/B5b_controlled.jsonl`（每变体一行）：`case_id`、`variant`、`validity`、`expected`、构造记录（删除的
+  chunk、替换的值）、新上下文 sha256、生成结果、诊断、错误类型。`score` 读取它，输出到 E0 报告独立一节“受控上下文（生成器层）”。
+
+**(g) 评委协议（B4 实现）**：评委只做逐条二元/三元判定，不打总分；每次输出 `{"judgments": [...]}`，条目 ID 集合须与输入
+完全一致，每条带 `verdict` 与简短 `reason`。
+- `claim_coverage`（`judge-claim-v1`）：输入 query、回答全文、`claims[{claim_id, text}]`；输出 `{claim_id, verdict ∈ {COVERED,
+  MISSING, CONTRADICTED}, reason}`。
+- `groundedness`（`judge-ground-v1`）：输入 query、`BuiltContext.context_text`、回答全文；先把回答拆成不含代词、可独立理解的
+  陈述，再逐条输出 `{statement_id, statement, verdict ∈ {SUPPORTED, UNSUPPORTED}, reason}`。
+- `citation_support`（`judge-cite-v1`）：输入 `pairs[{pair_id, sentence, source_label, source_content}]`（回答句与其中合法标签
+  对应来源，确定性拆分）；输出 `{pair_id, verdict ∈ {SUPPORTS, NOT_SUPPORTS}, reason}`。
+- 结构化模式固定 `json_object`（依据 `artifacts/stage_b/B0_judge_probe.json`）；该模式不把 schema 发给服务端，prompt 必须写全字段名
+  与枚举取值。解析顺序同 §9：去首尾空白 → 去开头 `<think>` → 去外层 ```json 代码块 → `json.loads` → Pydantic `extra="forbid"`；
+  失败修复一次，仍失败记 `judge_parse_error`，该条不进分子也不进分母，单独计数。
+- 配置：`EVAL_JUDGE_BASE_URL` / `EVAL_JUDGE_MODEL` / `EVAL_JUDGE_API_KEY` 只在评测脚本中读取，不进全局 Settings；temperature 0；
+  评委与生成器 base URL 注册域相同时拒绝运行。落盘：prompt 版本、模型、temperature、原始回复、解析结果、usage、耗时。
+- 评委看到的上下文是由 observation 复原并经 sha256 校验的 `BuiltContext`；prompt 不含被评系统的名字或版本。
+
+**(h) Gate 策略文件 `evals/rag_e2e_v1/gates_v1.json`（B7 写，B4 实现加载与判定）**：每个指标声明 `metric`、
+`direction ∈ {higher_better, lower_better}`、`min?`、`max?`、`max_regression?`、`required: bool`；`critical_cases: list[case_id]`
+中各题的逐题确定性结果（状态正确；可答题另加 `context_all_required`、关键要素全部命中）不得由通过变为不通过。只有
+`status=primary` 的指标可写进 Gate，写入 `diagnostic_uncalibrated` 指标时加载阶段直接报错。
+
+**(i) 评委检验合格线与指标地位（B6）**：每类判定任务分别判断：构造负例检出率 ≥ 0.9；未破坏样本误报率 ≤ 0.1；复测一致率
+≥ 0.95；与 Phase 12 agent 标注的一致率与 κ 只报告不设线。**评委指标未经人工校准，只作诊断，不作为任何阶段的晋升 Gate。**
+阶段 D 的“Claim Recall 提升”以 `key_fact_recall` 为 primary 依据，评委 claim recall 只作诊断旁证（最终以阶段 D 计划为准）。
+
 ## 14. 不在当前范围内
 
 - 见 `docs/agentic_rag/01_ARCHITECTURE_REVIEW.md` §8：自由 ReAct 工具调用、Multi-Agent、逐 chunk LLM 相关性打分、重新引入
   BM25、HITL 澄清、长期/向量记忆、现在接 Web Search、现在引入 LangGraph。
 - 已退休、不得作为当前能力描述或恢复的：查询翻译、多语双路检索、BM25 生产分支、RRF 融合、以 Chroma HNSW 作为线上候选检索、
   v2 文本控制头协议、`reranker_enabled` / `top_k` / `multilingual_*` 配置。历史源码可从 tag `stage-a-start` 恢复，证据在 `evals/`。
-- 阶段 B–E（Planner、Grader、补检、RunTrace、文档过滤、新评测题）只有在用户明确进入对应阶段并更新本文件后才实现。
+- 阶段 B 已由用户确认进入（2026-10-15）：RunTrace（§12.5）与端到端评测 `rag_e2e_v1`（§13.1）属于阶段 B 范围。
+  阶段 C–E（Planner、Grader、补检、PARTIAL、文档过滤、逐句引用校验）仍不在范围内，只有在用户明确进入对应阶段并更新
+  本文件后才实现。
 
 ### 14.1 已知限制与待决（Stage A 结束时）
 1. 激活后旧 active 的 metadata 仍为 `lifecycle=ACTIVE`，rollback 依赖这一点，可能同时有多个 collection 标为 ACTIVE（§6.7）。
@@ -336,8 +467,7 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
 3. 被 `mark_collection_lifecycle` 改写过的 collection 不再有 `hnsw:space`；以后改写 v2 时须同步 `verify_phase15a.py` 的快照比对。
 4. `--discard-staging` 在没有登记 staging 时返回 2。
 5. Chroma `delete_collection` 留下的 HNSW 段目录需按 §6.6 手动清理；`chroma.sqlite3` 是否 `VACUUM` 未决。
-6. `eval/quality.py` 的 `abstention_metrics` 只接受大写状态，与 `AnswerStatus` 小写不一致；“status=insufficient_context 但正文
-   含带引用的部分回答”如何计分未定（均留给阶段 B）。
+6. `abstention_metrics` 的状态取值与部分回答（D4）计分：由 §13.1(e) 定义，B4 实现（当前代码仍只接受大写状态）。
 7. 部分保留的实验脚本仍读 `Settings().collection_name`，不跟随 active 指针（见 `artifacts/stage_a/A4_report.md` §4）。
 
 ## 15. 变更流程
@@ -375,3 +505,4 @@ v0.26 完整原文：`docs/history/PROJECT_SPEC_v0.26_full.md`（下表为其中
 | §40–§41 | Phase 15B v2、15B.5 收敛 | §13、§14 |
 | §42 | Exact Dense 架构 | §7 |
 | §43 | 共享推理设备 | §7 |
+| —（Stage B 新增，v0.28） | RunTrace；端到端评测 rag_e2e_v1、answer_keys / key_match、受控上下文检验、评委协议、Gate 策略文件 | §12.5、§13.1 |
