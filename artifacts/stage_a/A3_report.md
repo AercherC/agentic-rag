@@ -146,3 +146,18 @@ collection 或其 metadata；所有涉及真实 Chroma 的测试都在 pytest �
 2. `artifacts/phase15a/index_state.json` 被 git 跟踪：以后 activate/rollback 会改动被跟踪文件，`git restore` / `checkout` / 切换分支可能改变线上指针。
 3. 经 `mark_collection_lifecycle` 改写过的旧 collection，其 metadata 中不再有 `hnsw:space`；`scripts/verify_phase15a.py` 把 v2 的 metadata 与冻结快照比对，若将来改写 v2，需同步该校验。
 4. `--discard-staging` 在没有登记 staging 时返回 2（拒绝、不改动），而不是 0；如希望“重复执行也返回 0”，需另定。
+
+## A3.2 小修（2026-10-15）
+
+基线：A3.1 提交 `57764b7`，666 个用例。A3.2 后 `python -m pytest -q` → **671 passed**（新增 5；`A3.2_pytest.log`）。
+`artifacts/phase15a/index_state.json` 的 sha256 前后均为 `5fbad4f02215d120128ffedf83b2708901ba881bbc258f8c86957ebcc63d8809`。
+没有发起 LLM 请求，没有对真实 data/chroma 做任何操作；真实 Chroma 只在 pytest 临时目录中使用。
+
+| # | 问题 | 修复 | 测试 |
+|---|---|---|---|
+| 1 | `run_discard_only` 只捕获 `StagingBuildRefused` / `ProtectedCollectionError`，状态文件缺失、损坏或 Chroma 出错时抛 traceback | 分两段处理：读取并校验状态文件失败 → stderr 一行 `REFUSED: cannot read lifecycle state <path>: <异常类型>: <消息>`，退出码 2（此时尚未连接 Chroma，什么都没改）；连接 Chroma、列出或删除 collection（及之后清指针）出错 → stderr 一行 `FAILED: <异常类型>: <消息>`，退出码 1，删除失败时指针不变（先删后清的既有顺序保证）。新增 `_one_line` 把多行异常消息（如 Pydantic `ValidationError`）压成一行。模块 docstring 与 `PROJECT_SPEC.md` §S.3 同步补充 `--discard-staging` 退出码说明 | 状态文件缺失 → 2、一行、无 traceback、未创建 Chroma 目录；损坏的状态文件 → 2、文件原样；删除抛错 → 1、一行 FAILED、指针仍在且状态文件字节不变 |
+| 2 | `run_staging_build` 中“生成名等于 active/previous 就拒绝”的检查在现有生成器下不会触发，缺少“没有任何端口被调用”的断言 | 保留该检查，代码注释写明它是防止生成器回归的兜底 | 新增参数化用例（active / previous）：monkeypatch `build_staging_collection_name` 返回受保护名，断言抛 `StagingBuildRefused`，`build`、`delete_collection`、`mark_collection_active`、`active_chunk_ids`、`smoke_embedding` 均未被调用，状态文件不变，未写出 job 目录 |
+
+**改动位置**：`scripts/build_staging_index.py`（docstring 第 18–21 行；兜底注释第 225–226 行；`_one_line` 第 370 行；`run_discard_only` 第 376 行起）；`PROJECT_SPEC.md` §S.3 第 161–164 行；`tests/test_build_staging_index.py` 第 504 行起。
+
+**署名更正**：提交 `9a848d3`（A3）与 `57764b7`（A3.1）的 `Co-Authored-By` 写成了 `Claude Sonnet 5.5`，至少 A3.1 实际由 Opus 5.5 执行。按要求不改写历史；从 A3.2 起使用准确署名 `Claude Opus 5.5`。

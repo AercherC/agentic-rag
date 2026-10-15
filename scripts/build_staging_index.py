@@ -14,6 +14,11 @@
 staging 名与 active/previous 或已有 collection 重名、参数冲突、--discard-staging 时没有登记的
 staging 或其名称是 active/previous）；3 = 校验已通过，但构建之后的收尾动作被保护拒绝（staging
 collection 与指针保留，状态文件在构建期间被外部改动时才可能发生）。
+
+--discard-staging 的退出码（A3.2）：0 = 删除并清指针完成；2 = 拒绝，什么都没改（状态文件不存在、读不了或
+校验失败，stderr 为 ``REFUSED: cannot read lifecycle state <path>: <异常类型>: <消息>``；没有登记的 staging；
+目标是 active/previous）；1 = 连接 Chroma、列出或删除 collection 时出错（stderr 为 ``FAILED: <异常类型>: <消息>``；
+删除失败时 staging 指针保持不变，可修复后重试）。两种错误都只输出一行，不抛 traceback。
 """
 
 from __future__ import annotations
@@ -217,6 +222,8 @@ def run_staging_build(
     )
     # 纵深防御：无论生成规则如何，staging 名绝不能等于线上或回滚依赖的 collection，
     # 否则构建会写进 ACTIVE/PREVIOUS 索引，discard 还会删除它。
+    # A3.2 说明：现有生成器已通过 reserved 避让 active/previous，这个检查在当前实现下不会触发；
+    # 有意保留，作为防止生成器以后回归的兜底（测试中以 monkeypatch 生成器的方式覆盖）。
     if staging_name in protected:
         raise StagingBuildRefused(
             f"generated staging name {staging_name!r} equals the active or previous collection; "
@@ -360,14 +367,36 @@ def make_real_ports(settings: Settings) -> StagingPorts:
     )
 
 
+def _one_line(exc: BaseException) -> str:
+    """把异常消息压成一行：Pydantic 等异常的消息是多行的，CLI 约定错误只输出一行。"""
+
+    return " ".join(str(exc).split())
+
+
 def run_discard_only(settings: Settings) -> int:
-    """--discard-staging：只连接 Chroma 删除已登记的 staging 并清指针，不加载任何模型。"""
+    """--discard-staging：只连接 Chroma 删除已登记的 staging 并清指针，不加载任何模型。
 
-    import chromadb
+    错误一律收敛为一行 stderr 加退出码，不抛 traceback：
+    - 状态文件缺失、读不了或校验失败 → ``REFUSED: cannot read lifecycle state …``，退出码 2（什么都没改）；
+    - 没有登记的 staging 或目标受保护 → ``REFUSED: …``，退出码 2（什么都没改）；
+    - 连接 Chroma、列出或删除 collection（以及之后清指针）时出错 → ``FAILED: …``，退出码 1。
+      删除失败时指针保持不变：``discard_staging_collection`` 先删 collection、后清指针。
+    """
 
+    state_path = Path(settings.index_state_path)
+    # 第一步只读状态文件：此时还没有连接 Chroma，任何失败都意味着什么都没改，属于“拒绝开始”。
     try:
-        state = LifecycleState.model_validate_json(Path(settings.index_state_path).read_text(encoding="utf-8"))
+        state = LifecycleState.model_validate_json(state_path.read_text(encoding="utf-8"))
         lifecycle = IndexLifecycle(settings.index_state_path, state.knowledge_base_id)
+    except Exception as exc:  # noqa: BLE001 - 缺失/权限/编码/JSON/Pydantic 校验错误都按拒绝处理
+        print(
+            f"REFUSED: cannot read lifecycle state {state_path}: {type(exc).__name__}: {_one_line(exc)}",
+            file=sys.stderr,
+        )
+        return 2
+    try:
+        import chromadb
+
         client = chromadb.PersistentClient(path=str(settings.vector_db_path))
         discard_staging_collection(
             lifecycle,
@@ -378,6 +407,10 @@ def run_discard_only(settings: Settings) -> int:
         # 尚未删除任何东西、也没有改动状态文件，属于“拒绝开始”。
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
+    except Exception as exc:  # noqa: BLE001 - Chroma 连接/列出/删除失败统一报告为执行失败
+        # 删除失败时 discard_staging_collection 尚未清指针，状态仍与实际一致，可修复后重试。
+        print(f"FAILED: {type(exc).__name__}: {_one_line(exc)}", file=sys.stderr)
+        return 1
     print(json.dumps({"outcome": "STAGING_DISCARDED"}, ensure_ascii=False))
     return 0
 

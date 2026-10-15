@@ -158,6 +158,10 @@
   拒绝（退出码 2），提示中明确**不要**删除或修改该 collection。
 - **discard 幂等（A3.1）**：`discard_staging_collection(lifecycle, delete_collection, list_collections)` 在 staging 指针
   存在但 collection 已不存在时只清指针并成功返回；staging 指针为 null 时仍拒绝（退出码 2，什么都不改）。
+- **`--discard-staging` 退出码（A3.2）**：0 = 删除并清指针完成；2 = 拒绝、什么都没改（状态文件不存在、读不了或校验
+  失败时 stderr 一行 `REFUSED: cannot read lifecycle state <path>: <异常类型>: <消息>`；没有登记的 staging；目标是
+  active/previous）；1 = 连接 Chroma、列出或删除 collection 时出错，stderr 一行 `FAILED: <异常类型>: <消息>`，删除失败时
+  staging 指针保持不变（先删后清的顺序保证），可修复后重试。两种错误都不抛 traceback。
 - **退出码（A3.1 修订）**：0 = 成功；1 = 构建或校验失败（staging 与指针保留）；2 = 拒绝开始（没有构建、没有删除、
   没有改动状态文件）；**3 = 校验已通过，但构建后的收尾动作被保护拒绝**（`--discard-after-validate` 时遇到
   `ProtectedCollectionError`，只可能因状态文件在构建期间被外部改动；staging 与指针保留）。A3 中这种情况返回 2，与

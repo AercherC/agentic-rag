@@ -498,3 +498,131 @@ def test_mark_collection_lifecycle_handles_legacy_hnsw_space_metadata(tmp_path) 
     assert fresh.metadata["lifecycle"] == "PREVIOUS"
     assert fresh.metadata["chunk_strategy"] == "hybrid"
     assert fresh.configuration["hnsw"]["space"] == "cosine"
+
+
+# ---------------------------------------------------------------------------
+# A3.2：--discard-staging 的错误处理与命名兜底检查
+# ---------------------------------------------------------------------------
+
+
+def _discard_settings(tmp_path, state_path):
+    return Settings(_env_file=None, index_state_path=state_path, vector_db_path=tmp_path / "chroma")
+
+
+def _assert_single_line(err: str, prefix: str) -> None:
+    """错误输出必须是以 prefix 开头的一行，不能带 traceback。"""
+
+    assert "Traceback" not in err
+    lines = [line for line in err.splitlines() if line.strip()]
+    assert len(lines) == 1 and lines[0].startswith(prefix)
+
+
+def test_cli_discard_staging_missing_state_file_is_refused_without_traceback(tmp_path, monkeypatch, capsys) -> None:
+    import scripts.build_staging_index as module
+
+    missing = tmp_path / "missing_state.json"
+    monkeypatch.setattr(module, "Settings", lambda: _discard_settings(tmp_path, missing))
+
+    assert main(["--discard-staging"]) == 2
+
+    err = capsys.readouterr().err
+    _assert_single_line(err, f"REFUSED: cannot read lifecycle state {missing}: FileNotFoundError: ")
+    assert not missing.exists()
+    assert not (tmp_path / "chroma").exists()  # 读状态失败时还没有连接 Chroma
+
+
+def test_cli_discard_staging_corrupt_state_file_is_refused_without_traceback(tmp_path, monkeypatch, capsys) -> None:
+    import scripts.build_staging_index as module
+
+    corrupt = tmp_path / "index_state.json"
+    corrupt.write_text("{not json", encoding="utf-8")
+    monkeypatch.setattr(module, "Settings", lambda: _discard_settings(tmp_path, corrupt))
+
+    assert main(["--discard-staging"]) == 2
+
+    err = capsys.readouterr().err
+    _assert_single_line(err, f"REFUSED: cannot read lifecycle state {corrupt}: ValidationError: ")
+    assert corrupt.read_text(encoding="utf-8") == "{not json"  # 原样保留，没有被重写
+
+
+def test_cli_discard_staging_delete_failure_returns_1_and_keeps_pointer(tmp_path, monkeypatch, capsys) -> None:
+    """删除 collection 时 Chroma 抛错：退出码 1、一行 FAILED，staging 指针保持不变。"""
+
+    import chromadb
+
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+    code, summary = env.run()  # 校验通过、保留 staging 指针
+    assert code == 0
+    name = summary["staging_collection"]
+    before = (tmp_path / "index_state.json").read_bytes()
+
+    class Item:
+        def __init__(self, item_name: str) -> None:
+            self.name = item_name
+
+    class FailingClient:
+        """列出时返回 staging，删除时抛错，模拟 Chroma 删除失败。"""
+
+        def __init__(self, path: str) -> None:
+            self.path = path
+
+        def list_collections(self):
+            return [Item("col-active"), Item(name)]
+
+        def delete_collection(self, item_name: str) -> None:
+            raise RuntimeError(f"cannot delete {item_name}")
+
+    monkeypatch.setattr(chromadb, "PersistentClient", FailingClient)
+    monkeypatch.setattr(module, "Settings", lambda: _discard_settings(tmp_path, tmp_path / "index_state.json"))
+
+    assert main(["--discard-staging"]) == 1
+
+    err = capsys.readouterr().err
+    _assert_single_line(err, f"FAILED: RuntimeError: cannot delete {name}")
+    assert env.state().staging is not None and env.state().staging.collection_name == name
+    assert (tmp_path / "index_state.json").read_bytes() == before
+
+
+@pytest.mark.parametrize("protected", ["active", "previous"])
+def test_naming_guard_refuses_before_any_build_or_write_port_is_called(tmp_path, monkeypatch, protected) -> None:
+    """A3.2：现有生成器不会产生 active/previous 名，此检查是兜底；生成器回归时必须在任何构建或写入前拒绝。"""
+
+    import scripts.build_staging_index as module
+
+    env = Env(tmp_path)
+    if protected == "previous":
+        _activate_once(env)  # 造出 previous
+    state = env.state()
+    target = state.active.collection_name if protected == "active" else state.previous.collection_name
+    monkeypatch.setattr(module, "build_staging_collection_name", lambda *a, **k: target)
+    marked_before = list(env.marked_active)
+    called: list[str] = []
+    ports = env.ports()
+
+    def record(port_name):
+        def port(*args, **kwargs):
+            called.append(port_name)
+            raise AssertionError(f"port {port_name} must not be called")
+
+        return port
+
+    ports.build = record("build")
+    ports.delete_collection = record("delete_collection")
+    ports.mark_collection_active = record("mark_collection_active")
+    ports.active_chunk_ids = record("active_chunk_ids")
+    ports.smoke_embedding = record("smoke_embedding")
+    before = (tmp_path / "index_state.json").read_bytes()
+    job_dir = tmp_path / "jobs_guard"
+
+    with pytest.raises(StagingBuildRefused, match="equals the active or previous collection"):
+        run_staging_build(
+            env.settings, ports, job_dir=job_dir,
+            expected_chunk_ids_from_active=True, activate=False, discard_after_validate=True,
+        )
+
+    assert called == []
+    assert env.marked_active == marked_before
+    assert (tmp_path / "index_state.json").read_bytes() == before
+    assert not job_dir.exists()  # 没有写出 BuildJob 或摘要
