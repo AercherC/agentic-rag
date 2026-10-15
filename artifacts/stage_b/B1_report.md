@@ -65,3 +65,8 @@ B1 第 7–9 条；Gate B1 措辞（允许新增本报告）；B3 字段、起�
 - `python -m pytest -q -p no:cacheprovider`：510 passed。
 - `artifacts/phase15a/index_state.json` sha256：`5fbad4f02215d120128ffedf83b2708901ba881bbc258f8c86957ebcc63d8809`（不变）。
 - `git diff --stat` 只有两个文档文件，另新增本报告。
+
+## B1.1 修复（2026-10-15）
+- **acceptable_abstention 语义（D7，选项 A）**：SPEC §13.1(a) 删除 TODO，写明该字段只对可答题有意义、不可答题必须为 `false`（B3 校验），并定义“状态正确”；(e) 状态层 `answerable_false_abstention_rate` 扣除可接受拒答，新增 `answerable_abstention_rate_raw`，混淆矩阵按原始状态；(e) 准确率与精确率注明不受该字段影响；(h) critical 题“状态正确”引用 (a)。计划 B3 字段说明与程序化校验、§3.1 状态行、§9 新增 D7 同步。
+- **失败层归因**：SPEC §13.1(e) 与计划 §3.1 改为 10 条有序规则（ERROR/GENERATION/CITATION 错误题 → 不可答题 STATUS/PASS → UNATTRIBUTABLE → CANDIDATE_MISS（Dense Top20，取自 `retrieval.dense.completed`）→ RERANK_MISS → CONTEXT → STATUS（可接受拒答直接 PASS）→ UNVERIFIED → GENERATION → CITATION），注明与 UI 合同 v0 `CANDIDATE_MISS` / `RERANKER_MISS` 的对应，`UNVERIFIED` 单独计数不并入 `PASS`；旧单一 `RETRIEVAL` 层已移除。
+- 验证：pytest 510 passed；`index_state.json` sha256 不变；只改 SPEC、计划与本报告。

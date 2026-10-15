@@ -353,8 +353,9 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
 `claim_id`、`text`、`evidence_anchors`＝与之矛盾的原文锚点）、`unanswerable_kind ∈ {out_of_corpus, near_miss, false_premise} | null`、
 `provenance{drafted_by, approved_by, source}`。`required_claims[*]`：`claim_id`、`text`、`required: bool`、
 `evidence_anchors: list[EvidenceAlternative]`（复用 `domain/evaluation_v2.py`，与 40 题同一锚点协议）、`answer_keys: list[list[str]]`
-（外层组间“与”，组内别名间“或”；空列表 ⇒ `key_matchable=false`）。`acceptable_abstention` 目前只用于分片报告，不改变 (e) 的
-任何分子分母（TODO：是否影响误拒答率待主会话决定）。`fingerprint` = 除 `fingerprint` 字段外整个数据集的规范化 JSON
+（外层组间“与”，组内别名间“或”；空列表 ⇒ `key_matchable=false`）。`acceptable_abstention` 只对 `expected_status=answered`
+的题有意义，表示这道可答题允许拒答；不可答题必须为 `false`（B3 校验）（D7）。**状态正确** ⇔ 实际状态 = 期望状态；或期望为
+answered、实际为 insufficient_context 且 `acceptable_abstention=true`。`fingerprint` = 除 `fingerprint` 字段外整个数据集的规范化 JSON
 （`sort_keys`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8）的 sha256；`dataset.sha256` = 文件字节 sha256，两者都记录。
 
 **(b) 证据映射与题集分离（B3 实现）**：题集只存锚点；对某索引的映射是独立文件 `evals/rag_e2e_v1/mapping_<collection>.json`，
@@ -379,29 +380,38 @@ observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequ
 - 上下文层（primary）：`context_all_required` = 所有必需证据组都至少有一个 chunk 集合完整进入上下文的题数 / 可答且无
   UNMAPPABLE 组的题数；`context_claim_recall` = 至少一个锚点的 chunk 集合完整进入上下文的 required claim 数 / 有可用锚点的
   required claim 数（UNMAPPABLE 锚点不计入）。
-- 状态层（primary）：期望 × 实际状态混淆矩阵；`unanswerable_false_answer_rate` = 实际 answered / 不可答题；
-  `answerable_false_abstention_rate` = 实际 insufficient_context / 可答题；`status_body_inconsistent_count` = status 为
+- 状态层（primary）：期望 × 实际状态混淆矩阵（按原始期望状态与实际状态统计，不受 `acceptable_abstention` 影响）；
+  `unanswerable_false_answer_rate` = 实际 answered / 不可答题；`answerable_false_abstention_rate` = 实际 insufficient_context 且
+  `acceptable_abstention=false` 的可答题数 / 可答题数；另报 `answerable_abstention_rate_raw` = 实际 insufficient_context 的可答题数 /
+  可答题数（不扣除可接受拒答）；`status_body_inconsistent_count` = status 为
   insufficient_context 但 `sources` 非空（至少一个合法引用）的题数（D4）。
 - 关键要素（primary，只算 `expected_status=answered` 且至少有一条 key_matchable required claim 的题）：`key_fact_recall`（macro）
   = 各题“命中的 key_matchable required claim 数 / key_matchable required claim 数”的平均，配对比较用它；另报 micro =
   总命中数 / 总数。D4：实际 status 为 insufficient_context 时正文照常匹配。
 - 准确率与精确率（primary，PaperQA2 口径）：答对 ⇔ 实际 answered 且全部 key_matchable required claim 命中；
   `answer_accuracy` = 答对数 / 可答题数；`answer_precision` = 答对数 / 实际 answered 的可答题数；两数一起报告；无
-  key_matchable claim 的题不进入任何分母。
+  key_matchable claim 的题不进入任何分母；`acceptable_abstention` 不改变这两个指标的分子分母（它们衡量的是回答内容）。
 - 引用格式（primary）：合法引用数；`cited_source_in_evidence_rate` = 可答题 `sources` 中 chunk 属于该题证据映射 chunk 集合并集
   的条数 / 可答题 `sources` 总条数。
 - 评委（`diagnostic_uncalibrated`；对应任务 B6 未通过时为 `unavailable`）：评委 claim recall = COVERED / 已判 required claim；
   groundedness = SUPPORTED / 已判陈述，无依据论断率 = UNSUPPORTED / 已判陈述；引用支持精确率 = SUPPORTS / 已判引用对；
   另报评委 COVERED 与 key_match 命中在 key_matchable required claim 上的逐条一致率。
 - 成本（primary，只记录、不设合格线）：LLM 调用次数、prompt/completion token、端到端与各阶段 p50/p95 延迟（来自 RunTrace）。
-- 失败层归因（逐题按下列顺序取第一条成立的规则，都不成立为 `PASS`；含 UNMAPPABLE 组的可答题记 `UNATTRIBUTABLE`）：
-  - 错误题：`LLMRequestError` → `ERROR`（不归因）；`GenerationContractError` → `GENERATION`；`CitationValidationError` → `CITATION`。
-  - 不可答题：实际 answered → `STATUS`。以下规则只用于可答题。
-  - `RETRIEVAL`：某必需证据组没有任何 chunk 集合完整落在 `retrieved_chunks`（最终 Top-K）中。
-  - `CONTEXT`：各组都在 `retrieved_chunks` 中，但 `context_all_required` 不成立。
-  - `STATUS`：`context_all_required` 成立但实际 insufficient_context。
-  - `GENERATION`：实际 answered 但有 key_matchable required claim 未命中。
-  - `CITATION`：已答对但 `sources` 中没有任何 chunk 属于证据映射 chunk 集合。
+- 失败层归因（逐题按下列顺序取第一条成立的规则，都不成立记 `PASS`）：
+  1. 错误题：`LLMRequestError` → `ERROR`（不归因）；`GenerationContractError` → `GENERATION`；`CitationValidationError` → `CITATION`。
+  2. 不可答题：实际 answered → `STATUS`，否则 → `PASS`。以下规则只用于可答题。
+  3. 含 UNMAPPABLE 证据组的可答题 → `UNATTRIBUTABLE`。
+  4. `CANDIDATE_MISS`：某必需证据组没有任何 chunk 集合完整落在 Dense Top20 候选中（候选取自 RunTrace 的
+     `retrieval.dense.completed`）。
+  5. `RERANK_MISS`：各组都在 Top20 中，但某组没有任何 chunk 集合完整落在最终 Top-K（`retrieved_chunks`）中。
+  6. `CONTEXT`：各组都在 Top-K 中，但 `context_all_required` 不成立。
+  7. `STATUS`：`context_all_required` 成立，但状态不正确（按 (a) 定义）。实际 insufficient_context 且
+     `acceptable_abstention=true` 时状态算正确，本条不成立，直接记 `PASS`，不再往下判断。
+  8. `UNVERIFIED`：实际 answered，但该题没有任何 key_matchable required claim，生成层无法确定性判定。
+  9. `GENERATION`：实际 answered，但有 key_matchable required claim 未命中。
+  10. `CITATION`：已答对（按本节定义），但 `sources` 中没有任何 chunk 属于证据映射 chunk 集合。
+  - `CANDIDATE_MISS` / `RERANK_MISS` 分别对应 UI 合同 v0（`docs/EVIDENCEFLOW_UI_RUNTIME_CONTRACT_v0.md`）Failure Attribution
+    的 `CANDIDATE_MISS` / `RERANKER_MISS`。报告中 `UNVERIFIED` 单独计数，不并入 `PASS`。
 - 合同变更：`eval/quality.py::abstention_metrics` 改为接受 `AnswerStatus` 小写取值与字面量 `"error"`，大写取值报错；B4 实现并
   同步修改 `tests/test_evaluation_v2.py` 中的调用。
 
@@ -443,7 +453,7 @@ observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequ
 
 **(h) Gate 策略文件 `evals/rag_e2e_v1/gates_v1.json`（B7 写，B4 实现加载与判定）**：每个指标声明 `metric`、
 `direction ∈ {higher_better, lower_better}`、`min?`、`max?`、`max_regression?`、`required: bool`；`critical_cases: list[case_id]`
-中各题的逐题确定性结果（状态正确；可答题另加 `context_all_required`、关键要素全部命中）不得由通过变为不通过。只有
+中各题的逐题确定性结果（状态正确，按 (a) 定义；可答题另加 `context_all_required`、关键要素全部命中）不得由通过变为不通过。只有
 `status=primary` 的指标可写进 Gate，写入 `diagnostic_uncalibrated` 指标时加载阶段直接报错。
 
 **(i) 评委检验合格线与指标地位（B6）**：每类判定任务分别判断：构造负例检出率 ≥ 0.9；未破坏样本误报率 ≤ 0.1；复测一致率

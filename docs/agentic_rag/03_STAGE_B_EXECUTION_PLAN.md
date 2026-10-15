@@ -1,6 +1,6 @@
 # EvidenceFlow 阶段 B 执行计划：评测先行
 
-- 版本：v2（2026-10-15）。§9 的 D1–D6 已由用户确认
+- 版本：v2（2026-10-15）。§9 的 D1–D7 已由用户确认
 - v2：B0 完成；按 D6 加入 answer_keys / key-fact recall 与 B5b
 - 执行者：Claude Code 子代理（Opus 5.5，按步骤难度选 low / medium），在本机 `agent-gpu` Conda 环境中执行
 - 设计与验收：主会话（每步结束后在主会话审查 diff 与产物）
@@ -84,7 +84,7 @@ $env:MODEL_DEVICE = 'cpu'
 
 | 项目 | 读过的位置 | 借鉴 | 不借鉴及原因 |
 |---|---|---|---|
-| **RAGChecker**（amazon-science） | `ragchecker/computation.py` | 论断级的**诊断分解**：用三组蕴含关系（标准论断⊆检索块、标准论断⊆回答、回答论断⊆检索块）分别算出检索侧的 claim recall、context precision 和生成侧的 context utilization、幻觉率、噪声敏感度。它能把“没检索到”和“检索到了却没用上”分开，正好对应 Phase 12 的 RETRIEVAL / GENERATION 两层失败。 | 不装包（依赖 spaCy 与外部 checker 模型）。**“标准论断⊆检索块”我们不用 LLM 判**：每条 claim 有人工确认的证据锚点，映射成 chunk ID 后用集合运算就能确定性算出。 |
+| **RAGChecker**（amazon-science） | `ragchecker/computation.py` | 论断级的**诊断分解**：用三组蕴含关系（标准论断⊆检索块、标准论断⊆回答、回答论断⊆检索块）分别算出检索侧的 claim recall、context precision 和生成侧的 context utilization、幻觉率、噪声敏感度。它能把“没检索到”和“检索到了却没用上”分开，正好对应失败层归因中的检索侧（CANDIDATE_MISS / RERANK_MISS）与 GENERATION 两层失败。 | 不装包（依赖 spaCy 与外部 checker 模型）。**“标准论断⊆检索块”我们不用 LLM 判**：每条 claim 有人工确认的证据锚点，映射成 chunk ID 后用集合运算就能确定性算出。 |
 | **RAGAS**（explodinggradients，298b682） | `src/ragas/metrics/_faithfulness.py` | 忠实度的两步法：先把回答拆成**不含代词、可独立理解**的陈述，再对每条陈述相对上下文给出 0/1 判定和理由。评委 prompt 的结构照此设计。 | 不作为依赖（架构审查 §7.8）；不用它的 answer relevance、answer similarity 这类无参考打分。 |
 | **ARES**（stanford-futuredata） | `README.md`（PPI 部分） | **预测驱动推断（PPI）**：少量人工标注 + 评委在全集上的判断 → 纠偏后的估计和置信区间。前提是人工标注与被评估的输出来自同一分布。**本阶段不做人工标注，所以不实现 PPI**；如果阶段 D 之前补做人工标注（见 §9 的说明），再按它的思路加上纠偏估计。另一个借鉴点：ARES 程序化地构造负例（换成无关段落、改出错误回答）来训练评委；本阶段 B6 把同样的构造思路用来**检验**评委。 | 不微调评委模型，不做它的合成问题生成流水线。 |
 | **SuperMew**（icey1287，e2ebabe） | `backend/evaluation/rag.py`、`.github/workflows/rag-eval.yml` | ① **采集与计分分离**：昂贵的在线采集产出冻结的 observations，计分是纯函数，可以重复跑，CI 里重算报告并 `cmp` 逐字节比对；② observations 用 **dataset fingerprint** 绑定数据集，防止拿错题集计分；③ **Gate 策略文件**：每个指标声明方向、最小值/最大值、允许的最大退化、是否必需；④ `RagExpectedBehavior`：每题写明期望结果和“是否允许拒答”；⑤ 题目带 **tags** 做分片统计，带 `critical` 标记的题不允许退化；⑥ 没有可靠实现的指标**显式标记为不可用**，不伪造分数。 | 不搬它的平台层（PostgreSQL、Redis、worker、HITL）。它的评委指标目前标记为不可用，所以评委这一块要自己设计。 |
@@ -105,7 +105,7 @@ $env:MODEL_DEVICE = 'cpu'
 |---|---|---|---|---|
 | 检索 | B0' 的 P/R/MRR/MAP/nDCG@5、Recall@20 | `eval/ir_metrics.py`，不变 | 否 | 主指标 |
 | 上下文 | **Context AllRequired**（所有必需证据组都进了上下文）、**context claim recall**（标准论断的证据有多少进了上下文） | 证据锚点映射成 chunk ID 后做集合运算（对应 RAGChecker 的 claim_recall） | 否 | **主指标**（阶段 C 的 Gate 就用它） |
-| 状态 | 期望状态混淆矩阵、不可答题错误作答率、可答题误拒答率、“状态与正文不一致”题数（D4） | `RAGAnswer.status` 对比 `expected_status` | 否 | **主指标** |
+| 状态 | 期望状态混淆矩阵、不可答题错误作答率、可答题误拒答率（扣除 `acceptable_abstention=true` 的拒答，D7；另报未扣除的 `answerable_abstention_rate_raw`）、“状态与正文不一致”题数（D4） | `RAGAnswer.status` 对比 `expected_status` | 否 | **主指标** |
 | 关键要素 | **`key_fact_recall`**（可答题中 key_matchable required claim 的 `answer_keys` 被回答命中的比例；macro 为主，另报 micro） | `key_match` 确定性子串匹配（SPEC §13.1(d)，借鉴 ALCE `compute_str_em`） | 否 | **主指标**（阶段 D 的 primary 依据） |
 | 状态 + 关键要素 | 准确率与精确率（PaperQA2 口径）：“答对” = 实际 answered 且全部 key_matchable required claim 命中；准确率 = 答对 / 可答题，精确率 = 答对 / 实际作答的可答题 | 状态比对 + `key_match` | 否 | **主指标** |
 | 受控上下文（生成器层，B5b） | `ablation_false_answer_rate`（删掉证据后仍作答的比例）、`counterfactual_faithfulness_rate`（数字被改后回答跟随上下文的比例） | 确定性构造变体，标签由构造决定（借鉴 RGB negative rejection / counterfactual robustness） | 否 | **主指标** |
@@ -113,7 +113,7 @@ $env:MODEL_DEVICE = 'cpu'
 | 回答 | claim recall（标准论断被回答覆盖的比例） | 评委逐条判定 COVERED / MISSING / CONTRADICTED | 是 | 诊断（未经人工校准） |
 | 回答 | groundedness / 无依据论断率（回答论断能否由实际上下文支持） | 评委先拆陈述，再逐条判定 SUPPORTED / UNSUPPORTED | 是 | 诊断（未经人工校准） |
 | 回答 | 引用支持精确率（引用的那条来源是否支持它所挂的论断） | 评委逐条判定 | 是 | 诊断（未经人工校准） |
-| 诊断 | context utilization（证据进了上下文、回答却没覆盖的比例）、失败层归因（RETRIEVAL / CONTEXT / GENERATION / CITATION / STATUS） | 由上面各层结果组合 | 部分 | 诊断 |
+| 诊断 | context utilization（证据进了上下文、回答却没覆盖的比例）、失败层归因（按 SPEC §13.1(e) 的有序规则：ERROR / STATUS / UNATTRIBUTABLE / CANDIDATE_MISS / RERANK_MISS / CONTEXT / UNVERIFIED / GENERATION / CITATION / PASS；`CANDIDATE_MISS` 候选取自 RunTrace `retrieval.dense.completed` 的 Dense Top20，`CANDIDATE_MISS` / `RERANK_MISS` 对应 UI 合同 v0 的 `CANDIDATE_MISS` / `RERANKER_MISS`；`UNVERIFIED` 单独计数，不并入 `PASS`） | 由上面各层结果组合 | 部分 | 诊断 |
 | 成本 | LLM 调用次数、输入/输出 token、端到端与各阶段 p50/p95 延迟 | 来自 RunTrace | 否 | 主指标（只记录，不设合格线） |
 
 ### 3.2 评委的工作方式
@@ -221,7 +221,7 @@ score（纯函数，离线，可重复；不调用任何模型）
 
 中英文大致各半；新题不做中英平行版本。
 
-**每题字段（`EvalCase`）**：`case_id`（新题用 `E2E-M*` / `E2E-U*` 独立 ID 空间）、`family_id`、`query`、`query_language`、`question_type`、`tags`（如 `multi_doc`、`comparison`、`unanswerable:near_miss`、`cross_lingual`）、`critical`、`expected_status`、`acceptable_abstention`、`required_evidence_groups`（锚点协议同 40 题）、`required_claims`（每条：`claim_id`、`text`、`required`、`evidence_anchors`、`answer_keys`，语义见 SPEC §13.1(a)）、`forbidden_claims`（错误前提题必填）、`unanswerable_kind`、`provenance`（谁起草、谁确认）。
+**每题字段（`EvalCase`）**：`case_id`（新题用 `E2E-M*` / `E2E-U*` 独立 ID 空间）、`family_id`、`query`、`query_language`、`question_type`、`tags`（如 `multi_doc`、`comparison`、`unanswerable:near_miss`、`cross_lingual`）、`critical`、`expected_status`、`acceptable_abstention`、`required_evidence_groups`（锚点协议同 40 题）、`required_claims`（每条：`claim_id`、`text`、`required`、`evidence_anchors`、`answer_keys`，语义见 SPEC §13.1(a)）、`forbidden_claims`（错误前提题必填）、`unanswerable_kind`、`provenance`（谁起草、谁确认）。`acceptable_abstention` 只对可答题有意义，表示该题允许拒答（拒答不算误拒答、算状态正确）；不可答题必须为 `false`（D7，SPEC §13.1(a)）。
 
 **步骤**
 1. **迁移**：把 40 题和 5 道不可答题转成新 schema。Phase 12 已有的 20 题 claims：在旧索引（`c512_o64_v1`，只读 `get_collection`）中找到 `acceptable_evidence` 对应的 chunk 正文，从中摘出支撑该 claim 的原句作为锚点，再到源 PDF 文本中验证并补全定位信息。
@@ -233,6 +233,7 @@ score（纯函数，离线，可重复；不调用任何模型）
    - 错误前提题：`forbidden_claims` 与论文原文矛盾，附原文锚点；
    - answer_keys 按 SPEC §13.1(c) 三条规则校验：① 每组至少一个别名出现在该 claim 锚点的 locator 页源文本中；② 任何别名不命中题干；③ 别名非空、规范化后长度 ≥ 2、组内去重；
    - 证据映射单独成文件 `evals/rag_e2e_v1/mapping_ef_research_bge_m3_hybrid_c512_v2.json`（SPEC §13.1(b)），题集本身只存锚点；
+   - 不可答题（`expected_status=insufficient_context`）的 `acceptable_abstention` 必须为 `false`（D7）；
    - schema 校验、ID 唯一、fingerprint 计算并写入。
 5. 冻结到 `evals/rag_e2e_v1/`：`dataset.json`、`dataset.sha256`、`mapping_ef_research_bge_m3_hybrid_c512_v2.json`、`README.md`（来源、规模、分布、已知局限）。
 
@@ -415,5 +416,6 @@ score（纯函数，离线，可重复；不调用任何模型）
 | D4 | 拒答状态但正文有部分回答 | **状态按拒答计，正文照常计分，单独统计不一致题数** | 写进 B1 指标定义与 B4 实现 |
 | D5 | 题集规模 | 约 70 题（默认） | 结论一律写成“方向一致 / 置信区间”，不写“显著提升” |
 | D6 | 无人工标注时，回答质量用什么确定性方法评 | **采纳两项确定性评测**：① 关键要素匹配（claim 的 `answer_keys` + `key_fact_recall`）；② 受控上下文检验生成器（B5b）。依据：ALCE `eval.py::compute_str_em`、RGB `evalue.py::checkanswer/processdata`（negative rejection、counterfactual robustness） | B1 写进 SPEC §13.1(a)–(f)；B3 起草并校验 `answer_keys`，mapping 单独成文件；B4 实现 `key_match.py`、`controlled.py`；新增 B5b；`key_fact_recall` 与“答对”判定为主指标，阶段 D 以 `key_fact_recall` 为 primary 依据 |
+| D7 | 可接受拒答（`acceptable_abstention=true`）怎么计 | **选项 A**：该可答题拒答不算误拒答、算状态正确；混淆矩阵仍按原始期望 / 实际状态统计；另报 `answerable_abstention_rate_raw` | B1 写进 SPEC §13.1(a)(e)(h)；B3 校验不可答题该字段为 `false`；B4 按新定义实现状态层指标与失败层归因 |
 
 **关于 D2 的后续影响**：阶段 D 的 Gate 是“Claim Recall 提升”，按 D6 以确定性的 `key_fact_recall` 为 primary 依据；评委 claim recall 只作诊断旁证（最终以阶段 D 计划为准）。`key_fact_recall` 只覆盖 key_matchable 的 claim；如果阶段 D 需要评估无法做关键要素匹配的 claim，可以届时只针对阶段 D 的对比补做一小批人工标注（约 15–20 题），再按 ARES 的 PPI 思路做纠偏估计。
