@@ -16,6 +16,7 @@ from evidenceflow.domain.chunk import (
 )
 from evidenceflow.model_device import resolve_model_device
 from evidenceflow.retrieval.retriever import DenseRetriever, InvalidQueryError
+from evidenceflow.tracing import TraceRecorder, safe_record
 
 
 logger = logging.getLogger(__name__)
@@ -243,8 +244,13 @@ class DenseRerankerRetriever:
         candidate_pool_k: int = 20,
         reranker_input_k: int = 20,
         final_top_k: int = 5,
+        trace_recorder: TraceRecorder | None = None,
     ) -> None:
-        """冻结候选池、Reranker 输入与最终深度的分层合同。"""
+        """冻结候选池、Reranker 输入与最终深度的分层合同。
+
+        ``trace_recorder`` 可选（默认 None）：只观测 retrieval.dense.* 与 rerank.* 事件，
+        不影响候选、排序、分数、异常或日志（PROJECT_SPEC §12.5）。
+        """
 
         for value, name in (
             (candidate_pool_k, "candidate_pool_k"),
@@ -262,6 +268,8 @@ class DenseRerankerRetriever:
         self.candidate_pool_k = candidate_pool_k
         self.reranker_input_k = reranker_input_k
         self.final_top_k = final_top_k
+        # 公开属性：调用方（含 B2 trace 对照实验）可在两次 retrieve 之间替换 recorder。
+        self.trace_recorder = trace_recorder
 
     def retrieve(
         self,
@@ -282,12 +290,31 @@ class DenseRerankerRetriever:
         if effective_top_k > self.reranker_input_k:
             raise ValueError("top_k must not exceed reranker_input_k")
 
+        # 本次调用固定使用同一个 recorder；为 None 时下面不构造任何 payload，开销与未接 trace 一致。
+        recorder = self.trace_recorder
+        safe_record(recorder, "retrieval.dense.started")
         candidates = self.dense_retriever.retrieve(query, top_k=self.candidate_pool_k)
+        if recorder is not None:
+            # 只记 ID 与原始 float32 相似度，不记 chunk 正文。
+            safe_record(
+                recorder,
+                "retrieval.dense.completed",
+                candidate_count=len(candidates),
+                candidates=[
+                    {
+                        "rank": item.rank,
+                        "chunk_id": item.chunk.chunk_id,
+                        "similarity_score": item.similarity_score,
+                    }
+                    for item in candidates
+                ],
+            )
         selected = candidates[: self.reranker_input_k]
         candidate_ids = [item.chunk.chunk_id for item in selected]
         if len(candidate_ids) != len(set(candidate_ids)):
             raise ValueError("dense candidates must have unique chunk IDs")
 
+        safe_record(recorder, "rerank.started")
         started = time.perf_counter()
         try:
             reranked = self.reranker.rerank(
@@ -322,4 +349,22 @@ class DenseRerankerRetriever:
                 "reranker_truncated_pair_count": self.reranker.last_truncated_pair_count,
             },
         )
+        if recorder is not None:
+            # truncated_pair_count 是整批一个值；结果按重排后 rank 记录 ID 与分数。
+            safe_record(
+                recorder,
+                "rerank.completed",
+                input_count=len(selected),
+                output_count=len(results),
+                truncated_pair_count=self.reranker.last_truncated_pair_count,
+                results=[
+                    {
+                        "rank": item.rank,
+                        "chunk_id": item.chunk.chunk_id,
+                        "candidate_rank": item.candidate_rank,
+                        "reranker_score": item.reranker_score,
+                    }
+                    for item in results
+                ],
+            )
         return results

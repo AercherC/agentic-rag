@@ -17,6 +17,7 @@ from evidenceflow.domain.generation import (
     generator_output_json_schema,
 )
 from evidenceflow.llm.base import LLMClient
+from evidenceflow.tracing import TraceRecorder, safe_record
 
 GENERATOR_PROMPT_VERSION = "rag-generator-v3"
 INSUFFICIENT_CONTEXT_ANSWER = "知识库中没有足够的相关信息来回答这个问题。"
@@ -105,10 +106,13 @@ def _empty_diagnostics() -> dict[str, Any]:
 class Generator:
     """把 Query 与 BuiltContext 交给抽象 LLMClient，不承担检索或 Citation 解析。"""
 
-    def __init__(self, llm_client: LLMClient) -> None:
-        """注入供应商无关的同步 LLM Client。"""
+    def __init__(
+        self, llm_client: LLMClient, *, trace_recorder: TraceRecorder | None = None
+    ) -> None:
+        """注入供应商无关的同步 LLM Client；``trace_recorder`` 可选，只观测 generation.* 事件。"""
 
         self._llm_client = llm_client
+        self.trace_recorder = trace_recorder
         self._last_diagnostics = _empty_diagnostics()
 
     @property
@@ -169,12 +173,17 @@ class Generator:
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
         self._last_diagnostics = _empty_diagnostics()
+        recorder = self.trace_recorder
+        safe_record(recorder, "generation.started")
         if not context.entries:
             # 没有证据时不调用模型，避免费用、延迟和无依据的模型记忆回答。
-            return GeneratedAnswer(
+            answer = GeneratedAnswer(
                 status=AnswerStatus.INSUFFICIENT_CONTEXT,
                 answer_text=INSUFFICIENT_CONTEXT_ANSWER,
             )
+            # 确定性拒答也记 generation.completed（llm_called=false），保证事件序列完整。
+            self._record_completed(recorder, answer)
+            return answer
 
         messages = self._build_messages(query, context)
         # LLMError 不在此层捕获；调用方需要区分服务失败和知识库证据不足。
@@ -200,4 +209,36 @@ class Generator:
                     f"{second_error}"
                 ) from first_error
             self._last_diagnostics["repair_succeeded"] = True
-        return GeneratedAnswer(status=output.status, answer_text=output.answer)
+        answer = GeneratedAnswer(status=output.status, answer_text=output.answer)
+        self._record_completed(recorder, answer)
+        return answer
+
+    def _record_completed(self, recorder: TraceRecorder | None, answer: GeneratedAnswer) -> None:
+        """记录 generation.completed；recorder 为 None 时不读取诊断、不构造 payload。
+
+        payload 只含状态、调用/修复标志、token 用量、回复长度与 Prompt 版本，不含 Prompt 或回答正文。
+        """
+
+        if recorder is None:
+            return
+        diagnostics = self.last_diagnostics
+        safe_record(
+            recorder,
+            "generation.completed",
+            status=answer.status.value,
+            llm_called=diagnostics["llm_called"],
+            repair_attempted=diagnostics["repair_attempted"],
+            repair_succeeded=diagnostics["repair_succeeded"],
+            # usage 只保留 prompt_tokens / completion_tokens 两个白名单字段。
+            usages=[
+                None
+                if usage is None
+                else {
+                    "prompt_tokens": usage.get("prompt_tokens"),
+                    "completion_tokens": usage.get("completion_tokens"),
+                }
+                for usage in diagnostics["usages"]
+            ],
+            raw_response_lengths=diagnostics["raw_response_lengths"],
+            prompt_version=GENERATOR_PROMPT_VERSION,
+        )

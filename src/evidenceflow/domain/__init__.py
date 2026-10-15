@@ -19,6 +19,7 @@ from evidenceflow.domain.generation import (
 )
 from evidenceflow.domain.ids import build_chunk_id, build_content_hash, build_document_id
 from evidenceflow.domain.query import QueryRequest
+from evidenceflow.domain.trace import RunTrace, TraceEvent
 
 __all__ = [
     "Document",
@@ -37,7 +38,9 @@ __all__ = [
     "RAGAnswer",
     "RerankedRetrievedChunk",
     "RetrievedChunk",
+    "RunTrace",
     "SourceReference",
+    "TraceEvent",
     "build_chunk_id",
     "build_content_hash",
     "build_document_id",

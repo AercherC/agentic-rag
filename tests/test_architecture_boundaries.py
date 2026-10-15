@@ -80,3 +80,26 @@ def test_production_components_do_not_define_secondary_settings_factories() -> N
                 definitions.append(str(path.relative_to(PROJECT_ROOT)))
 
     assert definitions == []
+
+
+def test_runtime_modules_do_not_import_eval() -> None:
+    """eval 层之外的正式源码（含 tracing.py、domain/trace.py、runtime、retrieval、generation、rag）
+    不得静态 import ``evidenceflow.eval``：评测依赖线上链路，反向依赖会形成环并让 trace 混入评测逻辑。
+    """
+
+    violations: list[str] = []
+    for path in sorted(RUNTIME_ROOT.rglob("*.py")):
+        if "eval" in path.relative_to(RUNTIME_ROOT).parts:
+            continue
+        forbidden = {
+            module
+            for module in _imports(path)
+            if module == "evidenceflow.eval" or module.startswith("evidenceflow.eval.")
+        }
+        if forbidden:
+            violations.append(f"{path.relative_to(PROJECT_ROOT)} -> {sorted(forbidden)}")
+
+    # 显式确认 B2 新增的两个模块在扫描范围内。
+    scanned = {path.relative_to(RUNTIME_ROOT).as_posix() for path in RUNTIME_ROOT.rglob("*.py")}
+    assert {"tracing.py", "domain/trace.py"} <= scanned
+    assert violations == []

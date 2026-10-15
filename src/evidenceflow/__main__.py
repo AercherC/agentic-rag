@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Sequence
@@ -15,6 +16,7 @@ from evidenceflow.ingestion.service import IngestionService, IngestionSummary
 from evidenceflow.knowledge import ActiveCollectionError, ActiveIndexProtectedError
 from evidenceflow.llm import LLMConfigurationError, LLMRequestError
 from evidenceflow.rag import RAGService
+from evidenceflow.tracing import RunTraceRecorder
 
 
 def render_ingestion_summary(summary: IngestionSummary, root: Path) -> str:
@@ -109,6 +111,13 @@ def main(
     ingest_parser.add_argument("path", nargs="?", type=Path, help="root 内的单文件或子目录")
     ask_parser = subparsers.add_parser("ask", help="基于本地知识库回答单个问题")
     ask_parser.add_argument("query", help="使用引号包裹的完整问题")
+    ask_parser.add_argument(
+        "--trace",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help="把本次提问的 RunTrace 写成 JSON（只含 ID、计数、分数、耗时与 token 用量）",
+    )
     args = parser.parse_args(argv)
 
     active_settings = settings or Settings()
@@ -131,18 +140,49 @@ def main(
         print(render_ingestion_summary(summary, service.ingestion_root))
         return 1 if summary.failed else 0
 
+    # 只有传 --trace 时才创建 recorder；否则与未接入 trace 时的调用路径完全一致。
+    recorder: RunTraceRecorder | None = None
+    if args.trace is not None:
+        recorder = RunTraceRecorder()
+        recorder.start_run(args.query)
     try:
-        # 延迟导入 Composition Root，Fake Service CLI 测试不会加载模型或 Chroma。
-        if rag_service is None:
-            from evidenceflow.runtime import build_rag_service
+        try:
+            # 延迟导入 Composition Root，Fake Service CLI 测试不会加载模型或 Chroma。
+            if rag_service is None:
+                from evidenceflow.runtime import build_rag_service
 
-            rag_service = build_rag_service(active_settings)
-        answer = rag_service.answer(args.query)
-    except Exception as exc:
-        print(_render_ask_error(exc), file=sys.stderr)
-        return 1
-    print(render_rag_answer(answer))
-    return 0
+                if recorder is None:
+                    rag_service = build_rag_service(active_settings)
+                else:
+                    rag_service = build_rag_service(active_settings, trace_recorder=recorder)
+            answer = rag_service.answer(args.query)
+        except Exception as exc:
+            print(_render_ask_error(exc), file=sys.stderr)
+            return 1
+        print(render_rag_answer(answer))
+        return 0
+    finally:
+        # 成功与失败都写 trace（KeyboardInterrupt 也会经过这里，但不会被转换）；
+        # 写入失败只在 stderr 警告一行，不改变退出码与原有输出。
+        if recorder is not None:
+            _write_trace(recorder, args.trace)
+
+
+def _write_trace(recorder: RunTraceRecorder, path: Path) -> None:
+    """结束 run 并把 RunTrace 写成 UTF-8、键排序的 JSON；任何失败只输出一行警告。
+
+    装配阶段失败时 RAGService 尚未记录 run.* 终止事件，``finish()`` 会抛 ValueError，
+    同样按“trace 写入失败”处理。
+    """
+
+    try:
+        trace = recorder.finish()
+        text = json.dumps(
+            trace.model_dump(mode="json"), sort_keys=True, ensure_ascii=False, indent=2
+        )
+        path.write_text(text + "\n", encoding="utf-8")
+    except Exception as exc:  # noqa: BLE001 - trace 是旁路产物，不得影响 ask 的结果
+        print(f"Warning: failed to write trace: {type(exc).__name__}", file=sys.stderr)
 
 
 if __name__ == "__main__":

@@ -82,7 +82,9 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
             events.append(("context", max_context_tokens))
 
     class FakeGenerator:
-        def __init__(self, client): events.append(("generator", type(client).__name__))
+        def __init__(self, client, *, trace_recorder=None):
+            events.append(("generator", type(client).__name__))
+            events.append(("generator_trace_recorder", trace_recorder))
 
     monkeypatch.setattr("evidenceflow.runtime.BgeM3EmbeddingProvider", FakeEmbedding)
     monkeypatch.setattr("evidenceflow.runtime.ChromaVectorStore", FakeStore)
@@ -124,12 +126,14 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
                 "candidate_pool_k": 20,
                 "reranker_input_k": 20,
                 "final_top_k": 5,
+                "trace_recorder": None,
             },
         ),
         ("tokenizer", "test-bge"),
         ("context", 1234),
         ("llm", ("test-llm", 0.0, 60.0, 2, "disabled")),
         ("generator", "FakeLLM"),
+        ("generator_trace_recorder", None),
     ]
 
 

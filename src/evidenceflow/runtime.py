@@ -23,6 +23,7 @@ from evidenceflow.retrieval import (
     LearnedReranker,
     TransformersCrossEncoderScorer,
 )
+from evidenceflow.tracing import TraceRecorder
 from evidenceflow.storage import (
     ChromaVectorStore,
     VectorStoreConfigurationError,
@@ -174,8 +175,12 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
     )
 
 
-def build_retriever(settings: Settings) -> DenseRerankerRetriever:
+def build_retriever(
+    settings: Settings, *, trace_recorder: TraceRecorder | None = None
+) -> DenseRerankerRetriever:
     """装配线上检索：Exact Dense Top20 → Learned Reranker → Top5。
+
+    ``trace_recorder`` 可选（默认 None），原样交给 ``DenseRerankerRetriever``，只观测不改行为。
 
     Dense 候选使用进程内 ``ExactDenseIndex``（numpy.exact），而不是 Chroma HNSW：
     HNSW 的近似结果在不同进程间不保证一致，会让 A/B 实验无法逐题复现；
@@ -231,6 +236,7 @@ def build_retriever(settings: Settings) -> DenseRerankerRetriever:
         candidate_pool_k=settings.reranker_input_k,
         reranker_input_k=settings.reranker_input_k,
         final_top_k=settings.reranker_final_k,
+        trace_recorder=trace_recorder,
     )
 
 
@@ -239,18 +245,30 @@ def build_rag_service(
     *,
     retriever: RetrieverProtocol | None = None,
     generator: GeneratorProtocol | None = None,
+    trace_recorder: TraceRecorder | None = None,
 ) -> RAGService:
     """创建唯一正式 Exact Dense Top20 → Learned Reranker → Top5 Pipeline。
 
     ``retriever`` 与 ``generator`` 仅供评测脚本注入（记录 Top5、读取 Generator.last_diagnostics、
     包装 LLM Client 做限流与原始回复留存），未提供时使用正式装配；其余组件始终由本函数按
     Settings 创建。
+
+    ``trace_recorder`` 会传给本函数自己装配的 retriever、generator 与 RAGService；调用方注入的
+    retriever / generator 不会被自动挂上 recorder（PROJECT_SPEC §12.5）。
     """
 
-    retriever = retriever if retriever is not None else build_retriever(settings)
+    retriever = (
+        retriever
+        if retriever is not None
+        else build_retriever(settings, trace_recorder=trace_recorder)
+    )
     context_builder = ContextBuilder(
         BgeM3Tokenizer(settings.embedding_model),
         settings.max_context_tokens,
     )
-    generator = generator if generator is not None else Generator(build_llm_client(settings))
-    return RAGService(retriever, context_builder, generator)
+    generator = (
+        generator
+        if generator is not None
+        else Generator(build_llm_client(settings), trace_recorder=trace_recorder)
+    )
+    return RAGService(retriever, context_builder, generator, trace_recorder=trace_recorder)

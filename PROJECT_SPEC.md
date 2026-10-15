@@ -1,7 +1,7 @@
 # EvidenceFlow — Current Specification
 
 **Version:** 0.28
-**Last Updated:** 2026-10-15（Stage B B1）
+**Last Updated:** 2026-10-15（Stage B B2）
 **Scope:** 本地科研 PDF 知识库 RAG：ingest / ask 两条正式链路及其评测基线。
 
 本文件只写**当前合同**。数值与规则以代码为准；与代码不一致时视为本文件的缺陷，按 §15 修正。
@@ -54,6 +54,7 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
 | `RAGAnswer` | `query`、`status: AnswerStatus`（必填）、`answer`、`sources: list[SourceReference]`、`retrieved_chunks: list[RetrievedChunk | RerankedRetrievedChunk]` |
 | `LLMMessage` | `role ∈ {system, user, assistant}`、`content`（非空白） |
 | `CitationParseResult` | `valid_labels`、`invalid_labels`（按首次出现去重） |
+| `RunTrace` / `TraceEvent` | 见 §12.5（`extra="forbid"`；不进入 `RAGAnswer`） |
 
 业务层只传递项目 Domain Model，不向外传播第三方对象（Chroma 结果、Tensor 等）。
 
@@ -164,7 +165,7 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
 
 ## 7. Retrieval 合同
 
-- `build_retriever(settings)`：启动时经 `ChromaVectorStore.iter_all_chunks_with_embeddings()`（按 `chunk_id` 升序）在进程内
+- `build_retriever(settings, *, trace_recorder=None)`（recorder 见 §12.5）：启动时经 `ChromaVectorStore.iter_all_chunks_with_embeddings()`（按 `chunk_id` 升序）在进程内
   构建 `ExactDenseIndex`，作为 `DenseRetriever` 的 `DenseSearch`。后端固定 `numpy.exact`（float32 全量内积），代码不导入
   faiss，不写任何第二份持久化向量文件；Exact 索引不进入 `index_signature`。
 - 启动校验：索引 `size == store.count` 且 `dimension == 1024`，否则抛 `ExactDenseIndexError`，拒绝启动。
@@ -295,7 +296,7 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   不创建目录。默认只打印 JSON 到 stdout、不写文件；`--output PATH` 时另写文件。0 = 通过，2 = 有检查失败。
 - `scripts/verify_phase15a.py` 默认写 `artifacts/phase15a/phase15a_report.json`（被跟踪），运行时应传 `--output`。
 
-### 12.5 RunTrace（Stage B 新增；已定合同，B2 实现，当前代码尚无）
+### 12.5 RunTrace（Stage B 新增；B2 实现：`domain/trace.py`、`tracing.py`）
 - Domain Model `domain/trace.py`（Pydantic，`extra="forbid"`）：`RunTrace{schema_version="run-trace-v1", run_id,
   query_sha256（UTF-8 query 的 sha256）, started_at_utc, completed_at_utc（ISO 8601 UTC）, status: completed|failed,
   events: list[TraceEvent]}`；`TraceEvent{seq（0 起连续）, name, elapsed_ms（相对 run 开始）, duration_ms?, payload: dict}`。
@@ -304,21 +305,37 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   `rerank.started/completed`、`context.started/completed`、`generation.started/completed`、`citation_validation.completed`、
   `run.completed`、`run.failed`。
 - payload 白名单（未列出的事件 payload 为 `{}`）：
-  - `retrieval.dense.completed`：`candidate_count`；按 rank 的 `chunk_id`、`similarity_score`。
-  - `rerank.completed`：`input_count`、`output_count`、`truncated_pair_count`（整批一个值）；按 rank 的 `chunk_id`、
-    `candidate_rank`、`reranker_score`。
+  - `retrieval.dense.completed`：`candidate_count`；`candidates: [{rank, chunk_id, similarity_score}]`（按 rank）。
+  - `rerank.completed`：`input_count`、`output_count`、`truncated_pair_count`（整批一个值）；
+    `results: [{rank, chunk_id, candidate_rank, reranker_score}]`（按重排后 rank）。
   - `context.completed`：`included_count`、`skipped_count`、`total_tokens`、`entries: [{source_label, chunk_id, token_count}]`、
     `context_text_sha256`（UTF-8 `context_text` 的 sha256）。
   - `generation.completed`：`status`、`llm_called`、`repair_attempted`、`repair_succeeded`、`usages`（`prompt_tokens`、
     `completion_tokens`）、`raw_response_lengths`、`prompt_version`（取自 `Generator.last_diagnostics` 与 §9 常量）。
   - `citation_validation.completed`：`valid_labels`、`invalid_labels`、`source_count`。`run.failed`：`error_type`（异常类名）、`stage`（失败事件所属阶段名）。
   - 禁止出现：上下文全文、chunk 正文、Prompt 全文、回答全文、API Key、模型思考内容、异常消息全文。
-- `TraceRecorder` 协议：`record(name, **payload)`；默认 `NullTraceRecorder` 不做任何事。`RAGService`、`DenseRerankerRetriever`、
-  `Generator` 可选注入；未注入时行为与开销与当前一致。`runtime.build_rag_service(settings, *, retriever=None, generator=None,
-  trace_recorder=None)`。
+- `TraceRecorder` 协议（`evidenceflow.tracing`，不 import `evidenceflow.eval`）：`record(name, **payload)`。
+  `DenseRerankerRetriever`、`Generator`、`RAGService` 的 `trace_recorder` 参数默认 `None`；为 `None` 时不构造任何 payload，
+  开销与当前一致。`NullTraceRecorder`（不做任何事）保留，供调用方显式使用。组件统一经 `safe_record(recorder, name, **payload)`
+  记录：recorder 为 `None` 直接返回；`record` 抛出的任何异常只以 `logger.warning` 记录异常类名后吞掉。
+- `RunTraceRecorder`（实现 `record`）：`start_run(query, *, run_id=None)` 重置事件，记录 `query_sha256`、`started_at_utc`
+  与单调时钟起点；`finish() -> RunTrace`：最后一个事件是 `run.completed` → `completed`，是 `run.failed` → `failed`，否则
+  `ValueError`。同一 recorder 可跨 run 复用，每次 run 前调用 `start_run`；`start_run` 之前的 `record` 只记日志并丢弃事件。
+- 计时：`elapsed_ms` 用单调时钟，从 `start_run` 起算；`X.completed` 的 `duration_ms` = 与最近一个 `X.started` 的间隔，其余事件
+  为 null。时钟可注入（测试用）。
+- 记录者：`run.*`、`context.*`、`citation_validation.completed` 由 `RAGService`；`retrieval.dense.*`、`rerank.*` 由
+  `DenseRerankerRetriever`；`generation.*` 由 `Generator`（确定性拒答也记 `generation.started/completed`，`llm_called=false`）。
+  `citation_validation.completed` 的标签由 `RAGService` 在 `assemble_rag_answer` 成功后以 `parse_citations` 重算（仅 recorder
+  非 None 时）。`run.failed.stage ∈ {retrieval, context, generation, citation_validation}`；异常记录后原样 `raise`（不包装、
+  不改异常链）。空白 query 校验仍在最前，不记任何事件。
+- 装配：`runtime.build_retriever(settings, *, trace_recorder=None)`；`runtime.build_rag_service(settings, *, retriever=None,
+  generator=None, trace_recorder=None)` 把 recorder 传给它自己装配的 retriever 与 generator 以及 `RAGService`；调用方自行注入的
+  retriever / generator **不会**被自动挂上 recorder。
 - 不变式：开/关 trace 时 `RAGAnswer` 逐字段相等；recorder 内部异常只记日志，不得改变回答或异常传播。
-- CLI `ask --trace PATH`：写 UTF-8、键排序 JSON；失败时也写出含 `run.failed` 的 trace；trace 写入失败只在 stderr 警告；
-  退出码语义不变（§12.1）。
+- CLI `ask --trace PATH`：创建 `RunTraceRecorder` 并 `start_run(query)`，在 `finally` 中 `finish()` 后写 UTF-8、`sort_keys=True`、
+  `ensure_ascii=False`、`indent=2` 的 JSON；失败时也写出含 `run.failed` 的 trace（装配阶段失败时没有 run.* 终止事件，
+  `finish()` 无法成立，此时不写文件，只在 stderr 警告一行）；trace 写入失败只在 stderr 警告一行；trace 不打印到 stdout；
+  退出码语义与 stdout/stderr 原有内容不变（§12.1），`KeyboardInterrupt` 不被转换。
 
 ## 13. Evaluation
 
