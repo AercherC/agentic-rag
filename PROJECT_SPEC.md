@@ -1,7 +1,7 @@
 # EvidenceFlow — Current Specification
 
-**Version:** 0.30
-**Last Updated:** 2026-10-20（Stage B B3a-1 修复轮）
+**Version:** 0.31
+**Last Updated:** 2026-10-20（阶段 C–E 合同定义；不实现）
 **Scope:** 本地科研 PDF 知识库 RAG：ingest / ask 两条正式链路及其评测基线。
 
 本文件只写**当前合同**。数值与规则以代码为准；与代码不一致时视为本文件的缺陷，按 §15 修正。
@@ -502,8 +502,8 @@ observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequ
 - 已退休、不得作为当前能力描述或恢复的：查询翻译、多语双路检索、BM25 生产分支、RRF 融合、以 Chroma HNSW 作为线上候选检索、
   v2 文本控制头协议、`reranker_enabled` / `top_k` / `multilingual_*` 配置。历史源码可从 tag `stage-a-start` 恢复，证据在 `evals/`。
 - 阶段 B 已由用户确认进入（2026-10-15）：RunTrace（§12.5）与端到端评测 `rag_e2e_v1`（§13.1）属于阶段 B 范围。
-  阶段 C–E（Planner、Grader、补检、PARTIAL、文档过滤、逐句引用校验）仍不在范围内，只有在用户明确进入对应阶段并更新
-  本文件后才实现。
+  阶段 C–E 的**合同**已在 §17 定义（2026-10-20）；**实现**仍以用户明确进入对应阶段为前提。未进入前不得创建 `research/`、
+  Planner/Grader 节点、文档过滤、`PARTIAL` 状态或逐句引用校验。
 
 ### 14.1 已知限制与待决（Stage A 结束时）
 1. 激活后旧 active 的 metadata 仍为 `lifecycle=ACTIVE`，rollback 依赖这一点，可能同时有多个 collection 标为 ACTIVE（§6.7）。
@@ -551,3 +551,83 @@ v0.26 完整原文：`docs/history/PROJECT_SPEC_v0.26_full.md`（下表为其中
 | §42 | Exact Dense 架构 | §7 |
 | §43 | 共享推理设备 | §7 |
 | —（Stage B 新增，v0.28） | RunTrace；端到端评测 rag_e2e_v1、answer_keys / key_match、受控上下文检验、评委协议、Gate 策略文件 | §12.5、§13.1 |
+| —（阶段 C–E 合同，v0.31） | Research Agent：流程与预算、状态模型、检索工具、证据分级与确定性路由、结果语义、引用校验、RunTrace 扩展 | §17 |
+
+---
+
+## 17. Research Agent（受控 Agentic RAG，阶段 C–E 合同）
+
+**状态**：合同已定义，**实现待用户明确进入对应阶段**（见 §14）。本节只冻结输入输出与规则，不规定内部实现；节点、模块与测试在进入对应阶段时按本节实现，并同步更新 §11（Settings）与 §16。
+
+### 17.1 总原则
+
+- **受控单 Agent，不做自由 ReAct**：检索工具由控制器按计划确定性调用，不暴露给 LLM 自由选择（依据 `docs/agentic_rag/01_ARCHITECTURE_REVIEW.md` §8）。
+- **固定流程 + 硬预算**：每题最多 **4 次 LLM 调用**（planner 1 + grader ≤2 + 生成 1）、最多 **4 次检索**；补检**至多一轮**。实际计数写入 RunTrace 并作为成本指标。
+- **简单题不退化**：planner 必须保留「原 query 一路」；规则快速路径判定为 simple 的题走现有 `RAGService`（Dense20 → Rerank Top5）路径，结果作为阶段 Gate 的非退化对照。
+- **不引入编排框架**。评估引入 LangGraph 等外部编排的判据：出现以下任一才评估——①节点拓扑需随问题动态构造；②需要无界循环；③需要并行扇出；④需要跨会话断点续跑。当前四项均不满足。
+- 节点统一写成纯函数 `def node(state: ResearchState) -> dict`（返回状态增量），控制器只按 route 调度；任何节点抛异常都写 `run.failed` 并原样传播，**不得静默降级为「无知识」**（provider 故障 ≠ 知识库无答案）。
+
+### 17.2 状态与节点
+
+- `ResearchState`（Pydantic，`extra="forbid"`）字段：`question: str`、`plan: ComplexityResult`、`evidence_pool: list[EvidenceEntry]`（按 `chunk_id` 去重）、`grade: EvidenceGrade | None`、`retrieve_round: int`（取值 0/1，硬上限 1）、`trace: RunTrace`、`status: AnswerStatus`。
+- `EvidenceEntry`：`chunk_id`、`chunk: DocumentChunk`、`source_queries: list[int]`（命中的子问题序号，原 query 记为 0）、`similarity_score: float`、`reranker_score: float | None`、`origin: Literal["dense", "expand"]`。
+- 节点：`plan`、`retrieve`、`grade`、`route`（纯规则、不调模型）、`retrieve_more`、`generate`、`verify`。
+
+### 17.3 Query Planning
+
+- `ComplexityResult{kind: Literal["single", "multi_doc", "comparison"], sub_queries: list[SubQuery]（≤3）, keep_original: bool}`；
+  `SubQuery{text_en: str, aspect: str, target_document_ids: list[str]}`（空列表 = 不过滤）。`keep_original=true` 时原 query 必检一路。
+- **规则快速路径**：短问题（≤48 字符）+ 单个疑问标记 + 无比较/多维度标记 → 直接判 `single`，不调用模型。词表按学术文献场景定义（「是什么 / 定义 / 多少」→ simple；「比较 / 区别 / 综述 / 为何」→ complex），且必须在代码中集中为一处常量。
+- 复杂问题一次结构化调用**同时**产出分类与子问题（不设第二次拆题调用）；`kind≠single` 且无子问题时报错，不静默降级。
+- planner 模型：`RESEARCH_PLANNER_MODEL`（temperature 0、结构化输出）；未设置时回落 `llm_model`。该字段在阶段 C 实现时加入 §11。
+
+### 17.4 检索工具接口（内部接口，不是 LLM 工具）
+
+- `search(query, document_ids: list[str] | None = None, k: int = 5) -> list[RerankedRetrievedChunk]`：`document_ids` 为空表示全库；过滤在 Exact 索引层完成（向量掩码），排序语义不变。
+- `expand_neighbors(chunk_id: str, window: int = 1) -> list[DocumentChunk]`：按同文档 chunk 顺序/section 邻接扩展，用于补被 chunk 边界切断的证据；不改变既有检索排名。
+- `list_documents() -> list[DocumentRef]`：`document_id` + `file_name`，供 planner 填写 `target_document_ids`。
+- 错误语义：空 query → `ValueError`；未知 `document_id` / `chunk_id` → `ValueError`；**不得返回空列表冒充「无结果」**。
+
+### 17.5 Evidence Grading 与确定性路由
+
+- `EvidenceGrade{relevance: Literal["none","weak","strong"], answerability: Literal["none","partial","sufficient"], missing_aspects: list[str]（≤3）, route: Literal["answer","retrieve_more","insufficient"]}`。
+- **确定性路由修正**（模型输出必须过规则网；按下列顺序取第一条成立的规则）：
+  1. `evidence_pool` 为空或 `relevance=none` → `insufficient`；
+  2. `retrieve_round ≥ 1` → 禁止 `retrieve_more`：`answerability∈{partial,sufficient}` 取 `answer`，否则 `insufficient`；
+  3. `relevance=strong` 且 `answerability=sufficient` → `answer`；
+  4. `retrieve_round = 0` 且 `answerability≠none` → `retrieve_more`；
+  5. 其余 → `insufficient`。
+- 证据池为空时**不调用 grader**（确定性构造 `insufficient` 的 grade）。
+- grader 模型：`RESEARCH_GRADER_MODEL`（temperature 0、结构化输出、`extra="forbid"`，解析失败修复一次）。
+
+### 17.6 迭代、去重与终止
+
+- `retrieve_more` 只允许一次；补检查询由 `missing_aspects` 生成（≤3 条）。
+- 证据池按 `chunk_id` 去重（保留最高 `reranker_score`，无则最高 `similarity_score`）；合并后按子问题配额选择，再交 `ContextBuilder`（配额规则在阶段 C 计划中定义并评测）。
+- 终止：达到终态、预算耗尽（记 `truncated`，单独计数）或超时。**任何情况下不得发起第三次检索**。
+
+### 17.7 结果语义与评测口径
+
+- `AnswerStatus` 扩展为 `answered | partial | insufficient_context`（当前两态见 §3 Domain Models 摘要与 §9）。`partial` 时 `RAGAnswer` 必须携带非空 `coverage_gap: list[str]`（未覆盖的 `missing_aspects`），生成指令必须要求「只回答有证据支持的部分，并显式披露未覆盖范围，不得声称知识库没有答案」。该字段在阶段 D 实现时加入 §3 的 Domain Model 摘要。
+- 预算耗尽未自然完成单独记 `truncated`，不计入 `insufficient_context`。
+- 评测双口径：`accuracy = 答对 / 可答题数`；`precision = 答对 / (可答题数 − unsure)`；`insufficient_context` 与 `truncated` 分开计数（与 §13.1(e) 的 `answer_accuracy` / `answer_precision` 同源）。
+- 阶段 Gate（与 `01_ARCHITECTURE_REVIEW.md` §10 对齐）：C —— 多文档/对比子集 `context_all_required` 配对提升（`eval/comparison.py` 的 bootstrap + Holm，CI 不跨 0），且简单题不退化；D —— `key_fact_recall` 提升、错误作答率为 0、误拒答率不上升；E —— 引用覆盖与数值一致两项确定性指标只报告，不设晋升线。
+
+### 17.8 引用校验（阶段 E）
+
+- **线上第一层（已存在）**：`ContextBuilder` 在进上下文时分配稳定 `[S1]..[Sn]`（§8）。多路合并后必须保证标签唯一且与 `chunk_id` 一一对应；编号在喂给模型时即定死，不做事后按名次重排。
+- **线上第二层（阶段 E）**：① 逐句引用覆盖（每句是否带合法标签）；② 数值一致性（句中数字必须出现在它引用的 chunk 原文中）。第一版**只写 RunTrace，不拦截回答、不改 `RAGAnswer`**。
+- **离线**：faithfulness 两步法（先拆陈述 → 逐条判定）、`claim_recall`、`hallucination` 纳入 `rag_e2e_v1` 报表；不引入 RAGAS / RAGChecker 依赖（§13）。
+
+### 17.9 RunTrace 扩展
+
+- 新增事件与 payload 白名单：
+  - `plan.completed`：`kind`、`sub_query_count`、`model`、`latency_ms`；
+  - `grade.completed`：`relevance`、`answerability`、`route`、`missing_aspect_count`、`latency_ms`；
+  - `retrieval.expand.completed`：`anchor_chunk_id`、`added_count`、`latency_ms`。
+- §12.5 的既有事件、payload 白名单与「不含正文/Prompt/Key/思考内容」的禁令不变；新增事件同样禁止正文。
+
+### 17.10 与阶段 B 的依赖
+
+- 阶段 C 开工前必须完成：B3b 题集冻结（含证据口径定案）、B4 `scoring` / `compare` 可用、E0 基线冻结。
+- 阶段 C–E 的对照基线固定为 E0（`RAGService` 简单路径）；`RAGService` 保留不删，作为「简单路径 + 对照组」。
