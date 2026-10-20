@@ -1,6 +1,6 @@
 # EvidenceFlow 阶段 B 执行计划：评测先行
 
-- 版本：v2（2026-10-15）。§9 的 D1–D7 已由用户确认
+- 版本：v2（2026-10-15）。§9 的 D1–D8 已由用户确认
 - v2：B0 完成；按 D6 加入 answer_keys / key-fact recall 与 B5b
 - 执行者：Claude Code 子代理（Opus 5.5，按步骤难度选 low / medium），在本机 `agent-gpu` Conda 环境中执行
 - 设计与验收：主会话（每步结束后在主会话审查 diff 与产物）
@@ -215,13 +215,20 @@ score（纯函数，离线，可重复；不调用任何模型）
 | 来源 | 数量 | 说明 |
 |---|---|---|
 | canonical 40 题 | 40 | 题干、证据组不变；为没有 required claims 的 20 题补写 claims |
-| Phase 12 不可答题 `GEN-U01..05` | 5 | 沿用 |
+| Phase 12 不可答题 `GEN-U01..05` | 5 | 沿用；预计 U01、U04 为 `out_of_corpus`，U02、U03、U05 为 `near_miss`，以 B3a-2 起草与用户确认为准 |
 | 新增多文档 / 对比题 | 约 15 | 例如两篇论文的方法、指标或局限对比；每题至少 2 个证据组，分属不同论文 |
-| 新增不可答题 | 约 10 | 分三类：**语料外事实**（论文根本没涉及）、**近似但缺细节**（话题在语料里，但问的具体细节不存在）、**错误前提**（问题里的说法与论文矛盾）。近似类最能检验系统，至少占一半 |
+| 新增不可答题 | 约 10 | 分两类（`unanswerable_kind`）：**语料外事实** `out_of_corpus`（论文根本没涉及）、**近似但缺细节** `near_miss`（话题在语料里，但问的具体细节不存在）。近似类最能检验系统，至少占不可答题的一半 |
+| 错误前提题（可答，tag `false_premise`） | 约 4 | 问题里的说法与论文矛盾；按 D8 作为可答题计分：`expected_status=answered`、`acceptable_abstention=true`、`unanswerable_kind=null`，required claim 写纠正后的事实并带 `answer_keys`，`forbidden_claims` 至少 1 条并带矛盾原文锚点；不计入不可答题 |
 
 中英文大致各半；新题不做中英平行版本。
 
-**每题字段（`EvalCase`）**：`case_id`（新题用 `E2E-M*` / `E2E-U*` 独立 ID 空间）、`family_id`、`query`、`query_language`、`question_type`、`tags`（如 `multi_doc`、`comparison`、`unanswerable:near_miss`、`cross_lingual`）、`critical`、`expected_status`、`acceptable_abstention`、`required_evidence_groups`（锚点协议同 40 题）、`required_claims`（每条：`claim_id`、`text`、`required`、`evidence_anchors`、`answer_keys`，语义见 SPEC §13.1(a)）、`forbidden_claims`（错误前提题必填）、`unanswerable_kind`、`provenance`（谁起草、谁确认）。`acceptable_abstention` 只对可答题有意义，表示该题允许拒答（拒答不算误拒答、算状态正确）；不可答题必须为 `false`（D7，SPEC §13.1(a)）。
+**每题字段（`EvalCase`）**：`case_id`（新题用 `E2E-M*` / `E2E-U*` 独立 ID 空间）、`family_id`、`query`、`query_language`、`question_type`、`tags`（如 `multi_doc`、`comparison`、`unanswerable:near_miss`、`cross_lingual`）、`critical`、`expected_status`、`acceptable_abstention`、`required_evidence_groups`（锚点协议同 40 题）、`required_claims`（每条：`claim_id`、`text`、`required`、`evidence_anchors`、`answer_keys`，语义见 SPEC §13.1(a)）、`forbidden_claims`（只用于错误前提题，D8）、`unanswerable_kind`（`out_of_corpus` / `near_miss`，可答题为 null）、`provenance`（谁起草、谁确认）。`acceptable_abstention` 只对可答题有意义，表示该题允许拒答（拒答不算误拒答、算状态正确）；不可答题必须为 `false`（D7，SPEC §13.1(a)）。
+
+**拆分与提交**：B3 拆成三步，各步分别提交：
+- **B3a-1 工具**：D8 合同补丁、题集 schema、`key_match`、确定性校验器、证据映射工具与 `scripts/e2e_dataset.py`（不起草题目）；提交 `stage-b(B3a-1): ...`。
+- **B3a-2 起草与待审清单**：起草新题、claims、answer_keys 与锚点，产出 `B3_review_sheet.md`；提交 `stage-b(B3a-2): ...`。
+- **B3b 落盘与冻结**：按用户审阅结果落盘、校验、映射并冻结到 `evals/rag_e2e_v1/`；提交 `stage-b(B3): ...`。
+- **B3a-1 修复轮**：§1 决策 A/B + B3/B4 加固 + S5/S6/S10 + `B3a1_report.md`。
 
 **步骤**
 1. **迁移**：把 40 题和 5 道不可答题转成新 schema。Phase 12 已有的 20 题 claims：在旧索引（`c512_o64_v1`，只读 `get_collection`）中找到 `acceptable_evidence` 对应的 chunk 正文，从中摘出支撑该 claim 的原句作为锚点，再到源 PDF 文本中验证并补全定位信息。
@@ -230,7 +237,7 @@ score（纯函数，离线，可重复；不调用任何模型）
 4. **程序化校验**（全部通过才冻结）：
    - 每个锚点用 `stable_mapping` 在源 PDF 中定位成功，并映射到当前 active 索引的 chunk；无法映射的标为 UNMAPPABLE 并在报告中列出（不计入上下文类指标的分母，但保留在题集中）；
    - 不可答题：核心术语在 817 个 chunk 中检索为 0 命中，或（近似类）人工确认缺失的细节不在任何 chunk 中，写进 `B3_unanswerable_verification.json`；
-   - 错误前提题：`forbidden_claims` 与论文原文矛盾，附原文锚点；
+   - 错误前提题（D8，可答题）：`forbidden_claims` 与论文原文矛盾，附原文锚点；required claim 写纠正后的事实并带 `answer_keys`；
    - answer_keys 按 SPEC §13.1(c) 三条规则校验：① 每组至少一个别名出现在该 claim 锚点的 locator 页源文本中；② 任何别名不命中题干；③ 别名非空、规范化后长度 ≥ 2、组内去重；
    - 证据映射单独成文件 `evals/rag_e2e_v1/mapping_ef_research_bge_m3_hybrid_c512_v2.json`（SPEC §13.1(b)），题集本身只存锚点；
    - 不可答题（`expected_status=insufficient_context`）的 `acceptable_abstention` 必须为 `false`（D7）；
@@ -240,7 +247,7 @@ score（纯函数，离线，可重复；不调用任何模型）
 **Gate B3**
 - 所有题 `approved_by = "user"`；锚点映射成功率与 UNMAPPABLE 清单写进报告。
 - 可答题每题至少 1 条 required claim；多文档题至少 2 个证据组分属不同论文。
-- 不可答题验证全部通过；不可答题中近似类占比 ≥ 50%。
+- 不可答题验证全部通过；不可答题（只计 `out_of_corpus` 与 `near_miss`，错误前提题按 D8 不计入）中 `near_miss` 占比 ≥ 50%。
 - answer_keys 校验全部通过；报告给出可答题中 key_matchable required claim 的比例（不设硬下限，低于 60% 须说明原因）。
 - 已有 `evals/` 文件无改动（`git diff` 为空）；pytest 通过（含新 schema 的测试）。
 
@@ -253,7 +260,7 @@ score（纯函数，离线，可重复；不调用任何模型）
 **目的：** 实现 §3.3 的四个步骤。全部用 Fake 测试，这一步不发真实请求。
 
 **代码位置**
-- `src/evidenceflow/eval/e2e/`：`dataset.py`（加载与 fingerprint）、`observation.py`、`judge.py`（三类判定的 prompt、schema、解析与修复）、`perturb.py`（B6 的确定性负例构造）、`scoring.py`（纯函数，§3.1 全部指标与失败层归因）、`gates.py`（Gate 策略与判定）、`key_match.py`（关键要素匹配，SPEC §13.1(d)）、`controlled.py`（B5b 变体构造与有效性检查，SPEC §13.1(f)）。
+- `src/evidenceflow/eval/e2e/`：`dataset.py`（加载与 fingerprint）、`observation.py`、`judge.py`（三类判定的 prompt、schema、解析与修复）、`perturb.py`（B6 的确定性负例构造）、`scoring.py`（纯函数，§3.1 全部指标与失败层归因）、`gates.py`（Gate 策略与判定）、`controlled.py`（B5b 变体构造与有效性检查，SPEC §13.1(f)）。
 - `scripts/eval_e2e.py`：子命令 `collect`、`judge`、`score`、`compare`、`perturb`、`controlled`。
 - `eval/quality.py`：`abstention_metrics` 改用小写 `AnswerStatus`；按 D4 实现部分回答规则；保持已有测试通过，新增测试覆盖。
 - 架构边界不变：`runtime` / `retrieval` 不得 import `eval`（`tests/test_architecture_boundaries.py` 守护）。
@@ -417,5 +424,6 @@ score（纯函数，离线，可重复；不调用任何模型）
 | D5 | 题集规模 | 约 70 题（默认） | 结论一律写成“方向一致 / 置信区间”，不写“显著提升” |
 | D6 | 无人工标注时，回答质量用什么确定性方法评 | **采纳两项确定性评测**：① 关键要素匹配（claim 的 `answer_keys` + `key_fact_recall`）；② 受控上下文检验生成器（B5b）。依据：ALCE `eval.py::compute_str_em`、RGB `evalue.py::checkanswer/processdata`（negative rejection、counterfactual robustness） | B1 写进 SPEC §13.1(a)–(f)；B3 起草并校验 `answer_keys`，mapping 单独成文件；B4 实现 `key_match.py`、`controlled.py`；新增 B5b；`key_fact_recall` 与“答对”判定为主指标，阶段 D 以 `key_fact_recall` 为 primary 依据 |
 | D7 | 可接受拒答（`acceptable_abstention=true`）怎么计 | **选项 A**：该可答题拒答不算误拒答、算状态正确；混淆矩阵仍按原始期望 / 实际状态统计；另报 `answerable_abstention_rate_raw` | B1 写进 SPEC §13.1(a)(e)(h)；B3 校验不可答题该字段为 `false`；B4 按新定义实现状态层指标与失败层归因 |
+| D8 | 错误前提题怎么计（2026-10-15） | **按可答题计分**：`expected_status=answered`、`acceptable_abstention=true`、tag `false_premise`、`unanswerable_kind=null`；required claim 写纠正后的事实并带 `answer_keys`；`forbidden_claims` 至少 1 条并带矛盾原文锚点；纠正前提并给出事实算答对，拒答按 D7 算状态正确；`forbidden_claims` 只用于该类题 | SPEC §13.1(a) 改 `unanswerable_kind ∈ {out_of_corpus, near_miss} \| null`；B3 题目构成改为不可答两类 + 错误前提题约 4 题；near_miss 比例 Gate 只在两类不可答题中计算；B3 拆为 B3a-1 / B3a-2 / B3b |
 
 **关于 D2 的后续影响**：阶段 D 的 Gate 是“Claim Recall 提升”，按 D6 以确定性的 `key_fact_recall` 为 primary 依据；评委 claim recall 只作诊断旁证（最终以阶段 D 计划为准）。`key_fact_recall` 只覆盖 key_matchable 的 claim；如果阶段 D 需要评估无法做关键要素匹配的 claim，可以届时只针对阶段 D 的对比补做一小批人工标注（约 15–20 题），再按 ARES 的 PPI 思路做纠偏估计。

@@ -59,3 +59,8 @@ judge `open.bigmodel.cn` / `glm-4-flash`；generator `api.deepseek.com` / `deeps
 ## 6. 遗留问题
 - glm-4-flash 对 `json_schema` 不报错但不按约束输出（带代码块），后续评委应使用 `json_object`；若想用 json_schema，需在解析侧剥离代码块，但不推荐。
 - 注册域判断是简化实现（末两段/常见二级后缀三段），对当前 host 足够。
+
+## 勘误（2026-10-20，B3a-1 修复轮补记）
+- 第 1 节表格中「`verify_active_index.py` 不创建 Collection」的概括容易被读成「旧代码在 collection 不存在时会建一个空 collection」，与代码史不符：
+  旧代码已有 `list_collections()` 早返回，不会因 collection 缺失而新建空库。
+- B0 实际修的是 `chromadb.PersistentClient` / `ChromaVectorStore` 在持久化目录不存在时会创建目录；原文其它内容与结论不变。

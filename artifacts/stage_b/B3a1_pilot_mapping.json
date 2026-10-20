@@ -1,0 +1,435 @@
+{
+  "chunk_count": 817,
+  "chunk_id_hash": "e87a613ebe65b10262996e83974b55839e0b6c27fbe22053ee7b8826dd1f153d",
+  "claim_anchors": [],
+  "collection_name": "ef_research_bge_m3_hybrid_c512_v2",
+  "dataset_fingerprint": "6d48bad6e917aed3475f0a8dc2c8d8ebcd8b4b8d77b32e40db5627859c2c6ebc",
+  "groups": [
+    {
+      "case_id": "ARR-001",
+      "chunk_sets": [
+        [
+          "5a368080f5c6fff784ec1d9a35111b049369b14e5e2da4f3ab081deafc956b54"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-002",
+      "chunk_sets": [
+        [
+          "63b4cd2363c21bb662a158379c9ab1d391823ec67593204bfce0db306f6b6434"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-003",
+      "chunk_sets": [
+        [
+          "8951a46fd63be1c5747f689980f05214af7c4e2a8301b0bfebe15bfde007060a"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-004",
+      "chunk_sets": [
+        [
+          "b514a8de5057ecc52d93c2e403b2d77b0638ed623e69cf57771d800e37fd0423"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-005",
+      "chunk_sets": [
+        [
+          "d5b9da932691caafaceb0bf2b960d6bd8aa72606b6af20c2522955474a78afc2"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-006",
+      "chunk_sets": [
+        [
+          "ddecfd5fdd14ca2b0649aa165d5937d0cc31a742aeb5fc5cb7be81b4a71e59d0"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-007",
+      "chunk_sets": [
+        [
+          "398ab8bed53557fb422aab5131781418d7f85736e41b58e72ae0f79b969abc77"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-008",
+      "chunk_sets": [
+        [
+          "f015fb1591eba60455ca85871891882017802444b9d2a81eeede7cef3bc11477"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-009",
+      "chunk_sets": [
+        [
+          "63b4cd2363c21bb662a158379c9ab1d391823ec67593204bfce0db306f6b6434"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-010",
+      "chunk_sets": [
+        [
+          "e56e1f789ec79c036fc3681b4c128777d461a9f9fb0b21218cee47cc8a49bec1"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-011",
+      "chunk_sets": [
+        [
+          "afd0bdd249585d02e1aafa44eedf086dbeb90427096f3cd449268163c8d162fb"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-012",
+      "chunk_sets": [
+        [
+          "8951a46fd63be1c5747f689980f05214af7c4e2a8301b0bfebe15bfde007060a"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-013",
+      "chunk_sets": [
+        [
+          "0985e33e4f020f39370bd6307d302f5b4042aef1eeba030943e5858cd24c5924"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-014",
+      "chunk_sets": [
+        [
+          "eb70d413076947df4a5c814ba1b14c26a614b7379e1c96efd47f3984fc2091cb"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-015",
+      "chunk_sets": [
+        [
+          "a0474c9d638988fc7f37559f76c94037a6c3a69f1a0f66f531cf96cc22d4c4d0"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-016",
+      "chunk_sets": [],
+      "group_id": "G1",
+      "status": "UNMAPPED"
+    },
+    {
+      "case_id": "ARR-017",
+      "chunk_sets": [
+        [
+          "b097a943643cce75d3bd6590cb4a21242add8fc312e2a2adec7e3b873f6df1f8"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-018",
+      "chunk_sets": [
+        [
+          "715b6d38bb4b2355203e40efe30f079396992dad2dbe66b4920ff2ce473c2ed2"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-019",
+      "chunk_sets": [],
+      "group_id": "G1",
+      "status": "UNMAPPED"
+    },
+    {
+      "case_id": "ARR-020",
+      "chunk_sets": [
+        [
+          "a0474c9d638988fc7f37559f76c94037a6c3a69f1a0f66f531cf96cc22d4c4d0"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-021",
+      "chunk_sets": [
+        [
+          "b6e8647fb431841256974e8ea42e850443b3c5fb00f629215cdade10316a93f6"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-022",
+      "chunk_sets": [
+        [
+          "58a4589d1211dfc66e259d73e5cf2f3b74154efe756d489e1d73f86aca798809"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-023",
+      "chunk_sets": [
+        [
+          "cda3fbd56f5b13c3ea2da468e2bdac192b2f1a191e6203d4b558aec1a630f7d7"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-024",
+      "chunk_sets": [
+        [
+          "6621dd9f924f083f64b0fe598cd2bf0b63d4b501f61f54bc18ef177e7570e660"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-025",
+      "chunk_sets": [
+        [
+          "32fd5e4436333d23853ac5f1db7ea601bf7e755ea07193f10d13b5c2eb09f8fa"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-026",
+      "chunk_sets": [
+        [
+          "2a12f0d43d6cbb8f3f5bfbb44346ff3a88c8a1fdc97851b1f4b08912524c0bec"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-027",
+      "chunk_sets": [
+        [
+          "9373f2e9f7d1cf44a7852181b0708a288aa14b9b8a3123aebe697392b7d1c610"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-028",
+      "chunk_sets": [
+        [
+          "a87317b98f21b9af20d90152ab076a642dca58aff24b60764592f00b9ac70a88"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-029",
+      "chunk_sets": [
+        [
+          "dbf1f24324c74366156900b39852b5e25f77b803c78fdf3f08a955ac4607e23f"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-030",
+      "chunk_sets": [
+        [
+          "1cf838383a878d235320159863b64f4e5a8b35f64c99c4d0b0f8a979cf8e7e54"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-031",
+      "chunk_sets": [
+        [
+          "f5f8d87482fe707e06cc35b3728bbb73dde9d8b495bc6bc0c3e8839bbe70dfd2"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-032",
+      "chunk_sets": [
+        [
+          "b2ae0b4f9b09b4faf821f5b5d7a2bcee38b5ec4b4ce1a8ba55fbf33a626620f3"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-033",
+      "chunk_sets": [],
+      "group_id": "G1",
+      "status": "UNMAPPED"
+    },
+    {
+      "case_id": "ARR-034",
+      "chunk_sets": [],
+      "group_id": "G1",
+      "status": "UNMAPPED"
+    },
+    {
+      "case_id": "ARR-035",
+      "chunk_sets": [
+        [
+          "4cabad13c393a5ac446a4730c999469e7fa480e71781dc901d7565d255f5fd02"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-036",
+      "chunk_sets": [
+        [
+          "57b27c557fef16ed9ee45ce4e07feb58384d833a7bf61329675ccbd2b16b687b"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-037",
+      "chunk_sets": [
+        [
+          "87d86f80185e9bb7c7f2d4a77b04b42a91e24a23ef858a5968e5652b2763b1de"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-037",
+      "chunk_sets": [
+        [
+          "05af306b360669e7c32cd7d75ae726c77f7f9c475e10364c6f29cbc702fcbc51"
+        ]
+      ],
+      "group_id": "G2",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-038",
+      "chunk_sets": [
+        [
+          "c2a08cc7e01b157fd9a5cfe4d70af3db85133ecbcef4182e9181843440f2b585"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-038",
+      "chunk_sets": [
+        [
+          "afd0bdd249585d02e1aafa44eedf086dbeb90427096f3cd449268163c8d162fb"
+        ]
+      ],
+      "group_id": "G2",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-039",
+      "chunk_sets": [
+        [
+          "12b6943efe1ebb063c942f0281b1145255708f6e753317f65a1bc56ce79ffa7d"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-039",
+      "chunk_sets": [
+        [
+          "4ffa08bdc2ccd336547e5ef3e89ee6bff906f811bd94a62f9c8e3c534a040b77"
+        ]
+      ],
+      "group_id": "G2",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-040",
+      "chunk_sets": [
+        [
+          "0985e33e4f020f39370bd6307d302f5b4042aef1eeba030943e5858cd24c5924"
+        ]
+      ],
+      "group_id": "G1",
+      "status": "FULLY_MAPPED"
+    },
+    {
+      "case_id": "ARR-040",
+      "chunk_sets": [
+        [
+          "ddecfd5fdd14ca2b0649aa165d5937d0cc31a742aeb5fc5cb7be81b4a71e59d0"
+        ]
+      ],
+      "group_id": "G2",
+      "status": "FULLY_MAPPED"
+    }
+  ],
+  "index_signature": "b4e9432c7170615ade2c53803a887fa86d0f793949934a57db421f0da57739e5",
+  "schema_version": "rag-e2e-mapping-v1"
+}

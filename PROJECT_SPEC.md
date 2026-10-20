@@ -1,7 +1,7 @@
 # EvidenceFlow — Current Specification
 
-**Version:** 0.28
-**Last Updated:** 2026-10-15（Stage B B2）
+**Version:** 0.30
+**Last Updated:** 2026-10-20（Stage B B3a-1 修复轮）
 **Scope:** 本地科研 PDF 知识库 RAG：ingest / ask 两条正式链路及其评测基线。
 
 本文件只写**当前合同**。数值与规则以代码为准；与代码不一致时视为本文件的缺陷，按 §15 修正。
@@ -363,32 +363,50 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   `experiments/stage_a/a3_compare_replay.py`。
 - `evals/` 下全部为冻结产物，不得覆盖或修改；Gold、qrels 只能经独立版本化流程变更。
 
-### 13.1 端到端评测 rag_e2e_v1（Stage B 新增；已定合同，B3/B4/B5b 实现，当前代码尚无）
+### 13.1 端到端评测 rag_e2e_v1（Stage B 新增；B3a-1（含修复轮）已实现 (a)(b)(c) 的 schema/校验/映射工具与 (d) `key_match`：`eval/e2e/`、`scripts/e2e_dataset.py`；其余待 B3b/B4/B5b）
 **(a) 题集 schema（B3 实现）**：`EvalCase`（`extra="forbid"`）：`case_id`（新题 `E2E-M*` / `E2E-U*`）、`family_id`、`query`、
 `query_language`、`question_type`、`tags`、`critical: bool`、`expected_status ∈ AnswerStatus`、`acceptable_abstention: bool`、
-`required_evidence_groups: list[EvidenceGroup]`、`required_claims`、`forbidden_claims`（错误前提题必填；每条
-`claim_id`、`text`、`evidence_anchors`＝与之矛盾的原文锚点）、`unanswerable_kind ∈ {out_of_corpus, near_miss, false_premise} | null`、
-`provenance{drafted_by, approved_by, source}`。`required_claims[*]`：`claim_id`、`text`、`required: bool`、
+`required_evidence_groups: list[EvidenceGroup]`、`required_claims`、`forbidden_claims`（只用于错误前提题；每条
+`claim_id`、`text`、`evidence_anchors`＝与之矛盾的原文锚点）、`unanswerable_kind ∈ {out_of_corpus, near_miss} | null`（可答题为 null，
+不可答题必填）、`provenance{drafted_by, approved_by, source}`。
+**D8 错误前提题按可答题计分**：`expected_status=answered`、`acceptable_abstention=true`、`tags` 含 `false_premise`、
+`unanswerable_kind=null`；required claim 写纠正后的事实并带 `answer_keys`；`forbidden_claims` 至少 1 条，每条带与之矛盾的原文锚点；
+纠正前提并给出事实算答对，拒答按 D7 算状态正确；不计入不可答题。非 `false_premise` 题的 `forbidden_claims` 必须为空列表。
+B3 的 near_miss 比例只在 `out_of_corpus` 与 `near_miss` 两类不可答题中计算。`required_claims[*]`：`claim_id`、`text`、`required: bool`、
 `evidence_anchors: list[EvidenceAlternative]`（复用 `domain/evaluation_v2.py`，与 40 题同一锚点协议）、`answer_keys: list[list[str]]`
 （外层组间“与”，组内别名间“或”；空列表 ⇒ `key_matchable=false`）。`acceptable_abstention` 只对 `expected_status=answered`
-的题有意义，表示这道可答题允许拒答；不可答题必须为 `false`（B3 校验）（D7）。**状态正确** ⇔ 实际状态 = 期望状态；或期望为
+的题有意义，表示这道可答题允许拒答；不可答题必须为 `false`（B3 校验）（D7）。**可答题约束**：至少 1 条 `required=True`
+的 claim，且至少 1 个 `required_evidence_groups`（空列表即可答题视为校验失败，避免“可答题但没有任何必需证据”混过冻结）。
+**状态正确** ⇔ 实际状态 = 期望状态；或期望为
 answered、实际为 insufficient_context 且 `acceptable_abstention=true`。`fingerprint` = 除 `fingerprint` 字段外整个数据集的规范化 JSON
-（`sort_keys`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8）的 sha256；`dataset.sha256` = 文件字节 sha256，两者都记录。
+（`sort_keys`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8）的 sha256；`dataset.sha256` = 以 LF 换行写出的文件字节 sha256
+（换行固定为 `\n`，不随 OS 变化），两者都记录。
 
 **(b) 证据映射与题集分离（B3 实现）**：题集只存锚点；对某索引的映射是独立文件 `evals/rag_e2e_v1/mapping_<collection>.json`，
 记录 `index_signature`、`collection_name`、`dataset_fingerprint`，以及每个证据组和每条 claim 锚点的映射状态与 chunk 集合。状态取
 `stable_mapping` 现有 `MappingStatus`；`FULLY_MAPPED` / `FRAGMENTED_ACROSS_CHUNKS` 为可用，其余状态统称 UNMAPPABLE。
-`score` 发现 mapping 与 observations 的三项身份任一不一致即拒绝计分。换索引只重新生成 mapping，不改题集。
+映射文件额外记录实测的 `chunk_count` 与 `chunk_id_hash`（排序后的 chunk_id 列表按 `sort_keys=True`、`ensure_ascii=False`、
+`separators=(",", ":")` 序列化后的 sha256，与 A1 基线同口径）。`chunk_count` 必须等于生成映射时所读 lifecycle active 指针的
+`chunk_count`；`chunk_id_hash` 在 active manifest 记录该值时必须相等。`score` 发现 mapping 与 observations 的四项身份
+（`dataset_fingerprint`、`collection_name`、`index_signature`、`chunk_count`）任一不一致即拒绝计分；manifest 记录
+`chunk_id_hash` 时一并校验。换索引只重新生成 mapping，不改题集。
 
-**(c) answer_keys 校验（B3，确定性；任一不通过该题不得冻结）**：① 每个要素组至少一个别名经 (d) 规范化后出现在该 claim
-某个锚点的 locator 页源文本中（MD/TXT 为整篇；中文别名可只作补充）；② 任何别名按 (d) 匹配规则不得命中题干 `query`；
-③ 别名去首尾空白非空、规范化后长度 ≥ 2，组内去重。可答题中 key_matchable required claim 的比例写进 B3 报告，不设硬下限，
+**(c) answer_keys 校验（B3，确定性；任一不通过该题不得冻结）**：① 每个要素组至少一个别名经 (d) 规范化后作为**字面子串**
+出现在该 claim 某个锚点的 locator 页源文本中（MD/TXT 为整篇；中文别名可只作补充）。规则① 不套用 (d) 的 ASCII 边界：它的职责是
+证明别名来自原文；若同时要求边界，`1.5`（原文写作 `1.5mm`）这类数值别名会被迫写成带单位形式，而自然回答常写裸数字，会让
+`key_fact_recall` 系统性漏计。边界规则留在 ② 与 (e) 计分侧，仍可防 `1.5` 误命中 `11.5`。② 任何别名按 (d) 匹配规则（含 ASCII
+边界）不得命中题干 `query`；③ 别名去首尾空白非空、规范化后长度 ≥ 2，组内去重。可答题中 key_matchable required claim 的比例写进
+B3 报告，不设硬下限，
 低于 60% 须说明原因。
 
-**(d) 关键要素匹配 `key_match`（纯函数，B4 实现）**：规范化 = NFKC → casefold → 连续空白压成一个空格 → 去掉 `[S\d+]` 引用
-标签；别名与回答同样规范化后做子串匹配；别名首/尾字符为 ASCII 字母数字时，命中位置两侧不得是 ASCII 字母数字（防 `1.5`
-命中 `11.5`、`ViT` 命中 `ViTs`），CJK 字符不要求边界。不做数字解析、单位换算或模糊匹配，不同写法（`0.5` / `50%`）只能列为
-显式别名。claim 命中 ⇔ 所有要素组都命中。
+**(d) 关键要素匹配 `key_match`（纯函数，B3a-1 实现）**：规范化 = NFKC → 行尾连字符折叠（删除「行尾连字符 + 换行」，正则
+`-\s*\n\s*`）→ 去掉 `[S\d+]` 引用标签 → casefold → 连续空白压成一个空格并去首尾空白；别名与回答同样规范化后做子串匹配。
+行尾连字符折叠必须在去标签之前：PDF 抽取保留印刷断词（`view-\npoints`），折叠后 `viewpoints` 才能在 `viewpoints` 上命中；
+若先压空白，断词会留下 `view- points` 而无法与自然回答的 `viewpoints` 对齐。已知局限：合法连字符复合词若恰好在行尾断开
+（`self-\nattention`），折叠后成为 `selfattention`；因此别名应使用折叠后的形式或改用其他别名（写进 B3a-2 起草指引）。
+别名首/尾字符为 ASCII 字母数字时，命中位置两侧不得是 ASCII 字母数字（防 `1.5` 命中 `11.5`、`ViT` 命中 `ViTs`），CJK 字符
+不要求边界；该边界规则只用于 (e) 计分与 B5b 的 span 定位，不用于 (c)①。不做数字解析、单位换算或模糊匹配，不同写法
+（`0.5` / `50%`）只能列为显式别名。claim 命中 ⇔ 所有要素组都命中。
 
 **(e) 指标（B4 实现）**：每个指标给出分子、分母，空分母返回 null，带 `status ∈ {primary, diagnostic_uncalibrated, unavailable}`。
 observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequestError` 的题从所有回答类与状态类指标的分母中
