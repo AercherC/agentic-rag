@@ -126,3 +126,49 @@ def test_select_distractors_skips_gold_keeps_order_and_handles_shortage():
     assert probe.select_distractors(gold_chunk_ids={"gold"}, dense_ranked_ids=ranked, count=2) == ["a", "b"]
     assert probe.select_distractors(gold_chunk_ids={"a", "b"}, dense_ranked_ids=["a", "b"], count=2) == []
     assert probe.select_distractors(gold_chunk_ids=set(), dense_ranked_ids=["a"], count=2) == ["a"]
+
+
+# ---------- T3 单块探针 ----------
+
+def _verdict(text: str, status: str = "answered") -> probe.ProbeVerdict:
+    return probe.ProbeVerdict(verdict=status, answer=text, reason="test")
+
+
+def test_single_block_prompt_is_isomorphic_with_gold():
+    """G6③ 比较的是"给 A 块 vs 给 B 块"，prompt 必须与 gold 逐字节相同。"""
+
+    gold = probe.build_gold_messages("Q?", "context body")
+    single = probe.build_single_block_messages("Q?", "context body")
+    assert [(m.role, m.content) for m in gold] == [(m.role, m.content) for m in single]
+
+
+def test_single_block_verdict_accepts_half_hit():
+    own = [["128", "256"]]
+    other = [["512"]]
+    passed, reason = probe.single_block_verdict(
+        verdict=_verdict("128"), own_keys=own, other_keys=other
+    )
+    assert passed and reason == "ok"
+
+
+def test_single_block_verdict_rejects_when_other_key_also_hits():
+    # 另一块的事实也出现在这一块里 ⇒ 题目并不真正需要两块。
+    passed, reason = probe.single_block_verdict(
+        verdict=_verdict("128 and 512"), own_keys=[["128"]], other_keys=[["512"]]
+    )
+    assert not passed and reason == "single_block_other_key_hit"
+
+
+def test_single_block_verdict_rejects_own_key_miss():
+    passed, reason = probe.single_block_verdict(
+        verdict=_verdict("512"), own_keys=[["128"]], other_keys=[["512"]]
+    )
+    assert not passed and reason == "single_block_own_key_miss"
+
+
+def test_single_block_verdict_rejects_insufficient_context():
+    # 答不出 ≠ 只中一半：不能把探针失败当成多证据性的证据。
+    passed, reason = probe.single_block_verdict(
+        verdict=_verdict("", status="insufficient_context"), own_keys=[["128"]], other_keys=[["512"]]
+    )
+    assert not passed and reason == "single_block_not_answered"

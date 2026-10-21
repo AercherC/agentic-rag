@@ -92,6 +92,40 @@ def build_distractor_messages(query: str, context_text: str) -> list[LLMMessage]
     return _build_messages(query, context_text)
 
 
+def build_single_block_messages(query: str, context_text: str) -> list[LLMMessage]:
+    """T3「单块只中一半」探针消息：上下文只给两块证据中的一块。
+
+    必须与 gold 逐字节同构（同样是 ``_build_messages``）：G6③ 比较的是"给 A 块 vs 给 B 块"
+    两种情况下的命中差异，若 prompt 不同，差异就分不清来自证据还是来自措辞。
+    """
+
+    return _build_messages(query, context_text)
+
+
+def single_block_verdict(
+    *,
+    verdict: ProbeVerdict,
+    own_keys: list[list[str]],
+    other_keys: list[list[str]],
+) -> tuple[bool, str]:
+    """判定 T3「单块只中一半」是否成立，返回 ``(passed, reason)``。
+
+    只给一块时要求：本块的 key 命中 **且** 另一块的 key 不命中。
+    两种情况都算不通过：
+    - 本块 key 未命中或模型答 ``insufficient_context``：无法证明"这一块能答出自己那半"；
+      不能把"答不出"当成"没中另一半"——那只是探针失败，不是多证据性的证据（设计 §3 表 ③）。
+    - 另一块 key 也命中：说明另一半事实在这块里也有，题目并不真正需要第二块。
+    """
+
+    if verdict.verdict != "answered":
+        return False, "single_block_not_answered"
+    if not key_match_verdict(own_keys, verdict.answer):
+        return False, "single_block_own_key_miss"
+    if other_keys and key_match_verdict(other_keys, verdict.answer):
+        return False, "single_block_other_key_hit"
+    return True, "ok"
+
+
 def _extract_json_text(raw_text: str) -> str:
     """按 §9 顺序清理模型回复；未闭合 ``<think>`` 视为格式失败，不猜测内容。"""
 
@@ -135,18 +169,24 @@ def probe(
     *,
     query: str,
     context_text: str,
-    mode: Literal["gold", "distractor"],
+    mode: Literal["gold", "distractor", "single_block"],
 ) -> ProbeVerdict:
     """调用注入 client 的 ``generate_json`` 并解析判定；不负责重试。
 
     ``client`` 必须是具备 ``generate_json(messages, schema_name=..., json_schema=...)`` 的对象
     （真实实现为 ``OpenAICompatibleLLMClient``，测试用 Fake）。
+
+    三种模式共用同一套 prompt 与 schema，只在"给哪一块上下文"上不同：
+    ``gold``（含答案的块）、``distractor``（干扰块）、``single_block``（T3 的其中一块）。
+    同构是刻意的——否则命中差异可能来自措辞而非证据。
     """
 
     if mode == "gold":
         messages = build_gold_messages(query, context_text)
     elif mode == "distractor":
         messages = build_distractor_messages(query, context_text)
+    elif mode == "single_block":
+        messages = build_single_block_messages(query, context_text)
     else:
         raise ValueError(f"unknown probe mode: {mode!r}")
     raw = client.generate_json(messages, schema_name=PROBE_SCHEMA_NAME, json_schema=PROBE_JSON_SCHEMA)

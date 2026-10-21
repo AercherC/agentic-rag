@@ -23,7 +23,13 @@ from evidenceflow.domain.evaluation_v2 import (
     EvidenceGroup,
     EvidenceLocator,
 )
-from evidenceflow.eval.e2e.dataset import EvalCase, Provenance, RequiredClaim
+from evidenceflow.eval.e2e.dataset import (
+    FALSE_PREMISE_TAG,
+    EvalCase,
+    ForbiddenClaim,
+    Provenance,
+    RequiredClaim,
+)
 from evidenceflow.eval.e2e.key_match import normalize_text
 from evidenceflow.eval.stable_mapping import hyphen_rules, normalize_mapping
 
@@ -89,11 +95,18 @@ _NUMERIC_WITH_UNIT = re.compile(
     r"^(?P<number>\d+(?:\.\d+)?)\s*(?P<unit>mm|ms|cm|Hz|GB|MB|%|m|s|K|M|B)$"
 )
 # 题型分层用的关键词表（设计 §2.3“按题型词表分层抽样”）；顺序即优先级。
+# `implementation` 必须排在 `method` **之前**：两类高度重叠（`we use`、`based on` 都出现），
+# 若 `method` 先匹配，`implementation` 永远拿不到题，而 Gate B3 要求 8 类题型各 ≥4 题
+# （实测未加该条目时 `implementation` 候选数为 0）。顺序即优先级，具体的先判。
 _QUESTION_TYPE_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("conclusion_limitation", ("limitation", "fail", "cannot", "can not", "drawback", "struggle", "bottleneck")),
     ("ablation", ("ablation", "without", "variant", "baseline")),
     ("experiment_setup", ("dataset", "batch size", "learning rate", "epoch", "optimizer", "trained on", "gpu")),
     ("motivation_concept", ("motivation", "challenge", "problem", "aim", "goal", "we propose", "introduce", "address")),
+    ("implementation", (
+        "implement", "source code", "we use", "built on", "based on", "framework", "library",
+        "pytorch", "tensorflow", "trained with", "in practice", "details", "hyperparameter",
+    )),
     ("method", ("architecture", "module", "layer", "network", "algorithm", "design", "we use", "consists of")),
     ("quantitative_results", ("improve", "outperform", "achiev", "accuracy", "percent", "%")),
 )
@@ -588,9 +601,226 @@ def stratified_sample(
     return chosen
 
 
+class MultiDocPair(ContractModel):
+    """一对可组合成 T3 多文档题的候选（两条来自不同论文、同题型、都可 key_match）。"""
+
+    question_type: str
+    candidate_a: dict[str, Any]
+    candidate_b: dict[str, Any]
+
+
+def pair_multi_document_candidates(
+    items: Sequence[dict[str, Any]],
+    *,
+    limit: int,
+    seed: int = 1,
+) -> list[MultiDocPair]:
+    """把单证据候选两两配对成 T3 多文档题的材料（设计 §2.4）。
+
+    配对约束（任一不满足即不配对）：
+    1. 两条 `question_type` 相同——设计 §2.4 要求「同题型」组合，否则题干难以自然合并；
+    2. 两条 `document_id` 不同——T3 的意义就是"必须两篇证据"；
+    3. 两条都 `key_matchable`（`answer_keys` 非空）——否则无法验证"单块只中一半"；
+    4. 同一 `sentence` / 同一 `span` 不在输出里复用（G5 已限制同一 span 每篇最多 2 次）。
+
+    排序用 ``sha256(f"{seed}:{doc_a}:{doc_b}")``：同一输入在任何进程都得到同一配对，
+    换 ``seed`` 得到独立第二遍。找不到可配对项时返回空列表，由报告统计缺口，不抛错。
+    """
+
+    if limit <= 0:
+        return []
+    # 按题型分桶，桶内只保留可 key_match 的候选；数值型与实体型混排不影响正确性，
+    # 因为题干生成只看 sentence 与 span，不看 span 类型。
+    buckets: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for item in items:
+        if item.get("decision") != "accepted":
+            continue
+        if not item.get("answer_keys"):
+            continue
+        question_type = str(item.get("question_type") or "")
+        if not question_type or question_type == "multi_document":
+            # multi_document 是 T3 的结果类型，不能再作为 T3 的输入题型。
+            continue
+        buckets[question_type].append(item)
+
+    used_sentences: set[str] = set()
+    used_spans: set[str] = set()
+    pairs: list[MultiDocPair] = []
+    # 题型之间轮转，避免配额被单一题型占满（与 stratified_sample 同一思路）。
+    ordered_types = sorted(
+        buckets, key=lambda key: hashlib.sha256(f"{seed}:{key}".encode("utf-8")).hexdigest()
+    )
+    cursors = {key: 0 for key in ordered_types}
+    while len(pairs) < limit:
+        progressed = False
+        for question_type in ordered_types:
+            if len(pairs) >= limit:
+                break
+            rows = buckets[question_type]
+            index = cursors[question_type]
+            while index < len(rows):
+                first = rows[index]
+                index += 1
+                if str(first.get("sentence")) in used_sentences or str(first.get("span")) in used_spans:
+                    continue
+                partner = _find_partner(
+                    rows[index:], first, used_sentences=used_sentences, used_spans=used_spans
+                )
+                if partner is None:
+                    continue
+                pairs.append(MultiDocPair(question_type=question_type, candidate_a=first, candidate_b=partner))
+                for chosen in (first, partner):
+                    used_sentences.add(str(chosen.get("sentence")))
+                    used_spans.add(str(chosen.get("span")))
+                progressed = True
+                break
+            cursors[question_type] = index
+        if not progressed:
+            break
+    return pairs
+
+
+def _find_partner(
+    rows: Sequence[dict[str, Any]],
+    first: dict[str, Any],
+    *,
+    used_sentences: set[str],
+    used_spans: set[str],
+) -> dict[str, Any] | None:
+    """在同题型候选里找第一条不同文档、未被占用、且可 key_match 的搭档。"""
+
+    for row in rows:
+        if row is first:
+            continue
+        if str(row.get("document_id")) == str(first.get("document_id")):
+            continue
+        if not row.get("answer_keys"):
+            continue
+        if str(row.get("sentence")) in used_sentences or str(row.get("span")) in used_spans:
+            continue
+        return row
+    return None
+
+
+def replacement_number(value: str, *, context_text: str, max_attempts: int = 3) -> str:
+    """按 SPEC §13.1(f) 的数字替换规则生成一个"看起来合理但与原值不同"的数，用于 T6 错误前提题。
+
+    规则逐条对齐合同（这是 B5b 反事实与 T6 共用的确定性构造，不允许自创算法）：
+    1. 有小数：最后一位小数 +1；`9` 变 `0` 并向前进位，**位数不变**（`0.19`→`0.20`、`1.99`→`2.00`）；
+    2. 整数 >= 10：+1；
+    3. **< 10 的整数不选**（如 `7`、`1%`）：替换后与邻近值太接近，容易被模型当噪声忽略；
+    4. 新值若已出现在 ``context_text`` 中则再应用一次，最多 ``max_attempts`` 次，仍冲突抛 ``ValueError``；
+    5. 保留单位与 `%` 后缀（`1.5mm`→`1.6mm`、`50%`→`51%`）。
+
+    为什么必须保证新值不在原文：T6 的"错误前提"必须能被原文证伪；若篡改值原本就在页文本里，
+    题目就同时存在两个"正确"值，D8 的 `forbidden_claims` 也失去了矛盾锚点。
+    """
+
+    # 单位/百分号与数值分开处理：派生 span 常带单位（`0.0012s`、`1.5mm`），替换只作用于数值本身。
+    match = re.fullmatch(r"(?P<number>\d+(?:\.\d+)?)(?P<suffix>\s*[A-Za-z%]*)", value.strip())
+    if match is None:
+        raise ValueError(f"not a plain number: {value!r}")
+    number, suffix = match.group("number"), match.group("suffix")
+
+    candidate = number
+    for _ in range(max_attempts):
+        candidate = _increment_number(candidate)
+        rendered = f"{candidate}{suffix}"
+        # 规范化后再比对：原文里的 `1.6` 与生成值 `1.6` 写法一致，但上下文可能带换行或标签。
+        if normalize_text(rendered) not in normalize_text(context_text):
+            return rendered
+    raise ValueError(f"could not find a non-conflicting replacement for {value!r} in {max_attempts} attempts")
+
+
+def _increment_number(body: str) -> str:
+    """对纯数字串做一次 §13.1(f) 的增量；小数保持位数，整数 < 10 直接拒绝。
+
+    小数用"定点加法"实现：把 `1.99` 视作 199（尺度 100），加 1 得 200，再按原小数位数
+    插回小数点得 `2.00`。这样进位与位数保持同时成立，不需要逐位手写进位逻辑。
+    """
+
+    if "." in body:
+        integer, fraction = body.split(".", 1)
+        scale = 10 ** len(fraction)
+        scaled = int(integer) * scale + int(fraction) + 1
+        # 位数保持不变：整数部分按原值 +1 的进位结果自然增长，小数位固定回原长度。
+        whole, rest = divmod(scaled, scale)
+        return f"{whole}.{str(rest).rjust(len(fraction), '0')}"
+    number = int(body)
+    if number < 10:
+        raise ValueError(f"integers below 10 are not selected for replacement: {body!r}")
+    return str(number + 1)
+
+
+def build_false_premise_case(
+    *,
+    case_id: str,
+    family_id: str,
+    query: str,
+    query_language: str,
+    question_type: str,
+    sentence: str,
+    span: str,
+    answer_keys: list[list[str]],
+    anchor: Any,
+    approval_basis: str,
+    false_value: str,
+    tags: list[str] | None = None,
+    source: str = "derived_t6",
+) -> EvalCase:
+    """构造 D8 错误前提题：题干含被篡改的值，required claim 写纠正后的原文事实。
+
+    D8 口径（SPEC §13.1(a)）：按**可答题**计分 —— ``expected_status=answered``、
+    ``acceptable_abstention=True``（拒答算状态正确）、``tags`` 含 ``false_premise``、
+    ``unanswerable_kind=None``；``forbidden_claims`` 至少 1 条，其锚点是与该错误说法矛盾的原文。
+
+    为什么 required claim 用原句：模型纠正前提并给出正确事实才算答对；原句就是那个正确事实，
+    因此 ``key_match`` 仍按原 ``answer_keys`` 判定，不需要另一套匹配逻辑。
+    """
+
+    case_tags = list(tags or [])
+    if FALSE_PREMISE_TAG not in case_tags:
+        case_tags.append(FALSE_PREMISE_TAG)
+    return EvalCase(
+        case_id=case_id,
+        family_id=family_id,
+        query=query,
+        query_language=query_language,
+        question_type=question_type,
+        tags=case_tags,
+        critical=False,
+        expected_status="answered",
+        acceptable_abstention=True,
+        required_evidence_groups=[EvidenceGroup(group_id="G1", alternatives=[anchor])],
+        required_claims=[
+            RequiredClaim(
+                claim_id="C1",
+                text=sentence,
+                required=True,
+                evidence_anchors=[anchor],
+                answer_keys=answer_keys,
+            )
+        ],
+        forbidden_claims=[
+            ForbiddenClaim(
+                claim_id="F1",
+                # 错误说法写成与原值的对比形式，便于人工抽查时一眼看出被篡改的是哪个值。
+                text=f"the value is {false_value} instead of {span}",
+                evidence_anchors=[anchor],
+            )
+        ],
+        unanswerable_kind=None,
+        provenance=Provenance(
+            drafted_by="agent",
+            approved_by="machine",
+            approval_basis=approval_basis,
+            source=source,
+        ),
+    )
+
+
 def _case_value(case: Any, name: str, default: Any = None) -> Any:
     """从 EvalCase 或普通 dict 中取字段，便于配额同时服务落盘题集与 JSONL 候选。"""
-
     if isinstance(case, dict):
         return case.get(name, default)
     return getattr(case, name, default)

@@ -43,8 +43,10 @@ from pydantic import BaseModel, ConfigDict  # noqa: E402
 from evidenceflow.config import Settings  # noqa: E402
 from evidenceflow.domain.document import Document  # noqa: E402
 from evidenceflow.domain.generation import LLMMessage  # noqa: E402
+from evidenceflow.domain.evaluation_v2 import EvidenceGroup  # noqa: E402
 from evidenceflow.eval.e2e import draft, probe  # noqa: E402
 from evidenceflow.eval.e2e import dataset as dataset_schema  # noqa: E402
+from evidenceflow.eval.e2e.dataset import RequiredClaim  # noqa: E402
 from evidenceflow.eval.e2e.key_match import alias_hits, normalize_text  # noqa: E402
 from evidenceflow.ingestion.loader import SUPPORTED_FILE_TYPES, load_document  # noqa: E402
 from evidenceflow.llm import OpenAICompatibleLLMClient  # noqa: E402
@@ -725,6 +727,218 @@ def build_dataset_cases(
     return cases, failures
 
 
+def build_multi_document_cases(
+    pairs: list[Any],
+    *,
+    client: Any,
+    documents: dict[str, Document],
+    chunks_by_id: dict[str, dict[str, Any]],
+    approval_basis: str,
+    start_index: int = 1,
+    probe_results: list[dict[str, Any]] | None = None,
+) -> tuple[list[Any], list[dict[str, str]]]:
+    """把 T3 配对构造成多文档 ``EvalCase``，并用「单块只中一半」探针验收（G6③）。
+
+    每题两条证据组（G1/G2）+ 两条 required claim（C1/C2），分别来自两篇不同论文。
+    ``tags`` 带 ``multi_doc`` 与 ``comparison``，``question_type="multi_document"``——
+    ``validate_dataset`` 的 ``multi_doc`` 规则要求「≥2 组且分属不同文档」，这里由构造保证。
+
+    验收：对 A 块、B 块各跑一次 ``single_block`` 探针，两次都要满足
+    「本块 key 命中且另一块 key 不命中」；任一不满足即丢弃（设计 §3 表：G6③ 是必过项）。
+    """
+
+    cases: list[Any] = []
+    failures: list[dict[str, str]] = []
+    for offset, pair in enumerate(pairs):
+        first, second = pair.candidate_a, pair.candidate_b
+        document_a = documents.get(str(first.get("document_id", "")))
+        document_b = documents.get(str(second.get("document_id", "")))
+        if document_a is None or document_b is None:
+            failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                             "reason": "multi_doc_document_not_found"})
+            continue
+        try:
+            anchor_a = draft.build_evidence_alternative(
+                document_a, sentence=str(first["sentence"]),
+                page_start=first.get("page_start"), page_end=first.get("page_end"),
+            )
+            anchor_b = draft.build_evidence_alternative(
+                document_b, sentence=str(second["sentence"]),
+                page_start=second.get("page_start"), page_end=second.get("page_end"),
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                             "reason": f"multi_doc_anchor: {exc}"})
+            continue
+
+        keys_a = [list(group) for group in first.get("answer_keys") or []]
+        keys_b = [list(group) for group in second.get("answer_keys") or []]
+        # 单块探针：给 A 块只应命中 A 的 key，给 B 块只应命中 B 的 key。
+        chunk_a = chunks_by_id.get(str(first.get("chunk_id", "")))
+        chunk_b = chunks_by_id.get(str(second.get("chunk_id", "")))
+        if chunk_a is None or chunk_b is None:
+            failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                             "reason": "multi_doc_missing_chunk"})
+            continue
+        query = _multi_doc_query(first, second)
+        passed = True
+        for label, own_chunk, own_keys, other_keys in (
+            ("a", chunk_a, keys_a, keys_b),
+            ("b", chunk_b, keys_b, keys_a),
+        ):
+            try:
+                verdict = probe.probe(
+                    client, query=query, context_text=str(own_chunk["text"]), mode="single_block"
+                )
+            except Exception as exc:  # noqa: BLE001 - 单条探针失败不该中断整批
+                failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                                 "reason": f"multi_doc_probe_error: {type(exc).__name__}"})
+                passed = False
+                break
+            ok, reason = probe.single_block_verdict(
+                verdict=verdict, own_keys=own_keys, other_keys=other_keys
+            )
+            if probe_results is not None:
+                probe_results.append({
+                    "candidate_id": str(first.get("candidate_id", "")),
+                    "mode": f"single_block_{label}",
+                    "verdict": verdict.verdict,
+                    "answer": verdict.answer,
+                    "key_match": probe.key_match_verdict(own_keys, verdict.answer),
+                    "tag": "ok" if ok else reason,
+                })
+            if not ok:
+                # 不满足"只中一半"说明两块证据并非缺一不可，或探针答不出：丢弃该题。
+                failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                                 "reason": f"t3_single_block_inconclusive: {reason}"})
+                passed = False
+                break
+        if not passed:
+            continue
+        try:
+            cases.append(
+                draft.build_case(
+                    case_id=f"E2E-M{start_index + offset:03d}",
+                    family_id=f"derived_{pair.question_type}",
+                    query=query,
+                    query_language=str(first.get("query_language") or "en"),
+                    question_type="multi_document",
+                    sentence=str(first["sentence"]),
+                    span=str(first["span"]),
+                    answer_keys=keys_a,
+                    anchor=anchor_a,
+                    approval_basis=approval_basis,
+                    tags=["multi_doc", "comparison", "multi_document"],
+                    source="derived_t3",
+                    extra_evidence_groups=[EvidenceGroup(group_id="G2", alternatives=[anchor_b])],
+                    extra_claims=[
+                        RequiredClaim(
+                            claim_id="C2",
+                            text=str(second["sentence"]),
+                            required=True,
+                            evidence_anchors=[anchor_b],
+                            answer_keys=keys_b,
+                        )
+                    ],
+                )
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": str(first.get("candidate_id", "")),
+                             "reason": f"multi_doc_build_case: {exc}"})
+    return cases, failures
+
+
+def _multi_doc_query(first: dict[str, Any], second: dict[str, Any]) -> str:
+    """为 T3 合成题干：把两条单证据题干合成一个对比问句。
+
+    不调用模型（T3 的题干由构造决定，避免生成器在合并时引入新的不可控内容）；
+    中英各按语言模板拼接，保持 ``query_language`` 与题干一致。
+    """
+
+    left = str(first.get("query") or "").strip()
+    right = str(second.get("query") or "").strip()
+    if str(first.get("query_language") or "en").lower().startswith("zh"):
+        return f"{left} 同时，{right}"
+    return f"{left} At the same time, {right}"
+
+
+def build_false_premise_cases(
+    accepted_items: list[dict[str, Any]],
+    *,
+    count: int,
+    documents: dict[str, Document],
+    chunks_by_id: dict[str, dict[str, Any]],
+    approval_basis: str,
+    start_index: int = 1,
+) -> tuple[list[Any], list[dict[str, str]]]:
+    """从数值题派生 T6 错误前提题（D8），返回 (cases, 失败清单)。
+
+    只从 ``derived_t2``（数值 span）里取，因为 SPEC §13.1(f) 的替换规则只对数字有定义。
+    篡改值必须不在锚点页文本中；构造不出来的候选记入失败清单，不静默跳过。
+    """
+
+    cases: list[Any] = []
+    failures: list[dict[str, str]] = []
+    if count <= 0:
+        return cases, failures
+    for item in accepted_items:
+        if len(cases) >= count:
+            break
+        if item.get("source") != "derived_t2" or not item.get("answer_keys"):
+            continue
+        candidate_id = str(item.get("candidate_id", ""))
+        document = documents.get(str(item.get("document_id", "")))
+        if document is None:
+            failures.append({"candidate_id": candidate_id, "reason": "false_premise_document_not_found"})
+            continue
+        span = str(item.get("span", ""))
+        page_text = draft.page_text(document, item.get("page_start"), item.get("page_end"))
+        try:
+            false_value = draft.replacement_number(span, context_text=page_text)
+        except ValueError as exc:
+            failures.append({"candidate_id": candidate_id, "reason": f"false_premise_no_replacement: {exc}"})
+            continue
+        try:
+            anchor = draft.build_evidence_alternative(
+                document,
+                sentence=str(item.get("sentence", "")),
+                page_start=item.get("page_start"),
+                page_end=item.get("page_end"),
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": candidate_id, "reason": f"false_premise_anchor: {exc}"})
+            continue
+        try:
+            cases.append(
+                draft.build_false_premise_case(
+                    case_id=f"E2E-M{start_index + len(cases):03d}",
+                    family_id="derived_t6",
+                    query=_false_premise_query(item, false_value),
+                    query_language=str(item.get("query_language") or "en"),
+                    question_type=str(item.get("question_type") or "quantitative_results"),
+                    sentence=str(item.get("sentence", "")),
+                    span=span,
+                    answer_keys=[list(group) for group in item.get("answer_keys") or []],
+                    anchor=anchor,
+                    approval_basis=approval_basis,
+                    false_value=false_value,
+                    tags=["false_premise", "quantitative_results"],
+                )
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": candidate_id, "reason": f"false_premise_build_case: {exc}"})
+    return cases, failures
+
+
+def _false_premise_query(item: dict[str, Any], false_value: str) -> str:
+    """把原题干改成带被篡改值的确认式问句（不复制源句超过 8 个连续词）。"""
+
+    base = str(item.get("query") or "").strip().rstrip("?")
+    if str(item.get("query_language") or "en").lower().startswith("zh"):
+        return f"{base}（已知结果是 {false_value}）这个说法对吗？"
+    return f"{base}, and the reported result is {false_value}. Is that correct?"
+
+
 def load_judge_config() -> dict[str, str | None]:
     """探针配置：进程环境优先，其次 ``.env``（与 B0 探针同一口径，不注入全局 Settings）。"""
 
@@ -1100,6 +1314,34 @@ def run_gates(args: argparse.Namespace) -> int:
         cases, case_failures = build_dataset_cases(
             accepted_items, documents=documents, approval_basis=approval_basis
         )
+        # T3 多文档题追加在单证据题之后，case_id 序号接续，不重置。
+        multi_doc_failures: list[dict[str, str]] = []
+        if args.multi_doc > 0:
+            pairs = draft.pair_multi_document_candidates(
+                accepted_items, limit=args.multi_doc, seed=args.seed_for_pairs
+            )
+            multi_cases, multi_doc_failures = build_multi_document_cases(
+                pairs,
+                client=client,
+                documents=documents,
+                chunks_by_id=chunks_by_id,
+                approval_basis=approval_basis,
+                start_index=len(cases) + 1,
+                probe_results=probe_results,
+            )
+            cases.extend(multi_cases)
+        # T6 错误前提题追加在最后，case_id 序号继续接续。
+        false_premise_failures: list[dict[str, str]] = []
+        if args.false_premise > 0:
+            fp_cases, false_premise_failures = build_false_premise_cases(
+                accepted_items,
+                count=args.false_premise,
+                documents=documents,
+                chunks_by_id=chunks_by_id,
+                approval_basis=approval_basis,
+                start_index=len(cases) + 1,
+            )
+            cases.extend(fp_cases)
         dataset = dataset_schema.E2EDataset(
             dataset_id=args.dataset_id,
             corpus_version=args.corpus_version,
@@ -1107,9 +1349,13 @@ def run_gates(args: argparse.Namespace) -> int:
         )
         write_dataset(args.dataset_out, dataset_schema.with_fingerprint(dataset))
         print(
-            f"dataset_cases={len(cases)} dataset_failures={len(case_failures)} "
+            f"dataset_cases={len(cases)} "
+            f"dataset_failures={len(case_failures) + len(multi_doc_failures) + len(false_premise_failures)} "
             f"fingerprint={dataset.fingerprint or 'computed'} dataset_out={args.dataset_out}"
         )
+    elif args.multi_doc > 0 or args.false_premise > 0:
+        # 构造了额外题却没有落盘点：题不会进任何题集，静默丢弃会让人误以为已产出。
+        raise Refused("--multi-doc/--false-premise require --dataset-out so the constructed cases are persisted")
     # 闸门失败与配额未达标是报告内容（D2 据此决定丢弃/补题），不是命令失败；
     # 只有“被拒绝”（同厂商/缺配置/写 evals）才用退出码 2。
     return EXIT_OK
@@ -1251,6 +1497,12 @@ def build_parser() -> argparse.ArgumentParser:
     gates.add_argument("--source-root", type=Path, default=None)
     gates.add_argument("--rerun", type=Path, default=None,
                        help="第二遍独立生成的 JSONL；提供时计算复跑一致率（Gate 要求 >= 0.8）")
+    gates.add_argument("--multi-doc", type=int, default=0, dest="multi_doc",
+                       help="额外构造 N 道 T3 多文档题（用单块探针验收；需配合 --dataset-out）")
+    gates.add_argument("--pair-seed", type=int, default=1, dest="seed_for_pairs",
+                       help="T3 配对的层内排序种子")
+    gates.add_argument("--false-premise", type=int, default=0, dest="false_premise",
+                       help="额外构造 N 道 T6 错误前提题（需配合 --dataset-out）")
     gates.add_argument("--dataset-out", type=Path, default=None,
                        help="通过的候选组装成 E2EDataset 并写出（不得位于 evals/ 下）")
     gates.add_argument("--dataset-id", default=None, help="题集身份，如 rag_e2e_v1（配合 --dataset-out）")

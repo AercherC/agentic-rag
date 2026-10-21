@@ -207,8 +207,277 @@ def test_plan_quotas_reports_violations_without_raising():
     assert sum("difficulty labels missing" in violation for violation in no_labels.violations) == 1
 
 
-# ---------- 分层抽样 ----------
+# ---------- T3 多文档配对 ----------
 
+def _t3_item(candidate_id: str, document_id: str, sentence: str, span: str,
+             question_type: str = "method", *, accepted: bool = True) -> dict:
+    """构造一条可参与 T3 配对的 accepted 候选。"""
+
+    return {
+        "candidate_id": candidate_id,
+        "document_id": document_id,
+        "sentence": sentence,
+        "span": span,
+        "answer_keys": [[span]],
+        "question_type": question_type,
+        "decision": "accepted" if accepted else "discarded",
+    }
+
+
+def test_pair_multi_document_candidates_requires_distinct_documents():
+    items = [
+        _t3_item("a1", "doc-a", "SnowflakeNet uses a Skip-Transformer decoder here.", "SnowflakeNet"),
+        _t3_item("a2", "doc-a", "Another sentence from the same paper about PointNet.", "PointNet"),
+        _t3_item("b1", "doc-b", "PoinTr proposes a set-to-set translation strategy.", "PoinTr"),
+    ]
+    pairs = draft.pair_multi_document_candidates(items, limit=5, seed=1)
+    assert pairs, "should pair across documents"
+    for pair in pairs:
+        assert pair.candidate_a["document_id"] != pair.candidate_b["document_id"]
+
+
+def test_pair_multi_document_candidates_requires_same_type_and_key_matchable():
+    items = [
+        _t3_item("a1", "doc-a", "SnowflakeNet uses a Skip-Transformer decoder.", "SnowflakeNet", "method"),
+        _t3_item("b1", "doc-b", "PoinTr proposes set-to-set translation.", "PoinTr", "ablation"),
+        _t3_item("c1", "doc-c", "SeedFormer proposes patch seeds for generation.", "SeedFormer", "method"),
+    ]
+    pairs = draft.pair_multi_document_candidates(items, limit=5, seed=1)
+    # 只有 a1/c1 同为 method 且文档不同，才能配对；b1 题型不同不参与。
+    assert len(pairs) == 1
+    assert {pairs[0].candidate_a["document_id"], pairs[0].candidate_b["document_id"]} == {"doc-a", "doc-c"}
+    assert pairs[0].question_type == "method"
+
+    # answer_keys 为空的候选不可配对（无法验证"单块只中一半"）。
+    no_keys = [
+        _t3_item("a1", "doc-a", "SnowflakeNet uses a Skip-Transformer decoder.", "SnowflakeNet"),
+        _t3_item("b1", "doc-b", "PoinTr proposes set-to-set translation.", "PoinTr"),
+    ]
+    no_keys[0]["answer_keys"] = []
+    assert draft.pair_multi_document_candidates(no_keys, limit=5, seed=1) == []
+
+
+def test_pair_multi_document_candidates_is_deterministic_and_respects_limit():
+    items = [
+        _t3_item(f"a{index}", "doc-a", f"Sentence A number {index} about PointNet.", f"PointNet{index}")
+        for index in range(6)
+    ] + [
+        _t3_item(f"b{index}", "doc-b", f"Sentence B number {index} about PoinTr.", f"PoinTr{index}")
+        for index in range(6)
+    ]
+    first = draft.pair_multi_document_candidates(items, limit=4, seed=1)
+    again = draft.pair_multi_document_candidates(items, limit=4, seed=1)
+    assert [p.candidate_a["candidate_id"] for p in first] == [p.candidate_a["candidate_id"] for p in again]
+    assert len(first) == 4
+    # 同一 sentence / span 不得在输出里复用。
+    spans = [p.candidate_a["span"] for p in first] + [p.candidate_b["span"] for p in first]
+    assert len(spans) == len(set(spans))
+    # limit<=0 直接返回空列表。
+    assert draft.pair_multi_document_candidates(items, limit=0, seed=1) == []
+
+
+class _FakeSingleBlockClient:
+    """T3 单块探针：只回答被询问的那一块的事实，用于验证「只中一半」判定。
+
+    ``answers`` 把"上下文里的标记词"映射到答案；给 A 块时答 A 的事实，给 B 块时答 B 的事实。
+    """
+
+    def __init__(self, answers, *, answer_both=False):
+        self.answers = answers
+        self.answer_both = answer_both
+        self.last_usage = None
+        self.calls = 0
+
+    def generate_json(self, messages, *, schema_name, json_schema):
+        self.calls += 1
+        user = messages[1].content
+        if self.answer_both:
+            # 两块的事实都能答出：题目并不真正需要第二块。
+            return json.dumps({"verdict": "answered", "answer": " ".join(self.answers.values()),
+                               "reason": "both facts present"})
+        for marker, answer in self.answers.items():
+            if marker in user:
+                return json.dumps({"verdict": "answered", "answer": answer, "reason": "marker hit"})
+        return json.dumps({"verdict": "insufficient_context", "answer": "", "reason": "no answer"})
+
+
+def _multi_doc_pair_items():
+    """两条不同文档、同题型、都可 key_match 的候选。"""
+
+    return [
+        {"candidate_id": "a1", "document_id": "d1", "chunk_id": "k1",
+         "sentence": "SnowflakeNet uses a Skip-Transformer decoder for generation.",
+         "span": "SnowflakeNet", "answer_keys": [["SnowflakeNet"]],
+         "question_type": "method", "query": "Which decoder does SnowflakeNet use?",
+         "query_language": "en", "page_start": 1, "page_end": 1, "decision": "accepted"},
+        {"candidate_id": "b1", "document_id": "d2", "chunk_id": "k2",
+         "sentence": "PoinTr proposes a set-to-set translation strategy for completion.",
+         "span": "PoinTr", "answer_keys": [["PoinTr"]],
+         "question_type": "method", "query": "What strategy does PoinTr propose?",
+         "query_language": "en", "page_start": 1, "page_end": 1, "decision": "accepted"},
+    ]
+
+
+def test_build_multi_document_cases_accepts_half_hit():
+    from evidenceflow.domain.evaluation_v2 import EvidenceLocator
+
+    documents = {
+        "d1": make_document({1: "SnowflakeNet uses a Skip-Transformer decoder for generation."},
+                            document_id="d1", content_hash="h1"),
+        "d2": make_document({1: "PoinTr proposes a set-to-set translation strategy for completion."},
+                            document_id="d2", content_hash="h2"),
+    }
+    chunks = {"k1": {"text": "SnowflakeNet uses a Skip-Transformer decoder for generation."},
+              "k2": {"text": "PoinTr proposes a set-to-set translation strategy for completion."}}
+    client = _FakeSingleBlockClient({"Skip-Transformer": "SnowflakeNet", "set-to-set": "PoinTr"})
+    results = []
+    cases, failures = module.build_multi_document_cases(
+        [draft.MultiDocPair(question_type="method",
+                            candidate_a=_multi_doc_pair_items()[0],
+                            candidate_b=_multi_doc_pair_items()[1])],
+        client=client, documents=documents, chunks_by_id=chunks,
+        approval_basis="gate.json#abc", probe_results=results,
+    )
+    assert failures == [] and len(cases) == 1
+    case = cases[0]
+    assert case.question_type == "multi_document"
+    assert [g.group_id for g in case.required_evidence_groups] == ["G1", "G2"]
+    assert [c.claim_id for c in case.required_claims] == ["C1", "C2"]
+    assert "multi_doc" in case.tags
+    # 两篇论文各占一个证据组（multi_doc 校验要求）。
+    assert {a.document_id for g in case.required_evidence_groups for a in g.alternatives} == {"d1", "d2"}
+    assert {r["mode"] for r in results} == {"single_block_a", "single_block_b"}
+
+
+def test_build_multi_document_cases_rejects_when_other_key_also_hits():
+    documents = {
+        "d1": make_document({1: "SnowflakeNet uses a Skip-Transformer decoder for generation."},
+                            document_id="d1", content_hash="h1"),
+        "d2": make_document({1: "PoinTr proposes a set-to-set translation strategy for completion."},
+                            document_id="d2", content_hash="h2"),
+    }
+    chunks = {"k1": {"text": "SnowflakeNet uses a Skip-Transformer decoder for generation."},
+              "k2": {"text": "PoinTr proposes a set-to-set translation strategy for completion."}}
+    client = _FakeSingleBlockClient({"Skip-Transformer": "SnowflakeNet", "set-to-set": "PoinTr"},
+                                    answer_both=True)
+    cases, failures = module.build_multi_document_cases(
+        [draft.MultiDocPair(question_type="method",
+                            candidate_a=_multi_doc_pair_items()[0],
+                            candidate_b=_multi_doc_pair_items()[1])],
+        client=client, documents=documents, chunks_by_id=chunks, approval_basis="gate.json#abc",
+    )
+    assert cases == []
+    assert failures and "t3_single_block_inconclusive" in failures[0]["reason"]
+
+
+def test_multi_doc_requires_dataset_out(tmp_path, monkeypatch, capsys):
+    items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
+    out = tmp_path / "gate.json"
+    # 构造了 T3 却没有落盘点：必须拒绝，而不是静默丢弃。
+    code = module.main([
+        "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
+        "--multi-doc", "2",
+    ])
+    assert code == 2
+    assert "REFUSED" in capsys.readouterr().err
+
+
+# ---------- T6 错误前提题 ----------
+
+def test_replacement_number_follows_spec_rules():
+    # 小数：最后一位 +1，位数不变（进位后整数增长但小数位固定）。
+    assert draft.replacement_number("0.19", context_text="") == "0.20"
+    assert draft.replacement_number("1.99", context_text="") == "2.00"
+    assert draft.replacement_number("2.5", context_text="") == "2.6"
+    # 整数 >= 10：+1。
+    assert draft.replacement_number("128", context_text="") == "129"
+    assert draft.replacement_number("256", context_text="") == "257"
+    # 单位与百分号保留。
+    assert draft.replacement_number("0.0012s", context_text="") == "0.0013s"
+    assert draft.replacement_number("1.5mm", context_text="") == "1.6mm"
+    assert draft.replacement_number("50%", context_text="") == "51%"
+    # < 10 的整数不选（含 `1%`：数值部分 < 10）。
+    for value in ("7", "1%", "2"):
+        with pytest.raises(ValueError):
+            draft.replacement_number(value, context_text="")
+    with pytest.raises(ValueError):
+        draft.replacement_number("abc", context_text="")
+
+
+def test_replacement_number_skips_values_already_in_context():
+    # 129 已在上下文中 ⇒ 再应用一次得到 130。
+    assert draft.replacement_number("128", context_text="the layer has 129 units") == "130"
+    # 3 次仍冲突 ⇒ ValueError，不返回一个原文里已有的值。
+    with pytest.raises(ValueError):
+        draft.replacement_number("128", context_text="129 130 131", max_attempts=3)
+
+
+def test_build_false_premise_case_satisfies_d8():
+    from evidenceflow.eval.e2e import dataset as dataset_module
+
+    document = make_document({1: f"{SENTENCE_PERCENT}\nPage footer."})
+    anchor = draft.build_evidence_alternative(
+        document, sentence=SENTENCE_PERCENT, page_start=1, page_end=1
+    )
+    case = draft.build_false_premise_case(
+        case_id="E2E-M900",
+        family_id="derived_t6",
+        query="Is it true that the model takes 0.0013s on a Nvidia GeForce 1080Ti GPU?",
+        query_language="en",
+        question_type="quantitative_results",
+        sentence=SENTENCE_PERCENT,
+        span="0.0012s",
+        answer_keys=[["0.0012s", "0.0012"]],
+        anchor=anchor,
+        approval_basis="gate.json#abc",
+        false_value="0.0013s",
+    )
+    # D8 形态：按可答题计分、允许拒答、tag 标记、unanswerable_kind 为空。
+    assert case.expected_status == "answered"
+    assert case.acceptable_abstention is True
+    assert "false_premise" in case.tags
+    assert case.unanswerable_kind is None
+    # required claim 写纠正后的事实，forbidden claim 带矛盾锚点。
+    assert len(case.required_claims) == 1 and case.required_claims[0].answer_keys
+    assert len(case.forbidden_claims) == 1
+    assert case.forbidden_claims[0].evidence_anchors
+    assert "0.0013s" in case.forbidden_claims[0].text
+
+    # 通过 validate_dataset 的 D8 规则（用真实文档做页文本 provider）。
+    dataset = dataset_module.E2EDataset(
+        dataset_id="d", corpus_version="c", cases=[case]
+    )
+    provider = lambda document_id, start, end: draft.page_text(document, start, end)  # noqa: E731
+    report = dataset_module.validate_dataset(
+        dataset, provider, require_approved=True, allow_machine=True, enforce_grounding=True
+    )
+    assert "false_premise" not in {issue.rule for issue in report.issues}
+
+
+# ---------- 题型分层 ----------
+
+def test_classify_question_type_reaches_implementation():
+    """`implementation` 必须可达：它排在 `method` 之前，否则永远拿不到题（配额必挂）。"""
+
+    assert draft.classify_question_type(
+        "Our model is implemented in PyTorch with the official library.", "entity"
+    ) == "implementation"
+    # 纯方法描述仍判 method（回归保护）。
+    assert draft.classify_question_type(
+        "The architecture consists of an encoder and a decoder.", "entity"
+    ) == "method"
+    # 数值 span 一律 quantitative_results（既有语义不变）。
+    assert draft.classify_question_type("we set 1% of the measurements", "numeric") == "quantitative_results"
+    # `experiment_setup` 仍排在 `implementation` 之前：含 GPU/数据集等实验配置的句子归实验设置。
+    assert draft.classify_question_type(
+        "The model is implemented in PyTorch and trained on a single GPU.", "entity"
+    ) == "experiment_setup"
+    # 8 类题型的关键词表都必须存在对应条目（`multi_document` 由 T3 构造，不靠关键词）。
+    keyword_types = {name for name, _ in draft._QUESTION_TYPE_KEYWORDS}
+    assert keyword_types == set(draft.QUESTION_TYPES) - {"multi_document"}
+
+
+# ---------- 分层抽样 ----------
 def _candidate(document_id: str, index: int, sentence: str, language: str = "en") -> dict:
     """构造一条 pool 形态的候选句行。"""
 
