@@ -207,6 +207,35 @@ def test_plan_quotas_reports_violations_without_raising():
     assert sum("difficulty labels missing" in violation for violation in no_labels.violations) == 1
 
 
+def test_quota_counts_final_dataset_not_just_accepted_items(tmp_path, monkeypatch):
+    """配额必须基于最终题集：T3/T6 不来自 accepted_items，早算会漏报（D2 实测漏掉 5 道 T3）。"""
+
+    items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
+    out = tmp_path / "gate.json"
+    dataset_path = tmp_path / "dataset.json"
+    assert module.main([
+        "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
+        "--dataset-out", str(dataset_path), "--dataset-id", "rag_e2e_v1",
+        "--corpus-version", "test",
+    ]) == 0
+
+    report = json.loads(out.read_text(encoding="utf-8"))
+    # 没有 --multi-doc 时题集里没有 multi_document，配额应如实报 0。
+    assert report["quota"]["counts"]["question_types"].get("multi_document", 0) == 0
+    # 报告要带题集草案汇总，便于核对配额与题集是否一致。
+    assert report["dataset_draft"]["cases"] >= 1
+    assert report["dataset_draft"]["multi_document"] == 0
+
+    # 题集里每道题的 approval_basis 必须是报告名 + 真实 sha256（不是占位值）。
+    import hashlib
+    dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
+    digest = hashlib.sha256(out.read_bytes()).hexdigest()
+    for case in dataset["cases"]:
+        basis = case["provenance"]["approval_basis"]
+        assert basis == f"gate.json#{digest}", basis
+        assert "pending" not in basis
+
+
 # ---------- T3 多文档配对 ----------
 
 def _t3_item(candidate_id: str, document_id: str, sentence: str, span: str,

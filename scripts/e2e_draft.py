@@ -1275,7 +1275,8 @@ def run_gates(args: argparse.Namespace) -> int:
         accepted_items.append(item)
 
     # 通过全部闸门的候选才进配额统计；难度标签来自 --dense 排名（只作标签，不淘汰）。
-    quota = draft.plan_quotas(accepted_items)
+    # 注意：`quota` 在下面构造完 T3/T6 之后会基于最终题集重算（见 `_finalize_quota`），
+    # 否则 multi_document 与 false_premise 两类永远统计不到（它们不来自 accepted_items）。
     accepted_total = len({item["candidate_id"] for item in items if item.get("decision") == "accepted"})
     for gate in gates.values():
         # passed/failed 以候选为单位：一个候选在同一闸门里可能触发多条失败，只计一次。
@@ -1298,6 +1299,48 @@ def run_gates(args: argparse.Namespace) -> int:
             "note": "未提供 --rerun；复跑一致性需要第二遍独立生成（Gate 要求 >= 0.8）",
         }
 
+    # 题集草案：先组装 EvalCase（含 T3/T6），配额基于**最终题集**统计——
+    # multi_document 与 false_premise 不来自 accepted_items，早算会漏掉它们（D2 实测漏报 5 道 T3）。
+    # 报告与题集的落盘顺序仍由 approval_basis 决定：报告先写、再算 sha256、最后写题集。
+    cases: list[Any] = []
+    case_failures: list[dict[str, str]] = []
+    multi_doc_failures: list[dict[str, str]] = []
+    false_premise_failures: list[dict[str, str]] = []
+    if args.dataset_out is not None or args.multi_doc > 0 or args.false_premise > 0:
+        # approval_basis 需要一个已存在的报告；先写一版占位报告拿到字节哈希，
+        # 再用它组装题集，最后把最终 payload（含重算后的 quota）覆盖写回。
+        placeholder_basis = "B3_gate_report.json#pending"
+        cases, case_failures = build_dataset_cases(
+            accepted_items, documents=documents, approval_basis=placeholder_basis
+        )
+        if args.multi_doc > 0:
+            pairs = draft.pair_multi_document_candidates(
+                accepted_items, limit=args.multi_doc, seed=args.seed_for_pairs
+            )
+            multi_cases, multi_doc_failures = build_multi_document_cases(
+                pairs,
+                client=client,
+                documents=documents,
+                chunks_by_id=chunks_by_id,
+                approval_basis=placeholder_basis,
+                start_index=len(cases) + 1,
+                probe_results=probe_results,
+            )
+            cases.extend(multi_cases)
+        if args.false_premise > 0:
+            fp_cases, false_premise_failures = build_false_premise_cases(
+                accepted_items,
+                count=args.false_premise,
+                documents=documents,
+                chunks_by_id=chunks_by_id,
+                approval_basis=placeholder_basis,
+                start_index=len(cases) + 1,
+            )
+            cases.extend(fp_cases)
+
+    # 配额基于最终题集：包含单证据题、T3 多文档题与 T6 错误前提题。
+    quota = draft.plan_quotas(cases) if cases else draft.plan_quotas(accepted_items)
+
     payload = {
         "gates_version": GATES_VERSION,
         "collection": collection_name,
@@ -1319,9 +1362,15 @@ def run_gates(args: argparse.Namespace) -> int:
             "prompt_version": probe.PROBE_PROMPT_VERSION,
         },
         "probe_results": probe_results,
+        "dataset_draft": {
+            "cases": len(cases),
+            "failures": len(case_failures) + len(multi_doc_failures) + len(false_premise_failures),
+            "multi_document": sum(1 for case in cases if "multi_doc" in case.tags),
+            "false_premise": sum(1 for case in cases if "false_premise" in case.tags),
+        } if cases else None,
         "notes": [
             "G5 的 bge-m3 embedding 余弦去重未在本步实现（只做确定性部分）",
-            "T3 多证据题的“单块只中一半”探针未在本步实现（当前候选为单 claim）",
+            "不可答题（out_of_corpus / near_miss）由 T4/T5 在 B3b 前另行构造，不在本报告的题集草案里",
         ],
     }
     write_json(args.out, payload)
@@ -1331,41 +1380,13 @@ def run_gates(args: argparse.Namespace) -> int:
         f"failed_gates={failed_gates or 'none'} quota_ok={quota.ok} out={args.out}"
     )
 
-    # 题集草案：报告先落盘、再算它的 sha256，最后写题集——approval_basis 必须指向已存在的报告。
     if args.dataset_out is not None:
+        # approval_basis 指向报告名 + 该报告字节的 sha256；占位值在此被真实哈希替换。
         report_bytes = args.out.read_bytes()
         approval_basis = f"{args.out.name}#{hashlib.sha256(report_bytes).hexdigest()}"
-        cases, case_failures = build_dataset_cases(
-            accepted_items, documents=documents, approval_basis=approval_basis
-        )
-        # T3 多文档题追加在单证据题之后，case_id 序号接续，不重置。
-        multi_doc_failures: list[dict[str, str]] = []
-        if args.multi_doc > 0:
-            pairs = draft.pair_multi_document_candidates(
-                accepted_items, limit=args.multi_doc, seed=args.seed_for_pairs
-            )
-            multi_cases, multi_doc_failures = build_multi_document_cases(
-                pairs,
-                client=client,
-                documents=documents,
-                chunks_by_id=chunks_by_id,
-                approval_basis=approval_basis,
-                start_index=len(cases) + 1,
-                probe_results=probe_results,
-            )
-            cases.extend(multi_cases)
-        # T6 错误前提题追加在最后，case_id 序号继续接续。
-        false_premise_failures: list[dict[str, str]] = []
-        if args.false_premise > 0:
-            fp_cases, false_premise_failures = build_false_premise_cases(
-                accepted_items,
-                count=args.false_premise,
-                documents=documents,
-                chunks_by_id=chunks_by_id,
-                approval_basis=approval_basis,
-                start_index=len(cases) + 1,
-            )
-            cases.extend(fp_cases)
+        for case in cases:
+            # Provenance 是 ContractModel；用 model_copy 换掉 approval_basis，其余字段不变。
+            case.provenance = case.provenance.model_copy(update={"approval_basis": approval_basis})
         dataset = dataset_schema.E2EDataset(
             dataset_id=args.dataset_id,
             corpus_version=args.corpus_version,
