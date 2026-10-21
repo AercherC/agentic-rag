@@ -23,6 +23,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -43,6 +44,7 @@ from evidenceflow.config import Settings  # noqa: E402
 from evidenceflow.domain.document import Document  # noqa: E402
 from evidenceflow.domain.generation import LLMMessage  # noqa: E402
 from evidenceflow.eval.e2e import draft, probe  # noqa: E402
+from evidenceflow.eval.e2e import dataset as dataset_schema  # noqa: E402
 from evidenceflow.eval.e2e.key_match import alias_hits, normalize_text  # noqa: E402
 from evidenceflow.ingestion.loader import SUPPORTED_FILE_TYPES, load_document  # noqa: E402
 from evidenceflow.llm import OpenAICompatibleLLMClient  # noqa: E402
@@ -138,6 +140,19 @@ def write_text(path: Path, text: str) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8", newline="\n")
+
+
+def write_dataset(path: Path, dataset: Any) -> None:
+    """写出题集草案：UTF-8、键排序、缩进 2、固定 LF，与 ``dataset.sha256`` 的字节口径一致。
+
+    固定 LF 是关键：``dataset.sha256`` 记录的是文件字节的 sha256，若换行随 OS 变成 CRLF，
+    同一份题集在不同平台会得到不同指纹，冻结产物就不可复现了。
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = dataset.model_dump(mode="json")
+    path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+                    encoding="utf-8", newline="\n")
 
 
 def _host(url: str) -> str:
@@ -436,13 +451,18 @@ def draft_failures(
 
 
 def run_draft(args: argparse.Namespace) -> int:
-    """派生 span/answer_keys 并生成题干，写候选 JSONL。"""
+    """派生 span/answer_keys 并生成题干，写候选 JSONL。
+
+    ``--limit`` 走分层抽样（``draft.stratified_sample``）而不是前缀截断：候选按 chunk 遍历顺序
+    排列，前缀截断会让部分论文只有一两条候选，Gate 的「每篇 ≥6 题」必然失败。
+    ``--seed`` 决定层内排序，复跑时用另一个 seed 得到独立但可复算的第二遍样本。
+    """
 
     candidates = read_candidates(args.from_json)
     if args.limit is not None and args.limit < 0:
         raise ValueError("--limit must be >= 0")
     if args.limit is not None:
-        candidates = candidates[: args.limit]
+        candidates = draft.stratified_sample(candidates, limit=args.limit, seed=args.seed)
     settings = Settings()
     base_url = settings.llm_base_url
     client: OpenAICompatibleLLMClient | None = None
@@ -566,6 +586,145 @@ def load_items(path: Path) -> list[dict[str, Any]]:
     return items
 
 
+def compute_rerun_consistency(
+    items: list[dict[str, Any]], rerun_items: list[dict[str, Any]]
+) -> tuple[dict[str, Any], list[dict[str, str]]]:
+    """比较两遍独立生成，返回 (``rerun_consistency`` 报告, 冲突丢弃清单)。
+
+    配对键优先用 ``candidate_id``；不同 ``--seed`` 下候选句可能不同，此时退化为
+    ``(document_id, normalize_text(sentence))``，因为同一源句才算同一道题。
+
+    一致性判定照计划原文：``span`` 相同 **或** 两遍 ``answer_keys`` 交集非空（按 ``normalize_text``
+    比较）。只统计两遍都 ``decision == "accepted"`` 的候选——只在一遍通过的候选没有可比性，
+    若计入分母会因丢弃率差异而失真。
+
+    冲突条目进 ``discarded``（``stage="rerun"``），由调用方决定丢弃；``value`` 在
+    ``checked == 0`` 时为 ``None``，不伪造 0（空分母返回 null 是 §13.1(e) 的既定口径）。
+    """
+
+    def key_of(item: dict[str, Any]) -> tuple[str, str]:
+        """配对键：candidate_id 优先，缺失时退回源句身份。"""
+
+        candidate_id = str(item.get("candidate_id") or "")
+        if candidate_id:
+            return ("candidate_id", candidate_id)
+        return (
+            "sentence",
+            f"{item.get('document_id', '')}:{normalize_text(str(item.get('sentence', '')))}",
+        )
+
+    def aliases_of(item: dict[str, Any]) -> set[str]:
+        """把 answer_keys 摊平成规范化别名集合，用于"交集非空"判定。"""
+
+        return {
+            normalize_text(str(alias))
+            for group in item.get("answer_keys") or []
+            for alias in group
+            if str(alias).strip()
+        }
+
+    accepted_first = {
+        key_of(item): item for item in items if item.get("decision") == "accepted"
+    }
+    accepted_second = {
+        key_of(item): item for item in rerun_items if item.get("decision") == "accepted"
+    }
+    shared = sorted(set(accepted_first) & set(accepted_second))
+
+    consistent = 0
+    conflicts: list[dict[str, str]] = []
+    for key in shared:
+        first, second = accepted_first[key], accepted_second[key]
+        same_span = str(first.get("span") or "") == str(second.get("span") or "")
+        shared_keys = aliases_of(first) & aliases_of(second)
+        # 计划口径：span 相同或 answer_keys 有交集，任一成立即视为两遍一致。
+        if same_span or shared_keys:
+            consistent += 1
+            continue
+        conflicts.append(
+            {
+                "candidate_id": str(first.get("candidate_id") or key[1]),
+                "stage": "rerun",
+                "reason": "rerun_conflict",
+            }
+        )
+
+    checked = len(shared)
+    return (
+        {
+            "available": True,
+            "checked": checked,
+            "consistent": consistent,
+            "value": (consistent / checked) if checked else None,
+            "note": "两遍独立生成的 span 相同或 answer_keys 交集非空即一致；冲突条目已丢弃（Gate 要求 >= 0.8）",
+        },
+        conflicts,
+    )
+
+
+def build_dataset_cases(
+    accepted_items: list[dict[str, Any]],
+    *,
+    documents: dict[str, Document],
+    approval_basis: str,
+    start_index: int = 1,
+) -> tuple[list[Any], list[dict[str, str]]]:
+    """把通过闸门的候选组装成 ``EvalCase`` 列表，返回 (cases, 组装失败清单)。
+
+    每个候选用 ``--from-json`` 的源句重新定位锚点（``draft.build_evidence_alternative``）；
+    定位失败或 span 已不在句内的候选不产题，记入失败清单——这些是上游数据的真实缺陷，
+    不能在落盘阶段静默跳过。
+
+    ``case_id`` 在 ``E2E-M{序号:03d}`` 的独立 ID 空间里连续编号，``start_index`` 供多文档题接续；
+    ``family_id`` 用 ``derived_<source>``，让配对比较能按题族 bootstrap。
+    """
+
+    cases: list[Any] = []
+    failures: list[dict[str, str]] = []
+    for offset, item in enumerate(accepted_items):
+        candidate_id = str(item.get("candidate_id", ""))
+        document = documents.get(str(item.get("document_id", "")))
+        if document is None:
+            failures.append({"candidate_id": candidate_id, "reason": "document_not_found"})
+            continue
+        sentence = str(item.get("sentence", ""))
+        span = str(item.get("span", ""))
+        try:
+            anchor = draft.build_evidence_alternative(
+                document,
+                sentence=sentence,
+                page_start=item.get("page_start"),
+                page_end=item.get("page_end"),
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": candidate_id, "reason": f"anchor: {exc}"})
+            continue
+        # 难度标签（来自 --dense 排名）只作标签，用户可用它做分片统计，不参与淘汰。
+        tags = [str(item["question_type"])]
+        if item.get("difficulty"):
+            tags.append(str(item["difficulty"]))
+        try:
+            cases.append(
+                draft.build_case(
+                    case_id=f"E2E-M{start_index + offset:03d}",
+                    family_id=f"derived_{item.get('source') or 't1'}",
+                    query=str(item.get("query", "")),
+                    query_language=str(item.get("query_language") or "en"),
+                    question_type=str(item.get("question_type") or "method"),
+                    sentence=sentence,
+                    span=span,
+                    answer_keys=[list(group) for group in item.get("answer_keys") or []],
+                    anchor=anchor,
+                    approval_basis=approval_basis,
+                    tags=tags,
+                    source=str(item.get("source") or "derived_t1"),
+                )
+            )
+        except ValueError as exc:
+            failures.append({"candidate_id": candidate_id, "reason": f"build_case: {exc}"})
+    return cases, failures
+
+
 def load_judge_config() -> dict[str, str | None]:
     """探针配置：进程环境优先，其次 ``.env``（与 B0 探针同一口径，不注入全局 Settings）。"""
 
@@ -643,6 +802,11 @@ def _difficulty_for(query: str, chunk_id: str, dense: dict[str, list[str]] | Non
 
 def run_gates(args: argparse.Namespace) -> int:
     """G3/G4/G5（确定性）+ G6（探针），写闸门报告。"""
+
+    # 题集草案的三个参数必须成套出现：只给 --dataset-out 会让 corpus_version 无从决定，
+    # 而该口径在合同里仍未定案，不能由脚本替调用方猜一个默认值。
+    if args.dataset_out is not None and not (args.dataset_id and args.corpus_version):
+        raise Refused("--dataset-out requires --dataset-id and --corpus-version")
 
     judge = load_judge_config()
     missing = [key for key in JUDGE_KEYS if not judge[key]]
@@ -880,6 +1044,22 @@ def run_gates(args: argparse.Namespace) -> int:
         gate["failed"] = len({failure["candidate_id"] for failure in gate["failures"]})
         gate["passed"] = max(accepted_total - gate["failed"], 0)
 
+    # 复跑一致性：提供 --rerun 时按计划口径真算；缺省时保留 available=false 且 value=null。
+    if args.rerun is not None:
+        rerun_consistency, rerun_conflicts = compute_rerun_consistency(items, load_items(args.rerun))
+        discarded.extend(rerun_conflicts)
+        # 冲突条目从可冻结集合中移除，避免"报告说一致率不足、题集里却留着冲突题"。
+        conflict_ids = {entry["candidate_id"] for entry in rerun_conflicts}
+        accepted_items = [item for item in accepted_items if item["candidate_id"] not in conflict_ids]
+    else:
+        rerun_consistency = {
+            "available": False,
+            "checked": 0,
+            "consistent": 0,
+            "value": None,
+            "note": "未提供 --rerun；复跑一致性需要第二遍独立生成（Gate 要求 >= 0.8）",
+        }
+
     payload = {
         "gates_version": GATES_VERSION,
         "collection": collection_name,
@@ -890,13 +1070,7 @@ def run_gates(args: argparse.Namespace) -> int:
         },
         "gates": gates,
         "quota": quota.model_dump(mode="json"),
-        "rerun_consistency": {
-            "available": False,
-            "checked": 0,
-            "consistent": 0,
-            "value": None,
-            "note": "single-pass items; D2 需第二遍独立生成后另行比对（Gate 要求 >= 0.8）",
-        },
+        "rerun_consistency": rerun_consistency,
         "discarded": discarded,
         "probe_config": {
             "judge_host": _host(judge_base_url),
@@ -918,6 +1092,24 @@ def run_gates(args: argparse.Namespace) -> int:
         f"items={len(items)} accepted={len(accepted_items)} discarded={len(discarded)} "
         f"failed_gates={failed_gates or 'none'} quota_ok={quota.ok} out={args.out}"
     )
+
+    # 题集草案：报告先落盘、再算它的 sha256，最后写题集——approval_basis 必须指向已存在的报告。
+    if args.dataset_out is not None:
+        report_bytes = args.out.read_bytes()
+        approval_basis = f"{args.out.name}#{hashlib.sha256(report_bytes).hexdigest()}"
+        cases, case_failures = build_dataset_cases(
+            accepted_items, documents=documents, approval_basis=approval_basis
+        )
+        dataset = dataset_schema.E2EDataset(
+            dataset_id=args.dataset_id,
+            corpus_version=args.corpus_version,
+            cases=cases,
+        )
+        write_dataset(args.dataset_out, dataset_schema.with_fingerprint(dataset))
+        print(
+            f"dataset_cases={len(cases)} dataset_failures={len(case_failures)} "
+            f"fingerprint={dataset.fingerprint or 'computed'} dataset_out={args.dataset_out}"
+        )
     # 闸门失败与配额未达标是报告内容（D2 据此决定丢弃/补题），不是命令失败；
     # 只有“被拒绝”（同厂商/缺配置/写 evals）才用退出码 2。
     return EXIT_OK
@@ -1046,7 +1238,10 @@ def build_parser() -> argparse.ArgumentParser:
     draft_parser.add_argument("--from-json", type=Path, required=True, help="pool 报告或 chunk 列表")
     draft_parser.add_argument("--out", type=Path, required=True)
     draft_parser.add_argument("--model", default="deepseek-flash")
-    draft_parser.add_argument("--limit", type=int, default=None)
+    draft_parser.add_argument("--limit", type=int, default=None,
+                              help="分层抽样的条数（不是文件前缀）；缺省取全部候选")
+    draft_parser.add_argument("--seed", type=int, default=1,
+                              help="分层抽样的层内排序种子；复跑用另一个 seed")
     draft_parser.add_argument("--dry-run", action="store_true", help="不调用模型，题干用 <DRY-RUN>")
 
     gates = sub.add_parser("gates", help="确定性闸门 + 跨厂商探针")
@@ -1054,6 +1249,13 @@ def build_parser() -> argparse.ArgumentParser:
     gates.add_argument("--out", type=Path, required=True)
     gates.add_argument("--dense", type=Path, default=None, help="{query: [chunk_id...]}")
     gates.add_argument("--source-root", type=Path, default=None)
+    gates.add_argument("--rerun", type=Path, default=None,
+                       help="第二遍独立生成的 JSONL；提供时计算复跑一致率（Gate 要求 >= 0.8）")
+    gates.add_argument("--dataset-out", type=Path, default=None,
+                       help="通过的候选组装成 E2EDataset 并写出（不得位于 evals/ 下）")
+    gates.add_argument("--dataset-id", default=None, help="题集身份，如 rag_e2e_v1（配合 --dataset-out）")
+    gates.add_argument("--corpus-version", default=None,
+                       help="语料版本；口径尚未定案（Gold 1e48b401… vs manifest bb184720…），必须显式传入")
 
     report = sub.add_parser("report", help="闸门 JSON → Markdown")
     report.add_argument("--gate", type=Path, required=True)
@@ -1061,10 +1263,16 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _output_path(args: argparse.Namespace) -> Path:
-    """每个子命令唯一的输出路径；输出保护必须先于任何输入读取。"""
+def _output_paths(args: argparse.Namespace) -> list[Path]:
+    """该次调用会写出的全部路径；输出保护必须先于任何输入读取。"""
 
-    return args.report if args.command == "pool" else args.out
+    if args.command == "pool":
+        return [args.report]
+    paths = [args.out]
+    # `--dataset-out` 与主输出是两处写盘，两处都要过 evals/ 保护，防止只挡住报告却漏掉题集。
+    if getattr(args, "dataset_out", None) is not None:
+        paths.append(args.dataset_out)
+    return paths
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1072,7 +1280,8 @@ def main(argv: list[str] | None = None) -> int:
 
     args = build_parser().parse_args(argv)
     try:
-        check_output(_output_path(args))
+        for path in _output_paths(args):
+            check_output(path)
     except Refused as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)
         return EXIT_REFUSED

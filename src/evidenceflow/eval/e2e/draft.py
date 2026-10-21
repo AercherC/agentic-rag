@@ -10,9 +10,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from typing import Any, Literal
 
@@ -39,10 +40,41 @@ MAX_COMMON_WORD_RUN = 8
 _WHITESPACE = re.compile(r"\s+")
 # 句子边界：只有标点后跟空白才算边界，避免把小数 `0.0012` 或 `7.21` 切成两段。
 _SENTENCE_BOUNDARY = re.compile(r"(?<=[.!?])\s+")
+# PDF 抽取会保留印刷断词（`archi-\ntecture`）。必须在压空白**之前**折叠掉「连字符 + 换行 + 缩进」，
+# 否则换行先被压成空格会留下 `archi- tecture`，此后任何规范化都无法还原成 `architecture`
+# （`key_match` 的 `_LINE_END_HYPHEN` 要求连字符后跟换行，形态已不存在）。
+_LINE_END_HYPHEN = re.compile(r"-\s*\n\s*")
 # 指代/连接词开头的句子缺少自足语义，不能作为独立题源（设计 §2.1）。
 _BAD_SENTENCE_STARTS = frozenset(
     {"this", "these", "those", "it", "they", "we", "our", "such", "however", "therefore", "thus", "here"}
 )
+# 参考文献条目：`2 [2] Iro Armeni, Sasha Sax, ...` / `5, 7 [8] Thibault Groueix, ...`。
+# 这类句子的"答案"是作者名或文献编号，不是论文事实，探针能答中但题目无意义
+# （小样校准里 5 条 G6 失败全来自这类句子与 4 条小节标题）。实测占句池 12.2%。
+_REFERENCE_ENTRY = re.compile(r"^[\d,\s]{0,8}\[\d+\]\s")
+# 公式/表格残片：PDF 抽取会把 LaTeX 公式（`\f rac {\ s }_s`、`s _ i ^l`）与表格行
+# （大量数字、行内分隔）切成一"句"。这类文本不是自然语言陈述，接地检查必然失败
+# （小样校准里 `claim_grounded` 全部来自公式残片与表头），必须整句排除。
+_FORMULA_MARKERS = re.compile(r"\\f\s*rac|\^\{|_\{|\\s\b|\$|\\mathrm|\\mathbf")
+# 非字母数字字符占比过高（公式/符号行）与数字过密（表头/结果表）也是残片信号。
+_MAX_SYMBOL_RATIO = 0.22
+_MAX_DIGIT_RATIO = 0.20
+# 小节标题开头：`Experiments In this section, ...` / `Discussion We have ...`。
+# PDF 把小节标题与正文首句粘成一行，切句后标题成了句首词；它不含事实，也不能作为答案。
+_SECTION_HEADING_STARTS = frozenset({
+    "abstract", "introduction", "background", "related", "method", "methods", "approach",
+    "experiments", "experiment", "results", "result", "discussion", "conclusion", "conclusions",
+    "ablation", "implementation", "appendix", "references", "acknowledgements", "acknowledgments",
+    "supplementary",
+})
+# 语篇连接词开头的句子只是在指代上文，单独拿出来无法自足成题（与 `_BAD_SENTENCE_STARTS` 同源，
+# 但这些词常出现在句中，只在句首时排除）。
+# 只收"纯过渡、后接指代/结论"的词；`additionally`/`finally`/`overall` 之后常接真实事实句
+# （`Additionally, we randomly set 1% ...` 是合法题源），因此不能整句排除。
+_BAD_SENTENCE_STARTS_EXTRA = frozenset({
+    "further", "furthermore", "moreover", "meanwhile", "similarly",
+    "consequently", "besides", "instead", "otherwise",
+})
 # 专名 token：大写开头、至少 3 字符（`[A-Z][A-Za-z0-9+\-]{2,}` 的 token 化版本）。
 _PROPER_TOKEN = re.compile(r"[A-Z][A-Za-z0-9+\-]{1,}")
 # 任意字母开头的 token，用于判断“连续大写开头”的专名序列是否中断。
@@ -78,6 +110,24 @@ QUESTION_TYPES: tuple[str, ...] = (
 )
 # 难度三档：由调用方通过 tags 或单独字段传入（gold chunk 的 Dense 排名，只作标签）。
 DIFFICULTY_TAGS: tuple[str, ...] = ("easy", "medium", "hard")
+# 不能作为答案的"专名"：句首虚词/连接词，以及图注与小节引用词。
+# 实体正则只要求"大写开头 + 至少 3 字符"，因此 `The`（T+he）、`Figure`、`Table` 都会被误判为专名；
+# 它们不含任何事实值，一旦成为 answer_keys 会让 key_match 结构性失败。
+ENTITY_STOPWORDS: frozenset[str] = frozenset({
+    "the", "a", "an", "this", "these", "those", "it", "we", "our", "as", "at", "in", "on", "of",
+    "for", "and", "or", "but", "if", "since", "when", "where", "while", "with", "from", "by",
+    "figure", "fig", "table", "section", "eq", "equation", "appendix", "algorithm", "sec",
+    # 语篇连接词与表格/章节标签同样不含事实值（校准里 `Here`、`Further`、`Complexity` 都曾成为答案）。
+    "here", "there", "further", "furthermore", "moreover", "additionally", "finally", "meanwhile",
+    "similarly", "consequently", "overall", "besides", "instead", "notably", "specifically",
+    "complexity", "analysis", "overview", "setup", "results", "method", "methods",
+})
+# 图注/小节引用词：紧跟其后的纯数字是编号（`Figure 2`、`Section 3`），不是答案。
+_REFERENCE_LABELS: frozenset[str] = frozenset({
+    "figure", "fig", "table", "section", "sec", "eq", "equation", "appendix", "algorithm",
+})
+# 实体 span 的原始形态：大写开头、后接至少 2 个字母数字或 `+`/`-`。
+_ENTITY_SPAN = re.compile(r"[A-Z][A-Za-z0-9+\-]{2,}")
 
 
 class SpanCandidate(ContractModel):
@@ -117,12 +167,23 @@ def normalize_source_text(text: str) -> str:
 def split_sentences(text: str) -> list[str]:
     """按 ``.!?`` + 空白切句，并把句内换行/多空白压成单个空格。
 
+    处理顺序固定为：NFKC → **折叠行尾断词** → 按 ``.!?`` 切句 → 压空白 → 去首尾空白。
+    该顺序不可调换：PDF 抽取保留印刷断词（`archi-\ntecture`），若先压空白会得到
+    `archi- tecture`，而 `key_match.normalize_text` 的折叠规则要求「连字符后跟换行」，
+    换行既已消失就再也无法还原成 `architecture`，接地检查（§13.1(c′)①）会必然失败。
+    实测句池 1951 条候选句中有 572 条（29.3%）受此影响，所以先折叠是正确性问题而非优化。
+
     切分只在“标点后跟空白”处发生，因此 `0.0012s`、`7.21` 这类小数不会被拆开；
     跨行排版的句子（`often\\nincomplete`）合并成一条，落盘后仍是单行文本。
     该函数同时供 ``pool`` 统计“句数”与 ``sentence_candidates`` 使用。
+
+    已知局限（与 §13.1(d) 一致，由 `tests/test_e2e_key_match.py` 的 xfail 固定）：
+    合法连字符复合词若恰在行尾断开（`self-\nattention`），折叠后成为 `selfattention`。
     """
 
     normalized = normalize_source_text(text)
+    # 断词是抽取噪声，不是词义的一部分；必须在压空白之前消除，否则形态被破坏后无法恢复。
+    normalized = _LINE_END_HYPHEN.sub("", normalized)
     sentences: list[str] = []
     for raw in _SENTENCE_BOUNDARY.split(normalized):
         # 行内换行属于排版噪声，不是句子内容；压成单空格后锚点才能与 normalize_mapping 对齐。
@@ -153,12 +214,52 @@ def _first_word(sentence: str) -> str:
     return match.group(0).lower() if match else ""
 
 
+def _is_reference_or_heading(sentence: str) -> bool:
+    """判断句子是否为参考文献条目或小节标题粘连句，这类句子不能作为题源。
+
+    参考文献条目（`2 [2] Iro Armeni, Sasha Sax, ...`）的"答案"是作者名/文献号；
+    小节标题粘连句（`Experiments In this section, ...`）的"答案"是标题词。
+    两者都能被探针答中，但都不是论文事实——校准显示它们会产出
+    "第一作者的名是什么"这类没有评测意义的题，且干扰块极易命中（`ambiguous_distractor`）。
+    """
+
+    if _REFERENCE_ENTRY.match(sentence):
+        return True
+    # 只看首词：小节标题被 PDF 抽取粘到正文首句前面，因此首词就是标题本身。
+    first_word = _first_word(sentence)
+    return first_word in _SECTION_HEADING_STARTS
+
+
+def _is_noise_fragment(sentence: str) -> bool:
+    """判断句子是否为公式/表格残片，这类文本不能作为题源。
+
+    PDF 抽取会把 LaTeX 公式与表格行切成"句子"：
+    `average based on inverse distances [22] ... s _ i ^l = \\f rac {\\ s }_s Here, ...`、
+    `Complexity Analysis w/ Position Extractor (Params), theoretical computation cost (FLOPs), ...`。
+    它们不是自然语言陈述，接地检查（§13.1(c′)①）会因公式被重排而必然失败，
+    而且"答案"往往是符号而非事实。用三重信号判定：LaTeX 残留、非字母数字符号占比、
+    数字占比——任一超限即排除，避免只靠单条正则漏掉变形写法。
+    """
+
+    if _FORMULA_MARKERS.search(sentence):
+        return True
+    # 占比按"非空白字符"计：空白长度不携带语义，算进去会稀释真实密度。
+    visible = [char for char in sentence if not char.isspace()]
+    if not visible:
+        return True
+    symbols = sum(1 for char in visible if not char.isalnum())
+    digits = sum(1 for char in visible if char.isdigit())
+    if symbols / len(visible) > _MAX_SYMBOL_RATIO:
+        return True
+    return digits / len(visible) > _MAX_DIGIT_RATIO
+
+
 def sentence_candidates(text: str) -> list[str]:
     """从 chunk 正文抽候选句（设计 §2.1 / §2.3）。
 
-    规则：NFKC → 按 ``.!?`` 切句 → 去首尾空白并压成单行；保留 60–320 字符、
-    首词不是指代词/连接词（大小写不敏感）、且“含数字 或 含 >=2 个连续大写开头的专名 token”
-    的句子；同一句只出现一次（保留首次出现顺序）。
+    规则：NFKC → 折叠行尾断词 → 按 ``.!?`` 切句 → 去首尾空白并压成单行；保留 60–320 字符、
+    首词不是指代词/连接词或小节标题（大小写不敏感）、不是参考文献条目、
+    且“含数字 或 含 >=2 个连续大写开头的专名 token”的句子；同一句只出现一次（保留首次出现顺序）。
     """
 
     candidates: list[str] = []
@@ -166,7 +267,14 @@ def sentence_candidates(text: str) -> list[str]:
     for sentence in split_sentences(text):
         if not MIN_SENTENCE_CHARS <= len(sentence) <= MAX_SENTENCE_CHARS:
             continue
-        if _first_word(sentence) in _BAD_SENTENCE_STARTS:
+        first_word = _first_word(sentence)
+        if first_word in _BAD_SENTENCE_STARTS or first_word in _BAD_SENTENCE_STARTS_EXTRA:
+            continue
+        # 参考文献与小节标题不是事实陈述，排除后才能保证"答案"是有意义的论文内容。
+        if _is_reference_or_heading(sentence):
+            continue
+        # 公式/表格残片不是自然语言陈述：接地检查会失败，答案也常是符号。
+        if _is_noise_fragment(sentence):
             continue
         # 自足性：数字（数值事实）或连续专名（方法/数据集名）至少满足一个，否则题干无法单句可答。
         if not re.search(r"\d", sentence) and not _has_proper_noun_run(sentence):
@@ -196,9 +304,15 @@ def numeric_unit_spans(sentence: str) -> list[str]:
 def select_spans(sentence: str) -> list[SpanCandidate]:
     """从单句选出至多 2 个答案 span（数值优先），每个 span 都是句子的字面子串。
 
-    - 数值：取 ``NUMERIC_UNIT_PATTERN`` 的第一个匹配，原始子串长度需 >= 2；
-    - 实体：没有可用数值时，取第一个专名序列 ``[A-Z][A-Za-z0-9+\\-]{2,}``；
+    - 数值：取 ``NUMERIC_UNIT_PATTERN`` 的第一个**可用**匹配，原始子串长度需 >= 2；
+      方括号内的纯数字（`[38]`、`[60]`）是引用编号而非事实值，跳过并继续找下一个匹配。
+    - 实体：没有可用数值时，取第一个**非停用词**的专名序列 ``[A-Z][A-Za-z0-9+\\-]{2,}``；
+      句首虚词（`The`）与图注词（`Figure`/`Table`）不是可命名的答案，必须跳过。
     - 同时找到数值与实体时返回两者（数值在前），否则只返回找到的一个。
+
+    为什么必须过滤：实体正则 `[A-Z][A-Za-z0-9+\\-]{2,}` 会把句首 `The`（`T` + `he`）和
+    `Figure` 当成专名。当句内没有长度 >= 2 的数值时（如 `includes 2 PN layers` 的 `2` 被长度规则弃掉），
+    返回值就会是 `The` / `Figure`，而它们根本不是答案 —— 小样校准里 10 条有 3 条因此 G6 必败。
     """
 
     candidates: list[SpanCandidate] = []
@@ -206,16 +320,79 @@ def select_spans(sentence: str) -> list[SpanCandidate]:
     for match in NUMERIC_UNIT_PATTERN.finditer(sentence):
         # 正则里的 `\s*` 在无单位时会吞掉尾随空白，去掉后再确认仍是字面子串。
         span = match.group(0).strip()
-        if len(span) >= 2:
-            numeric = SpanCandidate(sentence=sentence, span=span, kind="numeric")
-            break
+        if len(span) < 2:
+            continue
+        # 引用编号 `[38]` 是该论断引用的文献序号，不是被断言的事实值，不能作为答案。
+        if _is_citation_number(sentence, match.start(), match.end()):
+            continue
+        numeric = SpanCandidate(sentence=sentence, span=span, kind="numeric")
+        break
     if numeric is not None:
         candidates.append(numeric)
 
-    entity_match = re.search(r"[A-Z][A-Za-z0-9+\-]{2,}", sentence)
-    if entity_match is not None and entity_match.group(0) != (numeric.span if numeric else None):
-        candidates.append(SpanCandidate(sentence=sentence, span=entity_match.group(0), kind="entity"))
+    entity = _first_entity_span(sentence)
+    if entity is not None and entity != (numeric.span if numeric else None):
+        candidates.append(SpanCandidate(sentence=sentence, span=entity, kind="entity"))
     return candidates[:2]
+
+
+def _is_citation_number(sentence: str, start: int, end: int) -> bool:
+    """判断 ``sentence[start:end]`` 是否是方括号引用编号（`[38]`、`[29,36]`）。
+
+    只认紧邻的方括号：`[38]` 是文献序号，`2 PN layers` 里的 `2` 不是。
+    """
+
+    before = sentence[:start].rstrip()
+    after = sentence[end:].lstrip()
+    return before.endswith("[") and after.startswith(("]", ","))
+
+
+def _is_distinctive_entity(span: str) -> bool:
+    """判断一个词是否带有"专名特征"，而不只是句首被大写的普通词。
+
+    句首位置无法靠大小写区分专名与普通词（`Each`、`Following`、`Despite`、`Let`、`Tenth`
+    都是首字母大写化的普通词，却与 `PointNet++`、`PCN-CD`、`MLP` 满足同一个正则）。
+    因此要求至少带一个"非句法大写"的特征：
+    - 首字母之外还有大写（`SnowflakeNet`、`PointTransformer`）；
+    - 含数字或 `+`/`-`（`PN2`、`3D-EPN`、`PointNet++`、`Set-to-Set`）；
+    - 全大写缩写且长度 >= 2（`MLP`、`SSG`）。
+
+    句中出现时大小写本身已是强信号，不需要这条规则。
+    """
+
+    if any(char.isdigit() for char in span) or "+" in span or "-" in span:
+        return True
+    if span[1:] != span[1:].lower():
+        return True
+    return span.isupper() and len(span) >= 2
+
+
+def _first_entity_span(sentence: str) -> str | None:
+    """取第一个可作为答案的专名 span；跳过句首虚词与图注词，跳过图/表编号。
+
+    - 停用词（`The`、`Figure`）不含事实值，跳过；
+    - 紧跟在 `Figure`/`Table`/`Section` 等引用词后的纯数字是编号，跳过；
+    - **句首位置的候选必须带专名特征**（`_is_distinctive_entity`）：句首必然大写，
+      `Each`/`Following`/`Despite`/`Let`/`Tenth` 这些普通词会与真专名混淆；
+      只有当它带内部大写、数字或符号时才可信（`PointNet++`、`PCN-CD`、`MLP` 都能通过）。
+    没有合格候选时返回 ``None``（调用方据此丢弃该候选，而不是造一个注定命不中的键）。
+    """
+
+    for match in _ENTITY_SPAN.finditer(sentence):
+        span = match.group(0)
+        if span.casefold() in ENTITY_STOPWORDS:
+            continue
+        # 位置在句首（允许前导引号/括号）时，大写可能只来自句法位置，需额外证据。
+        at_start = not sentence[: match.start()].strip(" \t\"'(（[《")
+        if at_start and not _is_distinctive_entity(span):
+            continue
+        # 引用词后紧跟的纯数字（`Figure 2` 的 `2`）是编号；只对纯数字生效，避免误伤 `3D` 这类真值。
+        if span.isdigit():
+            previous = _ENTITY_SPAN.findall(sentence[: match.start()])
+            if previous and previous[-1].casefold() in _REFERENCE_LABELS:
+                continue
+        return span
+    return None
 
 
 def _dedupe_aliases(aliases: Iterable[str]) -> list[str]:
@@ -339,6 +516,76 @@ def classify_question_type(sentence: str, span_kind: str) -> str:
         if any(keyword in lowered for keyword in keywords):
             return question_type
     return "method"
+
+
+def stratified_sample(
+    candidates: Sequence[dict[str, Any]],
+    *,
+    limit: int,
+    seed: int = 1,
+) -> list[dict[str, Any]]:
+    """按「文档 × 题型 × 语言」分层抽样，替代 ``candidates[:limit]`` 的前缀截断。
+
+    为什么不能用前缀截断：候选按 chunk 遍历顺序排列，取前 N 条等于只取前几篇论文的句子。
+    实测 1951 条句池取前 200 条时，有两篇论文只有 1 条与 3 条候选，而 Gate B3 要求
+    「每篇论文 ≥6 题」——无论生成多少条都会直接判配额失败。分层抽样让有限的 ``limit``
+    在各层之间轮转，才可能同时满足每篇与每类的配额。
+
+    为什么用 sha256 而不是 ``random``：题目落盘后要能被复算与审计。``hash()`` 受进程哈希种子
+    影响、``random`` 受全局状态影响，两者都会让同一输入在不同进程产出不同样本；
+    ``sha256(f"{seed}:{candidate_id}")`` 在任何进程、任何平台都给出同一个排序。
+
+    参数：
+    - ``candidates``：``pool`` 产出的候选句行（需含 ``candidate_id``/``document_id``/``sentence``）。
+    - ``limit``：要取的总条数；大于总数时返回全部（不重复）。
+    - ``seed``：复跑用的独立抽样种子，决定层内排序。
+
+    层键为 ``(document_id, 题型, query_language)``；题型用 ``classify_question_type`` 复算，
+    取不到合法 span 的候选单独归入 ``no_span`` 层（它们注定被丢弃，但不该挤占可出题的层）。
+    返回顺序稳定：同一输入两次调用逐元素相同。
+    """
+
+    if limit < 0:
+        raise ValueError("limit must be >= 0")
+    if limit == 0 or not candidates:
+        return []
+
+    # 先按层分桶，层内用确定性哈希排序；这样同一层内的取用顺序与进程无关。
+    buckets: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    for candidate in candidates:
+        sentence = str(candidate.get("sentence", ""))
+        spans = select_spans(sentence)
+        question_type = classify_question_type(sentence, spans[0].kind) if spans else "no_span"
+        language = str(candidate.get("query_language") or "")
+        key = (str(candidate.get("document_id") or ""), question_type, language)
+        buckets[key].append(candidate)
+    for key, rows in buckets.items():
+        rows.sort(key=lambda row: hashlib.sha256(
+            f"{seed}:{row.get('candidate_id', '')}".encode("utf-8")
+        ).hexdigest())
+
+    # 层间轮转取用：每轮各层各取一条，直到取满或全部耗尽。
+    # 层顺序同样用 sha256 打散，而不是按 (document_id, 题型) 字典序：字典序会让轮转在样本量
+    # 较小时反复回到同一篇论文（实测 limit=10 只覆盖 2 篇），打散后小样本也能跨文档铺开。
+    ordered_keys = sorted(
+        buckets, key=lambda key: hashlib.sha256(f"{seed}:{key}".encode("utf-8")).hexdigest()
+    )
+    positions = {key: 0 for key in ordered_keys}
+    chosen: list[dict[str, Any]] = []
+    while len(chosen) < limit:
+        progressed = False
+        for key in ordered_keys:
+            index = positions[key]
+            if index >= len(buckets[key]):
+                continue
+            chosen.append(buckets[key][index])
+            positions[key] = index + 1
+            progressed = True
+            if len(chosen) >= limit:
+                break
+        if not progressed:
+            break
+    return chosen
 
 
 def _case_value(case: Any, name: str, default: Any = None) -> Any:
@@ -546,13 +793,19 @@ def build_case(
     tags: list[str] | None = None,
     source: str = "derived_t1",
     critical: bool = False,
+    extra_evidence_groups: Sequence[EvidenceGroup] = (),
+    extra_claims: Sequence[RequiredClaim] = (),
 ) -> EvalCase:
     """把派生结果组装成 ``EvalCase``（D3 机器验收口径）。
 
-    固定形态：``expected_status=answered``、``acceptable_abstention=False``、``critical=False``、
-    证据组 ``G1``、required claim ``C1``（text = 源句、带锚点与 answer_keys）。
+    默认形态（单证据派生题）：``expected_status=answered``、``acceptable_abstention=False``、
+    ``critical=False``、证据组 ``G1``、required claim ``C1``（text = 源句、带锚点与 answer_keys）。
     provenance 固定为 ``drafted_by="agent"``、``approved_by="machine"``，``approval_basis``
     由调用方传入（指向闸门报告与 sha256）；``source`` 区分派生方式（如 ``derived_t1``/``derived_t2``）。
+
+    ``extra_evidence_groups`` / ``extra_claims`` 用于多证据题（T3）：它们追加在 ``G1`` / ``C1`` 之后，
+    ID 由调用方给定（形如 ``G2`` / ``C2``）。组与 claim 的 ID 必须题内唯一——重复时直接报错而不是
+    静默去重，因为 ``validate_dataset`` 会把重复 ID 判为不可冻结，静默去重会掩盖上游配对错误。
 
     ``span`` 已用于 ``derive_answer_keys``，EvalCase schema 不单独存 span；这里只做
     “span 必须仍在源句中”的防御性检查，避免把错位派生写进题集。
@@ -560,6 +813,25 @@ def build_case(
 
     if span not in sentence:
         raise ValueError(f"span {span!r} is not a substring of the source sentence")
+    evidence_groups = [EvidenceGroup(group_id="G1", alternatives=[anchor]), *extra_evidence_groups]
+    claims = [
+        RequiredClaim(
+            claim_id="C1",
+            text=sentence,
+            required=True,
+            evidence_anchors=[anchor],
+            answer_keys=answer_keys,
+        ),
+        *extra_claims,
+    ]
+    # §13.1(a) 要求组 ID 与 claim ID 题内唯一；在这里提前拒绝，避免写出注定无法冻结的题集。
+    for kind, ids in (
+        ("evidence group", [group.group_id for group in evidence_groups]),
+        ("claim", [claim.claim_id for claim in claims]),
+    ):
+        duplicated = sorted({item for item in ids if ids.count(item) > 1})
+        if duplicated:
+            raise ValueError(f"duplicate {kind} id(s): {duplicated}")
     return EvalCase(
         case_id=case_id,
         family_id=family_id,
@@ -570,16 +842,8 @@ def build_case(
         critical=critical,
         expected_status="answered",
         acceptable_abstention=False,
-        required_evidence_groups=[EvidenceGroup(group_id="G1", alternatives=[anchor])],
-        required_claims=[
-            RequiredClaim(
-                claim_id="C1",
-                text=sentence,
-                required=True,
-                evidence_anchors=[anchor],
-                answer_keys=answer_keys,
-            )
-        ],
+        required_evidence_groups=evidence_groups,
+        required_claims=claims,
         forbidden_claims=[],
         unanswerable_kind=None,
         provenance=Provenance(

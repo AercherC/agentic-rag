@@ -79,6 +79,53 @@ def test_select_spans_prefers_numbers_and_falls_back_to_entities():
         assert candidate.span in candidate.sentence
 
 
+def test_split_sentences_folds_line_end_hyphenation():
+    """PDF 印刷断词必须在切句时折叠，否则接地检查永远失败（小样校准缺陷 A）。"""
+
+    merged = draft.split_sentences(
+        "The PN2 encoder follows the same archi-\ntecture as the SSG network in [38]."
+    )
+    assert merged == ["The PN2 encoder follows the same architecture as the SSG network in [38]."]
+    assert "archi-" not in merged[0]
+
+    # 折行带缩进同样要折叠；跨行但不带连字符的句子仍按空白合并。
+    assert draft.split_sentences("the im-\n    pressive result holds.") == ["the impressive result holds."]
+    assert draft.split_sentences("often\nincomplete data.") == ["often incomplete data."]
+
+    # 小数不能被切错或折叠（回归保护）。
+    assert draft.split_sentences("It takes 0.0012s and scores 7.21 points.") == [
+        "It takes 0.0012s and scores 7.21 points."
+    ]
+
+
+def test_select_spans_skips_stopwords_and_reference_numbers():
+    """句首虚词/图注词与方括号引用编号都不是答案（小样校准缺陷 B）。"""
+
+    # `The` 是句首虚词，不是可命名答案；这里回落到下一个真实专名。
+    stacked = draft.select_spans(
+        "The stacked PN encoder used by FC, Folding, PCN-CD and PCN-EMD includes 2 PN layers."
+    )
+    assert [span.span for span in stacked] and "The" not in [span.span for span in stacked]
+
+    # `Figure` 是图注词、`2` 是图号，答案应是真正的组件名 MLP。
+    figure = draft.select_spans(
+        "As shown in the lower right of Figure 2, the seed point cloud and the shape code "
+        "are sent to MLP respectively and then concatenated."
+    )
+    assert [span.span for span in figure] == ["MLP"]
+
+    # `[38]` 是文献引用编号，不能作为答案。
+    citation = draft.select_spans("The PN2 encoder follows the same architecture as the SSG network in [38].")
+    assert "38" not in [span.span for span in citation]
+
+    # 正常专名仍可派生（回归保护）。
+    pointnet = draft.select_spans("PointNet++ is trained on ShapeNet.")
+    assert pointnet[0].span == "PointNet++"
+
+    # 全部不可用时返回空列表，由调用方按 no_span 丢弃，而不是造一个命中不了的键。
+    assert draft.select_spans("The figure and the table are listed above.") == []
+
+
 # ---------- answer_keys 派生表 ----------
 
 def test_derive_answer_keys_percent_and_unit_forms():
@@ -158,6 +205,64 @@ def test_plan_quotas_reports_violations_without_raising():
     # 完全没有难度标签时只报一条“缺标签”，不伪造三档比例。
     no_labels = draft.plan_quotas([_quota_case()])
     assert sum("difficulty labels missing" in violation for violation in no_labels.violations) == 1
+
+
+# ---------- 分层抽样 ----------
+
+def _candidate(document_id: str, index: int, sentence: str, language: str = "en") -> dict:
+    """构造一条 pool 形态的候选句行。"""
+
+    return {
+        "candidate_id": f"{document_id}#{index}",
+        "chunk_id": f"chunk-{document_id}-{index}",
+        "document_id": document_id,
+        "sentence": sentence,
+        "page_start": 1,
+        "page_end": 1,
+        "query_language": language,
+    }
+
+
+# 两个可出题题型：数值句（quantitative_results）与专名句（method）。
+_NUMERIC_SENTENCE = "The model reduces the chamfer distance to 7.21 on the benchmark."
+_ENTITY_SENTENCE = "SnowflakeNet uses a Skip-Transformer decoder for point generation."
+
+
+def test_stratified_sample_spreads_across_documents():
+    # 3 篇论文 × 2 类题型 × 10 条：前缀截断只会取第一篇，分层抽样应三篇都取到。
+    candidates = [
+        _candidate(document, index, _NUMERIC_SENTENCE if index % 2 == 0 else _ENTITY_SENTENCE)
+        for document in ("doc-a", "doc-b", "doc-c")
+        for index in range(10)
+    ]
+    sample = draft.stratified_sample(candidates, limit=12, seed=1)
+    assert len(sample) == 12
+    assert len({row["document_id"] for row in sample}) == 3
+    assert len({row["candidate_id"] for row in sample}) == 12
+
+
+def test_stratified_sample_is_deterministic_and_seed_sensitive():
+    candidates = [_candidate(f"doc-{index % 4}", index, _NUMERIC_SENTENCE) for index in range(40)]
+    first = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=1)]
+    again = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=1)]
+    other = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=2)]
+    assert first == again          # 同一 seed 逐元素相同（可复算）
+    assert first != other          # 换 seed 得到独立第二遍样本
+
+
+def test_stratified_sample_limits_and_no_span_bucket():
+    candidates = [_candidate("doc-a", index, _NUMERIC_SENTENCE) for index in range(5)]
+    # limit 大于总数时返回全部、不重复。
+    assert len(draft.stratified_sample(candidates, limit=99, seed=1)) == 5
+    assert draft.stratified_sample(candidates, limit=0, seed=1) == []
+    with pytest.raises(ValueError):
+        draft.stratified_sample(candidates, limit=-1, seed=1)
+
+    # 取不到 span 的句子归入 no_span 层单独轮转，不挤占可出题的层。
+    mixed = candidates + [_candidate("doc-b", 99, "The figure and the table are listed above.")]
+    sample = draft.stratified_sample(mixed, limit=6, seed=1)
+    no_span = [row for row in sample if row["candidate_id"] == "doc-b#99"]
+    assert len(no_span) <= 1
 
 
 # ---------- 锚点定位 ----------
@@ -347,7 +452,9 @@ class _FakeProbeClient:
         return json.dumps({"verdict": "insufficient_context", "answer": "", "reason": "no answer"})
 
 
-def test_gates_pipeline_with_fake_probe(tmp_path, monkeypatch):
+def _prepare_gates_env(tmp_path, monkeypatch):
+    """搭好 gates 的 Fake 环境：假探针、假 Chroma、单页文档；返回 (items_path, dense_path, query)。"""
+
     monkeypatch.setenv("EVAL_JUDGE_BASE_URL", "https://open.bigmodel.cn")
     monkeypatch.setenv("EVAL_JUDGE_MODEL", "glm-4-flash")
     monkeypatch.setenv("EVAL_JUDGE_API_KEY", "test-key-not-real")
@@ -397,9 +504,13 @@ def test_gates_pipeline_with_fake_probe(tmp_path, monkeypatch):
     items_path.write_text(json.dumps(item) + "\n", encoding="utf-8")
     dense_path = tmp_path / "dense.json"
     dense_path.write_text(json.dumps({query: ["k2", "k1"]}), encoding="utf-8")
+    return items_path, dense_path, query
+
+
+def test_gates_pipeline_with_fake_probe(tmp_path, monkeypatch):
+    items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
     out = tmp_path / "gate.json"
     code = module.main(["gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path)])
-    # 闸门失败/配额未达标属于报告内容，命令本身成功（退出码 0）。
     assert code == 0
     report = json.loads(out.read_text(encoding="utf-8"))
     assert {name: gate["failed"] for name, gate in report["gates"].items()} == {
@@ -410,3 +521,127 @@ def test_gates_pipeline_with_fake_probe(tmp_path, monkeypatch):
     assert report["quota"]["ok"] is False and "difficulty" in report["quota"]["counts"]
     modes = {entry["mode"] for entry in report["probe_results"]}
     assert modes == {"gold", "distractor"}
+    # 未提供 --rerun 时不得伪造一致率：available=false 且 value=null。
+    assert report["rerun_consistency"]["available"] is False
+    assert report["rerun_consistency"]["value"] is None
+
+
+# ---------- 题集草案落盘 ----------
+
+def test_gates_dataset_out_writes_valid_dataset(tmp_path, monkeypatch):
+    from evidenceflow.eval.e2e import dataset as dataset_module
+
+    items_path, dense_path, query = _prepare_gates_env(tmp_path, monkeypatch)
+    out = tmp_path / "gate.json"
+    dataset_path = tmp_path / "dataset.json"
+    code = module.main([
+        "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
+        "--dataset-out", str(dataset_path),
+        "--dataset-id", "rag_e2e_v1",
+        "--corpus-version", "test-corpus-version",
+    ])
+    assert code == 0 and dataset_path.is_file()
+
+    # fingerprint 必须能自校验，否则题集与 mapping 的身份绑定就不可信。
+    dataset = dataset_module.load_dataset(dataset_path, verify_fingerprint=True)
+    assert dataset.dataset_id == "rag_e2e_v1"
+    assert dataset.corpus_version == "test-corpus-version"
+    assert len(dataset.cases) == 1
+    case = dataset.cases[0]
+    assert case.case_id == "E2E-M001"
+    assert case.query == query
+    assert case.expected_status == "answered"
+    # approval_basis 指向报告名 + 该报告字节的 sha256（报告先落盘再算哈希）。
+    assert case.provenance.approval_basis.startswith("gate.json#")
+    # 落盘固定 LF：dataset.sha256 的口径依赖这一点。
+    assert b"\r\n" not in dataset_path.read_bytes()
+
+
+def test_gates_dataset_out_requires_dataset_id_and_corpus_version(tmp_path, monkeypatch, capsys):
+    items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
+    out = tmp_path / "gate.json"
+    dataset_path = tmp_path / "dataset.json"
+    # 只给 --dataset-out 不够：corpus_version 口径未定案，不能由脚本猜默认值。
+    code = module.main([
+        "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
+        "--dataset-out", str(dataset_path),
+    ])
+    assert code == 2
+    assert "REFUSED" in capsys.readouterr().err
+    assert not dataset_path.exists()
+
+
+def test_gates_dataset_out_refuses_evals_path(tmp_path, monkeypatch, capsys):
+    items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
+    out = tmp_path / "gate.json"
+    target = module.EVALS_ROOT / "_b3_never_created" / "dataset.json"
+    code = module.main([
+        "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
+        "--dataset-out", str(target), "--dataset-id", "x", "--corpus-version", "y",
+    ])
+    assert code == 2
+    assert "REFUSED" in capsys.readouterr().err
+    assert not target.exists()
+
+
+# ---------- 复跑一致性 ----------
+
+def _rerun_item(candidate_id: str, span: str, keys: list[str], *, accepted: bool = True) -> dict:
+    """构造一条 draft 形态的候选，供复跑一致性比较。"""
+
+    return {
+        "candidate_id": candidate_id,
+        "document_id": "d1",
+        "sentence": SENTENCE_PERCENT,
+        "span": span,
+        "answer_keys": [keys],
+        "decision": "accepted" if accepted else "discarded",
+    }
+
+
+def test_rerun_consistency_reports_full_agreement():
+    first = [_rerun_item("k1#0", "1%", ["1%", "1 percent"]), _rerun_item("k1#1", "1.6", ["1.6"])]
+    report, conflicts = module.compute_rerun_consistency(first, first)
+    assert report["available"] is True
+    assert report["checked"] == 2 and report["consistent"] == 2
+    assert report["value"] == 1.0
+    assert conflicts == []
+
+
+def test_rerun_consistency_counts_conflicts_and_accepts_key_overlap():
+    first = [
+        _rerun_item("k1#0", "1%", ["1%", "1 percent"]),
+        _rerun_item("k1#1", "1.6", ["1.6"]),
+    ]
+    second = [
+        # span 相同 → 一致，即使别名集合不完全相同。
+        _rerun_item("k1#0", "1%", ["1 percent"]),
+        # span 不同且别名无交集 → 冲突。
+        _rerun_item("k1#1", "9.9", ["9.9"]),
+    ]
+    report, conflicts = module.compute_rerun_consistency(first, second)
+    assert report["checked"] == 2 and report["consistent"] == 1
+    assert report["value"] == 0.5
+    assert conflicts == [
+        {"candidate_id": "k1#1", "stage": "rerun", "reason": "rerun_conflict"}
+    ]
+
+
+def test_rerun_consistency_ignores_single_sided_acceptance():
+    first = [_rerun_item("k1#0", "1%", ["1%"]), _rerun_item("k1#1", "1.6", ["1.6"])]
+    # 第二遍把 k1#1 丢了：它没有可比性，既不计入 checked 也不算冲突。
+    second = [_rerun_item("k1#0", "1%", ["1%"]), _rerun_item("k1#1", "1.6", ["1.6"], accepted=False)]
+    report, conflicts = module.compute_rerun_consistency(first, second)
+    assert report["checked"] == 1 and report["consistent"] == 1
+    assert conflicts == []
+
+
+def test_rerun_consistency_empty_denominator_is_null():
+    report, conflicts = module.compute_rerun_consistency(
+        [_rerun_item("k1#0", "1%", ["1%"], accepted=False)], []
+    )
+    assert report["available"] is True
+    assert report["checked"] == 0
+    # 空分母返回 null，而不是伪造 0（§13.1(e) 口径）。
+    assert report["value"] is None
+    assert conflicts == []
