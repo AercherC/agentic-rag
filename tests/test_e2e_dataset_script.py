@@ -71,7 +71,7 @@ def test_write_json_fixes_lf_newlines(tmp_path):
 
 def _source(tmp_path):
     root = tmp_path / "docs"
-    root.mkdir()
+    root.mkdir(exist_ok=True)
     (root / "paper.txt").write_text("SnowflakeNet reports a Chamfer distance of 7.21 on PCN.", encoding="utf-8")
     return root, load_document(root / "paper.txt", root)
 
@@ -168,8 +168,77 @@ def _install_store(monkeypatch, tmp_path, root, doc, content, *, chunk_count=1, 
     monkeypatch.setattr(module, "ChromaVectorStore", FakeStore)
 
 
+# ---------- freeze（B3b 唯一写入口） ----------
+
+def _approved_dataset(tmp_path, doc):
+    """构造一份可通过 freeze 全部检查的题集：已 machine 确认、有 approval_basis、接地成立。"""
+
+    anchor = {"document_id": doc.document_id, "content_version": doc.content_hash,
+              "evidence_anchor": "Chamfer distance of 7.21", "locator": {"block_index": 0}}
+    case = {"case_id": "E2E-M001", "family_id": "f", "query": "What CD?", "query_language": "en",
+            "question_type": "numeric", "tags": [], "critical": False, "expected_status": "answered",
+            "acceptable_abstention": False,
+            "required_evidence_groups": [{"group_id": "G1", "alternatives": [anchor]}],
+            "required_claims": [{"claim_id": "C1", "text": doc.segments[0].content,
+                                 "required": True, "evidence_anchors": [anchor],
+                                 "answer_keys": [["7.21"]]}],
+            "forbidden_claims": [], "unanswerable_kind": None,
+            "provenance": {"drafted_by": "agent", "approved_by": "machine",
+                           "approval_basis": "B3_gate_report.json#abc", "source": "derived_t2"}}
+    path = tmp_path / "approved.json"
+    path.write_text(json.dumps({"dataset_id": "d", "corpus_version": "c", "cases": [case]}), encoding="utf-8")
+    return path
+
+
+def test_freeze_writes_dataset_sha256_and_readme(tmp_path):
+    import hashlib
+
+    root, doc = _source(tmp_path)
+    dataset = _approved_dataset(tmp_path, doc)
+    target = tmp_path / "frozen"
+    assert main(["freeze", "--dataset", str(dataset), "--target", str(target),
+                 "--source-root", str(root)]) == 0
+    assert (target / "dataset.json").is_file()
+    assert (target / "dataset.sha256").is_file()
+    assert (target / "README.md").is_file()
+    # dataset.sha256 必须与**落盘字节**一致（含固定 LF）。
+    data = (target / "dataset.json").read_bytes()
+    assert b"\r" not in data
+    recorded = (target / "dataset.sha256").read_text(encoding="utf-8").split()[0]
+    assert recorded == hashlib.sha256(data).hexdigest()
+    # README 记录指纹与校验值，便于冻结后复核。
+    readme = (target / "README.md").read_text(encoding="utf-8")
+    assert recorded in readme and "fingerprint" in readme
+
+
+def test_freeze_refuses_existing_target(tmp_path, capsys):
+    root, doc = _source(tmp_path)
+    dataset = _approved_dataset(tmp_path, doc)
+    target = tmp_path / "frozen"
+    target.mkdir()
+    (target / "keep.txt").write_text("keep", encoding="utf-8")
+    assert main(["freeze", "--dataset", str(dataset), "--target", str(target),
+                 "--source-root", str(root)]) == 2
+    assert "REFUSED" in capsys.readouterr().err
+    # 目标已存在时绝不写入任何冻结产物。
+    assert (target / "keep.txt").read_text(encoding="utf-8") == "keep"
+    assert not (target / "dataset.json").exists()
+
+
+def test_freeze_refuses_dataset_that_fails_validation(tmp_path, capsys):
+    root, doc = _source(tmp_path)
+    # 未确认（approved_by=null）的题集不得冻结。
+    dataset = _dataset(tmp_path, doc, [["7.21"]])
+    target = tmp_path / "frozen"
+    assert main(["freeze", "--dataset", str(dataset), "--target", str(target),
+                 "--source-root", str(root)]) == 2
+    assert "REFUSED" in capsys.readouterr().err
+    assert not target.exists()
+
+
 def test_map_with_no_usable_records_exits_2_but_writes_file(tmp_path, monkeypatch, capsys):
     """全部锚点不可用时映射文件照常写出便于诊断，但退出码必须非 0（2）。"""
+
     root, doc = _source(tmp_path)
     dataset = _dataset(tmp_path, doc, [["7.21"]])
     _install_store(monkeypatch, tmp_path, root, doc, "unrelated chunk text")

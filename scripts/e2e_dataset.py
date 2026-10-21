@@ -29,6 +29,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -227,6 +228,120 @@ def run_map(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def run_freeze(args: argparse.Namespace) -> int:
+    """freeze 子命令：B3b 的唯一写入口，把校验通过的题集冻结到 ``evals/`` 下。
+
+    这是**唯一**绕过 `check_output` 的 ``evals/`` 保护路径，因此保护条件极其严格：
+    1. 目标目录必须**不存在**（一旦冻结就不能覆盖；要改只能新开版本目录）；
+    2. 题集必须先通过全部确定性校验（`validate_dataset` 的 issues 为 0），否则拒绝落盘；
+    3. `dataset.sha256` 必须与**磁盘上那份文件的字节**一致——因此先写 `dataset.json`
+       （固定 LF），再读回字节算 sha256，最后写 `dataset.sha256`。顺序反了就会写出一个
+       与实际文件不匹配的校验值；
+    4. `fingerprint` 必须与内容一致，避免把"内容与指纹不符"的题集冻进 `evals/`。
+
+    产物（与计划 §6 交付物一致）：`dataset.json`、`dataset.sha256`、`README.md`；
+    映射文件由 `map` 单独产出后由调用方复制进来（本命令不生成 mapping，避免职责混淆）。
+    """
+
+    if args.target.exists():
+        raise OutputRefused(f"{args.target} already exists; frozen datasets must not be overwritten")
+    dataset = read_dataset(args.dataset)
+    # 指纹先行：内容与指纹不符时后面的校验都没有意义。
+    fingerprint = compute_fingerprint(dataset)
+    if dataset.fingerprint is not None and dataset.fingerprint != fingerprint:
+        raise ValueError(
+            f"dataset fingerprint mismatch: recorded {dataset.fingerprint}, computed {fingerprint}"
+        )
+    source_root = args.source_root or Path(Settings().source_docs_path)
+    provider = make_page_text_provider(load_source_documents(source_root))
+    report = validate_dataset(
+        dataset, provider, require_approved=True, allow_machine=True, enforce_grounding=True
+    )
+    if not report.ok:
+        # 只挑前几条打印，避免刷屏；完整问题由调用方先用 `validate` 落到报告里查看。
+        preview = "; ".join(f"{issue.rule}:{issue.case_id or '-'}" for issue in report.issues[:5])
+        raise OutputRefused(f"dataset failed validation ({report.issue_count} issues): {preview}")
+
+    args.target.mkdir(parents=True)
+    dataset_path = args.target / "dataset.json"
+    # 与 e2e_draft.write_dataset 同口径：UTF-8、键排序、缩进 2、固定 LF。
+    payload = dataset.model_dump(mode="json")
+    dataset_path.write_text(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
+        encoding="utf-8", newline="\n",
+    )
+    # sha256 必须对**落盘后的字节**计算；先读回再算，才能保证与文件实际内容一致。
+    digest = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+    (args.target / "dataset.sha256").write_text(f"{digest}  dataset.json\n", encoding="utf-8", newline="\n")
+    (args.target / "README.md").write_text(
+        _render_freeze_readme(dataset, fingerprint=fingerprint, digest=digest, report=report),
+        encoding="utf-8", newline="\n",
+    )
+    print(
+        f"frozen cases={len(dataset.cases)} fingerprint={fingerprint} sha256={digest} "
+        f"target={args.target}"
+    )
+    return EXIT_OK
+
+
+def _render_freeze_readme(dataset, *, fingerprint: str, digest: str, report) -> str:
+    """生成冻结目录的 README：规模、分布、已知局限与校验值（不写时间戳，保证可复算）。"""
+
+    from collections import Counter
+
+    cases = dataset.cases
+    kinds = Counter(str(case.unanswerable_kind) for case in cases)
+    types = Counter(case.question_type for case in cases)
+    languages = Counter(case.query_language for case in cases)
+    sources = Counter(case.provenance.source for case in cases)
+    near_miss = sum(1 for case in cases if case.unanswerable_kind == "near_miss")
+    out_of_corpus = sum(1 for case in cases if case.unanswerable_kind == "out_of_corpus")
+    denominator = near_miss + out_of_corpus
+    lines = [
+        f"# {dataset.dataset_id}",
+        "",
+        "- 合同：`PROJECT_SPEC.md` §13.1（rag_e2e_v1）",
+        f"- 规模：{len(cases)} 题",
+        f"- dataset fingerprint：`{fingerprint}`",
+        f"- dataset.sha256（LF 字节）：`{digest}`",
+        f"- corpus_version：`{dataset.corpus_version}`",
+        "",
+        "## 分布",
+        "",
+        "| 维度 | 取值 |",
+        "|---|---|",
+        f"| expected_status | {dict(sorted(Counter(c.expected_status for c in cases).items()))} |",
+        f"| unanswerable_kind | {dict(sorted(kinds.items()))} |",
+        f"| question_type | {dict(sorted(types.items()))} |",
+        f"| query_language | {dict(sorted(languages.items()))} |",
+        f"| provenance.source | {dict(sorted(sources.items()))} |",
+        "",
+        f"`near_miss` 占两类不可答题：{near_miss}/{denominator} = "
+        f"{(near_miss / denominator) if denominator else 0:.2f}（Gate 要求 ≥0.50）",
+        "",
+        "## 校验",
+        "",
+        f"冻结前 `validate_dataset(require_approved=True, allow_machine=True, enforce_grounding=True)`："
+        f"issues = {report.issue_count}，case_count = {report.case_count}。",
+        "",
+        "## 已知局限",
+        "",
+        "1. `near_miss` 的实体×属性共现判定使用 **200 字符邻近窗口**；换窗口会改变候选集合，",
+        "   因此该阈值属于冻结口径的一部分，不得在后续阶段修改。",
+        "2. 两类不可答题不参与证据映射，因此不进入 `context_all_required` / "
+        "`context_claim_recall` 的分母。",
+        "3. `out_of_corpus` 题复用 Phase 12 的 `GEN-U01..05`，其 absence_terms 零命中已在",
+        "   当前 817-chunk 语料上复核；语料若再变更，必须先重新复核。",
+        "4. 难度标签来自候选 query 的 Dense Top20 排名，只作分片标签，不作为淘汰依据。",
+        "",
+        "## 不要修改本目录",
+        "",
+        "`evals/` 下全部为冻结产物。要改题集只能新开版本目录，并同步更新 `PROJECT_SPEC.md`。",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def build_parser() -> argparse.ArgumentParser:
     """命令行参数。"""
 
@@ -247,6 +362,11 @@ def build_parser() -> argparse.ArgumentParser:
     mapping.add_argument("--out", type=Path, required=True)
     mapping.add_argument("--source-root", type=Path, default=None)
     mapping.add_argument("--overwrite", action="store_true")
+    freeze = sub.add_parser("freeze", help="把校验通过的题集冻结到 evals/ 下（B3b 唯一写入口）")
+    freeze.add_argument("--dataset", type=Path, required=True)
+    freeze.add_argument("--target", type=Path, required=True,
+                        help="冻结目录，必须不存在，如 evals/rag_e2e_v1")
+    freeze.add_argument("--source-root", type=Path, default=None)
     return parser
 
 
@@ -254,6 +374,17 @@ def main(argv: list[str] | None = None) -> int:
     """入口：先做输出保护，再执行子命令；错误统一转成一行 stderr。"""
 
     args = build_parser().parse_args(argv)
+    if args.command == "freeze":
+        # freeze 是唯一允许写 evals/ 的路径，因此**不能**走 check_output 的 evals/ 拒绝逻辑。
+        # 它的保护条件是「目标目录必须不存在」+「校验必须通过」，由 run_freeze 自己执行。
+        try:
+            return run_freeze(args)
+        except OutputRefused as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return EXIT_ISSUES_OR_REFUSED
+        except Exception as exc:  # noqa: BLE001 - CLI 边界统一转换为退出码 1
+            print(f"FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
+            return EXIT_ERROR
     output = args.report if args.command == "validate" else args.out
     try:
         check_output(output, overwrite=args.overwrite)
