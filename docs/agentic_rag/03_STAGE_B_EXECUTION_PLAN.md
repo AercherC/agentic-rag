@@ -1,6 +1,6 @@
 # EvidenceFlow 阶段 B 执行计划：评测先行
 
-- 版本：v2（2026-10-15）。§9 的 D1–D8 已由用户确认
+- 版本：v2（2026-10-15）。§9 的 D1–D8 已由用户确认；D3 于 2026-10-21 修订为“派生生成、机器验收”（见 §9 与 B3a-2′）
 - v2：B0 完成；按 D6 加入 answer_keys / key-fact recall 与 B5b
 - 执行者：Claude Code 子代理（Opus 5.5，按步骤难度选 low / medium），在本机 `agent-gpu` Conda 环境中执行
 - 设计与验收：主会话（每步结束后在主会话审查 diff 与产物）
@@ -65,7 +65,7 @@ $env:MODEL_DEVICE = 'cpu'
 | 指标代码 | `eval/ir_metrics.py`、`eval/quality.py`、`eval/comparison.py`、`eval/stable_mapping.py` | canonical；`comparison.py` 已有按题族 bootstrap 与 Holm 校正 |
 
 ### 1.2 主会话核查中发现、直接影响本计划设计的四个问题
-1. **Phase 12 的“人工标注”实际上是 Agent 标的。** `annotation_guideline.md` 写着“Phase 12 v1 使用人工标注（Agent 按本协议逐条判定）”。用 LLM 标出来的数据去“校准 LLM 评委”是循环论证。用户决定本阶段不做人工标注（D2），因此**评委指标不能作为主指标**，只能作为经过机器检验的诊断指标。Phase 12 标注只作为辅助一致性参考，报告中一律写成“agent-annotated”。真正由人确认的真值只有一处：B3 中用户逐题审阅过的题目、期望状态、required claims 和证据锚点，所以主指标都建立在它们之上。
+1. **Phase 12 的“人工标注”实际上是 Agent 标的。** `annotation_guideline.md` 写着“Phase 12 v1 使用人工标注（Agent 按本协议逐条判定）”。用 LLM 标出来的数据去“校准 LLM 评委”是循环论证。用户决定本阶段不做人工标注（D2），因此**评委指标不能作为主指标**，只能作为经过机器检验的诊断指标。Phase 12 标注只作为辅助一致性参考，报告中一律写成“agent-annotated”。真值来源改为**构造**（D3 于 2026-10-21 修订）：B3 的题目、期望状态、required claims 与证据锚点都由论文原句与句内 span 派生，正确性由字符串包含关系保证（SPEC §13.1(c′)），因此主指标建立在可复算的构造真值上，而不是人工判断上；可选的人工抽检（`B3_audit.json`）只用于给缺陷率一个统计上界，不参与冻结。
 2. **Phase 12 标注几乎没有负例。** 80 条回答论断中 76 条 CORRECT、0 条 INCORRECT；93 条引用全部 SUPPORTS；只有 required claim 覆盖（45 COVERED / 18 MISSING）是均衡的。在这种数据上，一个永远回答“对”的评委也能拿到很高的一致率。**所以不能只看一致率**：要同时看 Cohen's κ，并用人工构造的负例检验评委能不能发现错误（§5 B6）。
 3. **Phase 12 的证据是旧索引的 chunk ID。** required claims 的 `acceptable_evidence` 指向 361-chunk 索引，不能直接用于当前 817-chunk 索引。本阶段把每条 claim 的证据改成**文本锚点**（与 40 题相同的协议），再用 `stable_mapping` 映射到当前 chunk。这样以后重建索引，评测集也不用重做。
 4. **Phase 12 的输出是可以复原的。** `runtime_outputs.json` 保存了回答全文、上下文 chunk ID 和 `context_text_sha256`；旧索引 `ef_research_bge_m3_c512_o64_v1` 仍在 Chroma 中（A4 有意保留）。所以可以只读复原当时的上下文全文，并用 sha256 验证，作为评委的第二份检验材料。
@@ -214,44 +214,70 @@ score（纯函数，离线，可重复；不调用任何模型）
 **题目构成（目标约 70 题）**
 | 来源 | 数量 | 说明 |
 |---|---|---|
-| canonical 40 题 | 40 | 题干、证据组不变；为没有 required claims 的 20 题补写 claims |
-| Phase 12 不可答题 `GEN-U01..05` | 5 | 沿用；预计 U01、U04 为 `out_of_corpus`，U02、U03、U05 为 `near_miss`，以 B3a-2 起草与用户确认为准 |
-| 新增多文档 / 对比题 | 约 15 | 例如两篇论文的方法、指标或局限对比；每题至少 2 个证据组，分属不同论文 |
-| 新增不可答题 | 约 10 | 分两类（`unanswerable_kind`）：**语料外事实** `out_of_corpus`（论文根本没涉及）、**近似但缺细节** `near_miss`（话题在语料里，但问的具体细节不存在）。近似类最能检验系统，至少占不可答题的一半 |
-| 错误前提题（可答，tag `false_premise`） | 约 4 | 问题里的说法与论文矛盾；按 D8 作为可答题计分：`expected_status=answered`、`acceptable_abstention=true`、`unanswerable_kind=null`，required claim 写纠正后的事实并带 `answer_keys`，`forbidden_claims` 至少 1 条并带矛盾原文锚点；不计入不可答题 |
+| canonical 40 题 | 40 | 题干、证据组不变；为没有 required claims 的题从锚点原句派生 claims（T1，见下） |
+| Phase 12 不可答题 `GEN-U01..05` | 5 | 沿用；`out_of_corpus` / `near_miss` 的归类由 T4/T5 的确定性证据复核（0 命中、相似度上限、共现窗口）决定，不由作者声明 |
+| 新增多文档 / 对比题 | 约 15 | 由两篇不同论文各一条 T1 派生 claim 组合成 T3；"必须两块"由单块探针证伪（只给一块时只能命中一半 key） |
+| 新增不可答题 | 约 10 | 两类：**语料外** `out_of_corpus`（T4：实体在 817 chunks 中 0 命中）与**近似但缺细节** `near_miss`（T5：从 T1 题派生，属性共现为 0）。近似类至少占不可答题的一半 |
+| 错误前提题（可答，tag `false_premise`） | 约 4 | 由数值题（T2）按 B5b 的数字替换规则确定性派生（T6）：`expected_status=answered`、`acceptable_abstention=true`、`unanswerable_kind=null`，required claim 写纠正后的事实并带 `answer_keys`，`forbidden_claims` 至少 1 条并带矛盾原文锚点；篡改值必须不在锚点页文本中 |
 
 中英文大致各半；新题不做中英平行版本。
 
+**派生式题目与机器闸门（B3a-2′）**：题目不再"起草后逐题审阅"，而是**从原文派生**，并用与真值来源无关的探针判定有效性（完整设计见 `Claude outputs/06_AUTOMATED_EVAL_DESIGN.md`）。真值由构造保证：claim 文本 = 锚点原句，answer = 句中连续 span，`answer_keys` 由 span 按派生表生成，于是"claim 对不对"退化为字符串包含关系（SPEC §13.1(c′)）。
+
+| 类型 | 构造输入 | 可答性如何证明 |
+|---|---|---|
+| T1 事实型 | 锚点所在源句 | gold-only 探针必须答中 |
+| T2 数值型 | 含"数字+单位"的子句 | 同上；另证该值在语料中稀有 |
+| T3 多证据型 | 两篇论文各一条 T1 | 两块都给→全中；只给一块→只中一半 |
+| T4 语料外 | 论文未涉及的实体 | 实体在 817 chunks 中 0 命中 + 题干 dense 最高相似度低于可答题分布下界（阈值写进 B3 报告） |
+| T5 近似缺失 | 从 T1 改问"相邻但不存在"的属性值 | 实体×属性共现为 0 + 双模型一致判"不知道" |
+| T6 错误前提 | 从 T2 确定性篡改数字（复用 B5b 规则） | 篡改值不在锚点页文本中 |
+
+**六道机器闸门（全部可复算）**
+- **G1 结构**：schema、ID 唯一、fingerprint、answerable/unanswerable 形态、D8。
+- **G2 映射**：锚点在源 PDF 定位成功并映射到 active chunk；含 UNMAPPABLE 锚点的 claim 不进冻结（不再"保留在题集里"）。
+- **G3 接地**：claim.text 是锚点页源文本的字面子串、span ∈ claim、别名 ∈ span 派生表（SPEC §13.1(c′)）。
+- **G4 别名**：SPEC §13.1(c) ①②③。
+- **G5 去重与泄漏**：题干两两 3-gram Jaccard < 0.5；题干与 `claim.text` 的最长公共连续词序列 ≤ 8 词；bge-m3 余弦 > 0.92 视为重复；同一 span 在同一论文内复用 ≤ 2 次。
+- **G6 探针**：gold-only 必须 `answered` 且 `key_match` 全中；distractor-only 只打标签（`discriminative` / `redundant_fact`），若答出与原答案不同的值且该值也出现在 gold 页文本中，判"歧义"丢弃；T3 必须"单块只中一半"。
+
+探针模型固定为 `EVAL_JUDGE_*`（跨厂商，`B0_judge_probe.json` 已证明可用），temperature 0、prompt 版本冻结；**探针不得经过被评系统的检索/重排链，也不得使用生成器模型**，否则失去独立性。
+
+**配额（Gate 校验，机器可算）**：每篇论文合计 ≥6 题；8 类题型每类合计 ≥4；中英各半；难度（gold chunk 在 Dense Top20 中的排名）Top5 / Top6–20 / 不在 Top20 三档各 ≥10%（只作标签、不作淘汰）；`near_miss` 占两类不可答题 ≥50%。
+
 **每题字段（`EvalCase`）**：`case_id`（新题用 `E2E-M*` / `E2E-U*` 独立 ID 空间）、`family_id`、`query`、`query_language`、`question_type`、`tags`（如 `multi_doc`、`comparison`、`unanswerable:near_miss`、`cross_lingual`）、`critical`、`expected_status`、`acceptable_abstention`、`required_evidence_groups`（锚点协议同 40 题）、`required_claims`（每条：`claim_id`、`text`、`required`、`evidence_anchors`、`answer_keys`，语义见 SPEC §13.1(a)）、`forbidden_claims`（只用于错误前提题，D8）、`unanswerable_kind`（`out_of_corpus` / `near_miss`，可答题为 null）、`provenance`（谁起草、谁确认）。`acceptable_abstention` 只对可答题有意义，表示该题允许拒答（拒答不算误拒答、算状态正确）；不可答题必须为 `false`（D7，SPEC §13.1(a)）。
 
-**拆分与提交**：B3 拆成三步，各步分别提交：
-- **B3a-1 工具**：D8 合同补丁、题集 schema、`key_match`、确定性校验器、证据映射工具与 `scripts/e2e_dataset.py`（不起草题目）；提交 `stage-b(B3a-1): ...`。
-- **B3a-2 起草与待审清单**：起草新题、claims、answer_keys 与锚点，产出 `B3_review_sheet.md`；提交 `stage-b(B3a-2): ...`。
-- **B3b 落盘与冻结**：按用户审阅结果落盘、校验、映射并冻结到 `evals/rag_e2e_v1/`；提交 `stage-b(B3): ...`。
-- **B3a-1 修复轮**：§1 决策 A/B + B3/B4 加固 + S5/S6/S10 + `B3a1_report.md`。
+**拆分与提交**：B3 拆成四步，各步分别提交：
+- **B3a-1 工具**（已完成）：D8 合同补丁、题集 schema、`key_match`、确定性校验器、证据映射工具与 `scripts/e2e_dataset.py`。
+- **B3a-1 修复轮**（已完成）：§1 决策 A/B + B3/B4 加固 + S5/S6/S10 + `B3a1_report.md`。
+- **B3a-2′ 派生与机器验收**：实现 `scripts/e2e_draft.py`（句池 → 派生 → 闸门 → 报告）、`eval/e2e/draft.py`（纯函数派生与配额）、`eval/e2e/probe.py`（探针与 `key_match` 判定）；派生新题/claims/answer_keys/锚点并通过 G1–G6；产出 `artifacts/stage_b/B3_gate_report.json` 与 `B3_draft/`；提交 `stage-b(B3a-2): derive eval items with machine acceptance`。
+- **B3b 落盘与冻结**：落盘、校验、映射并冻结到 `evals/rag_e2e_v1/`；提交 `stage-b(B3): ...`。
 
 **步骤**
-1. **迁移**：把 40 题和 5 道不可答题转成新 schema。Phase 12 已有的 20 题 claims：在旧索引（`c512_o64_v1`，只读 `get_collection`）中找到 `acceptable_evidence` 对应的 chunk 正文，从中摘出支撑该 claim 的原句作为锚点，再到源 PDF 文本中验证并补全定位信息。
-2. **起草新内容**（按 §9 决策 D3）：执行者从论文原文起草新题、claims 和锚点，**每条都标 `provenance.drafted_by = "agent"`**，同时为每条 claim 起草 `answer_keys`（无法做关键要素匹配的留空，即 `key_matchable=false`），生成一份待审清单 `artifacts/stage_b/B3_review_sheet.md`（每题一节：题干、期望状态、claims、**每条 claim 的 answer_keys**、锚点原文摘录、所在论文与页码）。
-3. **用户审阅**：用户逐题选择接受 / 修改 / 删除，执行者按结果落盘，并把 `provenance.approved_by` 改为 `"user"`。**未经用户确认的题不得进入冻结版。**
-4. **程序化校验**（全部通过才冻结）：
-   - 每个锚点用 `stable_mapping` 在源 PDF 中定位成功，并映射到当前 active 索引的 chunk；无法映射的标为 UNMAPPABLE 并在报告中列出（不计入上下文类指标的分母，但保留在题集中）；
-   - 不可答题：核心术语在 817 个 chunk 中检索为 0 命中，或（近似类）人工确认缺失的细节不在任何 chunk 中，写进 `B3_unanswerable_verification.json`；
-   - 错误前提题（D8，可答题）：`forbidden_claims` 与论文原文矛盾，附原文锚点；required claim 写纠正后的事实并带 `answer_keys`；
-   - answer_keys 按 SPEC §13.1(c) 三条规则校验：① 每组至少一个别名出现在该 claim 锚点的 locator 页源文本中；② 任何别名不命中题干；③ 别名非空、规范化后长度 ≥ 2、组内去重；
+1. **迁移**：把 40 题和 5 道不可答题转成新 schema。Phase 12 已有的 20 题 claims：在旧索引（`c512_o64_v1`，只读 `get_collection`）中找到 `acceptable_evidence` 对应的 chunk 正文，用其原句作为 claim 文本与锚点，再到源 PDF 文本中验证并补全定位信息。
+2. **派生新内容**（D3 已改为机器验收）：`e2e_draft.py` 从候选句池（60–320 字符、非指代开头、含数字或 ≥2 个专名）按配额选句，为每句生成题干、claim、span 与 `answer_keys`；`provenance.drafted_by = "agent"`、`approved_by = "machine"`、`approval_basis = "artifacts/stage_b/B3_gate_report.json#<sha256>"`、`source = "derived_t1"` 等。所有文本先做 NFKC 再落盘。
+3. **G1–G6 机器闸门**（SPEC §13.1(c)(c′)，判据见本节表）：未通过的条目丢弃并记录原因；`B3_draft/items.jsonl` 每行记录来源 chunk、生成参数、闸门结果、探针原始回答与弃用理由。
+4. **复跑一致性**：同一批题目用第二遍独立生成（不同 seed，温度保持 0）比对：span 相同或 `answer_keys` 交集非空为一致；冲突条目丢弃；一致率写进报告（Gate 要求 ≥0.8）。
+5. **程序化校验**（全部通过才冻结）：
+   - 每个锚点用 `stable_mapping` 在源 PDF 中定位成功，并映射到当前 active 索引的 chunk；无法映射的 claim 不冻结，清单写进报告；
+   - 不可答题：T4 的实体在 817 个 chunk 中 0 命中；T5 的实体×属性共现为 0 且双模型一致；证据（命中数、相似度、共现窗口）写进 `B3_unanswerable_verification.json`；
+   - 错误前提题（D8）：篡改值不在锚点页文本中；`forbidden_claims` 带矛盾原文锚点；required claim 写纠正后的事实并带 `answer_keys`；
+   - answer_keys 按 SPEC §13.1(c) 三条规则、接地按 (c′) 四条规则校验；
    - 证据映射单独成文件 `evals/rag_e2e_v1/mapping_ef_research_bge_m3_hybrid_c512_v2.json`（SPEC §13.1(b)），题集本身只存锚点；
    - 不可答题（`expected_status=insufficient_context`）的 `acceptable_abstention` 必须为 `false`（D7）；
    - schema 校验、ID 唯一、fingerprint 计算并写入。
-5. 冻结到 `evals/rag_e2e_v1/`：`dataset.json`、`dataset.sha256`、`mapping_ef_research_bge_m3_hybrid_c512_v2.json`、`README.md`（来源、规模、分布、已知局限）。
+6. 冻结到 `evals/rag_e2e_v1/`：`dataset.json`、`dataset.sha256`、`mapping_ef_research_bge_m3_hybrid_c512_v2.json`、`README.md`（来源、规模、分布、已知局限）。
 
 **Gate B3**
-- 所有题 `approved_by = "user"`；锚点映射成功率与 UNMAPPABLE 清单写进报告。
-- 可答题每题至少 1 条 required claim；多文档题至少 2 个证据组分属不同论文。
-- 不可答题验证全部通过；不可答题（只计 `out_of_corpus` 与 `near_miss`，错误前提题按 D8 不计入）中 `near_miss` 占比 ≥ 50%。
-- answer_keys 校验全部通过；报告给出可答题中 key_matchable required claim 的比例（不设硬下限，低于 60% 须说明原因）。
-- 已有 `evals/` 文件无改动（`git diff` 为空）；pytest 通过（含新 schema 的测试）。
+- 所有条目 `approved_by ∈ {"machine", "user"}`；`machine` 条目 `approval_basis` 指向存在的 `B3_gate_report.json` 且 sha256 一致；`user` 条目必须有 `B3_audit.json`（可选人工抽检，n≥30、0 缺陷才放行）。**不再要求逐题用户确认。**
+- 所有条目通过 (c) 与 (c′)；`key_matchable` required claim 比例写进报告（不设硬下限，低于 60% 须说明原因）。
+- 可答题每题至少 1 条 required claim；多文档题至少 2 个证据组分属不同论文，且 T3 的"单块只中一半"成立。
+- 不可答题验证全部通过；`out_of_corpus` 与 `near_miss` 两类中 `near_miss` 占比 ≥ 50%。
+- 配额表全达标（每篇 ≥6 题、8 类题型各 ≥4、中英各半、难度三档各 ≥10%）；映射 usable 率 100%。
+- 复跑一致率 ≥0.8；G6① 通过率 ≥0.5。
+- 已有 `evals/` 文件无改动（`git diff` 为空）；pytest 通过（含 draft/probe 的 Fake 测试）。
 
-**提交：** `stage-b(B3): rag_e2e_v1 dataset (user-approved, anchor-based claims)`
+**提交：** `stage-b(B3): rag_e2e_v1 dataset (machine-validated, anchor-based claims)`
 
 ---
 
@@ -382,8 +408,8 @@ score（纯函数，离线，可重复；不调用任何模型）
 ## 6. 交付物
 
 - `evals/rag_e2e_v1/`：`dataset.json`、`dataset.sha256`、`mapping_ef_research_bge_m3_hybrid_c512_v2.json`、`README.md`、`gates_v1.json`
-- `artifacts/stage_b/`：`B0_report.md` … `B7_report.md`、`B2_trace_sample.json`、`B3_review_sheet.md`、`B3_unanswerable_verification.json`、`B5_observations.jsonl`、`B5b_report.md`、`B5b_controlled.jsonl`、`B6_negatives.jsonl`、`B6_judge_check.json`、`E0_judgments.jsonl`、`E0_report.json`、`E0_report.md`、`STAGE_B_SUMMARY.md`
-- 代码：`domain/trace.py`、`eval/e2e/*`（含 `key_match.py`、`controlled.py`）、`scripts/eval_e2e.py`，以及对应测试
+- `artifacts/stage_b/`：`B0_report.md` … `B7_report.md`、`B2_trace_sample.json`、`B3_gate_report.json`、`B3_draft/`（`items.jsonl`、`calibration.json`）、`B3_unanswerable_verification.json`、`B3_audit.json`（仅在可选人工抽检时）、`B5_observations.jsonl`、`B5b_report.md`、`B5b_controlled.jsonl`、`B6_negatives.jsonl`、`B6_judge_check.json`、`E0_judgments.jsonl`、`E0_report.json`、`E0_report.md`、`STAGE_B_SUMMARY.md`
+- 代码：`domain/trace.py`、`eval/e2e/*`（含 `key_match.py`、`draft.py`、`probe.py`、`controlled.py`）、`scripts/e2e_draft.py`、`scripts/eval_e2e.py`，以及对应测试
 
 ## 7. STOP 条件
 
@@ -391,7 +417,7 @@ score（纯函数，离线，可重复；不调用任何模型）
 - 任何一步 pytest 失败且无法在本步范围内修复；
 - B0 / B2 / B7 的 CPU 回放与 B0' 不一致，或 trace 开关导致 `RAGAnswer` 不同；
 - B0 评委模型与生成器属于同一家厂商，或评委连通性探测失败；
-- B3 有未经用户确认的题需要进入冻结版，或不可答题验证失败；
+- B3 有条目未通过 G1–G6、复跑冲突率 > 20%、配额不达标，或探针模型不可用/与生成器同厂商；
 - B5 `LLMRequestError` 重跑后仍超过 2 题；
 - B5b 有效非空消融变体 < 20 或数字反事实有效变体 < 8，或 `LLMRequestError` 超过 2；
 - B6 claim recall 判定未通过机器检验；
@@ -405,21 +431,22 @@ score（纯函数，离线，可重复；不调用任何模型）
 |---|---|---|
 | B0 | 1–3 | 评委连通性与结构化模式探测 |
 | B2 | 1 | `ask --trace` 真实运行 |
+| B3a-2′ | 约 500–700（最多约 1000） | 派生 150–200 条候选、G6 探针、第二遍复跑；含 10 题小样校准 |
 | B5 | 约 70（最多约 140） | 生成，含修复 |
 | B5b | 约 60–80（最多约 160） | 受控上下文变体的生成调用，含修复；`INVALID` 与 `trivially_empty` 不调用 |
 | B6 | 约 250 | 原始样本判定约 140（B7 复用）、约 80 个负例、复测约 60、Phase 12 辅助约 50 |
 | B7 | 约 0–20 | 大部分复用 B6 的原始判定，只补未判过的 |
-| 合计 | 约 410–530 | 生成器走 DeepSeek，评委走另一家厂商，两边分别计费；评委 prompt 比生成长 |
+| 合计 | 约 900–1200 | 生成器走 DeepSeek，探针/评委走另一家厂商，两边分别计费 |
 
-**用户的时间**：B0 前在 `.env` 中配置评委（几分钟）；B3 审阅约 50 题的新内容和补写的 claims（预计 2–3 小时）。
+**用户的时间**：B0 前在 `.env` 中配置评委（几分钟）；B3 零人工（机器派生 + 闸门 + 复跑）。可选：看 1 页生成规格（约 10 分钟），或抽检 30–40 条（约 1–1.5 小时，仅用于给出缺陷率的统计上界）。
 
-## 9. 用户决定（2026-10-15 确认）
+## 9. 用户决定（2026-10-15 确认；D3 于 2026-10-21 修订）
 
 | 编号 | 问题 | 决定 | 对计划的影响 |
 |---|---|---|---|
 | D1 | 评委用什么模型 | **另一家厂商的模型：智谱 `glm-4-flash`**（用户已在 `.env` 配置 `EVAL_JUDGE_*`） | B0 探测连通性与结构化模式；`glm-4-flash` 是轻量模型，B6 若未通过机器检验，由用户决定是否换更强的智谱模型 |
 | D2 | 是否做人工标注 | **不做** | 评委指标只作诊断，不进 Gate；不实现 PPI；B6 改为负例检验 + 复测；E0 主指标全部是确定性指标 |
-| D3 | 新题和 claims 谁来写 | **执行者起草，用户逐题审阅** | B3 产出待审清单，未经用户确认的题不得冻结 |
+| D3 | 新题和 claims 谁来写 | **（2026-10-21 修订）派生生成，机器验收**：选题、claim、span、answer_keys 由脚本从论文原句派生，`approved_by="machine"` + `approval_basis` 指向闸门报告；人工抽检降为可选 | B3a-2 改为 B3a-2′（`scripts/e2e_draft.py` + `eval/e2e/draft.py` + `eval/e2e/probe.py`）；Gate B3 去掉 `approved_by="user"`；SPEC §13.1(a)(c′) 同步；`B3_review_sheet.md` 由 `B3_gate_report.json` 取代 |
 | D4 | 拒答状态但正文有部分回答 | **状态按拒答计，正文照常计分，单独统计不一致题数** | 写进 B1 指标定义与 B4 实现 |
 | D5 | 题集规模 | 约 70 题（默认） | 结论一律写成“方向一致 / 置信区间”，不写“显著提升” |
 | D6 | 无人工标注时，回答质量用什么确定性方法评 | **采纳两项确定性评测**：① 关键要素匹配（claim 的 `answer_keys` + `key_fact_recall`）；② 受控上下文检验生成器（B5b）。依据：ALCE `eval.py::compute_str_em`、RGB `evalue.py::checkanswer/processdata`（negative rejection、counterfactual robustness） | B1 写进 SPEC §13.1(a)–(f)；B3 起草并校验 `answer_keys`，mapping 单独成文件；B4 实现 `key_match.py`、`controlled.py`；新增 B5b；`key_fact_recall` 与“答对”判定为主指标，阶段 D 以 `key_fact_recall` 为 primary 依据 |

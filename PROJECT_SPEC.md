@@ -1,7 +1,7 @@
 # EvidenceFlow — Current Specification
 
-**Version:** 0.31
-**Last Updated:** 2026-10-20（阶段 C–E 合同定义；不实现）
+**Version:** 0.32
+**Last Updated:** 2026-10-21（rag_e2e_v1 机器验收：provenance、接地规则 (c′)、确定性 groundedness 代理；不实现）
 **Scope:** 本地科研 PDF 知识库 RAG：ingest / ask 两条正式链路及其评测基线。
 
 本文件只写**当前合同**。数值与规则以代码为准；与代码不一致时视为本文件的缺陷，按 §15 修正。
@@ -363,12 +363,16 @@ ask:     Query → BGE-M3 embed_query → ExactDenseIndex（numpy.exact）Top20
   `experiments/stage_a/a3_compare_replay.py`。
 - `evals/` 下全部为冻结产物，不得覆盖或修改；Gold、qrels 只能经独立版本化流程变更。
 
-### 13.1 端到端评测 rag_e2e_v1（Stage B 新增；B3a-1（含修复轮）已实现 (a)(b)(c) 的 schema/校验/映射工具与 (d) `key_match`：`eval/e2e/`、`scripts/e2e_dataset.py`；其余待 B3b/B4/B5b）
+### 13.1 端到端评测 rag_e2e_v1（Stage B 新增；B3a-1（含修复轮）已实现 (a)(b)(c) 的 schema/校验/映射工具与 (d) `key_match`：`eval/e2e/`、`scripts/e2e_dataset.py`；B3a-2′ 定义 (a) 的 provenance 取值、(c′) 接地规则与 (e) 的新增诊断指标，工具待 B3a-2′；其余待 B3b/B4/B5b）
 **(a) 题集 schema（B3 实现）**：`EvalCase`（`extra="forbid"`）：`case_id`（新题 `E2E-M*` / `E2E-U*`）、`family_id`、`query`、
 `query_language`、`question_type`、`tags`、`critical: bool`、`expected_status ∈ AnswerStatus`、`acceptable_abstention: bool`、
 `required_evidence_groups: list[EvidenceGroup]`、`required_claims`、`forbidden_claims`（只用于错误前提题；每条
 `claim_id`、`text`、`evidence_anchors`＝与之矛盾的原文锚点）、`unanswerable_kind ∈ {out_of_corpus, near_miss} | null`（可答题为 null，
-不可答题必填）、`provenance{drafted_by, approved_by, source}`。
+不可答题必填）、`provenance{drafted_by, approved_by, approval_basis, source}`。
+`drafted_by` 非空；`approved_by ∈ {"user", "machine"} | null`（`null` = 未确认，不得冻结）；`approval_basis` 在
+`approved_by="machine"` 时必填，值为**验收证据的引用**（形如 `"artifacts/stage_b/B3_gate_report.json#<sha256>"`），
+在 `approved_by="user"` 时必须为 `null`；`source` 非空（如 `canonical40` / `phase12` / `derived_t1` / `derived_t2` /
+`derived_t3` / `derived_t4` / `derived_t5` / `derived_t6`），用于区分题目的派生方式。
 **D8 错误前提题按可答题计分**：`expected_status=answered`、`acceptable_abstention=true`、`tags` 含 `false_premise`、
 `unanswerable_kind=null`；required claim 写纠正后的事实并带 `answer_keys`；`forbidden_claims` 至少 1 条，每条带与之矛盾的原文锚点；
 纠正前提并给出事实算答对，拒答按 D7 算状态正确；不计入不可答题。非 `false_premise` 题的 `forbidden_claims` 必须为空列表。
@@ -381,6 +385,12 @@ B3 的 near_miss 比例只在 `out_of_corpus` 与 `near_miss` 两类不可答题
 answered、实际为 insufficient_context 且 `acceptable_abstention=true`。`fingerprint` = 除 `fingerprint` 字段外整个数据集的规范化 JSON
 （`sort_keys`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8）的 sha256；`dataset.sha256` = 以 LF 换行写出的文件字节 sha256
 （换行固定为 `\n`，不随 OS 变化），两者都记录。
+
+**冻结条件（v0.32 起）**：① 数据集内所有条目 `approved_by ∈ {"user", "machine"}`；② 所有条目通过 (b) 映射、(c) answer_keys 与
+(c′) 接地校验；③ 通过阶段 B 计划 Gate B3 定义的机器闸门（含跨厂商探针与复跑一致性）；④ `approved_by="machine"` 的条目，
+其 `approval_basis` 指向的验收报告必须存在且 sha256 与引用一致。**机器验收证据不进入数据集本体**（避免与 `fingerprint` 耦合）：
+落盘为独立产物 `artifacts/stage_b/B3_gate_report.json`，记录每个闸门的通过数、失败原因分布、配额表、复跑一致率与丢弃清单；
+可选人工抽检另存 `artifacts/stage_b/B3_audit.json`（样本量、缺陷数、缺陷率上界），仅在 `approved_by="user"` 时生成。
 
 **(b) 证据映射与题集分离（B3 实现）**：题集只存锚点；对某索引的映射是独立文件 `evals/rag_e2e_v1/mapping_<collection>.json`，
 记录 `index_signature`、`collection_name`、`dataset_fingerprint`，以及每个证据组和每条 claim 锚点的映射状态与 chunk 集合。状态取
@@ -399,6 +409,15 @@ answered、实际为 insufficient_context 且 `acceptable_abstention=true`。`fi
 B3 报告，不设硬下限，
 低于 60% 须说明原因。
 
+**(c′) 接地规则（B3a-2′，确定性；任一不通过该 claim 不得冻结）**：① `required_claims[*].text` 与 `forbidden_claims[*].text`
+经 (d) 规范化后，必须是该 claim 某个锚点 locator 页源文本的**字面子串**（`forbidden_claims` 的锚点是与之矛盾的原文，其 `text`
+本身不要求在原文中出现）；② 带 `answer_keys` 的 claim，至少一个别名（规范化后）必须是 `claim.text`（规范化后）的子串，
+保证"答案必须是这条论断里的一个片段"，其余别名可按派生表不受此限；③ `claim.text` 规范化后长度 ≥ 10，避免"是/否"式短语；
+④ 题干与 `claim.text` 的最长公共连续词序列 ≤ 8 个词（规范化后按空白切词，停用词也计入），防止题干复述原文导致答案泄漏。
+（不用 Jaccard：数值题必须带上原文的单位/对象才可答，Jaccard 会把合法题误杀；连续词长更贴近"抄了多少"。）
+所有落盘文本（`query`、`claim.text`、`answer_keys`）必须先做 NFKC；规范化在 (d) 的 `normalize_text` 之前只做 NFKC，
+不做大小写或空白处理，以保留原始书写（大小写/空白差异由 (d) 统一消除）。
+
 **(d) 关键要素匹配 `key_match`（纯函数，B3a-1 实现）**：规范化 = NFKC → 行尾连字符折叠（删除「行尾连字符 + 换行」，正则
 `-\s*\n\s*`）→ 去掉 `[S\d+]` 引用标签 → casefold → 连续空白压成一个空格并去首尾空白；别名与回答同样规范化后做子串匹配。
 行尾连字符折叠必须在去标签之前：PDF 抽取保留印刷断词（`view-\npoints`），折叠后 `viewpoints` 才能在 `viewpoints` 上命中；
@@ -408,7 +427,8 @@ B3 报告，不设硬下限，
 不要求边界；该边界规则只用于 (e) 计分与 B5b 的 span 定位，不用于 (c)①。不做数字解析、单位换算或模糊匹配，不同写法
 （`0.5` / `50%`）只能列为显式别名。claim 命中 ⇔ 所有要素组都命中。
 
-**(e) 指标（B4 实现）**：每个指标给出分子、分母，空分母返回 null，带 `status ∈ {primary, diagnostic_uncalibrated, unavailable}`。
+**(e) 指标（B4 实现）**：每个指标给出分子、分母，空分母返回 null，带
+`status ∈ {primary, diagnostic, diagnostic_uncalibrated, unavailable}`（`diagnostic` = 确定性代理指标，定义可复算但未对人工判断校准）。
 observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequestError` 的题从所有回答类与状态类指标的分母中
 排除并单独计数；上下文层指标对所有记录了 `context.completed` 的题计算（含这些错误题）。“可答题”指
 `expected_status=answered`，“不可答题”指 `insufficient_context`。
@@ -428,6 +448,11 @@ observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequ
   key_matchable claim 的题不进入任何分母；`acceptable_abstention` 不改变这两个指标的分子分母（它们衡量的是回答内容）。
 - 引用格式（primary）：合法引用数；`cited_source_in_evidence_rate` = 可答题 `sources` 中 chunk 属于该题证据映射 chunk 集合并集
   的条数 / 可答题 `sources` 总条数。
+- 确定性 groundedness 代理（`diagnostic`，B4 实现）：`unsupported_numeric_rate` = 回答中**未在 `BuiltContext.context_text`
+  中出现**的数字 token 数 / 回答中数字 token 总数。数字 token 按正则 `\d+(?:\.\d+)?%?` 提取，规范化后用 (d) 的字面子串规则
+  （不套 ASCII 边界）在上下文中查找；分母为 0 时返回 null。只算实际 answered 且上下文非空的题；带
+  `GenerationContractError` / `CitationValidationError` / `LLMRequestError` 的题按本节开头规则排除。已知局限：由上下文派生
+  计算的数值（平均值、差值、百分比换算、四舍五入）会被误报，因此只作诊断、**不进 Gate**，并与评委 groundedness 交叉报告。
 - 评委（`diagnostic_uncalibrated`；对应任务 B6 未通过时为 `unavailable`）：评委 claim recall = COVERED / 已判 required claim；
   groundedness = SUPPORTED / 已判陈述，无依据论断率 = UNSUPPORTED / 已判陈述；引用支持精确率 = SUPPORTS / 已判引用对；
   另报评委 COVERED 与 key_match 命中在 key_matchable required claim 上的逐条一致率。
@@ -489,7 +514,7 @@ observation 带 `GenerationContractError` / `CitationValidationError` / `LLMRequ
 **(h) Gate 策略文件 `evals/rag_e2e_v1/gates_v1.json`（B7 写，B4 实现加载与判定）**：每个指标声明 `metric`、
 `direction ∈ {higher_better, lower_better}`、`min?`、`max?`、`max_regression?`、`required: bool`；`critical_cases: list[case_id]`
 中各题的逐题确定性结果（状态正确，按 (a) 定义；可答题另加 `context_all_required`、关键要素全部命中）不得由通过变为不通过。只有
-`status=primary` 的指标可写进 Gate，写入 `diagnostic_uncalibrated` 指标时加载阶段直接报错。
+`status=primary` 的指标可写进 Gate，写入 `diagnostic` 或 `diagnostic_uncalibrated` 指标时加载阶段直接报错。
 
 **(i) 评委检验合格线与指标地位（B6）**：每类判定任务分别判断：构造负例检出率 ≥ 0.9；未破坏样本误报率 ≤ 0.1；复测一致率
 ≥ 0.95；与 Phase 12 agent 标注的一致率与 κ 只报告不设线。**评委指标未经人工校准，只作诊断，不作为任何阶段的晋升 Gate。**
@@ -552,6 +577,7 @@ v0.26 完整原文：`docs/history/PROJECT_SPEC_v0.26_full.md`（下表为其中
 | §43 | 共享推理设备 | §7 |
 | —（Stage B 新增，v0.28） | RunTrace；端到端评测 rag_e2e_v1、answer_keys / key_match、受控上下文检验、评委协议、Gate 策略文件 | §12.5、§13.1 |
 | —（阶段 C–E 合同，v0.31） | Research Agent：流程与预算、状态模型、检索工具、证据分级与确定性路由、结果语义、引用校验、RunTrace 扩展 | §17 |
+| —（机器验收，v0.32） | `provenance.approval_basis`、"machine" 确认态与冻结条件、接地规则 (c′)、`unsupported_numeric_rate`、`diagnostic` 状态 | §13.1(a)(c′)(e)(h) |
 
 ---
 
