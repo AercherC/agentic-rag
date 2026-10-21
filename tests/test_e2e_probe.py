@@ -128,6 +128,66 @@ def test_select_distractors_skips_gold_keeps_order_and_handles_shortage():
     assert probe.select_distractors(gold_chunk_ids=set(), dense_ranked_ids=["a"], count=2) == ["a"]
 
 
+# ---------- 修复重试（SPEC §13.1(g)） ----------
+
+class RepairingClient:
+    """首次返回截断 JSON，第二次（修复轮）返回合法 JSON。"""
+
+    def __init__(self, broken: str, fixed: str):
+        self.broken = broken
+        self.fixed = fixed
+        self.calls = []
+
+    def generate_json(self, messages, *, schema_name, json_schema):
+        self.calls.append(messages)
+        return self.broken if len(self.calls) == 1 else self.fixed
+
+
+def test_probe_with_repair_recovers_from_truncated_json():
+    """实测探针会返回被截断的 JSON（Unterminated string）；修复一次应能救回。"""
+
+    truncated = '{"verdict": "answered", "answer": "128", "reason": "the contex'
+    client = RepairingClient(truncated, '{"verdict": "answered", "answer": "128", "reason": "ok"}')
+    verdict, repair = probe.probe_with_repair(
+        client, query="How many units?", context_text="has 128 units", mode="gold"
+    )
+    assert verdict.verdict == "answered" and verdict.answer == "128"
+    assert repair == "repaired"
+    assert len(client.calls) == 2
+    # 修复轮必须带上原始回复与修复指令，否则同请求重发会再次截断。
+    repair_messages = client.calls[1]
+    assert repair_messages[-2].role == "assistant" and repair_messages[-2].content == truncated
+    assert repair_messages[-1].role == "user"
+    assert "JSON" in repair_messages[-1].content
+
+
+def test_probe_with_repair_reports_first_pass_success():
+    client = FakeClient()
+    verdict, repair = probe.probe_with_repair(
+        client, query="Q?", context_text="ctx", mode="gold"
+    )
+    assert verdict.verdict == "answered"
+    # 首次成功时 repair 为 None，且只调用一次。
+    assert repair is None and len(client.calls) == 1
+
+
+def test_probe_with_repair_raises_after_repair_fails():
+    client = FakeClient(reply='{"verdict": "answered"')  # 始终截断
+    with pytest.raises(ValueError, match="unparseable after repair"):
+        probe.probe_with_repair(client, query="Q?", context_text="ctx", mode="gold")
+    # 首次 + 修复一次 = 2 次调用，不多不少。
+    assert len(client.calls) == 2
+
+
+def test_probe_without_repair_still_raises_on_first_failure():
+    """``probe`` 保持"调用一次、失败即抛"，便于精确控制调用次数。"""
+
+    client = FakeClient(reply='{"verdict": "answered"')
+    with pytest.raises(ValueError):
+        probe.probe(client, query="Q?", context_text="ctx", mode="gold")
+    assert len(client.calls) == 1
+
+
 # ---------- T3 单块探针 ----------
 
 def _verdict(text: str, status: str = "answered") -> probe.ProbeVerdict:

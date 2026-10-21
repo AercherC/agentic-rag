@@ -45,6 +45,15 @@ _SYSTEM_PROMPT = (
 # 解析顺序同 §9：去首尾空白 → 去开头已闭合的 <think> → 去外层 ```json 代码块 → json.loads。
 _THINK_BLOCK = re.compile(r"\A<think>.*?</think>", re.DOTALL)
 _CODE_FENCE = re.compile(r"\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\Z", re.DOTALL)
+# §13.1(g) 的"失败修复一次"指令：只要求补格式，不改变判定内容。
+# 实测截断回复（`Unterminated string`）重发同样请求会再次截断，必须带上原始回复明确要求重写。
+REPAIR_INSTRUCTION = (
+    "上一条回复不是合法的 JSON（可能被截断），只返回 JSON。"
+    'Your previous reply was not valid JSON (it may have been truncated). '
+    'Reply again with ONLY one complete JSON object with exactly the fields '
+    '"verdict" ("answered" or "insufficient_context"), "answer" and "reason". '
+    'Keep "answer" and "reason" short — one short sentence each — so the object is complete.'
+)
 
 
 class ProbeVerdict(ContractModel):
@@ -145,7 +154,7 @@ def parse_probe_response(raw: str) -> ProbeVerdict:
     """解析探针回复：清理 → ``json.loads`` → Pydantic（extra="forbid"）。
 
     任何失败（非法 JSON、缺少字段、多余字段、枚举越界）都抛 ``ValueError``，不吞错；
-    调用方据此记录 ``probe_error`` 并按 G6 失败处理。
+    调用方据此决定是否走一次修复重试（``probe_with_repair``）或在报告中记 ``probe_error``。
     """
 
     text = _extract_json_text(raw)
@@ -164,6 +173,63 @@ def parse_probe_response(raw: str) -> ProbeVerdict:
         raise ValueError(f"probe response does not match the JSON schema ({details or 'invalid'})") from exc
 
 
+def probe_with_repair(
+    client: Any,
+    *,
+    query: str,
+    context_text: str,
+    mode: Literal["gold", "distractor", "single_block"],
+    max_repairs: int = 1,
+) -> tuple[ProbeVerdict, str | None]:
+    """探针调用 + SPEC §13.1(g) 要求的"失败修复一次"，返回 ``(判定, 修复信息)``。
+
+    为什么需要修复而不是简单重试：实测探针会返回**被截断的 JSON**
+    （`Unterminated string starting at: line 1 column 59`）——同样的请求重发一次
+    通常仍会截断在同一处。修复的做法是带上原始回复 + 明确指令再问一次，
+    让模型只补格式、不改判定。
+
+    返回值第二项说明走了哪条路径：``None`` 表示首次成功，``"repaired"`` 表示修复后成功。
+    修复仍失败时抛 ``ValueError``，由调用方记 ``judge_parse_error``（不进分子也不进分母，
+    单独计数），而不是把整批中断。
+    """
+
+    last_error: Exception | None = None
+    messages: list[LLMMessage] | None = None
+    raw = ""
+    for attempt in range(max_repairs + 1):
+        if attempt == 0:
+            # 首轮：与 probe() 完全同构的消息，保证与 gold/distractor 的可比性。
+            messages = _messages_for(mode, query, context_text)
+        else:
+            # 修复轮：保留原对话，追加模型原始回复与修复指令，只要求格式合规。
+            messages = [
+                *(_messages_for(mode, query, context_text)),
+                LLMMessage(role="assistant", content=raw if raw.strip() else "(empty reply)"),
+                LLMMessage(role="user", content=REPAIR_INSTRUCTION),
+            ]
+        raw = client.generate_json(
+            messages, schema_name=PROBE_SCHEMA_NAME, json_schema=PROBE_JSON_SCHEMA
+        )
+        try:
+            return parse_probe_response(raw), (None if attempt == 0 else "repaired")
+        except ValueError as exc:
+            last_error = exc
+    # 修复一次仍失败：显式抛出，调用方记 judge_parse_error 并只跳过这一条。
+    raise ValueError(f"probe response unparseable after repair: {last_error}") from last_error
+
+
+def _messages_for(mode: str, query: str, context_text: str) -> list[LLMMessage]:
+    """按模式取消息；三种模式共用同一 prompt，只在"给哪一块上下文"上不同。"""
+
+    if mode == "gold":
+        return build_gold_messages(query, context_text)
+    if mode == "distractor":
+        return build_distractor_messages(query, context_text)
+    if mode == "single_block":
+        return build_single_block_messages(query, context_text)
+    raise ValueError(f"unknown probe mode: {mode!r}")
+
+
 def probe(
     client: Any,
     *,
@@ -171,7 +237,7 @@ def probe(
     context_text: str,
     mode: Literal["gold", "distractor", "single_block"],
 ) -> ProbeVerdict:
-    """调用注入 client 的 ``generate_json`` 并解析判定；不负责重试。
+    """调用注入 client 的 ``generate_json`` 并解析判定；**不做修复重试**。
 
     ``client`` 必须是具备 ``generate_json(messages, schema_name=..., json_schema=...)`` 的对象
     （真实实现为 ``OpenAICompatibleLLMClient``，测试用 Fake）。
@@ -179,16 +245,12 @@ def probe(
     三种模式共用同一套 prompt 与 schema，只在"给哪一块上下文"上不同：
     ``gold``（含答案的块）、``distractor``（干扰块）、``single_block``（T3 的其中一块）。
     同构是刻意的——否则命中差异可能来自措辞而非证据。
+
+    需要 SPEC §13.1(g) 的修复语义时用 ``probe_with_repair``；本函数保持"调用一次、失败即抛"，
+    便于测试与需要精确控制调用次数的场景。
     """
 
-    if mode == "gold":
-        messages = build_gold_messages(query, context_text)
-    elif mode == "distractor":
-        messages = build_distractor_messages(query, context_text)
-    elif mode == "single_block":
-        messages = build_single_block_messages(query, context_text)
-    else:
-        raise ValueError(f"unknown probe mode: {mode!r}")
+    messages = _messages_for(mode, query, context_text)
     raw = client.generate_json(messages, schema_name=PROBE_SCHEMA_NAME, json_schema=PROBE_JSON_SCHEMA)
     return parse_probe_response(raw)
 

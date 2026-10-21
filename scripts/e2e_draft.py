@@ -787,12 +787,13 @@ def build_multi_document_cases(
             ("b", chunk_b, keys_b, keys_a),
         ):
             try:
-                verdict = probe.probe(
+                # 与 gold/distractor 走同一条修复重试路径，避免 T3 单块探针因格式问题误杀好题。
+                verdict = probe.probe_with_repair(
                     client, query=query, context_text=str(own_chunk["text"]), mode="single_block"
-                )
+                )[0]
             except Exception as exc:  # noqa: BLE001 - 单条探针失败不该中断整批
                 failures.append({"candidate_id": str(first.get("candidate_id", "")),
-                                 "reason": f"multi_doc_probe_error: {type(exc).__name__}"})
+                                 "reason": f"multi_doc_probe_error: {_describe_error(exc)}"})
                 passed = False
                 break
             ok, reason = probe.single_block_verdict(
@@ -959,18 +960,41 @@ def load_source_documents(source_root: Path) -> dict[str, Document]:
 
 def _probe_with_retry(client: OpenAICompatibleLLMClient, *, query: str, context_text: str,
                       mode: str) -> tuple[probe.ProbeVerdict | None, str | None]:
-    """探针最多尝试 ``PROBE_MAX_ATTEMPTS`` 次；返回 (判定, 错误类型)。
+    """探针最多尝试 ``PROBE_MAX_ATTEMPTS`` 次；返回 (判定, 错误描述)。
 
-    重试只覆盖格式/网络抖动，不改变 Prompt 版本；两次都失败时返回错误类型供 G6 记录。
+    每次尝试内部先走 ``probe_with_repair``（SPEC §13.1(g)：格式失败修复一次），
+    因此"修复"与"重试"是两层：修复处理格式问题，重试处理传输/瞬时故障。
+
+    错误描述必须带上**最底层的原因**：``LLMRequestError`` 是客户端对所有供应商/传输失败的
+    统一包装，只记它的类型名会让报告里永远看不出是截断、限流还是超时（D2 全量 340 次
+    探针全失败时就是这样失去了诊断能力）。这里记录 `外层<-(最底层类型: 消息)`。
     """
 
     last_error: Exception | None = None
     for _ in range(PROBE_MAX_ATTEMPTS):
         try:
-            return probe.probe(client, query=query, context_text=context_text, mode=mode), None
+            verdict, _repair = probe.probe_with_repair(
+                client, query=query, context_text=context_text, mode=mode
+            )
+            return verdict, None
         except Exception as exc:  # noqa: BLE001 - 记录在报告里，不中断整批
             last_error = exc
-    return None, type(last_error).__name__ if last_error else "unknown"
+    return None, _describe_error(last_error)
+
+
+def _describe_error(exc: Exception | None) -> str:
+    """把异常展开成 `外层<-(最底层类型: 摘要)`，保留诊断信息而不泄漏完整回复。"""
+
+    if exc is None:
+        return "unknown"
+    deepest = exc
+    depth = 0
+    while deepest.__cause__ is not None and depth < 8:
+        deepest = deepest.__cause__
+        depth += 1
+    if deepest is exc:
+        return f"{type(exc).__name__}: {str(exc)[:200]}"
+    return f"{type(exc).__name__}<-{type(deepest).__name__}: {str(deepest)[:200]}"
 
 
 def _neighbor_chunks(chunks_by_document: dict[str, list[dict[str, Any]]], gold: dict[str, Any],
