@@ -207,6 +207,186 @@ def test_plan_quotas_reports_violations_without_raising():
     assert sum("difficulty labels missing" in violation for violation in no_labels.violations) == 1
 
 
+# ---------- T5 near_miss ----------
+
+def _t1_item(candidate_id, entity, *, source="derived_t1", accepted=True, qtype="method"):
+    return {
+        "candidate_id": candidate_id,
+        "document_id": "d1",
+        "chunk_id": "k1",
+        "sentence": f"{entity} is used for point cloud completion in this paper.",
+        "span": entity,
+        "answer_keys": [[entity]],
+        "question_type": qtype,
+        "query_language": "en",
+        "source": source,
+        "decision": "accepted" if accepted else "discarded",
+    }
+
+
+def test_plan_near_miss_requires_entity_present_and_attribute_absent():
+    corpus = "PointNet is trained on ShapeNet. The optimizer is Adam. VoxelNet uses voxel grids."
+    items = [_t1_item("c1", "PointNet"), _t1_item("c2", "GhostNet")]
+    candidates = draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=5, seed=1)
+    entities = {c.entity for c in candidates}
+    # PointNet 在语料里，且与 "gpu model" 等属性未在窗口内共现 ⇒ 应有候选。
+    assert "PointNet" in entities
+    # GhostNet 不在语料里 ⇒ 属 out_of_corpus，不能当 near_miss。
+    assert "GhostNet" not in entities
+    # 每个候选的属性确实不与实体共现。
+    for candidate in candidates:
+        assert not draft._co_occurs(candidate.entity, candidate.attribute, corpus)
+
+
+def test_plan_near_miss_skips_non_distinctive_entities():
+    # `Feature`/`Natural` 这类普通名词被大写但没有判别力，问它的 optimizer 没有意义。
+    corpus = "Feature maps are extracted. Natural language is processed."
+    items = [_t1_item("c1", "Feature"), _t1_item("c2", "Natural")]
+    assert draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=5, seed=1) == []
+
+
+def test_plan_near_miss_ignores_non_t1_and_rejected_items():
+    corpus = "PointNet is trained on ShapeNet."
+    items = [
+        _t1_item("c1", "PointNet", source="derived_t2"),
+        _t1_item("c2", "PointNet", accepted=False),
+    ]
+    assert draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=5, seed=1) == []
+
+
+def test_plan_near_miss_is_deterministic_and_respects_limit():
+    corpus = "PointNet PoinTr SeedFormer VoxelNet PCN are all methods. " * 3
+    items = [_t1_item(f"c{i}", name) for i, name in
+             enumerate(["PointNet", "PoinTr", "SeedFormer", "VoxelNet", "PCN"])]
+    first = draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=3, seed=1)
+    again = draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=3, seed=1)
+    assert [c.entity for c in first] == [c.entity for c in again]
+    assert len(first) == 3
+    assert draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=0, seed=1) == []
+
+
+def test_build_near_miss_case_satisfies_unanswerable_shape():
+    from evidenceflow.eval.e2e import dataset as dataset_module
+
+    case = draft.build_near_miss_case(
+        case_id="E2E-U001",
+        query="What optimizer does PointNet use during training?",
+        query_language="en",
+        question_type="method",
+        entity="PointNet",
+        attribute="optimizer",
+        approval_basis="gate.json#abc",
+    )
+    # 不可答题形态：状态、拒答语义、类型、不得有证据组（dataset.py 的 unanswerable_shape 规则）。
+    assert case.expected_status == "insufficient_context"
+    assert case.acceptable_abstention is False
+    assert case.unanswerable_kind == "near_miss"
+    assert case.required_evidence_groups == []
+    assert case.required_claims == []
+    assert "near_miss" in case.tags
+    assert case.provenance.source == "derived_t5"
+
+    dataset = dataset_module.E2EDataset(dataset_id="d", corpus_version="c", cases=[case])
+    report = dataset_module.validate_dataset(
+        dataset, lambda *args: "", require_approved=True, allow_machine=True
+    )
+    assert "unanswerable_shape" not in {issue.rule for issue in report.issues}
+
+
+def test_near_miss_query_names_the_entity():
+    candidate = draft.NearMissCandidate(
+        base_candidate_id="c1", entity="PointNet", attribute="optimizer",
+        question_type="method", query_language="en",
+    )
+    assert "PointNet" in draft.near_miss_query(candidate)
+    zh = candidate.model_copy(update={"query_language": "zh"})
+    assert "PointNet" in draft.near_miss_query(zh)
+
+
+def test_case_id_ranges_do_not_collide_across_constructors():
+    """T3 与 T6 共享 E2E-M* 编号空间，必须接续而不撞号（D2 实测出现过重复的 E2E-M122）。"""
+
+    from evidenceflow.eval.e2e import dataset as dataset_module
+
+    document = make_document({1: f"{SENTENCE_PERCENT}\nfooter"})
+    anchor = draft.build_evidence_alternative(
+        document, sentence=SENTENCE_PERCENT, page_start=1, page_end=1
+    )
+    base = [
+        draft.build_case(
+            case_id=f"E2E-M{index:03d}", family_id="f", query=f"Q{index}?",
+            query_language="en", question_type="method", sentence=SENTENCE_PERCENT,
+            span="1%", answer_keys=[["1%"]], anchor=anchor, approval_basis="g#x",
+        )
+        for index in range(1, 3)
+    ]
+    # T6 接在 base 之后（start_index = len(cases) + 1），产出 2 道。
+    false_premise, _ = module.build_false_premise_cases(
+        [{"candidate_id": "c1", "document_id": document.document_id,
+          "sentence": SENTENCE_PERCENT, "span": "1%", "answer_keys": [["1%"]],
+          "query": "Which percentage?", "query_language": "en",
+          "question_type": "quantitative_results", "source": "derived_t2",
+          "page_start": 1, "page_end": 1, "decision": "accepted"}],
+        count=2, documents={document.document_id: document}, chunks_by_id={},
+        approval_basis="g#x", start_index=len(base) + 1,
+    )
+    all_cases = base + false_premise
+    ids = [case.case_id for case in all_cases]
+    assert len(ids) == len(set(ids)), f"duplicate case_id: {ids}"
+    # 且必须通过校验器的 ID 唯一规则。
+    dataset = dataset_module.E2EDataset(dataset_id="d", corpus_version="c", cases=all_cases)
+    report = dataset_module.validate_dataset(
+        dataset, lambda *args: SENTENCE_PERCENT, require_approved=True, allow_machine=True
+    )
+    assert "duplicate_case_id" not in {issue.rule for issue in report.issues}
+
+
+def test_case_ids_have_no_gaps_or_collisions_when_a_constructor_drops_items():
+    """T3 内部会丢弃题，产出的号段有空洞；T6 必须接在**最大号**之后，不能靠数量推号。
+
+    D2 实测：T3 产出 5 道但号段是 113–127（有空洞），T6 从 len(cases)+1 起算，
+    与 T3 已用号段重叠，产生重复的 E2E-M118。
+    """
+
+    from evidenceflow.eval.e2e import dataset as dataset_module
+
+    document = make_document({1: f"{SENTENCE_PERCENT}\nfooter"})
+    anchor = draft.build_evidence_alternative(
+        document, sentence=SENTENCE_PERCENT, page_start=1, page_end=1
+    )
+    base = [
+        draft.build_case(
+            case_id=f"E2E-M{index:03d}", family_id="f", query=f"Q{index}?",
+            query_language="en", question_type="method", sentence=SENTENCE_PERCENT,
+            span="1%", answer_keys=[["1%"]], anchor=anchor, approval_basis="g#x",
+        )
+        for index in range(1, 4)  # 号段 1..3
+    ]
+    # 模拟 T3 的"号段有空洞"：它从 4 起分配了 5 个号（4..8），但只保留了 2 道。
+    next_number = len(base) + 1 + 5
+    false_premise, _ = module.build_false_premise_cases(
+        [{"candidate_id": "c1", "document_id": document.document_id,
+          "sentence": SENTENCE_PERCENT, "span": "1%", "answer_keys": [["1%"]],
+          "query": "Which percentage?", "query_language": "en",
+          "question_type": "quantitative_results", "source": "derived_t2",
+          "page_start": 1, "page_end": 1, "decision": "accepted"}],
+        count=2, documents={document.document_id: document}, chunks_by_id={},
+        approval_basis="g#x", start_index=next_number,
+    )
+    ids = [case.case_id for case in base + false_premise]
+    assert len(ids) == len(set(ids)), f"duplicate case_id: {ids}"
+    # T6 必须落在 9 之后（4..8 已被 T3 占用），不能复用 4。
+    assert all(int(cid[5:]) >= 9 for cid in [c.case_id for c in false_premise])
+
+    dataset = dataset_module.E2EDataset(
+        dataset_id="d", corpus_version="c", cases=base + false_premise
+    )
+    report = dataset_module.validate_dataset(
+        dataset, lambda *args: SENTENCE_PERCENT, require_approved=True, allow_machine=True
+    )
+    assert "duplicate_case_id" not in {issue.rule for issue in report.issues}
+
+
 def test_quota_counts_final_dataset_not_just_accepted_items(tmp_path, monkeypatch):
     """配额必须基于最终题集：T3/T6 不来自 accepted_items，早算会漏报（D2 实测漏掉 5 道 T3）。"""
 

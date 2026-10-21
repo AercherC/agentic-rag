@@ -123,6 +123,9 @@ QUESTION_TYPES: tuple[str, ...] = (
 )
 # 难度三档：由调用方通过 tags 或单独字段传入（gold chunk 的 Dense 排名，只作标签）。
 DIFFICULTY_TAGS: tuple[str, ...] = ("easy", "medium", "hard")
+# 两类不可答题的取值（与 `dataset.UnanswerableKind` 一致；这里导出便于构造器与报告共用）。
+UNANSWERABLE_NEAR_MISS = "near_miss"
+UNANSWERABLE_OUT_OF_CORPUS = "out_of_corpus"
 # 不能作为答案的"专名"：句首虚词/连接词，以及图注与小节引用词。
 # 实体正则只要求"大写开头 + 至少 3 字符"，因此 `The`（T+he）、`Figure`、`Table` 都会被误判为专名；
 # 它们不含任何事实值，一旦成为 answer_keys 会让 key_match 结构性失败。
@@ -752,6 +755,117 @@ def _increment_number(body: str) -> str:
     return str(number + 1)
 
 
+def build_out_of_corpus_case(
+    *,
+    case_id: str,
+    query: str,
+    query_language: str,
+    approval_basis: str,
+    source_question_id: str,
+    tags: list[str] | None = None,
+) -> EvalCase:
+    """构造 T4 out_of_corpus 不可答题：题目所问实体/事实在整个语料中不存在。
+
+    与 near_miss 的区别只在"实体是否存在"：T4 里连实体都不在语料中（如 `Point-BERT`、
+    `A100`），T5 里实体在但属性缺失。两者在 `EvalCase` 上的形态相同——
+    `expected_status=insufficient_context`、`acceptable_abstention=False`、
+    `unanswerable_kind` 取各自的值、**不得有证据组**（`dataset.py` 的 `unanswerable_shape`）。
+    """
+
+    case_tags = list(tags or [])
+    marker = f"unanswerable:{UNANSWERABLE_OUT_OF_CORPUS}"
+    for tag in (marker, UNANSWERABLE_OUT_OF_CORPUS, f"source:{source_question_id}"):
+        if tag not in case_tags:
+            case_tags.append(tag)
+    return EvalCase(
+        case_id=case_id,
+        family_id=f"phase12_{source_question_id}",
+        query=query,
+        query_language=query_language,
+        question_type="out_of_corpus",
+        tags=case_tags,
+        critical=False,
+        expected_status="insufficient_context",
+        acceptable_abstention=False,
+        required_evidence_groups=[],
+        required_claims=[],
+        forbidden_claims=[],
+        unanswerable_kind=UNANSWERABLE_OUT_OF_CORPUS,
+        provenance=Provenance(
+            drafted_by="phase12",
+            approved_by="machine",
+            approval_basis=approval_basis,
+            source="phase12_unanswerable",
+        ),
+    )
+
+
+def build_near_miss_case(
+    *,
+    case_id: str,
+    query: str,
+    query_language: str,
+    question_type: str,
+    entity: str,
+    attribute: str,
+    approval_basis: str,
+    tags: list[str] | None = None,
+) -> EvalCase:
+    """构造 T5 near_miss 不可答题：实体在语料里，但它与属性的共现为 0。
+
+    SPEC §13.1(a) 的不可答题形态：
+    - ``expected_status=insufficient_context``、``acceptable_abstention=False``（D7 强制）；
+    - ``unanswerable_kind="near_miss"``；
+    - **不得有 ``required_evidence_groups``**（`dataset.py` 的 `unanswerable_shape` 规则明确禁止），
+      因此该类题不参与证据映射，也不进入上下文层指标的分母；
+    - ``tags`` 带 ``unanswerable:near_miss`` 便于分片统计。
+
+    为什么题干要写明实体：near_miss 的难点是"实体存在但属性缺失"，题干必须让系统能检索到
+    该实体所在的文档，否则系统会因"完全找不到"而拒答——那是 out_of_corpus 的行为，
+    测不到"检索到了但上下文不足以回答"这个真正要测的能力。
+    """
+
+    case_tags = list(tags or [])
+    marker = f"unanswerable:{UNANSWERABLE_NEAR_MISS}"
+    if marker not in case_tags:
+        case_tags.append(marker)
+    if UNANSWERABLE_NEAR_MISS not in case_tags:
+        case_tags.append(UNANSWERABLE_NEAR_MISS)
+    return EvalCase(
+        case_id=case_id,
+        family_id=f"derived_t5_{attribute.replace(' ', '_')}",
+        query=query,
+        query_language=query_language,
+        question_type=question_type,
+        tags=case_tags,
+        critical=False,
+        expected_status="insufficient_context",
+        acceptable_abstention=False,
+        required_evidence_groups=[],
+        required_claims=[],
+        forbidden_claims=[],
+        unanswerable_kind=UNANSWERABLE_NEAR_MISS,
+        provenance=Provenance(
+            drafted_by="agent",
+            approved_by="machine",
+            approval_basis=approval_basis,
+            source="derived_t5",
+        ),
+    )
+
+
+def near_miss_query(candidate: NearMissCandidate) -> str:
+    """生成 near_miss 题干：点名实体 + 询问未在语料中与它共现的属性。
+
+    题干必须点名实体（见 ``build_near_miss_case`` 的理由），且不得复制源句超过 8 个连续词
+    （§13.1(c′)④）——这里只拼实体与属性词，天然不会复制源句。
+    """
+
+    if candidate.query_language.lower().startswith("zh"):
+        return f"{candidate.entity} 在训练时使用的 {candidate.attribute} 是什么？"
+    return f"What {candidate.attribute} does {candidate.entity} use during training?"
+
+
 def build_false_premise_case(
     *,
     case_id: str,
@@ -817,6 +931,117 @@ def build_false_premise_case(
             source=source,
         ),
     )
+
+
+# T5（near_miss）派生用的"实体 × 属性"属性词表（设计 §2.4 / 计划 B3 表）。
+# 选词原则：这些属性在点云补全类论文里**可能被讨论也可能没被讨论**，所以"实体存在但属性缺失"
+# 是真实存在的近失情形；不能用论文不可能涉及的属性（那会退化成 out_of_corpus）。
+NEAR_MISS_ATTRIBUTES: tuple[str, ...] = (
+    "optimizer", "learning rate", "batch size", "epoch", "gpu model", "training time",
+    "license", "author affiliation", "hyperparameter", "random seed", "data augmentation",
+)
+
+
+class NearMissCandidate(ContractModel):
+    """一条 near_miss 候选：实体来自已有 T1 题，属性是语料中未与该实体共现的邻近属性。"""
+
+    base_candidate_id: str
+    entity: str
+    attribute: str
+    question_type: str
+    query_language: str
+
+
+def plan_near_miss_candidates(
+    items: Sequence[dict[str, Any]],
+    *,
+    corpus_text: str,
+    limit: int,
+    seed: int = 1,
+) -> list[NearMissCandidate]:
+    """从已有 T1 题派生 near_miss 候选（T5）：实体存在，但"实体 × 属性"在语料中共现为 0。
+
+    为什么必须从 T1 题派生而不是凭空造：near_miss 的定义是「实体在语料里，缺的只是那个属性」。
+    凭空造的实体（如 `Point-BERT`）属于 `out_of_corpus`；两者的区别正是**实体是否出现**，
+    这条规则把分类变成可复算的判断，而不是靠作者声明（计划 B3 表 T4/T5）。
+
+    确定性要求：
+    - ``corpus_text`` 是 817 个 chunk 的规范化全文，共现判定用 ``normalize_text`` 后的字面子串；
+    - 同层（实体）内按 ``sha256(f"{seed}:{entity}:{attribute}")`` 排序，跨实体轮转，
+      保证同一输入在同一进程/不同进程都产出同样顺序；
+    - 同一实体只出一个候选（避免近失题扎堆在同一篇论文的同一实体）。
+
+    返回空列表是合法结果（说明该批题里没有可用的近失组合），由调用方决定是否补抽。
+    """
+
+    if limit <= 0 or not corpus_text:
+        return []
+    normalized_corpus = normalize_text(corpus_text)
+    # 按实体聚合并去重：同一实体重复出现时只保留第一条（按 candidate_id 排序保证确定性）。
+    by_entity: dict[str, dict[str, Any]] = {}
+    for item in sorted(items, key=lambda row: str(row.get("candidate_id", ""))):
+        if item.get("decision") != "accepted" or item.get("source") != "derived_t1":
+            continue
+        span = str(item.get("span") or "").strip()
+        if not span or span.casefold() in ENTITY_STOPWORDS:
+            continue
+        by_entity.setdefault(span, item)
+
+    chosen: list[NearMissCandidate] = []
+    for entity in sorted(by_entity, key=lambda name: hashlib.sha256(
+        f"{seed}:{name}".encode("utf-8")).hexdigest()):
+        if len(chosen) >= limit:
+            break
+        # 实体必须有判别力：`Feature`/`Natural`/`Part`/`Failure` 这类普通名词虽被大写，
+        # 问"它用什么 optimizer"没有意义，也不是真实的"实体存在"情形。
+        # 复用 `_is_distinctive_entity`，与 select_spans 对句首伪专名的判定同一口径。
+        if not _is_distinctive_entity(entity):
+            continue
+        # 实体自身必须确实出现在语料里，否则这题是 out_of_corpus 而不是 near_miss。
+        if normalize_text(entity) not in normalized_corpus:
+            continue
+        item = by_entity[entity]
+        for attribute in NEAR_MISS_ATTRIBUTES:
+            # 共现判定：实体与属性必须在同一个窗口内出现才算"语料讨论过"。
+            # 用 `entity ... attribute` 的宽松顺序对（两者都出现即可视为可能共现），
+            # 保守起见要求两者同时出现在同一 chunk 的合并文本里——这里用整语料近似，
+            # 偏严：整语料都没有同时出现，才是确定的"共现为 0"。
+            if _co_occurs(entity, attribute, corpus_text):
+                continue
+            chosen.append(
+                NearMissCandidate(
+                    base_candidate_id=str(item.get("candidate_id", "")),
+                    entity=entity,
+                    attribute=attribute,
+                    question_type=str(item.get("question_type") or "method"),
+                    query_language=str(item.get("query_language") or "en"),
+                )
+            )
+            break
+    return chosen
+
+
+def _co_occurs(entity: str, attribute: str, corpus_text: str, *, window: int = 200) -> bool:
+    """实体与属性是否在语料中以不超过 ``window`` 字符的距离共现。
+
+    用邻近窗口而不是整语料同时出现：整语料粒度太粗，一篇 100 页论文里"提过实体"和
+    "提过 optimizer"几乎必然同时成立，会让 near_miss 候选全被误判为"语料讨论过"。
+    窗口按规范化后的字符数计，200 字符约等于一个 chunk 的邻域。
+    """
+
+    normalized = normalize_text(corpus_text)
+    entity_norm = normalize_text(entity)
+    attribute_norm = normalize_text(attribute)
+    if not entity_norm or not attribute_norm:
+        return False
+    start = 0
+    while True:
+        position = normalized.find(entity_norm, start)
+        if position < 0:
+            return False
+        if attribute_norm in normalized[max(0, position - window): position + len(entity_norm) + window]:
+            return True
+        start = position + 1
 
 
 def _case_value(case: Any, name: str, default: Any = None) -> Any:

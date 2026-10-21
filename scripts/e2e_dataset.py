@@ -144,12 +144,24 @@ def read_manifest_chunk_id_hash(manifest_path: str | None) -> str | None:
 
 
 def run_validate(args: argparse.Namespace) -> int:
-    """validate 子命令；问题写进报告并以退出码 2 表示。"""
+    """validate 子命令；问题写进报告并以退出码 2 表示。
+
+    ``--allow-machine`` 必须显式给出：D3 修订后题集的 `approved_by` 是 `machine`，
+    而 `validate_dataset` 的默认语义只接受 `user`。不暴露这个开关，机器验收的题集
+    就永远无法通过校验——B3b 冻结会卡在 `not_approved` 上。
+    ``--enforce-grounding`` 对应 SPEC §13.1(c′) 的四条接地规则，冻结前必须打开。
+    """
 
     dataset = read_dataset(args.dataset)
     source_root = args.source_root or Path(Settings().source_docs_path)
     provider = make_page_text_provider(load_source_documents(source_root))
-    report = validate_dataset(dataset, provider, require_approved=args.require_approved)
+    report = validate_dataset(
+        dataset,
+        provider,
+        require_approved=args.require_approved,
+        allow_machine=args.allow_machine,
+        enforce_grounding=args.enforce_grounding,
+    )
     write_json(args.report, report.model_dump(mode="json"))
     print(f"issues={report.issue_count} cases={report.case_count} report={args.report}")
     return EXIT_OK if report.ok else EXIT_ISSUES_OR_REFUSED
@@ -223,6 +235,10 @@ def build_parser() -> argparse.ArgumentParser:
     validate = sub.add_parser("validate", help="确定性校验题集")
     validate.add_argument("--dataset", type=Path, required=True)
     validate.add_argument("--require-approved", action="store_true")
+    validate.add_argument("--allow-machine", action="store_true", dest="allow_machine",
+                          help="接受 approved_by='machine'（D3 派生题集的默认形态）")
+    validate.add_argument("--enforce-grounding", action="store_true", dest="enforce_grounding",
+                          help="执行 SPEC §13.1(c′) 的四条接地规则（冻结前必须打开）")
     validate.add_argument("--report", type=Path, required=True)
     validate.add_argument("--source-root", type=Path, default=None)
     validate.add_argument("--overwrite", action="store_true")

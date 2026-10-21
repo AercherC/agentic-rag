@@ -54,6 +54,9 @@ from evidenceflow.runtime import resolve_active_collection  # noqa: E402
 from evidenceflow.storage.chroma import ChromaVectorStore  # noqa: E402
 
 EVALS_ROOT = ROOT / "evals"
+# Phase 12 的不可答题资产（只读）：题干在 generation_eval_dataset.json，
+# 零命中验证在 unanswerable_verification.json。T4 复用这两份，不改它们。
+PHASE12_DIR = EVALS_ROOT / "evaluation_v3" / "phase12_rag_quality_v1"
 EXIT_OK, EXIT_ERROR, EXIT_REFUSED = 0, 1, 2
 
 POOL_SCHEMA_VERSION = "b3-pool-v1"
@@ -727,6 +730,25 @@ def build_dataset_cases(
     return cases, failures
 
 
+def _next_case_number(cases: list[Any], *, prefix: str = "E2E-M") -> int:
+    """返回 ``prefix`` 号段里的下一个可用编号（比"最大已用号 +1"，不是"数量 +1"）。
+
+    为什么不能用 ``len(cases) + 1``：各构造器都会丢弃候选（锚点失败、探针不通过），
+    产出的号段因此有空洞。D2 实测：T3 产出 6 道但号段是 114..127，而 ``len(cases)``
+    只增加了 6，于是 T6 从 119 起算，与 T3 已用的 119..122 撞号。
+    """
+
+    used: list[int] = []
+    for case in cases:
+        case_id = str(getattr(case, "case_id", ""))
+        if not case_id.startswith(prefix):
+            continue
+        suffix = case_id[len(prefix):]
+        if suffix.isdigit():
+            used.append(int(suffix))
+    return (max(used) + 1) if used else 1
+
+
 def build_multi_document_cases(
     pairs: list[Any],
     *,
@@ -819,7 +841,9 @@ def build_multi_document_cases(
         try:
             cases.append(
                 draft.build_case(
-                    case_id=f"E2E-M{start_index + offset:03d}",
+                    # 用 `len(cases)` 而不是 `offset`：`offset` 是配对序号，被丢弃的配对
+                    # 会留下号空洞，而这里只需要"本函数已产出的第几道题"。
+                    case_id=f"E2E-M{start_index + len(cases):03d}",
                     family_id=f"derived_{pair.question_type}",
                     query=query,
                     query_language=str(first.get("query_language") or "en"),
@@ -912,6 +936,9 @@ def build_false_premise_cases(
         try:
             cases.append(
                 draft.build_false_premise_case(
+                    # 编号必须基于 `start_index` 递增，不能用 `len(cases)`：调用方传的是
+                    # "本题集里已有多少题 + 1"，而 cases 从 0 开始增长，两者叠加会与
+                    # 之前构造的题（T3 多文档题）撞号——D2 实测产生重复的 E2E-M122。
                     case_id=f"E2E-M{start_index + len(cases):03d}",
                     family_id="derived_t6",
                     query=_false_premise_query(item, false_value),
@@ -938,6 +965,125 @@ def _false_premise_query(item: dict[str, Any], false_value: str) -> str:
     if str(item.get("query_language") or "en").lower().startswith("zh"):
         return f"{base}（已知结果是 {false_value}）这个说法对吗？"
     return f"{base}, and the reported result is {false_value}. Is that correct?"
+
+
+def build_near_miss_cases(
+    accepted_items: list[dict[str, Any]],
+    *,
+    count: int,
+    corpus_text: str,
+    approval_basis: str,
+    start_index: int = 1,
+    seed: int = 1,
+) -> tuple[list[Any], list[dict[str, str]]]:
+    """从 T1 题派生 T5 near_miss 不可答题（实体在语料里、实体×属性共现为 0）。
+
+    不可答题**不参与映射**（`dataset.py` 的 `unanswerable_shape` 禁止证据组），因此
+    这里不需要 `documents` / `chunks_by_id`，也不需要锚点定位——这是它与可答题构造器的
+    本质区别，也是「不可答题可以晚于 D2 构造」的技术原因。
+    """
+
+    candidates = draft.plan_near_miss_candidates(
+        accepted_items, corpus_text=corpus_text, limit=count, seed=seed
+    )
+    cases: list[Any] = []
+    for offset, candidate in enumerate(candidates):
+        cases.append(
+            draft.build_near_miss_case(
+                case_id=f"E2E-U{start_index + offset:03d}",
+                query=draft.near_miss_query(candidate),
+                query_language=candidate.query_language,
+                question_type=candidate.question_type,
+                entity=candidate.entity,
+                attribute=candidate.attribute,
+                approval_basis=approval_basis,
+            )
+        )
+    failures: list[dict[str, str]] = []
+    if len(cases) < count:
+        # 不足不是错误，但必须记录：配额要求 near_miss 占两类不可答题 ≥50%。
+        failures.append({
+            "candidate_id": "<near_miss>",
+            "reason": f"near_miss_shortfall: produced {len(cases)} of {count}",
+        })
+    return cases, failures
+
+
+def load_out_of_corpus_cases(
+    *,
+    corpus_text: str,
+    approval_basis: str,
+    verification_path: Path,
+    questions_path: Path,
+) -> tuple[list[Any], list[dict[str, str]]]:
+    """复用 Phase 12 的 `GEN-U01..05` 作为 out_of_corpus 不可答题，并在当前语料上复核零命中。
+
+    为什么复用而不是重造：`unanswerable_verification.json` 已记录每道题的 `absence_terms`
+    与零命中验证，计划 B3 表明确写「沿用」。题干原文在 `generation_eval_dataset.json` 的
+    `questions[*].query` 里，这里按 `question_id` 关联，**不自己编题干**。
+
+    复核是必须的——语料从 361 chunks 换到 817，旧结论不能直接信。零命中判定用
+    `normalize_text` 字面子串规则（与 §13.1(d) 同口径）；任一 absence term 命中即判该题失效，
+    记入失败清单而不静默收录。
+    """
+
+    if not verification_path.is_file():
+        return [], [{"candidate_id": "<out_of_corpus>",
+                     "reason": f"verification file not found: {verification_path}"}]
+    payload = json.loads(verification_path.read_text(encoding="utf-8"))
+    queries, languages = _load_phase12_queries(questions_path)
+    normalized_corpus = normalize_text(corpus_text)
+    cases: list[Any] = []
+    failures: list[dict[str, str]] = []
+    for question_id in sorted(payload.get("verification", {})):
+        entry = payload["verification"][question_id]
+        terms = [str(term) for term in entry.get("absence_terms", [])]
+        leaked = [term for term in terms if normalize_text(term) and normalize_text(term) in normalized_corpus]
+        if not terms or leaked:
+            failures.append({
+                "candidate_id": question_id,
+                "reason": f"out_of_corpus terms leaked into current corpus: {leaked}" if leaked
+                          else "out_of_corpus has no absence_terms",
+            })
+            continue
+        query = queries.get(question_id)
+        if not query:
+            # 题干缺失就不能建题：编一条题干等于自造数据，违反"题集只存原文派生"的原则。
+            failures.append({"candidate_id": question_id,
+                             "reason": f"phase12 query text not found in {questions_path.name}"})
+            continue
+        cases.append(
+            draft.build_out_of_corpus_case(
+                case_id=f"E2E-U{900 + len(cases) + 1:03d}",
+                query=query,
+                query_language=languages.get(question_id, "en"),
+                approval_basis=approval_basis,
+                source_question_id=question_id,
+            )
+        )
+    return cases, failures
+
+
+def _load_phase12_queries(path: Path) -> tuple[dict[str, str], dict[str, str]]:
+    """从 Phase 12 的 generation eval dataset 取 `GEN-U*` 的题干与语言。
+
+    只读既有冻结产物，不修改它；找不到文件时返回空字典，由调用方记失败而不是崩。
+    """
+
+    if not path.is_file():
+        return {}, {}
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    queries: dict[str, str] = {}
+    languages: dict[str, str] = {}
+    for question in payload.get("questions", []):
+        question_id = str(question.get("question_id") or "")
+        if not question_id.startswith("GEN-U"):
+            continue
+        text = str(question.get("query") or "").strip()
+        if text:
+            queries[question_id] = text
+            languages[question_id] = str(question.get("query_language") or "en")
+    return queries, languages
 
 
 def load_judge_config() -> dict[str, str | None]:
@@ -1306,13 +1452,20 @@ def run_gates(args: argparse.Namespace) -> int:
     case_failures: list[dict[str, str]] = []
     multi_doc_failures: list[dict[str, str]] = []
     false_premise_failures: list[dict[str, str]] = []
-    if args.dataset_out is not None or args.multi_doc > 0 or args.false_premise > 0:
+    near_miss_failures: list[dict[str, str]] = []
+    out_of_corpus_failures: list[dict[str, str]] = []
+    if args.dataset_out is not None or args.multi_doc > 0 or args.false_premise > 0 \
+            or args.near_miss > 0 or args.out_of_corpus:
         # approval_basis 需要一个已存在的报告；先写一版占位报告拿到字节哈希，
         # 再用它组装题集，最后把最终 payload（含重算后的 quota）覆盖写回。
         placeholder_basis = "B3_gate_report.json#pending"
         cases, case_failures = build_dataset_cases(
             accepted_items, documents=documents, approval_basis=placeholder_basis
         )
+        # case_id 必须单调递增且唯一。不能靠 `len(cases)+1` 推出下一个号：
+        # 各构造器都会丢弃候选，产出的号段有空洞，而 `len(cases)` 只反映数量而非最大号——
+        # D2 实测因此产生重复的 E2E-M122（T3 号段 114..127，T6 从 119 起算撞号）。
+        # `_next_case_number` 按"最大已用号 +1"推进，每个构造器用完就重新求一次。
         if args.multi_doc > 0:
             pairs = draft.pair_multi_document_candidates(
                 accepted_items, limit=args.multi_doc, seed=args.seed_for_pairs
@@ -1323,7 +1476,7 @@ def run_gates(args: argparse.Namespace) -> int:
                 documents=documents,
                 chunks_by_id=chunks_by_id,
                 approval_basis=placeholder_basis,
-                start_index=len(cases) + 1,
+                start_index=_next_case_number(cases),
                 probe_results=probe_results,
             )
             cases.extend(multi_cases)
@@ -1334,9 +1487,28 @@ def run_gates(args: argparse.Namespace) -> int:
                 documents=documents,
                 chunks_by_id=chunks_by_id,
                 approval_basis=placeholder_basis,
-                start_index=len(cases) + 1,
+                start_index=_next_case_number(cases),
             )
             cases.extend(fp_cases)
+        # 不可答题（T4 out_of_corpus + T5 near_miss）最后追加，使用独立的 E2E-U* ID 空间。
+        corpus_text = "\n".join(row["text"] for row in chunk_rows)
+        if args.near_miss > 0:
+            nm_cases, near_miss_failures = build_near_miss_cases(
+                accepted_items,
+                count=args.near_miss,
+                corpus_text=corpus_text,
+                approval_basis=placeholder_basis,
+                seed=args.seed_for_pairs,
+            )
+            cases.extend(nm_cases)
+        if args.out_of_corpus:
+            oc_cases, out_of_corpus_failures = load_out_of_corpus_cases(
+                corpus_text=corpus_text,
+                approval_basis=placeholder_basis,
+                verification_path=PHASE12_DIR / "unanswerable_verification.json",
+                questions_path=PHASE12_DIR / "generation_eval_dataset.json",
+            )
+            cases.extend(oc_cases)
 
     # 配额基于最终题集：包含单证据题、T3 多文档题与 T6 错误前提题。
     quota = draft.plan_quotas(cases) if cases else draft.plan_quotas(accepted_items)
@@ -1364,13 +1536,16 @@ def run_gates(args: argparse.Namespace) -> int:
         "probe_results": probe_results,
         "dataset_draft": {
             "cases": len(cases),
-            "failures": len(case_failures) + len(multi_doc_failures) + len(false_premise_failures),
+            "failures": (len(case_failures) + len(multi_doc_failures) + len(false_premise_failures)
+                         + len(near_miss_failures) + len(out_of_corpus_failures)),
             "multi_document": sum(1 for case in cases if "multi_doc" in case.tags),
             "false_premise": sum(1 for case in cases if "false_premise" in case.tags),
+            "near_miss": sum(1 for case in cases if case.unanswerable_kind == "near_miss"),
+            "out_of_corpus": sum(1 for case in cases if case.unanswerable_kind == "out_of_corpus"),
         } if cases else None,
         "notes": [
             "G5 的 bge-m3 embedding 余弦去重未在本步实现（只做确定性部分）",
-            "不可答题（out_of_corpus / near_miss）由 T4/T5 在 B3b 前另行构造，不在本报告的题集草案里",
+            "near_miss 的 co-occurrence 判定用 200 字符邻近窗口；窗口越窄越严格，写进 README",
         ],
     }
     write_json(args.out, payload)
@@ -1398,9 +1573,12 @@ def run_gates(args: argparse.Namespace) -> int:
             f"dataset_failures={len(case_failures) + len(multi_doc_failures) + len(false_premise_failures)} "
             f"fingerprint={dataset.fingerprint or 'computed'} dataset_out={args.dataset_out}"
         )
-    elif args.multi_doc > 0 or args.false_premise > 0:
+    elif args.multi_doc > 0 or args.false_premise > 0 or args.near_miss > 0 or args.out_of_corpus:
         # 构造了额外题却没有落盘点：题不会进任何题集，静默丢弃会让人误以为已产出。
-        raise Refused("--multi-doc/--false-premise require --dataset-out so the constructed cases are persisted")
+        raise Refused(
+            "--multi-doc/--false-premise/--near-miss/--out-of-corpus require --dataset-out "
+            "so the constructed cases are persisted"
+        )
     # 闸门失败与配额未达标是报告内容（D2 据此决定丢弃/补题），不是命令失败；
     # 只有“被拒绝”（同厂商/缺配置/写 evals）才用退出码 2。
     return EXIT_OK
@@ -1548,6 +1726,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="T3 配对的层内排序种子")
     gates.add_argument("--false-premise", type=int, default=0, dest="false_premise",
                        help="额外构造 N 道 T6 错误前提题（需配合 --dataset-out）")
+    gates.add_argument("--near-miss", type=int, default=0, dest="near_miss",
+                       help="构造 N 道 T5 near_miss 不可答题（实体在语料、实体×属性共现为 0）")
+    gates.add_argument("--out-of-corpus", action="store_true", dest="out_of_corpus",
+                       help="复用 Phase 12 的 GEN-U01..05 作为 out_of_corpus 不可答题（复核零命中）")
     gates.add_argument("--dataset-out", type=Path, default=None,
                        help="通过的候选组装成 E2EDataset 并写出（不得位于 evals/ 下）")
     gates.add_argument("--dataset-id", default=None, help="题集身份，如 rag_e2e_v1（配合 --dataset-out）")
