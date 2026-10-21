@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from evidenceflow.eval.e2e.dataset import (
     E2EDataset,
+    Provenance,
     compute_fingerprint,
     load_dataset,
     validate_dataset,
@@ -274,3 +275,149 @@ def test_issues_grouped_by_case():
     report = check(answerable(), answerable("E2E-M002", unanswerable_kind="near_miss"))
     assert list(report.issues_by_case) == ["E2E-M002"]
     assert not report.ok
+
+
+# ---------- §13.1(a)：machine 确认与 approval_basis ----------
+
+def test_provenance_approval_basis_contract():
+    """machine 必须带 <path>#<sha256>；user / 未确认不得携带 basis。"""
+    with pytest.raises(ValidationError):
+        Provenance(drafted_by="agent", approved_by="machine", source="new")
+    with pytest.raises(ValidationError):
+        Provenance(drafted_by="agent", approved_by="machine", approval_basis="no-hash", source="new")
+    with pytest.raises(ValidationError):
+        Provenance(drafted_by="agent", approved_by="user", approval_basis="a.json#abc", source="new")
+    with pytest.raises(ValidationError):
+        Provenance(drafted_by="agent", approval_basis="a.json#abc", source="new")
+    # 合法组合。
+    assert Provenance(drafted_by="agent", approved_by="user", source="new").approval_basis is None
+    machine = Provenance(
+        drafted_by="agent", approved_by="machine",
+        approval_basis="artifacts/stage_b/B3_gate_report.json#abc123", source="derived_t1",
+    )
+    assert machine.approval_basis.endswith("#abc123")
+
+    # 向后兼容：approval_basis 为 None 时与“旧模型没有该字段”的数据集 fingerprint 相同。
+    base_case = answerable()
+    legacy = dataset(base_case)
+    with_null = dataset({**base_case,
+                         "provenance": {"drafted_by": "agent", "approved_by": "user",
+                                        "approval_basis": None, "source": "new"}})
+    assert compute_fingerprint(legacy) == compute_fingerprint(with_null)
+
+    # 有机器验收依据时，依据内容参与 fingerprint（换报告/换 sha256 即换身份）。
+    def machine_case(basis):
+        return answerable(provenance={"drafted_by": "agent", "approved_by": "machine",
+                                      "approval_basis": basis, "source": "derived_t1"})
+
+    assert compute_fingerprint(dataset(machine_case("a.json#1"))) != compute_fingerprint(
+        dataset(machine_case("a.json#2"))
+    )
+
+
+def test_validate_dataset_allow_machine():
+    machine = {"drafted_by": "agent", "approved_by": "machine",
+               "approval_basis": "artifacts/stage_b/B3_gate_report.json#abc", "source": "derived_t1"}
+    case = answerable(provenance=machine)
+    # allow_machine=True 时机器验收可过；默认口径仍只接受 user。
+    assert "not_approved" not in rules(validate_dataset(dataset(case), provider,
+                                                        require_approved=True, allow_machine=True))
+    assert "not_approved" in rules(check(case, require_approved=True))
+
+    # machine 但 basis 为空：用 model_copy 绕过构造校验，模拟被篡改的落盘数据。
+    good = dataset(answerable()).cases[0]
+    broken = good.model_copy(update={
+        "provenance": good.provenance.model_copy(update={"approved_by": "machine", "approval_basis": None})
+    })
+    tampered = E2EDataset(dataset_id="t", corpus_version="c", cases=[broken])
+    report = validate_dataset(tampered, provider, require_approved=True, allow_machine=True)
+    assert "not_approved" in rules(report)
+
+
+# ---------- §13.1(c′)：接地规则 ----------
+
+GROUNDING_TEXT = (
+    "SnowflakeNet reports a chamfer distance of 7.21 on the PCN benchmark under the standard protocol."
+)
+
+
+def grounding_provider(document_id, page_start, page_end):
+    return GROUNDING_TEXT
+
+
+def _grounding_case(claim_text=GROUNDING_TEXT, keys=None,
+                    query="What chamfer distance does SnowflakeNet report on PCN?"):
+    return answerable(query=query, required_claims=[
+        {"claim_id": "C1", "text": claim_text, "required": True,
+         "evidence_anchors": [anchor()], "answer_keys": keys or []}])
+
+
+def _grounding_rules(case, provider=grounding_provider, **kwargs):
+    return rules(validate_dataset(dataset(case), provider, require_approved=False,
+                                  enforce_grounding=True, **kwargs))
+
+
+def test_grounding_claim_must_be_in_source_text():
+    assert _grounding_rules(_grounding_case()) == []
+    not_grounded = _grounding_case(
+        claim_text="the paper describes an unrelated baseline method for comparison")
+    assert "claim_grounded" in _grounding_rules(not_grounded)
+
+
+def test_grounding_key_must_be_substring_of_claim():
+    claim = "the measured chamfer distance is 7.21 on pcn"
+    assert "claim_key_in_text" in _grounding_rules(_grounding_case(claim_text=claim, keys=[["8.88"]]))
+    # 别名是 claim 的子串时通过（7.21 既能接地也能匹配）。
+    assert "claim_key_in_text" not in _grounding_rules(_grounding_case(claim_text=claim, keys=[["7.21"]]))
+
+
+def test_grounding_claim_too_short():
+    def short_provider(document_id, page_start, page_end):
+        return "the CD 7.21 value is reported"
+
+    assert "claim_too_short" in _grounding_rules(
+        _grounding_case(claim_text="CD 7.21"), provider=short_provider
+    )
+
+
+def test_grounding_query_copy_rule():
+    claim = "snflk reports the chamfer distance value of 7.21 on the pcn benchmark under the protocol"
+    # 共享 9 个连续词（the chamfer distance value of 7.21 on the pcn）> 8 ⇒ 触发。
+    copied = _grounding_case(
+        claim_text=claim,
+        query="what does snflk report about the chamfer distance value of 7.21 on the pcn",
+    )
+    assert "query_claim_copy" in _grounding_rules(copied)
+
+    # 只共享 5 个连续词（the chamfer distance value of）时低于阈值，不触发，避免数值题被误杀。
+    clean = _grounding_case(
+        claim_text=claim,
+        query="what does snflk report about the chamfer distance value of",
+    )
+    assert "query_claim_copy" not in _grounding_rules(clean)
+
+
+def test_grounding_forbidden_claims_only_need_length_and_copy():
+    forbidden = {"claim_id": "F1", "text": "the chamfer distance is 9.9 on pcn",
+                 "evidence_anchors": [anchor()]}
+    required = [{"claim_id": "C1", "text": GROUNDING_TEXT, "required": True,
+                 "evidence_anchors": [anchor()], "answer_keys": [["7.21"]]}]
+    case = false_premise(required_claims=required, forbidden_claims=[forbidden])
+    report_rules = _grounding_rules(case)
+    # F1 是错误前提，本来就不在原文：不要求 ①，其余规则全部通过。
+    assert "claim_grounded" not in report_rules and "claim_too_short" not in report_rules
+    assert report_rules == []
+
+    short_forbidden = dict(forbidden, text="9.9 pcn")
+    short_case = false_premise(required_claims=required, forbidden_claims=[short_forbidden])
+    assert "claim_too_short" in _grounding_rules(short_case)
+
+
+def test_grounding_is_opt_in():
+    """enforce_grounding=False 时新规则一律不出现，保持既有语义。"""
+    case = _grounding_case(claim_text="the paper describes an unrelated baseline method")
+    assert _grounding_rules(case) == ["claim_grounded"]
+    report = validate_dataset(dataset(case), grounding_provider, require_approved=False)
+    assert not {"claim_grounded", "claim_key_in_text", "claim_too_short", "query_claim_copy"} & set(
+        rules(report)
+    )

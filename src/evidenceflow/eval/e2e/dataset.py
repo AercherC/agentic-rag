@@ -1,8 +1,11 @@
-"""端到端题集 rag_e2e_v1 的 schema、fingerprint 与确定性校验（PROJECT_SPEC §13.1(a)(c)，含 D8）。
+"""端到端题集 rag_e2e_v1 的 schema、fingerprint 与确定性校验（PROJECT_SPEC §13.1(a)(c)(c′)，含 D8）。
 
 - 锚点模型复用 `domain/evaluation_v2.py` 的 `EvidenceGroup` / `EvidenceAlternative`，与 canonical 40 题同一协议；
 - 所有模型 `extra="forbid"`，防止拼错的字段被静默丢弃；
-- `validate_dataset` 只做确定性检查，不抛错，汇总全部问题供审阅。
+- `validate_dataset` 只做确定性检查，不抛错，汇总全部问题供审阅；
+- 冻结条件（§13.1(a)）区分人工确认与机器验收：`approved_by="machine"` 必须带
+  `approval_basis`（形如 `<path>#<sha256>`），但模型只校验非空与至少一个 `#`，
+  报告路径存在性与 sha256 一致性由 CLI（B3a-2′ D2 / B3b）负责。
 """
 
 from __future__ import annotations
@@ -13,7 +16,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from evidenceflow.domain.evaluation_v2 import ContractModel, EvidenceAlternative, EvidenceGroup
 from evidenceflow.domain.generation import AnswerStatus
@@ -25,6 +28,10 @@ FALSE_PREMISE_TAG = "false_premise"
 MULTI_DOC_TAG = "multi_doc"
 # 别名规范化后的最短长度（§13.1(c)③），过短的别名几乎必然误命中。
 MIN_ALIAS_LENGTH = 2
+# §13.1(c′)③：claim 规范化后至少 10 字符，避免“是/否”式短语。
+MIN_CLAIM_LENGTH = 10
+# §13.1(c′)④：题干与 claim 的最长公共连续词序列不得超过 8 个词。
+MAX_COMMON_WORD_RUN = 8
 
 UnanswerableKind = Literal["out_of_corpus", "near_miss"]
 
@@ -34,11 +41,36 @@ PageTextProvider = Callable[[str, int | None, int | None], str]
 
 
 class Provenance(ContractModel):
-    """题目来源与确认记录；冻结版要求 `approved_by == "user"`。"""
+    """题目来源与确认记录（§13.1(a)）。
+
+    冻结版允许 `approved_by ∈ {"user", "machine"}`：
+    - `"machine"`：`approval_basis` 必填，形如 `<path>#<sha256>`（只校验非空与至少一个 `#`）；
+    - `"user"` 或 `None`（未确认）：`approval_basis` 必须为 `None`。
+    `approval_basis` 为 None 时不参与 fingerprint 计算（见 `compute_fingerprint`），
+    保证 v0.32 之前生成的数据集 fingerprint 不变。
+    """
 
     drafted_by: str = Field(min_length=1, description="起草者，如 agent / user。")
-    approved_by: str | None = Field(default=None, description="确认者；未确认为 None。")
-    source: str = Field(min_length=1, description="题目来源，如 canonical_40 / phase12 / new。")
+    approved_by: Literal["user", "machine"] | None = Field(
+        default=None, description="确认者；未确认为 None，冻结时必须为 user 或 machine。"
+    )
+    approval_basis: str | None = Field(
+        default=None,
+        description="机器验收证据引用，形如 artifacts/stage_b/B3_gate_report.json#<sha256>。",
+    )
+    source: str = Field(min_length=1, description="题目来源，如 canonical_40 / derived_t1 / derived_t2。")
+
+    @model_validator(mode="after")
+    def validate_approval(self):
+        """机器确认必须有验收依据；人工确认/未确认不得携带依据。"""
+
+        if self.approved_by == "machine":
+            # 只做形状检查：路径存在性与 sha256 一致性由 CLI 校验，模型层不读文件。
+            if not self.approval_basis or "#" not in self.approval_basis:
+                raise ValueError("approved_by='machine' requires approval_basis of the form <path>#<sha256>")
+        elif self.approval_basis is not None:
+            raise ValueError("approval_basis must be None unless approved_by='machine'")
+        return self
 
 
 class RequiredClaim(ContractModel):
@@ -106,9 +138,18 @@ def compute_fingerprint(dataset: E2EDataset) -> str:
 
     规范化 JSON = `sort_keys=True`、`ensure_ascii=False`、`separators=(",", ":")`、UTF-8；
     `model_dump(mode="json")` 包含全部字段（含默认值），保证同一内容的序列化唯一。
+
+    向后兼容：`provenance.approval_basis` 为 None 时从参与哈希的 payload 中省略。该字段是
+    v0.32 新增的；旧数据集（如 `artifacts/stage_b/B3a1_pilot_dataset.json`）冻结时序列化里
+    没有它，省略 null 才能保持其 fingerprint 不变。`approval_basis` 有值时照常参与哈希，
+    因此机器验收证据仍被 fingerprint 绑定。
     """
 
     payload = dataset.model_dump(mode="json", exclude={"fingerprint"})
+    for case in payload.get("cases", []):
+        provenance = case.get("provenance")
+        if isinstance(provenance, dict) and provenance.get("approval_basis") is None:
+            provenance.pop("approval_basis", None)
     serialized = json.dumps(payload, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
@@ -231,8 +272,79 @@ def _check_answer_keys(case: EvalCase, claim: RequiredClaim, provider: PageTextP
             add("answer_keys_source", f"{label}: no alias found in any anchor's locator source text")
 
 
+def _longest_common_word_run(left: str, right: str) -> int:
+    """§13.1(c′)④ 的最长公共连续词序列长度（动态规划，O(n*m)）。
+
+    与 `eval/e2e/draft.longest_common_word_run` 是同一算法：dataset 不能反向依赖 draft
+    （draft 需要 EvalCase 构造题），因此这里保留一份私有实现，避免循环导入。
+    """
+
+    left_words = normalize_text(left).split()
+    right_words = normalize_text(right).split()
+    if not left_words or not right_words:
+        return 0
+    previous = [0] * (len(right_words) + 1)
+    best = 0
+    for left_word in left_words:
+        current = [0] * (len(right_words) + 1)
+        for index, right_word in enumerate(right_words, start=1):
+            if left_word == right_word:
+                current[index] = previous[index - 1] + 1
+                best = max(best, current[index])
+        previous = current
+    return best
+
+
+def _check_grounding(
+    case: EvalCase,
+    claim: RequiredClaim | ForbiddenClaim,
+    provider: PageTextProvider,
+    add: Callable[[str, str], None],
+    *,
+    forbidden: bool,
+) -> None:
+    """执行 §13.1(c′) 接地规则；forbidden claim 只检查 ③ 长度与 ④ 题干复制。
+
+    forbidden_claims 的 text 是错误前提，本来就不该出现在原文里，所以不套用 ①；
+    它也不参与答案匹配，因此不套用 ②。
+    """
+
+    claim_norm = normalize_text(claim.text)
+    if not forbidden:
+        # ① claim.text 规范化后必须是某个锚点 locator 页源文本的字面子串。
+        page_texts: list[str] = []
+        for index, anchor in enumerate(claim.evidence_anchors):
+            locator = anchor.locator
+            try:
+                page_texts.append(provider(anchor.document_id, locator.page_start, locator.page_end))
+            except Exception as exc:  # noqa: BLE001 - 校验器汇总问题而不是抛错
+                add("claim_grounded",
+                    f"{claim.claim_id}: cannot read source text of anchor #{index}: "
+                    f"{type(exc).__name__}: {exc}")
+        if claim.evidence_anchors and page_texts:
+            normalized_pages = [normalize_text(text) for text in page_texts]
+            if not any(claim_norm in page for page in normalized_pages):
+                add("claim_grounded", f"{claim.claim_id}: claim text not found in any anchor's source text")
+        # ② 带 answer_keys 时，至少一个别名（规范化后）必须是 claim.text 的子串，
+        # 保证“答案必须是这条论断里的一个片段”；其余别名可按派生表不受此限。
+        if claim.answer_keys:
+            normalized_aliases = [
+                normalize_text(alias) for group in claim.answer_keys for alias in group
+            ]
+            if not any(alias and alias in claim_norm for alias in normalized_aliases):
+                add("claim_key_in_text", f"{claim.claim_id}: no answer key is a substring of the claim text")
+    # ③ claim 规范化后长度 >= 10，避免“是/否”式短语。
+    if len(claim_norm) < MIN_CLAIM_LENGTH:
+        add("claim_too_short", f"{claim.claim_id}: claim shorter than {MIN_CLAIM_LENGTH} after normalization")
+    # ④ 题干与 claim 的最长公共连续词序列 <= 8，防止题干复述原文导致答案泄漏。
+    if _longest_common_word_run(case.query, claim.text) > MAX_COMMON_WORD_RUN:
+        add("query_claim_copy",
+            f"{claim.claim_id}: query copies more than {MAX_COMMON_WORD_RUN} consecutive words from the claim")
+
+
 def validate_dataset(dataset: E2EDataset, page_text_provider: PageTextProvider, *,
-                     require_approved: bool) -> ValidationReport:
+                     require_approved: bool, allow_machine: bool = False,
+                     enforce_grounding: bool = False) -> ValidationReport:
     """对题集做全部确定性检查，汇总问题，不抛错。
 
     规则名（`ValidationIssue.rule`）：
@@ -247,7 +359,10 @@ def validate_dataset(dataset: E2EDataset, page_text_provider: PageTextProvider, 
     - `answerable_unanswerable_kind`：可答题 unanswerable_kind 必须为 null；
     - `false_premise`：D8 各项；`forbidden_claims_non_false_premise`：非 false_premise 题 forbidden_claims 必须为空；
     - `answer_keys_source` / `answer_keys_query` / `answer_keys_format`：§13.1(c) ①②③；
-    - `not_approved`：`require_approved=True` 时 `provenance.approved_by` 必须为 "user"。
+    - `claim_grounded` / `claim_key_in_text` / `claim_too_short` / `query_claim_copy`：§13.1(c′) ①②③④
+      （只在 `enforce_grounding=True` 时执行；forbidden claim 只执行 ③④）；
+    - `not_approved`：`require_approved=True` 时必须有可用确认。默认只接受 `"user"`；
+      `allow_machine=True` 时也接受带非空 `approval_basis` 的 `"machine"`（§13.1(a) 冻结条件）。
     """
 
     issues: list[ValidationIssue] = []
@@ -342,8 +457,25 @@ def validate_dataset(dataset: E2EDataset, page_text_provider: PageTextProvider, 
             if claim.key_matchable:
                 _check_answer_keys(case, claim, page_text_provider, add)
 
-        if require_approved and case.provenance.approved_by != "user":
-            add("not_approved", f"provenance.approved_by is {case.provenance.approved_by!r}, expected 'user'")
+        if enforce_grounding:
+            # §13.1(c′)：required claim 走 ①②③④；forbidden claim 只走 ③④（其 text 不该在原文中出现）。
+            for claim in case.required_claims:
+                _check_grounding(case, claim, page_text_provider, add, forbidden=False)
+            for claim in case.forbidden_claims:
+                _check_grounding(case, claim, page_text_provider, add, forbidden=True)
+
+        if require_approved:
+            # 默认口径保持 B3a-1 的严格人工确认；allow_machine 打开后才接受 D3 的机器验收。
+            approved = case.provenance.approved_by == "user"
+            machine_approved = (
+                allow_machine
+                and case.provenance.approved_by == "machine"
+                and bool(case.provenance.approval_basis)
+            )
+            if not (approved or machine_approved):
+                expected = "'user' or 'machine' with approval_basis" if allow_machine else "'user'"
+                add("not_approved",
+                    f"provenance.approved_by is {case.provenance.approved_by!r}, expected {expected}")
 
     by_case: dict[str, list[ValidationIssue]] = {}
     for issue in issues:
