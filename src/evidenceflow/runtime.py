@@ -278,13 +278,27 @@ def build_rag_service(
         if retriever is not None
         else build_retriever(settings, trace_recorder=trace_recorder)
     )
-    context_builder = ContextBuilder(
-        BgeM3Tokenizer(settings.embedding_model),
-        settings.max_context_tokens,
-    )
+    context_builder = build_context_builder(settings)
     generator = (
         generator
         if generator is not None
-        else Generator(build_llm_client(settings), trace_recorder=trace_recorder)
+        else build_generator(settings, trace_recorder=trace_recorder)
     )
     return RAGService(retriever, context_builder, generator, trace_recorder=trace_recorder)
+
+
+def build_context_builder(settings: Settings) -> ContextBuilder:
+    """线上 Context 装配：与 Embedding 同一 Tokenizer，预算取自 Settings。
+
+    评测诊断脚本需要逐阶段观察检索、上下文与生成，复用本函数保证与线上装配一致。
+    """
+
+    return ContextBuilder(BgeM3Tokenizer(settings.embedding_model), settings.max_context_tokens)
+
+
+def build_generator(
+    settings: Settings, *, trace_recorder: TraceRecorder | None = None
+) -> Generator:
+    """线上 Generator 装配；与 ``build_context_builder`` 同样供逐阶段诊断复用。"""
+
+    return Generator(build_llm_client(settings), trace_recorder=trace_recorder)
