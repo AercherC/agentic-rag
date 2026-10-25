@@ -1,4 +1,4 @@
-"""测试 Citation 校验后到既有 RAGAnswer 的确定性来源组装。"""
+"""Test the deterministic source assembly from Citation validation into the existing RAGAnswer."""
 
 from copy import deepcopy
 
@@ -28,7 +28,7 @@ def make_source_entry(
     page_start: int | None,
     page_end: int | None,
 ) -> ContextEntry:
-    """创建具备 PDF 或 Markdown 页码语义的 Context Entry。"""
+    """Create a Context Entry that carries PDF or Markdown page-number semantics."""
 
     label = f"[S{index}]"
     source = SourceReference(
@@ -50,7 +50,7 @@ def make_source_entry(
 
 
 def make_context() -> BuiltContext:
-    """创建同时包含 PDF、Markdown 及未引用来源的正式 Context。"""
+    """Create a formal Context containing PDF, Markdown, and an unreferenced source at once."""
 
     entries = [
         make_source_entry(1, file_name="guide.pdf", page_start=7, page_end=8),
@@ -68,7 +68,7 @@ def make_context() -> BuiltContext:
 
 
 def make_retrieved() -> list[RetrievedChunk]:
-    """创建既有 RAGAnswer 合同要求的检索追踪记录。"""
+    """Create the retrieval trace record required by the existing RAGAnswer contract."""
 
     chunk = DocumentChunk(
         chunk_id="retrieved-chunk",
@@ -85,7 +85,7 @@ def make_retrieved() -> list[RetrievedChunk]:
 
 
 def empty_context() -> BuiltContext:
-    """创建允许无 Citation 答案的空 Context。"""
+    """Create an empty Context that permits a citation-free answer."""
 
     return BuiltContext(
         context_text="",
@@ -114,7 +114,7 @@ def test_assembly_maps_only_actual_sources_in_answer_order() -> None:
     assert result.answer == generated.answer_text
     assert [source.source_label for source in result.sources] == ["[S2]", "[S1]"]
     assert all(source.source_label != "[S3]" for source in result.sources)
-    # Markdown 不伪造页码；PDF 原始 7-8 范围完整保留。
+    # Markdown does not fake page numbers; the PDF's original 7-8 range is preserved intact.
     assert result.sources[0].file_name == "classic_patterns.md"
     assert result.sources[0].page_start is None and result.sources[0].page_end is None
     assert result.sources[1].file_name == "guide.pdf"
@@ -167,7 +167,7 @@ def test_empty_context_without_citation_is_valid_with_no_sources() -> None:
 
 
 def test_nonempty_context_insufficient_status_allows_no_citation() -> None:
-    """结构化拒答即使保留候选上下文，也不应被误判为引用缺失。"""
+    """A structured refusal must not be misjudged as missing citations even when candidate context is retained."""
 
     generated = GeneratedAnswer(
         status=AnswerStatus.INSUFFICIENT_CONTEXT,
@@ -231,7 +231,7 @@ def test_assembly_rejects_blank_query_before_building_rag_answer() -> None:
 
 
 def test_status_is_passed_through_to_rag_answer() -> None:
-    """answered 与 insufficient_context 都由 GeneratedAnswer 透传到 RAGAnswer.status。"""
+    """answered and insufficient_context are both passed through from GeneratedAnswer to RAGAnswer.status."""
 
     answered = assemble_rag_answer(
         query="q",
@@ -254,7 +254,7 @@ def test_status_is_passed_through_to_rag_answer() -> None:
 
 
 def test_refusal_with_unknown_label_is_still_rejected() -> None:
-    """任何状态都不允许未知标签（与 answered 必须引用的规则互相独立）。"""
+    """No status permits an unknown label (independent of the rule that answered answers must cite)."""
 
     with pytest.raises(CitationValidationError, match="unknown citation"):
         assemble_rag_answer(
@@ -268,7 +268,7 @@ def test_refusal_with_unknown_label_is_still_rejected() -> None:
 
 
 def test_label_classification_and_rules_work_without_built_context() -> None:
-    """离线重解析使用的 allowlist 版本与 BuiltContext 版本规则一致。"""
+    """The allowlist version used by offline re-parsing follows the same rules as the BuiltContext version."""
 
     parsed = classify_citation_labels("A [S2]. B [S1]. C [S9]. D [S2].", {"[S1]", "[S2]"})
 

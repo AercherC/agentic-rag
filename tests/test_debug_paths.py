@@ -1,4 +1,4 @@
-"""验证移动后的工具仍从项目根解析路径，避免触发真实实验。"""
+"""Verify that the relocated tools still resolve paths from the project root, without triggering real experiments."""
 
 import ast
 from pathlib import Path
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
     "audit_research_ingestion", "gen_eval",
 ])
 def test_debug_root_resolves_outside_working_directory(name, monkeypatch, tmp_path):
-    """仅执行路径赋值，验证其他工作目录下不会误指向 experiments。"""
+    """Exercise only the path assignment, verifying that another working directory never points at experiments by mistake."""
     path = ROOT / "experiments/debug" / f"{name}.py"
     tree = ast.parse(path.read_text(encoding="utf-8"))
     assignment = next(node for node in tree.body if isinstance(node, ast.Assign)

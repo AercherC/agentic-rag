@@ -1,4 +1,4 @@
-"""验证 ingest CLI 的服务委托、输出与退出码。"""
+"""Verify the ingest CLI's service delegation, output and exit codes."""
 
 from pathlib import Path
 
@@ -8,7 +8,7 @@ from evidenceflow.ingestion.service import DocumentIngestionResult, IngestionSum
 
 
 class FakeService:
-    """返回固定 Summary 并记录 CLI 传入范围。"""
+    """Return a fixed Summary and record the scope the CLI passed in."""
 
     def __init__(self, root: Path, summary: IngestionSummary) -> None:
         self.ingestion_root = root
@@ -53,7 +53,7 @@ def test_summary_never_prints_embedding_values(tmp_path: Path) -> None:
 
 
 def test_ingest_cli_refuses_active_collection_with_exit_code_2(tmp_path: Path, capsys, monkeypatch) -> None:
-    """lifecycle active 指向的 collection 不允许直接 ingest：退出码 2，且不加载任何模型。"""
+    """The collection pointed at by lifecycle active must not be ingested directly: exit code 2, loading no model."""
 
     from evidenceflow.knowledge import IndexLifecycle, PipelineIdentity, SourceRecord, build_manifest
 
@@ -71,7 +71,9 @@ def test_ingest_cli_refuses_active_collection_with_exit_code_2(tmp_path: Path, c
     IndexLifecycle(tmp_path / "index_state.json", "kb-test").initialize_active(manifest)
     settings = Settings(_env_file=None, index_state_path=tmp_path / "index_state.json")
 
-    # 不注入 ingestion_service：走真实 build_ingestion_service，保护必须在构造模型之前触发。
+    # Do not inject ingestion_service: this goes through the real build_ingestion_service, so the
+    # protection
+    # must trigger before any model is constructed.
     exit_code = main(["ingest", "data/source_docs"], settings=settings)
     captured = capsys.readouterr()
 

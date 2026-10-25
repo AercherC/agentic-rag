@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""为 EvidenceFlow 生成 Post-13F 物理清理的二次确认报告。
+"""Generate the second-confirmation report for the Post-13F physical cleanup of EvidenceFlow.
 
-DELETE_SAFE 只包括明确可再生的 pytest 临时树、Python bytecode/cache 和已声明的
-Phase14 临时 Chroma；Gold、qrels、manifest、source PDF、active/rollback Chroma、
-源码与模型文件一律不进入候选。脚本只读，不执行删除。
+DELETE_SAFE covers only explicitly regenerable pytest temporary trees, Python bytecode/cache and the
+declared Phase14 temporary Chroma; Gold, qrels, manifests, source PDFs, active/rollback Chroma,
+source code and model files never become candidates. The script is read-only and deletes nothing.
 """
 
 from __future__ import annotations
@@ -25,7 +25,7 @@ PHASE14_CHROMA_PREFIX = (
 
 
 def sha256_of(path: Path) -> str:
-    """流式计算待清理文件 hash，作为恢复/重建前的验证锚点。"""
+    """Compute the hash of a file pending cleanup in a streaming way, as the verification anchor before any restore or rebuild."""
 
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -35,7 +35,7 @@ def sha256_of(path: Path) -> str:
 
 
 def iter_project_files():
-    """遍历项目受控范围，排除 Codex/model cache 与本次审计输出。"""
+    """Walk the controlled project scope, excluding the Codex/model cache and this audit's own output."""
 
     excluded = {".cache", ".workbuddy", ".vscode", ".git", "artifacts"}
     for dirpath, dirnames, filenames in os.walk(ROOT, followlinks=False):
@@ -49,7 +49,7 @@ def iter_project_files():
 
 
 def safe_candidate_reason(relative_path: str) -> str | None:
-    """返回 exact allowlist 命中的理由；未命中则返回 None。"""
+    """Return the reason for an exact allowlist hit, or None when nothing matches."""
 
     rel = relative_path.replace("\\", "/")
     if rel == ".pytest_cache" or rel.startswith(".pytest_cache/"):
@@ -64,11 +64,13 @@ def safe_candidate_reason(relative_path: str) -> str | None:
 
 
 def _red_flag(relative_path: str, reason: str) -> str | None:
-    """对 allowlist 候选做第二层范围校验。"""
+    """Apply a second scope check to the allowlist candidates."""
 
     rel = relative_path.replace("\\", "/")
-    # 这些 exact 类别已经由 allowlist 证明是可再生缓存；文件名中出现 gold/model
-    # 等测试模块词不会改变其缓存语义，不能误报为受保护的业务工件。
+    # These exact categories are already proven regenerable caches by the allowlist; a test-module
+    # word such as gold/model in the file name does not change their cache semantics, so they must
+    # not
+    # be misreported as protected business artifacts.
     if reason in {"pytest cache", "pytest temporary sandbox", "Python bytecode cache", "rebuildable Phase14 temporary Chroma"}:
         return None
     lower = rel.lower()
@@ -84,7 +86,7 @@ def _red_flag(relative_path: str, reason: str) -> str | None:
 
 
 def build_cleanup_audit() -> dict[str, Any]:
-    """扫描当前文件并生成 DELETE_SAFE、REVIEW 及异常项。"""
+    """Scan the current files and produce the DELETE_SAFE, REVIEW and anomaly entries."""
 
     delete_safe: list[dict[str, Any]] = []
     review: list[dict[str, Any]] = []
@@ -121,7 +123,7 @@ def build_cleanup_audit() -> dict[str, Any]:
 
 
 def write_cleanup_reports(audit: dict[str, Any], output_dir: Path = OUTPUT_DIR) -> None:
-    """落盘机器可读计划、DELETE_SAFE 聚类和 REVIEW 聚类报告。"""
+    """Write the machine-readable plan plus the DELETE_SAFE and REVIEW cluster reports to disk."""
 
     output_dir.mkdir(parents=True, exist_ok=True)
     plan = {
@@ -188,7 +190,7 @@ def write_cleanup_reports(audit: dict[str, Any], output_dir: Path = OUTPUT_DIR) 
 
 
 def main() -> int:
-    """执行项目清理二次确认审计。"""
+    """Run the second-confirmation audit for the project cleanup."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)

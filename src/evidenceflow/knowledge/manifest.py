@@ -1,4 +1,4 @@
-"""Knowledge Base Manifest、签名和 source diff 的确定性 Domain 逻辑。"""
+"""Deterministic Domain logic for the Knowledge Base Manifest, its signatures, and source diffs."""
 
 from __future__ import annotations
 
@@ -16,7 +16,8 @@ from pydantic import BaseModel, Field, model_validator
 
 from evidenceflow.domain.document import Document
 
-# 版本 token 必须由代码显式维护；这样 parser/chunker 行为变更不会被静默视为同一索引。
+# Version tokens must be maintained explicitly in code, so a parser/chunker behaviour change is
+# never silently treated as the same index.
 CURRENT_PARSER_VERSION = "evidenceflow.p0-structure.v1"
 CURRENT_CLEANER_VERSION = "evidenceflow.cleaner.v1"
 CURRENT_CHUNKER_VERSION = "evidenceflow.hybrid-chunker.v1"
@@ -27,9 +28,10 @@ SourceChangeStatus = Literal["UNCHANGED", "ADDED", "UPDATED", "DELETED", "RENAME
 
 
 def canonical_json_bytes(value: Any) -> bytes:
-    """将 JSON 兼容值按固定规则序列化，作为所有签名的唯一输入表示。"""
+    """Serialise JSON-compatible values by fixed rules, providing the single input representation behind every signature."""
 
-    # 排序键、紧凑分隔符和禁止 NaN 共同消除平台及浮点特殊值造成的漂移。
+    # Sorted keys, compact separators, and the NaN ban together remove drift caused by the platform
+    # and by floating-point special values.
     try:
         serialized = json.dumps(
             value,
@@ -44,18 +46,19 @@ def canonical_json_bytes(value: Any) -> bytes:
 
 
 def stable_hash(value: Any) -> str:
-    """返回确定性 JSON 载荷的 SHA-256，用于 corpus/config/index 身份。"""
+    """Return the SHA-256 of a deterministic JSON payload, used for corpus/config/index identity."""
 
     return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
 
 
 def save_manifest(path: str | os.PathLike[str], manifest: "KnowledgeBaseManifest") -> None:
-    """以稳定、可审计的 JSON 格式原子保存 manifest。"""
+    """Persist the manifest atomically in a stable, auditable JSON format."""
 
     destination = os.fspath(path)
     parent = os.path.dirname(os.path.abspath(destination))
     os.makedirs(parent, exist_ok=True)
-    # 文件格式保留缩进便于审阅，但排序和字段内容仍与 canonical manifest 一致。
+    # The file format keeps indentation for reviewability, but ordering and field content still
+    # match the canonical manifest.
     text = json.dumps(
         manifest.canonical_dict(),
         ensure_ascii=False,
@@ -83,7 +86,7 @@ def save_manifest(path: str | os.PathLike[str], manifest: "KnowledgeBaseManifest
 
 
 def load_manifest(path: str | os.PathLike[str]) -> "KnowledgeBaseManifest":
-    """读取并重新校验 manifest 的派生 signature。"""
+    """Read the manifest and re-validate its derived signatures."""
 
     return KnowledgeBaseManifest.model_validate_json(
         Path(os.fspath(path)).read_text(encoding="utf-8")
@@ -91,7 +94,7 @@ def load_manifest(path: str | os.PathLike[str]) -> "KnowledgeBaseManifest":
 
 
 def _normalize_relative_path(value: str) -> str:
-    """规范化 manifest 中的 source 相对路径并拒绝 root 外路径。"""
+    """Normalise a source relative path inside the manifest and reject paths outside the root."""
 
     if not isinstance(value, str) or not value.strip():
         raise ValueError("relative_path must not be empty")
@@ -103,7 +106,7 @@ def _normalize_relative_path(value: str) -> str:
 
 
 class SourceRecord(BaseModel):
-    """Manifest 中描述一个 source 文件身份和内容版本的最小记录。"""
+    """Minimal record describing one source file's identity and content version inside the Manifest."""
 
     document_id: str = Field(min_length=1, description="稳定逻辑文档 ID。")
     relative_path: str = Field(min_length=1, description="相对 ingestion root 的 NFC/POSIX 路径。")
@@ -112,15 +115,16 @@ class SourceRecord(BaseModel):
 
     @model_validator(mode="after")
     def normalize_path(self) -> "SourceRecord":
-        """保证 source path 的写入形式与 document_id 的路径口径一致。"""
+        """Guarantee that the written form of the source path matches the path convention of document_id."""
 
-        # source path 既用于展示也参与 corpus signature，必须在模型边界统一。
+        # The source path is both displayed and part of the corpus signature, so it must be unified
+        # at the model boundary.
         self.relative_path = _normalize_relative_path(self.relative_path)
         return self
 
 
 class PipelineIdentity(BaseModel):
-    """只包含会改变 indexed representation 的 parser/chunker/embedding 身份。"""
+    """Contains only the parser/chunker/embedding identity that changes the indexed representation."""
 
     parser_version: str = Field(min_length=1, description="结构解析实现版本 token。")
     cleaner_version: str = Field(min_length=1, description="文本清洗实现版本 token。")
@@ -135,7 +139,7 @@ class PipelineIdentity(BaseModel):
 
     @model_validator(mode="after")
     def validate_config_hash(self) -> "PipelineIdentity":
-        """确保配置 hash 真正对应配置内容，避免手工填错造成错误复用。"""
+        """Ensure the config hash really corresponds to the config content, so a manual typo never causes wrong reuse."""
 
         computed = stable_hash(self.chunker_config)
         if self.chunker_config_hash is not None and self.chunker_config_hash != computed:
@@ -145,7 +149,7 @@ class PipelineIdentity(BaseModel):
 
 
 class IndexIdentity(BaseModel):
-    """Manifest 中描述一个具体 indexed representation 的状态和规模。"""
+    """Describes the status and size of one concrete indexed representation inside the Manifest."""
 
     index_signature: str = Field(min_length=1, description="由 corpus 与 indexing pipeline 生成的身份。")
     collection_name: str = Field(min_length=1, description="该 manifest 绑定的 Chroma Collection。")
@@ -159,7 +163,7 @@ class IndexIdentity(BaseModel):
 
 
 class KnowledgeBaseManifest(BaseModel):
-    """可持久化的知识库清单；所有身份字段都由其内容确定性派生。"""
+    """A persistable knowledge-base manifest; every identity field is derived deterministically from its content."""
 
     schema_version: str = Field(default="knowledge-base-manifest-v1", min_length=1)
     knowledge_base_id: str = Field(min_length=1, description="稳定的知识库逻辑身份。")
@@ -170,7 +174,7 @@ class KnowledgeBaseManifest(BaseModel):
 
     @model_validator(mode="after")
     def validate_derived_signatures(self) -> "KnowledgeBaseManifest":
-        """拒绝 manifest 中 corpus/index signature 与内容不一致的伪造状态。"""
+        """Reject a forged state where the corpus/index signatures in the manifest disagree with the content."""
 
         expected_corpus = build_corpus_signature(self.sources)
         if self.corpus_signature != expected_corpus:
@@ -178,17 +182,18 @@ class KnowledgeBaseManifest(BaseModel):
         expected_index = build_index_signature(expected_corpus, self.pipeline)
         if self.index.index_signature != expected_index:
             raise ValueError("index_signature does not match corpus and pipeline")
-        # 排序存储确保同一份 source 以同一顺序导出，避免调用方自行排序漂移。
+        # Storing sources sorted guarantees the same source set is exported in the same order and
+        # callers cannot drift by sorting on their own.
         self.sources = sorted(self.sources, key=lambda item: (item.document_id, item.relative_path, item.content_hash))
         return self
 
     def canonical_dict(self) -> dict[str, Any]:
-        """返回适合落盘和 hash 的稳定字典。"""
+        """Return a stable dict suitable for persistence and hashing."""
 
         return self.model_dump(mode="json", exclude_none=False)
 
     def canonical_bytes(self) -> bytes:
-        """返回 manifest 的确定性 JSON bytes。"""
+        """Return the manifest's deterministic JSON bytes."""
 
         return canonical_json_bytes(self.canonical_dict())
 
@@ -201,7 +206,7 @@ class KnowledgeBaseManifest(BaseModel):
         status: ManifestIndexStatus | None = None,
         parent_index_signature: str | None = None,
     ) -> "KnowledgeBaseManifest":
-        """在不改变 corpus/index signature 的前提下生成新的生命周期视图。"""
+        """Produce a new lifecycle view without changing the corpus/index signatures."""
 
         updated = self.index.model_copy(
             update={
@@ -220,9 +225,10 @@ class KnowledgeBaseManifest(BaseModel):
 
 
 def _source_signature_records(sources: Sequence[SourceRecord]) -> list[dict[str, str]]:
-    """提取 corpus signature 允许使用的字段，排除审计字段 size_bytes。"""
+    """Extract the fields allowed into the corpus signature, excluding the audit field size_bytes."""
 
-    # 文件大小不是内容身份的一部分；同一 bytes 的 size 已由 content_hash 完整决定。
+    # File size is not part of content identity; for the same bytes, size is already fully
+    # determined by content_hash.
     records = [
         {
             "document_id": source.document_id,
@@ -235,15 +241,16 @@ def _source_signature_records(sources: Sequence[SourceRecord]) -> list[dict[str,
 
 
 def build_corpus_signature(sources: Sequence[SourceRecord]) -> str:
-    """根据 source identity/content 生成与 pipeline 无关的 corpus signature。"""
+    """Build a pipeline-independent corpus signature from source identity/content."""
 
     return stable_hash(_source_signature_records(sources))
 
 
 def build_index_signature(corpus_signature: str, pipeline: PipelineIdentity) -> str:
-    """根据 corpus 与 indexing-relevant pipeline 生成 index signature。"""
+    """Build the index signature from the corpus and the indexing-relevant pipeline."""
 
-    # 明确列出字段，防止 reranker、TopK、generator 等运行时参数意外进入索引身份。
+    # List the fields explicitly so runtime parameters such as reranker, TopK, and generator never
+    # leak into the index identity.
     payload = {
         "corpus_signature": corpus_signature,
         "parser_version": pipeline.parser_version,
@@ -257,9 +264,10 @@ def build_index_signature(corpus_signature: str, pipeline: PipelineIdentity) -> 
 
 
 def current_pipeline_from_settings(settings: Any) -> PipelineIdentity:
-    """从当前 Settings 组装正式 pipeline identity，不读取 retrieval-only 参数。"""
+    """Assemble the production pipeline identity from the current Settings without reading retrieval-only parameters."""
 
-    # separator 与 special-token 口径是当前 hybrid/fixed Chunk 表示的一部分，显式冻结。
+    # The separator and special-token convention is part of the current hybrid/fixed Chunk
+    # representation, so it is frozen explicitly.
     chunker_config = {
         "strategy": settings.chunk_strategy,
         "chunk_size": settings.chunk_size,
@@ -289,7 +297,7 @@ def build_manifest(
     parent_index_signature: str | None = None,
     schema_version: str = "knowledge-base-manifest-v1",
 ) -> KnowledgeBaseManifest:
-    """从真实 source/pipeline 数据创建并校验一个 manifest。"""
+    """Create and validate a manifest from real source/pipeline data."""
 
     source_list = sorted(list(sources), key=lambda item: (item.document_id, item.relative_path, item.content_hash))
     corpus_signature = build_corpus_signature(source_list)
@@ -312,7 +320,7 @@ def build_manifest(
 
 
 def manifest_sources_from_documents(documents: Sequence[Document]) -> list[SourceRecord]:
-    """将 Loader 已完成的 Document 转为 manifest source records。"""
+    """Convert Documents already loaded by the Loader into manifest source records."""
 
     return [
         SourceRecord(
@@ -329,7 +337,7 @@ def compare_sources(
     previous: Sequence[SourceRecord],
     current: Sequence[SourceRecord],
 ) -> SourceDiff:
-    """比较两次 explicit scan，并在 rename 无法唯一判断时返回 BLOCKED。"""
+    """Compare two explicit scans, returning BLOCKED when a rename cannot be determined uniquely."""
 
     previous_by_path = _index_sources(previous, "previous")
     current_by_path = _index_sources(current, "current")
@@ -337,7 +345,7 @@ def compare_sources(
     unmatched_previous: list[SourceRecord] = []
     unmatched_current: list[SourceRecord] = []
 
-    # 先按路径判断，确保同路径 hash 变化稳定地归类为 UPDATED。
+    # Check by path first, so a hash change on the same path is stably classified as UPDATED.
     for path in sorted(set(previous_by_path) | set(current_by_path)):
         old = previous_by_path.get(path)
         new = current_by_path.get(path)
@@ -399,7 +407,7 @@ def compare_sources(
 
 
 class SourceChange(BaseModel):
-    """一条 source 变更及其旧/新路径身份。"""
+    """One source change together with its old/new path identity."""
 
     status: SourceChangeStatus = Field(description="五种 source 同步状态之一。")
     relative_path: str = Field(min_length=1, description="当前路径或删除前路径。")
@@ -410,7 +418,7 @@ class SourceChange(BaseModel):
 
 
 class SourceDiff(BaseModel):
-    """一次 source scan 的稳定差异结果，BLOCKED 时禁止自动猜测 rename。"""
+    """Stable diff result of one source scan; guessing a rename is forbidden while BLOCKED."""
 
     changes: tuple[SourceChange, ...] = Field(description="按路径稳定排序的变更。")
     blocked: bool = Field(default=False, description="是否因 source identity 歧义而停止。")
@@ -418,7 +426,7 @@ class SourceDiff(BaseModel):
 
 
 def _index_sources(sources: Sequence[SourceRecord], label: str) -> dict[str, SourceRecord]:
-    """校验一个 source inventory 的路径唯一性。"""
+    """Validate the path uniqueness of one source inventory."""
 
     indexed: dict[str, SourceRecord] = {}
     for source in sources:
@@ -429,7 +437,7 @@ def _index_sources(sources: Sequence[SourceRecord], label: str) -> dict[str, Sou
 
 
 class RebuildDecision(BaseModel):
-    """确定性 dense rebuild 决策及其原因。"""
+    """A deterministic dense-rebuild decision and the reasons behind it."""
 
     rebuild_required: bool = Field(description="是否需要新建 staging dense index。")
     blocked: bool = Field(default=False, description="是否因 source diff 无法安全决策。")
@@ -442,7 +450,7 @@ def decide_rebuild(
     previous_manifest: KnowledgeBaseManifest | None = None,
     current_manifest: KnowledgeBaseManifest | None = None,
 ) -> RebuildDecision:
-    """按 source/index identity 判断是否重建，忽略 reranker 和查询侧配置。"""
+    """Decide whether to rebuild from source/index identity, ignoring reranker and query-side configuration."""
 
     if source_diff.blocked:
         return RebuildDecision(rebuild_required=False, blocked=True, reasons=(source_diff.blocked_reason or "ambiguous source identity",))
@@ -456,5 +464,6 @@ def decide_rebuild(
             reasons.append(f"source {status.lower()}")
     if current_manifest is not None and current_manifest.index.index_signature != previous_manifest.index.index_signature:
         reasons.append("index-affecting pipeline changed")
-    # 空 diff 且 signature 不变明确表示不需要重建；输出理由便于审计而非引入隐式行为。
+    # An empty diff with an unchanged signature clearly means no rebuild; the reasons are output
+    # for auditability rather than to introduce implicit behaviour.
     return RebuildDecision(rebuild_required=bool(reasons), reasons=tuple(reasons))

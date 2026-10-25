@@ -1,4 +1,4 @@
-"""组合摄取 primitives，提供确定性的增量知识库更新工作流。"""
+"""Compose the ingestion primitives into a deterministic incremental knowledge-base update workflow."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ IngestionStatus = Literal["inserted", "skipped", "updated", "failed"]
 
 @dataclass(frozen=True)
 class DocumentIngestionResult:
-    """记录单个文件的增量处理状态及可诊断失败阶段。"""
+    """Incremental processing status of a single file, plus the diagnosable failure stage."""
 
     source_path: str
     document_id: str | None
@@ -33,7 +33,7 @@ class DocumentIngestionResult:
 
 @dataclass(frozen=True)
 class IngestionSummary:
-    """汇总一次单文件或目录摄取的确定性结果。"""
+    """Deterministic result summary of one single-file or directory ingestion."""
 
     files_discovered: int
     inserted: int
@@ -46,13 +46,13 @@ class IngestionSummary:
 
 
 def _relative_source_path(path: Path, root: Path) -> str:
-    """返回与 document_id 同源的 NFC、POSIX 相对路径。"""
+    """Return the NFC, POSIX relative path that shares its basis with document_id."""
 
     return unicodedata.normalize("NFC", path.resolve().relative_to(root.resolve()).as_posix())
 
 
 def discover_source_files(input_path: Path, ingestion_root: Path) -> list[Path]:
-    """在稳定 root 内发现受支持文件，并按规范化相对路径排序。"""
+    """Discover supported files inside the stable root and sort them by normalized relative path."""
 
     root = Path(ingestion_root).resolve()
     target = Path(input_path).resolve()
@@ -72,13 +72,14 @@ def discover_source_files(input_path: Path, ingestion_root: Path) -> list[Path]:
     if not target.is_dir():
         raise ValueError(f"Ingestion input is neither a file nor directory: {input_path}")
 
-    # 目录中的非知识文件直接忽略；排序不依赖操作系统遍历顺序。
+    # Non-knowledge files in the directory are ignored; the sort does not depend on the OS
+    # traversal order.
     files = [path for path in target.rglob("*") if path.is_file() and path.suffix.lower() in SUPPORTED_FILE_TYPES]
     return sorted(files, key=lambda path: _relative_source_path(path, root))
 
 
 class IngestionService:
-    """以固定 ingestion root 串行插入、跳过或替换知识文档。"""
+    """Insert, skip, or replace knowledge documents one at a time under a fixed ingestion root."""
 
     def __init__(
         self,
@@ -91,7 +92,7 @@ class IngestionService:
         chunk_overlap: int,
         chunk_strategy: str = "fixed",
     ) -> None:
-        """注入已验证 primitive，并冻结当前服务的 Chunk 配置与策略。"""
+        """Inject the already-validated primitives and freeze this service's Chunk configuration and strategy."""
 
         if chunk_strategy not in {"hybrid", "fixed"}:
             raise ValueError("chunk_strategy must be 'hybrid' or 'fixed'")
@@ -104,7 +105,7 @@ class IngestionService:
         self.chunk_strategy = chunk_strategy
 
     def _ingest_file(self, path: Path) -> DocumentIngestionResult:
-        """处理一个文件；更新时确保 Embed 成功后才删除旧版本。"""
+        """Process one file; on update, delete the old version only after Embedding has succeeded."""
 
         relative_path = _relative_source_path(path, self.ingestion_root)
         document = None
@@ -120,8 +121,9 @@ class IngestionService:
             cleaned = clean_document(document)
             stage = "chunk"
             if self.chunk_strategy == "hybrid" and document.file_type == "pdf":
-                # §9.3：hybrid + PDF 走结构解析 → 混合切分；解析在原始页文本的
-                # block 视图上执行，不依赖 Cleaner 输出。
+                # §9.3: hybrid + PDF goes through structural parsing -> hybrid chunking; parsing
+                # runs on the
+                # block view of the original page text and does not depend on Cleaner output.
                 stage = "structure"
                 structured = parse_structured_document(document, path)
                 stage = "chunk"
@@ -129,16 +131,18 @@ class IngestionService:
                     document, structured.elements, self.tokenizer, self.chunk_size
                 )
             else:
-                # fixed 策略与 Markdown/TXT（无结构信息）保持原固定窗口路径不变。
+                # The fixed strategy and Markdown/TXT (no structural information) keep the original
+                # fixed-window path unchanged.
                 chunks = chunk_document(cleaned, self.tokenizer, self.chunk_size, self.chunk_overlap)
             stage = "embedding"
-            # 一个文档一次 Batch，避免逐 Chunk 启动模型推理。
+            # One Batch per document, avoiding a model inference startup per Chunk.
             embeddings = self.embedding_provider.embed_documents([chunk.content for chunk in chunks])
             if len(chunks) != len(embeddings):
                 raise ValueError("chunk and embedding counts do not match")
 
             if exists:
-                # 新版本已经完整准备好后才触碰旧数据，保住 Embed 失败时的旧版本。
+                # Touch the old data only after the new version is fully prepared, preserving the
+                # old version if Embedding fails.
                 stage = "delete"
                 self.vector_store.delete_document(document.document_id)
             stage = "store"
@@ -151,7 +155,8 @@ class IngestionService:
                 embedding_count=len(embeddings),
             )
         except Exception as exc:
-            # Batch 层需要继续后续文件，因此把异常转成带阶段的结果而不是吞掉诊断信息。
+            # The Batch layer must continue with later files, so the exception becomes a staged
+            # result rather than swallowed diagnostics.
             return DocumentIngestionResult(
                 source_path=relative_path,
                 document_id=document.document_id if document is not None else None,
@@ -161,7 +166,7 @@ class IngestionService:
             )
 
     def ingest(self, input_path: Path | None = None) -> IngestionSummary:
-        """串行摄取单文件或目录，并在单文件失败后继续处理。"""
+        """Ingest a single file or a directory serially, continuing after an individual file fails."""
 
         files = discover_source_files(input_path or self.ingestion_root, self.ingestion_root)
         results = tuple(self._ingest_file(path) for path in files)

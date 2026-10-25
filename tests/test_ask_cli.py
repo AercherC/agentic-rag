@@ -1,4 +1,4 @@
-"""测试 ask CLI 的委托、用户输出、来源格式和失败退出码。"""
+"""Test the ask CLI delegation, user output, source formatting, and failure exit codes."""
 
 import pytest
 
@@ -11,7 +11,7 @@ from evidenceflow.llm import LLMConfigurationError, LLMRequestError
 
 
 class FakeRAGService:
-    """记录 CLI Query 并返回固定回答或抛出指定错误。"""
+    """Record the CLI query and return a fixed answer or raise the given error."""
 
     def __init__(self, answer: RAGAnswer | None = None, error: Exception | None = None) -> None:
         self.result = answer
@@ -27,7 +27,7 @@ class FakeRAGService:
 
 
 def make_answer(*, sources: list[SourceReference] | None = None) -> RAGAnswer:
-    """创建无需真实 Retriever/LLM 的 CLI 输出结果。"""
+    """Build a CLI output result that needs no real Retriever/LLM."""
 
     return RAGAnswer(
         query="为什么 Agent 需要工具？",
@@ -113,7 +113,7 @@ def test_ask_cli_does_not_swallow_keyboard_interrupt() -> None:
 
 
 def test_renderer_shows_insufficient_context_status() -> None:
-    """拒答状态也要在 CLI 输出中可见，用户不必从自然语言里猜。"""
+    """The refusal status must also be visible in the CLI output, so users need not guess from the natural language text."""
 
     rendered = render_rag_answer(make_answer())
 
@@ -121,9 +121,11 @@ def test_renderer_shows_insufficient_context_status() -> None:
 
 
 def test_ask_cli_renders_index_configuration_error_with_exit_code_1(tmp_path, capsys, monkeypatch) -> None:
-    """A3.1：走真实 build_rag_service；显式 INDEX_STATE_PATH 缺失时抛 ActiveCollectionError。
+    """A3.1: exercise the real build_rag_service; a missing explicit INDEX_STATE_PATH raises ActiveCollectionError.
 
-    该错误在加载任何模型之前抛出，CLI 输出必须以 ``Index configuration error`` 开头，退出码 1。
+        That error is raised before any model is loaded; the CLI output must start with
+        ``Index configuration error`` and the exit code must be 1.
+
     """
 
     monkeypatch.delenv("COLLECTION_NAME", raising=False)

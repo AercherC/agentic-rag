@@ -1,4 +1,4 @@
-"""定义供应商无关的同步 LLM 文本生成合同与最小异常层级。"""
+"""Define the vendor-neutral synchronous LLM text-generation contract and the minimal exception hierarchy."""
 
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
@@ -7,24 +7,24 @@ from evidenceflow.domain.generation import LLMMessage
 
 
 class LLMError(RuntimeError):
-    """所有正式 LLM Client 配置和请求失败的统一基类。"""
+    """Common base class for every configuration and request failure of a formal LLM Client."""
 
 
 class LLMConfigurationError(LLMError):
-    """表示 Client 无法由当前非敏感配置和凭据安全创建。"""
+    """Signals that the Client cannot be created safely from the current non-sensitive configuration and credentials."""
 
 
 class LLMRequestError(LLMError):
-    """表示 LLM 请求失败或供应商响应不满足纯文本合同。"""
+    """Signals that an LLM request failed or the vendor response does not satisfy the plain-text contract."""
 
 
 @runtime_checkable
 class LLMClient(Protocol):
-    """接受项目消息模型并同步返回原始模型文本。"""
+    """Accept the project's message model and synchronously return the raw model text."""
 
     @property
     def last_usage(self) -> dict | None:
-        """最近一次调用的 ``prompt_tokens`` / ``completion_tokens``；服务未返回 usage 时为 None。"""
+        """``prompt_tokens`` / ``completion_tokens`` of the most recent call; None when the service returned no usage."""
 
         ...
 
@@ -35,11 +35,11 @@ class LLMClient(Protocol):
         schema_name: str,
         json_schema: dict,
     ) -> str:
-        """按已选定的结构化输出模式请求 JSON，返回原始文本，不在此层解析。"""
+        """Request JSON in the already-selected structured-output mode, return the raw text, and do not parse it at this layer."""
 
         ...
 
     def generate(self, messages: Sequence[LLMMessage]) -> str:
-        """生成单条非空文本，不承担 RAG 或 Citation 业务逻辑。"""
+        """Produce one non-empty piece of text; carries no RAG or Citation business logic."""
 
         ...

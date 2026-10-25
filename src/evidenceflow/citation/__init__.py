@@ -1,4 +1,4 @@
-"""公开确定性 Citation Parser、校验异常与 RAGAnswer Assembly。"""
+"""Public deterministic Citation Parser, validation errors, and RAGAnswer assembly."""
 
 from evidenceflow.citation.parser import (
     CitationError,

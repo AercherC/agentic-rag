@@ -1,4 +1,4 @@
-"""验证 BGE-M3 Tokenizer 适配器的最小接口与特殊 Token 约束。"""
+"""Verify the minimal interface and special-token constraints of the BGE-M3 Tokenizer adapter."""
 
 import pytest
 
@@ -11,7 +11,7 @@ from evidenceflow.ingestion.tokenizer import (
 
 
 class _RecordingBackend:
-    """记录 Transformers 调用参数，避免单元测试访问网络。"""
+    """Record the Transformers call arguments so unit tests never touch the network."""
 
     def __init__(self) -> None:
         self.encode_kwargs: dict[str, object] = {}
@@ -27,7 +27,8 @@ class _RecordingBackend:
 
 
 def test_adapter_uses_configured_model_and_excludes_special_tokens(monkeypatch) -> None:
-    """模型名必须来自调用方，正文计数必须显式排除 special tokens。"""
+    """The model name must come from the caller, and body counting must explicitly exclude special
+    tokens."""
 
     backend = _RecordingBackend()
     loaded_models: list[str] = []
@@ -53,7 +54,8 @@ def test_adapter_uses_configured_model_and_excludes_special_tokens(monkeypatch) 
 
 
 def test_adapter_wraps_loading_and_invalid_backend_outputs(monkeypatch) -> None:
-    """第三方加载错误和不符合合同的输出应转换为项目异常。"""
+    """Third-party loading errors and contract-violating outputs should be converted into project
+    exceptions."""
 
     def fail_loading(model_name: str) -> None:
         raise OSError(model_name)
@@ -85,7 +87,7 @@ def test_adapter_wraps_loading_and_invalid_backend_outputs(monkeypatch) -> None:
 
 @pytest.fixture(scope="module")
 def real_bge_m3_tokenizer() -> BgeM3Tokenizer:
-    """从默认 Settings 加载真实 BGE-M3 Tokenizer，不加载模型权重。"""
+    """Load the real BGE-M3 Tokenizer from the default Settings without loading model weights."""
 
     settings = Settings(_env_file=None)
     return BgeM3Tokenizer(settings.embedding_model)
@@ -96,7 +98,7 @@ def test_real_bge_m3_tokenizer_handles_english_and_chinese(
     real_bge_m3_tokenizer: BgeM3Tokenizer,
     text: str,
 ) -> None:
-    """真实 BGE-M3 Tokenizer 应能稳定处理英文和中文正文。"""
+    """The real BGE-M3 Tokenizer should handle English and Chinese body text reliably."""
 
     token_ids = real_bge_m3_tokenizer.encode(text)
     decoded = real_bge_m3_tokenizer.decode(token_ids)
@@ -104,7 +106,8 @@ def test_real_bge_m3_tokenizer_handles_english_and_chinese(
     assert token_ids
     assert all(type(token_id) is int for token_id in token_ids)
     assert decoded.strip()
-    # 再次对照底层接口，防止正文窗口意外计入模型头尾特殊 Token。
+    # Cross-check against the underlying interface again, so the body window never accidentally
+    # includes the model's leading/trailing special tokens.
     assert token_ids == real_bge_m3_tokenizer._tokenizer.encode(
         text, add_special_tokens=False
     )

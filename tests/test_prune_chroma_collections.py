@@ -1,6 +1,7 @@
-"""测试 scripts/prune_chroma_collections.py（A4.2）。
+"""Test scripts/prune_chroma_collections.py (A4.2).
 
-全部在 pytest 临时目录的真实 Chroma 中进行，不触碰仓库的 data/chroma 与 artifacts/phase15a。
+Everything runs against a real Chroma instance in a pytest temporary directory; the repository's
+data/chroma and artifacts/phase15a are never touched.
 """
 
 import json
@@ -31,7 +32,7 @@ def _manifest(collection_name: str, status: str):
 
 @pytest.fixture
 def env(tmp_path):
-    """临时目录中的 7 个 collection（与生产同名）+ 一个只有 active 指针的状态文件。"""
+    """The 7 collections in the temporary directory (named as in production) plus a state file holding only the active pointer."""
 
     db = tmp_path / "chroma"
     client = chromadb.PersistentClient(path=str(db))
@@ -105,15 +106,15 @@ def test_hardcoded_forbidden_name_in_allowlist_is_refused(env, monkeypatch, caps
 
     assert "REFUSED" in capsys.readouterr().err
     assert _names(db) == set(ALLOWED_TO_DELETE) | set(FORBIDDEN_TO_DELETE)
-    assert not (tmp_path / "before.json").exists()  # 拒绝发生在打开存储之前
+    assert not (tmp_path / "before.json").exists()  # the refusal happens before the store is opened
 
 
 @pytest.mark.parametrize("pointer", ["active", "previous", "staging"])
 def test_lifecycle_pointer_name_in_allowlist_is_refused(env, monkeypatch, capsys, pointer) -> None:
-    """状态文件里 active/previous/staging 引用的名字即使不在硬编码禁止名单中，也必须受保护。"""
+    """Names referenced by active/previous/staging in the state file must be protected even when they are not on the hard-coded forbidden list."""
 
     tmp_path, db, state_path = env
-    protected = "ef_research_structure_v1"  # 允许名单中的名字，被状态文件引用后应转为受保护
+    protected = "ef_research_structure_v1"  # a name on the allowlist that must become protected once the state file references it
     lifecycle = IndexLifecycle(state_path, "kb-test")
     if pointer == "active":
         state_path.unlink()
@@ -181,7 +182,7 @@ def test_hardcoded_lists_do_not_overlap() -> None:
 
 @pytest.mark.parametrize("execute", [False, True])
 def test_existing_output_is_refused_and_left_unchanged(env, capsys, execute) -> None:
-    """再次运行不得覆盖 A4 审计记录：before（或 --execute 时的 after）已存在 → 退出码 2，文件与存储均不变。"""
+    """A re-run must not overwrite the A4 audit record: when before (or after under --execute) already exists -> exit code 2, file and store unchanged."""
 
     tmp_path, db, state_path = env
     existing = tmp_path / ("after.json" if execute else "before.json")
@@ -195,14 +196,14 @@ def test_existing_output_is_refused_and_left_unchanged(env, capsys, execute) -> 
     assert existing.read_text(encoding="utf-8") == "original audit record\n"
     assert _names(db) == set(ALLOWED_TO_DELETE) | set(FORBIDDEN_TO_DELETE)
     if execute:
-        assert not (tmp_path / "before.json").exists()  # 拒绝发生在连接 Chroma、导出 before 之前
+        assert not (tmp_path / "before.json").exists()  # the refusal happens before connecting to Chroma and exporting before
 
 
 def test_existing_output_check_runs_before_opening_chroma(env, monkeypatch) -> None:
     tmp_path, db, state_path = env
     (tmp_path / "before.json").write_text("x", encoding="utf-8")
 
-    def fail_client(*args, **kwargs):  # pragma: no cover - 被调用即说明顺序错误
+    def fail_client(*args, **kwargs):  # pragma: no cover - being called would prove the ordering is wrong
         raise AssertionError("Chroma must not be opened when outputs already exist")
 
     monkeypatch.setattr(chromadb, "PersistentClient", fail_client)

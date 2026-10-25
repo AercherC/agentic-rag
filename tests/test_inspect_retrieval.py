@@ -1,4 +1,4 @@
-"""测试 Retrieval Inspector 的纯格式化函数，不触发交互或真实模型。"""
+"""Test the pure formatting functions of the Retrieval Inspector, without triggering interaction or a real model."""
 
 from evidenceflow.domain import DocumentChunk, RetrievedChunk
 from evidenceflow.inspection import (
@@ -9,7 +9,7 @@ from evidenceflow.inspection import (
 
 
 def _chunk() -> DocumentChunk:
-    """构造无页码 Markdown Chunk 以覆盖 Inspector 的常见展示路径。"""
+    """Build a page-less Markdown Chunk to cover the Inspector's common display path."""
 
     return DocumentChunk(
         chunk_id="chunk-a",
@@ -23,7 +23,7 @@ def _chunk() -> DocumentChunk:
 
 
 def test_content_preview_and_page_formatting() -> None:
-    """默认预览会截断，而完整模式和页码格式保持可读。"""
+    """The default preview truncates, while full mode and page formatting stay readable."""
 
     assert content_preview(" abcdef ", 3) == "abc…"
     assert content_preview(" abcdef ", 3, full=True) == "abcdef"
@@ -33,7 +33,7 @@ def test_content_preview_and_page_formatting() -> None:
 
 
 def test_dense_evidence_display() -> None:
-    """Dense Inspector 显示 cosine、来源定位与正文预览。"""
+    """The Dense Inspector shows the cosine, the source locator and the body preview."""
 
     original = format_retrieval_result(
         RetrievedChunk(chunk=_chunk(), rank=1, similarity_score=0.8), preview_chars=5

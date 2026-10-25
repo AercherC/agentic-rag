@@ -1,4 +1,4 @@
-"""测试 Formal Context Builder 的预算、顺序和来源映射合同。"""
+"""Test the budget, ordering, and source-mapping contracts of the Formal Context Builder."""
 
 from copy import deepcopy
 
@@ -13,15 +13,15 @@ from evidenceflow.domain import (
 
 
 class CharacterTokenizer:
-    """以 Unicode 字符为 Token，提供完全可预测的预算边界。"""
+    """Use Unicode characters as Tokens, giving a fully predictable budget boundary."""
 
     def encode(self, text: str) -> list[int]:
-        """让最终渲染文本长度直接等于 Token 数。"""
+        """Make the final rendered text length equal the Token count directly."""
 
         return [ord(character) for character in text]
 
     def decode(self, token_ids: list[int]) -> str:
-        """满足项目 TokenizerProtocol；Builder 不需要调用解码。"""
+        """Satisfy the project's TokenizerProtocol; the Builder never needs to decode."""
 
         return "".join(chr(token_id) for token_id in token_ids)
 
@@ -35,13 +35,14 @@ def make_result(
     page_start: int | None = 12,
     page_end: int | None = 13,
 ) -> RetrievedChunk:
-    """创建确定性的 Dense 检索候选。"""
+    """Create a deterministic Dense retrieval candidate."""
 
     chunk = DocumentChunk(
         chunk_id=chunk_id or f"chunk-{rank}",
         document_id=f"document-{rank}",
         content=content,
-        # 此字段故意与字符 Tokenizer 不同，验证 Builder 不复用 Chunk 旧计数。
+        # This field deliberately differs from the character Tokenizer, proving the Builder does
+        # not reuse the Chunk's stale count.
         token_count=1,
         chunk_index=rank - 1,
         page_start=page_start,
@@ -57,7 +58,7 @@ def make_result(
 
 
 def render(label: str, item: RetrievedChunk) -> str:
-    """构造规范中的预期 Context 文本，避免依赖私有实现。"""
+    """Build the expected Context text from the specification, avoiding reliance on private implementation."""
 
     lines = [label, f"File: {item.chunk.file_name}"]
     if item.chunk.page_start is not None:
@@ -187,7 +188,7 @@ def test_dense_score_is_not_exposed_in_context_models() -> None:
 
 
 def test_phase9_reranker_scores_are_not_exposed_to_context() -> None:
-    """Context 只消费 Final Rank 与 Chunk，不泄露 Dense/Reranker 内部分数。"""
+    """Context consumes only the Final Rank and the Chunk; it never leaks internal Dense/Reranker scores."""
 
     base = make_result(1, "reranked evidence")
     item = RerankedRetrievedChunk(

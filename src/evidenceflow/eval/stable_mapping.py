@@ -1,4 +1,5 @@
-"""独立验证 Source locator，再将选定 occurrence 映射到只读 Corpus。"""
+"""Independently validate the Source locator, then map the selected occurrence onto the
+read-only Corpus."""
 
 import re
 import unicodedata
@@ -10,20 +11,23 @@ NORMALIZATION_VERSION = "source-guided-hyphen-v1"
 
 
 def hyphen_rules(raw_source: str, anchor: str) -> list[dict[str, str]]:
-    """只有原页换行断词与 Gold 完整词共同证明时，允许该具体断词合并。"""
+    """Merge a concrete hyphenated line break only when both the original page break and the
+    complete Gold word prove it."""
     source = unicodedata.normalize("NFKC", raw_source)
     anchor = unicodedata.normalize("NFKC", anchor).casefold()
     rules = []
     for match in re.finditer(r"\b([A-Za-z]+)-[ \t]*\r?\n\s*([A-Za-z]+)\b", source):
         left, right = (part.casefold() for part in match.groups())
         joined = left + right
-        # 排除合法连字符复合词的组成部分，不从词典或 Retriever 推断修复。
+        # Exclude the components of legitimate hyphenated compounds; the repair is never
+        # inferred from a dictionary or from the Retriever.
         if re.search(r"(?<![\w-])" + re.escape(joined) + r"(?![\w-])", anchor):
             rule = {"left": left, "right": right, "joined": joined}
             if rule not in rules:
                 rules.append(rule)
         elif left + "-" + right in anchor:
-            # 原文与 anchor 都证明合法连接符时，只修复换行，不删除连接符。
+            # When both the source and the anchor prove a legitimate hyphen, only the line
+            # break is repaired and the hyphen itself is kept.
             rule = {"left": left, "right": right, "joined": left + "-" + right}
             if rule not in rules:
                 rules.append(rule)
@@ -31,7 +35,8 @@ def hyphen_rules(raw_source: str, anchor: str) -> list[dict[str, str]]:
 
 
 def normalize_mapping(text: str, rules: list[dict[str, str]]) -> str:
-    """保留原字符串，返回仅应用来源证明规则的规范化副本。"""
+    """Keep the original string and return a normalized copy that applies only the
+    source-proven rules."""
     normalized = unicodedata.normalize("NFKC", text).casefold()
     for rule in rules:
         pattern = r"\b" + re.escape(rule["left"]) + r"-\s+" + re.escape(rule["right"]) + r"\b"
@@ -40,12 +45,14 @@ def normalize_mapping(text: str, rules: list[dict[str, str]]) -> str:
 
 
 def _positions(text, anchor):
-    """返回所有重叠出现位置，保留原始 occurrence 序号。"""
+    """Return every overlapping occurrence position, preserving the original occurrence
+    numbering."""
     return [m.start() for m in re.finditer(f"(?={re.escape(anchor)})", text)] if anchor else []
 
 
 def validate_source(alternative, document) -> dict:
-    """仅消费原始文档与 Canonical Gold，完全独立于 Chunk/检索结果。"""
+    """Consume only the original document and the Canonical Gold, fully independent of
+    Chunks and retrieval results."""
     result = {"source_valid": False, "source_locator_unique": False, "source_match_count": 0,
               "normalization_used": NORMALIZATION_VERSION, "notes": [], "rules": []}
     if document is None or document.content_hash != alternative.content_version:
@@ -97,19 +104,22 @@ def validate_source(alternative, document) -> dict:
 
 
 def _compact(text):
-    """位置对齐忽略空白，保留全部文字、数字与标点。"""
+    """Ignore whitespace for position alignment, keeping all characters, digits and
+    punctuation."""
     return re.sub(r"\s+", "", text)
 
 
 def map_source_to_chunks(alternative, document, chunks, validation):
-    """对齐选定位置；不能用同页另一个同名 anchor 获得覆盖。"""
+    """Align the selected position; coverage can never be obtained through another
+    same-named anchor on the same page."""
     if not validation["source_valid"]:
         raise ValueError("source validation must pass before corpus mapping")
     rules = validation["rules"]
     loc = alternative.locator
     normalized = validation["normalized_source_text"]
     begin, finish = validation["source_span_start"], validation["source_span_end"]
-    # Scope 在完整文档中的位置由原页/块确定，不由 Chunk 或检索偏好决定。
+    # The scope position in the full document is fixed by the original page/block, never by
+    # Chunks or retrieval preference.
     segments = document.segments
     first = next(i for i, s in enumerate(segments) if s.page_number == loc.page_start) if loc.page_start is not None else loc.block_index
     prefix = "".join(_compact(normalize_mapping(s.content, rules)) for s in segments[:first])
@@ -118,7 +128,8 @@ def map_source_to_chunks(alternative, document, chunks, validation):
     full_source = "".join(_compact(normalize_mapping(s.content, rules)) for s in segments)
     start = len(prefix) + len(_compact(normalized[:begin]))
     end = len(prefix) + len(_compact(normalized[:finish]))
-    # 有上下文的 proof 用于整块无法对齐时的保守后备，不能只用短 anchor。
+    # A proof with context is the conservative fallback when whole-chunk alignment fails, so
+    # a short anchor alone is not enough.
     left = normalize_mapping(loc.left_context, rules) if loc.left_context else ""
     right = normalize_mapping(loc.right_context, rules) if loc.right_context else ""
     proof = _compact(left + normalized[begin:finish] + right)
@@ -137,7 +148,8 @@ def map_source_to_chunks(alternative, document, chunks, validation):
         positions = _positions(full_source, compact)
         relevant = [(p, p + len(compact), chunk.chunk_id) for p in positions
                     if p < end and p + len(compact) > start]
-        # 只有全块对齐唯一，才用其区间证明碎片；重叠块是不同的合法替代。
+        # Only a unique whole-chunk alignment may prove the fragment through its interval;
+        # overlapping chunks are distinct legitimate alternatives.
         if len(positions) == 1:
             intervals.extend(relevant)
         elif proof_unique and proof and proof in compact:
@@ -165,7 +177,8 @@ def map_source_to_chunks(alternative, document, chunks, validation):
 
 
 def map_stable_dataset(dataset, documents, chunks, *, index_version):
-    """先完成全部 Source Gate，再生成 Corpus 状态和可追踪文本证据。"""
+    """Complete every Source Gate first, then derive the Corpus status and the traceable text
+    evidence."""
     by_id = {d.document_id: d for d in documents}
     if len(by_id) != len(documents) or len({c.chunk_id for c in chunks}) != len(chunks):
         raise ValueError("duplicate document/chunk IDs")

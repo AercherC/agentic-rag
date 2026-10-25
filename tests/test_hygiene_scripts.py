@@ -1,11 +1,11 @@
-"""验证本轮存储契约与清理边界的确定性规则。"""
+"""Verify the deterministic rules for the storage contract and the cleanup boundary of this round."""
 
 from scripts.audit_codex_runtime_state import classify_path, retention_action
 from scripts.audit_project_cleanup import safe_candidate_reason
 
 
 def test_codex_deny_paths_override_safe_allowlist() -> None:
-    """会话、插件和 SQLite 即使名字含 cache 也不能进入安全候选。"""
+    """Sessions, plugins, and SQLite must never become safe candidates, even when the name contains "cache"."""
 
     assert classify_path("sessions/thread.jsonl") == "C-PROTECT"
     assert classify_path("plugins/cache/package/file.bin") == "C-PROTECT"
@@ -15,7 +15,7 @@ def test_codex_deny_paths_override_safe_allowlist() -> None:
 
 
 def test_codex_safe_retention_policy() -> None:
-    """只有 exact SAFE_CANDIDATE 才参与 7/30 天时间策略。"""
+    """Only an exact SAFE_CANDIDATE takes part in the 7/30-day retention policy."""
 
     assert retention_action(1, "C-SAFE-CANDIDATE") == "KEEP"
     assert retention_action(7, "C-SAFE-CANDIDATE") == "DELETE_CANDIDATE"
@@ -24,7 +24,7 @@ def test_codex_safe_retention_policy() -> None:
 
 
 def test_project_cleanup_allowlist_is_narrow() -> None:
-    """项目清理只接受缓存/pytest 临时树，不接受源码、Gold 或 Chroma。"""
+    """Project cleanup accepts only the cache/pytest temp trees, never source code, Gold, or Chroma."""
 
     assert safe_candidate_reason("src/evidenceflow/__pycache__/module.pyc")
     assert safe_candidate_reason("tmp/pytest-root/pytest-1/result.pdf")

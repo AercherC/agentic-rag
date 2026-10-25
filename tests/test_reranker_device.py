@@ -1,4 +1,4 @@
-"""验证 Reranker 模型与 tokenizer 输出张量使用一致设备。"""
+"""Verify that the Reranker model and the tokenizer output tensors use the same device."""
 
 import sys
 from types import ModuleType, SimpleNamespace
@@ -9,7 +9,7 @@ from evidenceflow.retrieval.reranker import TransformersCrossEncoderScorer
 
 
 class _FakeTensor:
-    """记录测试中编码张量的设备迁移。"""
+    """Record the device migration of the encoded tensors in the test."""
 
     def __init__(self) -> None:
         self.device = "cpu"
@@ -20,7 +20,7 @@ class _FakeTensor:
 
 
 class _FakeBatch(dict):
-    """模拟 Hugging Face BatchEncoding 的批量张量迁移行为。"""
+    """Simulate the batched tensor migration behavior of a Hugging Face BatchEncoding."""
 
     def to(self, device: str) -> "_FakeBatch":
         for tensor in self.values():
@@ -29,7 +29,7 @@ class _FakeBatch(dict):
 
 
 class _FakeLogits:
-    """提供 scorer 后处理所需的最小 Tensor 接口。"""
+    """Provide the minimal Tensor interface needed by the scorer post-processing."""
 
     def view(self, *_shape: int) -> "_FakeLogits":
         return self
@@ -45,7 +45,7 @@ class _FakeLogits:
 
 
 def test_reranker_model_and_tokenized_inputs_share_device(monkeypatch) -> None:
-    """模型常驻选定设备，CPU tokenizer 产出的 batch 在 forward 前迁移。"""
+    """The model stays on the selected device while the batch produced by the CPU tokenizer is migrated before forward."""
 
     observed: dict[str, object] = {}
     batch = _FakeBatch(input_ids=_FakeTensor(), attention_mask=_FakeTensor())

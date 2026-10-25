@@ -1,4 +1,4 @@
-"""描述已加载文档及其来源片段的 Domain Models。"""
+"""Domain Models describing loaded documents and their source segments."""
 
 from typing import Any, Literal
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 
 class DocumentSegment(BaseModel):
-    """进入 Chunker 前保留原始页码边界的文本单元。"""
+    """A text unit that still carries the original page boundaries before entering the Chunker."""
 
     content: str = Field(description="从当前来源片段提取的文本内容。")
     page_number: int | None = Field(
@@ -21,7 +21,7 @@ class DocumentSegment(BaseModel):
 
 
 class Document(BaseModel):
-    """一个具有稳定路径身份的逻辑来源文档。"""
+    """A logical source document with a stable path-based identity."""
 
     document_id: str = Field(
         min_length=1,

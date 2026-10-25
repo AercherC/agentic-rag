@@ -1,4 +1,4 @@
-"""对 DocumentSegment 执行保守、结构感知的文本规范化。"""
+"""Perform conservative, structure-aware text normalization on DocumentSegments."""
 
 import re
 import unicodedata
@@ -7,24 +7,28 @@ from evidenceflow.domain.document import Document, DocumentSegment
 
 
 class DocumentCleaningError(ValueError):
-    """表示整个 Document 清洗后不再包含可用文本。"""
+    """Signal that the whole Document no longer contains any usable text after cleaning."""
 
 
 def _normalize_common_text(text: str) -> str:
-    """执行所有文件类型共享且不会改变文本结构的规范化。"""
+    """Apply the normalization shared by all file types that does not alter text structure."""
 
-    # 先统一 Unicode 表示，再统一跨平台换行，保证后续规则面对稳定输入。
+    # Normalize the Unicode representation first, then unify cross-platform line endings, so that
+    # the
+    # later rules always face stable input.
     normalized = unicodedata.normalize("NFC", text)
     normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
 
-    # BOM 只有位于文本开头时才是编码标记；正文中的 U+FEFF 不应被误删。
+    # A BOM is an encoding marker only at the very start of the text; U+FEFF inside the body must
+    # not be
+    # removed by mistake.
     if normalized.startswith("\ufeff"):
         normalized = normalized[1:]
     return normalized
 
 
 def _strip_edge_blank_lines(text: str) -> str:
-    """删除首尾纯空白行，同时保留首末内容行中可能有意义的缩进。"""
+    """Remove purely blank lines at the start and end, while keeping the possibly meaningful indentation of the first and last content lines."""
 
     lines = text.split("\n")
     start = 0
@@ -37,63 +41,72 @@ def _strip_edge_blank_lines(text: str) -> str:
 
 
 def _clean_plain_text(text: str) -> str:
-    """保守清理 PDF/TXT 行尾空白和过量空行。"""
+    """Conservatively clean trailing whitespace and excessive blank lines in PDF/TXT text."""
 
     normalized = _normalize_common_text(text)
-    # 普通文本的行尾空格与 Tab 不承载结构，可安全删除；不触碰行内空格。
+    # Trailing spaces and tabs on plain-text lines carry no structure and can be removed safely;
+    # spaces inside a line are left untouched.
     normalized = re.sub(r"[ \t]+$", "", normalized, flags=re.MULTILINE)
     normalized = _strip_edge_blank_lines(normalized)
-    # 三个换行代表至少两个连续空白行，统一为一个空白行即可保留段落边界。
+    # Three newlines mean at least two consecutive blank lines; collapsing them into one blank line
+    # is
+    # enough to keep the paragraph boundary.
     return re.sub(r"\n{3,}", "\n\n", normalized)
 
 
 def _clean_markdown_text(text: str) -> str:
-    """仅规范化 Markdown 的 Unicode、换行、BOM 与边缘空白行。"""
+    """Normalize only the Unicode, line endings, BOM, and edge blank lines of Markdown."""
 
     normalized = _normalize_common_text(text)
-    # Markdown 行尾空格、内部空行和缩进都可能具有语法意义，因此只处理
-    # Segment 外围的纯空白行，不复用普通文本的空白压缩规则。
+    # Trailing spaces, internal blank lines, and indentation in Markdown may all be syntactically
+    # meaningful, so only the purely blank lines around the Segment are handled and the whitespace
+    # collapsing rules for plain text are not reused.
     return _strip_edge_blank_lines(normalized)
 
 
 def _clean_segment(segment: DocumentSegment, file_type: str) -> DocumentSegment | None:
-    """清洗单个 Segment；清洗后无内容时返回 None。"""
+    """Clean one Segment; return None when nothing is left after cleaning."""
 
     if file_type == "md":
         cleaned_text = _clean_markdown_text(segment.content)
     else:
         cleaned_text = _clean_plain_text(segment.content)
 
-    # 使用 strip() 仅判断是否还存在可用字符，不把 strip 后的结果写回文本。
+    # strip() is used only to decide whether any usable characters remain; the stripped result is
+    # not
+    # written back into the text.
     if not cleaned_text.strip():
         return None
-    # 深复制可避免返回对象与输入对象共享可变 metadata。
+    # A deep copy prevents the returned object from sharing mutable metadata with the input object.
     return segment.model_copy(update={"content": cleaned_text}, deep=True)
 
 
 def clean_document(document: Document) -> Document:
-    """返回清洗后的新 Document，并保持来源身份和页面边界不变。
+    """Return a new cleaned Document, keeping the source identity and page boundaries unchanged.
 
     Args:
-        document: Loader 产生的项目内部 Document。
+        document: The project-internal Document produced by the loader.
 
     Returns:
-        仅 Segment 文本可能变化的全新 Document。
+        A brand-new Document in which only the Segment text may have changed.
 
     Raises:
-        DocumentCleaningError: 所有 Segment 清洗后均没有可用文本。
+        DocumentCleaningError: No Segment has any usable text left after cleaning.
     """
 
     cleaned_segments: list[DocumentSegment] = []
     for segment in document.segments:
         cleaned_segment = _clean_segment(segment, document.file_type)
         if cleaned_segment is not None:
-            # 保持原遍历顺序，因此 PDF 页码不会被重排或重新编号。
+            # The original traversal order is preserved, so PDF page numbers are never reordered or
+            # renumbered.
             cleaned_segments.append(cleaned_segment)
 
     if not cleaned_segments:
         raise DocumentCleaningError("Document contains no usable text after cleaning")
 
-    # document_id、content_hash 与其他来源字段均来自原文档；只替换 Segments，
-    # 且采用深复制保证 Cleaner 不会原地修改 Loader 的输出。
+    # document_id, content_hash, and the other source fields come from the original document; only
+    # the
+    # Segments are replaced, and a deep copy guarantees the cleaner never mutates the loader's
+    # output in place.
     return document.model_copy(update={"segments": cleaned_segments}, deep=True)

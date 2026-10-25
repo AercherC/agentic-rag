@@ -1,4 +1,5 @@
-"""基于冻结 BuiltContext 构造受约束 Prompt，并以结构化 JSON 生成原始答案（rag-generator-v3）。"""
+"""Build a constrained Prompt from the frozen BuiltContext and generate a raw answer as structured
+JSON (rag-generator-v3)."""
 
 from __future__ import annotations
 
@@ -41,21 +42,24 @@ _REPAIR_INSTRUCTION = (
     '{"status": "answered" | "insufficient_context", "answer": "..."} and nothing else.'
 )
 
-# 只匹配“开头”的已闭合 <think> 块；非贪婪，遇到第一个 </think> 结束。
+# Matches only a closed <think> block at the "start"; non-greedy, ending at the first </think>.
 _THINK_BLOCK = re.compile(r"\A<think>.*?</think>", re.DOTALL)
-# 外层 ```json 代码块（语言标记可省略），必须整体包住全文。
+# Outer ```json code fence (the language tag may be omitted); it must wrap the whole text.
 _CODE_FENCE = re.compile(r"\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\Z", re.DOTALL)
 
 
 class GenerationContractError(ValueError):
-    """模型输出（含一次修复后）仍不满足 rag-generator-v3 的 JSON 输出合同。"""
+    """The model output (even after one repair) still does not satisfy the rag-generator-v3 JSON output
+    contract."""
 
 
 def extract_json_text(raw_text: str) -> str:
-    """按固定顺序清理模型原始回复，得到待 ``json.loads`` 的文本。
+    """Clean the model's raw reply in a fixed order to get the text handed to ``json.loads``.
 
-    顺序：去首尾空白 → 去开头已闭合的 ``<think>…</think>`` → 再去空白 → 去外层 ```json 代码块。
-    未闭合的 ``<think>`` 说明回复被截断或格式异常，按格式失败处理而不是猜测内容。
+    Order: strip whitespace -> drop a leading closed ``<think>...</think>`` -> strip again -> drop an
+    outer ```json code fence.
+    An unclosed ``<think>`` means the reply was truncated or malformed, so it counts as a format
+    failure rather than something to guess content from.
     """
 
     text = raw_text.strip()
@@ -71,7 +75,7 @@ def extract_json_text(raw_text: str) -> str:
 
 
 def parse_generator_output(raw_text: str) -> GeneratorOutput:
-    """解析并校验一条模型回复：清理 → ``json.loads`` → ``GeneratorOutput``（extra=forbid）。"""
+    """Parse and validate one model reply: clean -> ``json.loads`` -> ``GeneratorOutput`` (extra=forbid)."""
 
     text = extract_json_text(raw_text)
     try:
@@ -81,7 +85,8 @@ def parse_generator_output(raw_text: str) -> GeneratorOutput:
     try:
         return GeneratorOutput.model_validate(payload)
     except ValidationError as exc:
-        # pydantic 的错误文本可能回显模型输出，这里只保留字段位置与错误类型。
+        # Pydantic's error text may echo the model output; keep only the field locations and error
+        # types.
         detail = "; ".join(
             f"{'.'.join(str(part) for part in error['loc']) or '<root>'}: {error['type']}"
             for error in exc.errors()
@@ -92,7 +97,7 @@ def parse_generator_output(raw_text: str) -> GeneratorOutput:
 
 
 def _empty_diagnostics() -> dict[str, Any]:
-    """没有调用 LLM 时的诊断状态（也是每次 generate 开始时的初值）。"""
+    """Diagnostic state when the LLM was never called (also the initial value at the start of each generate)."""
 
     return {
         "llm_called": False,
@@ -104,12 +109,13 @@ def _empty_diagnostics() -> dict[str, Any]:
 
 
 class Generator:
-    """把 Query 与 BuiltContext 交给抽象 LLMClient，不承担检索或 Citation 解析。"""
+    """Hands the Query and BuiltContext to an abstract LLMClient; performs no retrieval and no Citation parsing."""
 
     def __init__(
         self, llm_client: LLMClient, *, trace_recorder: TraceRecorder | None = None
     ) -> None:
-        """注入供应商无关的同步 LLM Client；``trace_recorder`` 可选，只观测 generation.* 事件。"""
+        """Inject a vendor-agnostic synchronous LLM Client; ``trace_recorder`` is optional and observes
+        only generation.* events."""
 
         self._llm_client = llm_client
         self.trace_recorder = trace_recorder
@@ -117,10 +123,11 @@ class Generator:
 
     @property
     def last_diagnostics(self) -> dict[str, Any]:
-        """最近一次 ``generate`` 的只读诊断副本，不进入 GeneratedAnswer / RAGAnswer。
+        """A read-only diagnostic copy of the most recent ``generate`` call; it never enters
+        GeneratedAnswer / RAGAnswer.
 
-        字段：``llm_called``、``repair_attempted``、``repair_succeeded``、``usages``
-        （每次 LLM 调用一项，来自 client.last_usage，可为 None）、``raw_response_lengths``。
+        Fields: ``llm_called``, ``repair_attempted``, ``repair_succeeded``, ``usages`` (one item per
+        LLM call, taken from client.last_usage, possibly None) and ``raw_response_lengths``.
         """
 
         diagnostics = dict(self._last_diagnostics)
@@ -132,7 +139,8 @@ class Generator:
 
     @staticmethod
     def _build_messages(query: str, context: BuiltContext) -> list[LLMMessage]:
-        """用独立 System 规则和显式数据边界构造 v3 Prompt（Context 模板与 v2 相同）。"""
+        """Build the v3 Prompt from standalone System rules and explicit data boundaries (the Context
+        template is the same as v2)."""
 
         user_content = (
             "Knowledge-base context:\n\n"
@@ -150,12 +158,15 @@ class Generator:
         ]
 
     def _call_llm(self, messages: list[LLMMessage]) -> str:
-        """发起一次结构化请求，并把本次调用的 usage 与回复长度记入诊断。
+        """Issue one structured request and record this call's usage and reply length into the diagnostics.
 
-        client.last_usage 只表示最近一次调用，所以必须在每次调用后立刻读取并汇总。
+        client.last_usage refers only to the most recent call, so it must be read and accumulated
+        immediately after every call.
         """
 
-        # 先标记已调用：即使请求抛出 LLMError，诊断也能反映“确实发起过调用”。
+        # Mark it as called first: even if the request raises LLMError, the diagnostics still
+        # reflect
+        # that a call was really issued.
         self._last_diagnostics["llm_called"] = True
         raw_text = self._llm_client.generate_json(
             messages,
@@ -168,7 +179,7 @@ class Generator:
         return raw_text
 
     def generate(self, query: str, context: BuiltContext) -> GeneratedAnswer:
-        """生成 Grounded Answer；空 Context 直接确定性返回且不产生外部调用。"""
+        """Generate a Grounded Answer; an empty Context returns deterministically with no external call."""
 
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
@@ -176,27 +187,38 @@ class Generator:
         recorder = self.trace_recorder
         safe_record(recorder, "generation.started")
         if not context.entries:
-            # 没有证据时不调用模型，避免费用、延迟和无依据的模型记忆回答。
+            # With no evidence the model is not called, avoiding cost, latency and an unsupported
+            # answer
+            # from the model's memory.
             answer = GeneratedAnswer(
                 status=AnswerStatus.INSUFFICIENT_CONTEXT,
                 answer_text=INSUFFICIENT_CONTEXT_ANSWER,
             )
-            # 确定性拒答也记 generation.completed（llm_called=false），保证事件序列完整。
+            # The deterministic refusal also records generation.completed (llm_called=false) so the
+            # event
+            # sequence stays complete.
             self._record_completed(recorder, answer)
             return answer
 
         messages = self._build_messages(query, context)
-        # LLMError 不在此层捕获；调用方需要区分服务失败和知识库证据不足。
+        # LLMError is not caught at this layer; the caller must distinguish a service failure from
+        # insufficient knowledge-base evidence.
         raw_text = self._call_llm(messages)
         try:
             output = parse_generator_output(raw_text)
         except GenerationContractError as first_error:
-            # 最多修复一次：带上原消息和模型原始回复，让模型自行改正格式。
-            # 这与 LLM Client 内部针对网络/限流的瞬态重试是两回事，分开计数。
+            # Repair at most once: include the original messages and the model's raw reply so the
+            # model
+            # can correct its own format.
+            # This is distinct from the LLM Client's internal transient retries for network/rate
+            # limits,
+            # and the two are counted separately.
             self._last_diagnostics["repair_attempted"] = True
             repair_messages = [
                 *messages,
-                # 空白回复无法构成合法 assistant 消息，用占位文本保持修复请求可发送。
+                # A blank reply cannot form a valid assistant message, so placeholder text keeps
+                # the
+                # repair request sendable.
                 LLMMessage(role="assistant", content=raw_text if raw_text.strip() else "(empty reply)"),
                 LLMMessage(role="user", content=_REPAIR_INSTRUCTION),
             ]
@@ -214,9 +236,10 @@ class Generator:
         return answer
 
     def _record_completed(self, recorder: TraceRecorder | None, answer: GeneratedAnswer) -> None:
-        """记录 generation.completed；recorder 为 None 时不读取诊断、不构造 payload。
+        """Record generation.completed; when recorder is None, no diagnostics are read and no payload is built.
 
-        payload 只含状态、调用/修复标志、token 用量、回复长度与 Prompt 版本，不含 Prompt 或回答正文。
+        The payload contains only the status, the call/repair flags, token usage, reply lengths and the
+        Prompt version - never the Prompt or the answer text.
         """
 
         if recorder is None:
@@ -229,7 +252,7 @@ class Generator:
             llm_called=diagnostics["llm_called"],
             repair_attempted=diagnostics["repair_attempted"],
             repair_succeeded=diagnostics["repair_succeeded"],
-            # usage 只保留 prompt_tokens / completion_tokens 两个白名单字段。
+            # usage keeps only the two allowlisted fields prompt_tokens / completion_tokens.
             usages=[
                 None
                 if usage is None

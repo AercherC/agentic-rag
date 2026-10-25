@@ -1,4 +1,4 @@
-"""提供确定性的、进程内 exact Dense candidate search primitive（numpy.exact 后端）。"""
+"""Deterministic in-process exact Dense candidate search primitive (numpy.exact backend)."""
 
 from __future__ import annotations
 
@@ -10,13 +10,14 @@ import numpy as np
 
 from evidenceflow.domain.chunk import DocumentChunk, RetrievedChunk
 
-# 后端固定为 numpy.exact（Stage A §S.1）：817 个向量无需 FAISS，且线上后端不应由
-# 运行环境是否安装 FAISS 决定。
+# The backend is pinned to numpy.exact (Stage A §S.1): 817 vectors do not need FAISS, and the
+# online backend must not depend on whether the runtime environment happens to have FAISS
+# installed.
 EXACT_BACKEND = "numpy.exact"
 
 
 class ExactDenseIndexError(ValueError):
-    """表示 ExactDenseIndex 输入不满足向量或身份合同。"""
+    """Signals that the ExactDenseIndex input violates the vector or identity contract."""
 
 
 def _as_normalized_float32(
@@ -25,7 +26,7 @@ def _as_normalized_float32(
     field_name: str,
     expected_dimension: int | None = None,
 ) -> np.ndarray:
-    """把外部向量转换为连续 float32，并验证有限值、维度和 L2 归一化。"""
+    """Convert an external vector to contiguous float32 and verify finite values, dimension, and L2 normalization."""
 
     try:
         array = np.asarray(vector, dtype=np.float32)
@@ -39,7 +40,8 @@ def _as_normalized_float32(
         )
     if not np.isfinite(array).all():
         raise ExactDenseIndexError(f"{field_name} contains non-finite values")
-    # 用 float64 计算校验范数，避免 float32 累加误差把合法向量判为未归一化。
+    # Compute the validation norm in float64 so float32 accumulation error cannot flag a valid
+    # vector as not normalized.
     norm = float(np.linalg.norm(array.astype(np.float64)))
     if not math.isfinite(norm) or not math.isclose(norm, 1.0, abs_tol=1e-4):
         raise ExactDenseIndexError(f"{field_name} must be L2-normalized")
@@ -47,14 +49,14 @@ def _as_normalized_float32(
 
 
 class ExactDenseIndex:
-    """从 Chroma 快照构建进程内 exact Dense 索引并返回稳定候选。"""
+    """Build an in-process exact Dense index from a Chroma snapshot and return stable candidates."""
 
     def __init__(
         self,
         chunks: Sequence[DocumentChunk],
         embeddings: Sequence[Sequence[float]],
     ) -> None:
-        """按 chunk_id 固定记录顺序，构建 NumPy float32 全量内积矩阵。"""
+        """Fix the record order by chunk_id, then build a NumPy float32 full inner-product matrix."""
 
         chunk_list = list(chunks)
         embedding_list = list(embeddings)
@@ -87,30 +89,31 @@ class ExactDenseIndex:
             if records
             else np.empty((0, 0), dtype=np.float32)
         )
-        # 矩阵只在进程内持有，不写出任何索引文件；backend 恒为 numpy.exact。
+        # The matrix lives only in the process and no index file is written; the backend is always
+        # numpy.exact.
         self.backend = EXACT_BACKEND
 
     @property
     def chunk_ids(self) -> tuple[str, ...]:
-        """返回构建时冻结的 Chunk ID 顺序。"""
+        """Return the Chunk ID order frozen at build time."""
 
         return self._chunk_ids
 
     @property
     def dimension(self) -> int | None:
-        """返回向量维度；空索引没有可推断的维度。"""
+        """Return the vector dimension; an empty index has no inferable dimension."""
 
         return self._dimension
 
     @property
     def size(self) -> int:
-        """返回当前索引的 Chunk 数量。"""
+        """Return the number of Chunks currently indexed."""
 
         return len(self._chunk_ids)
 
     @property
     def matrix_nbytes(self) -> int:
-        """返回内存矩阵字节数，用于架构评测而非排序逻辑。"""
+        """Return the byte size of the in-memory matrix, used for architecture evaluation rather than ranking."""
 
         return int(self._matrix.nbytes)
 
@@ -119,7 +122,7 @@ class ExactDenseIndex:
         query_embedding: Sequence[float],
         top_k: int,
     ) -> list[RetrievedChunk]:
-        """执行全量 Inner Product 并应用 similarity DESC、chunk_id ASC 排序。"""
+        """Run the full Inner Product and apply similarity DESC, chunk_id ASC ordering."""
 
         if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k <= 0:
             raise ValueError("top_k must be a positive integer")
@@ -131,7 +134,8 @@ class ExactDenseIndex:
             expected_dimension=self._dimension,
         )
 
-        # float32 矩阵乘法得到全量内积；候选顺序完全由下面的项目层排序决定。
+        # float32 matrix multiplication yields the full inner products; the candidate order is
+        # decided entirely by the project-level sort below.
         scores = self._matrix @ query
         scored = [
             (float(score), chunk_id)

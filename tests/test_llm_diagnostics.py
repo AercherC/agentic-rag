@@ -1,4 +1,5 @@
-"""测试 LLM 失败分类、异常链保留与敏感信息清理。"""
+"""Test LLM failure classification, cause-chain preservation and sensitive-information
+scrubbing."""
 
 import httpx
 

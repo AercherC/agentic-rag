@@ -1,13 +1,13 @@
-"""Retrieval Evaluation Dataset 使用的 Gold Source Models。
+"""Gold Source Models used by the Retrieval Evaluation Dataset.
 
-COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+COMPATIBILITY_ONLY: legacy HitRate semantics; new code uses eval/ir_metrics.py.
 """
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class EvaluationSource(BaseModel):
-    """Gold 文档及其页码、原文锚点或历史文档级定位信息。"""
+    """A Gold document plus its pages, text anchor, or historical document-level locator."""
 
     document_id: str = Field(min_length=1, description="Gold 相关文档的稳定身份。")
     page_start: int | None = Field(
@@ -28,7 +28,7 @@ class EvaluationSource(BaseModel):
     @field_validator("reference_text")
     @classmethod
     def validate_reference_text(cls, value: str | None) -> str | None:
-        """拒绝空锚点，同时保留原文空白供确定性规范化处理。"""
+        """Reject an empty anchor while preserving original whitespace for deterministic normalization."""
 
         if value is not None and not value.strip():
             raise ValueError("reference_text must not be empty or whitespace-only")
@@ -36,22 +36,24 @@ class EvaluationSource(BaseModel):
 
     @model_validator(mode="after")
     def validate_page_range(self) -> "EvaluationSource":
-        """在页码级评测时保证 Gold 范围完整且有序。"""
+        """Guarantees the Gold range is complete and ordered when evaluating at page level."""
 
-        # 两端均为空时使用 reference_text 或历史 document_id 匹配；否则必须完整。
+        # When both ends are empty, match by reference_text or the historical document_id;
+        # otherwise the range must be complete.
         if (self.page_start is None) != (self.page_end is None):
             raise ValueError("page_start and page_end must both be set or both be None")
-        # 有效 Gold 范围必须从较小页码指向较大页码。
+        # A valid Gold range must point from the smaller page to the larger page.
         if self.page_start is not None and self.page_start > self.page_end:
             raise ValueError("page_start must be less than or equal to page_end")
-        # 页码和文本锚点是两套不同定位语义，禁止组合后产生不明确的 AND/OR 行为。
+        # Page numbers and text anchors are two different locating semantics; combining them would
+        # create ambiguous AND/OR behaviour.
         if self.page_start is not None and self.reference_text is not None:
             raise ValueError("reference_text cannot be combined with a page range")
         return self
 
 
 class EvaluationQuestion(BaseModel):
-    """一个检索问题及其一个或多个 Gold Sources。"""
+    """One retrieval question and its one or more Gold Sources."""
 
     question: str = Field(min_length=1, description="送入 Retriever 的评测问题。")
     relevant_sources: list[EvaluationSource] = Field(

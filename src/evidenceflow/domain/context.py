@@ -1,4 +1,4 @@
-"""受 Token 预算约束的 LLM Context 领域模型。"""
+"""LLM Context domain models constrained by the Token budget."""
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -6,7 +6,7 @@ from evidenceflow.domain.answer import SourceReference
 
 
 class ContextEntry(BaseModel):
-    """记录一个被完整纳入 Context 的 Chunk 及其来源映射。"""
+    """Records one Chunk that was fully included in the Context together with its source mapping."""
 
     source_label: str = Field(
         pattern=r"^\[S[1-9]\d*\]$",
@@ -25,7 +25,7 @@ class ContextEntry(BaseModel):
 
     @model_validator(mode="after")
     def validate_source_mapping(self) -> "ContextEntry":
-        """保证条目身份、标签与公开来源映射没有漂移。"""
+        """Guarantees entry identity, label, and public source mapping do not drift."""
 
         if self.source_reference.source_label != self.source_label:
             raise ValueError("source_reference label must match context entry label")
@@ -35,7 +35,7 @@ class ContextEntry(BaseModel):
 
 
 class BuiltContext(BaseModel):
-    """返回可直接交给后续 Generator 的 Context 与确定性统计。"""
+    """Context that can be handed straight to the Generator, plus deterministic statistics."""
 
     context_text: str = Field(description="由已纳入完整条目按顺序拼接的 LLM Context。")
     entries: list[ContextEntry] = Field(description="按实际纳入顺序排列的来源条目。")
@@ -49,7 +49,7 @@ class BuiltContext(BaseModel):
 
     @model_validator(mode="after")
     def validate_counts(self) -> "BuiltContext":
-        """保证汇总计数与实际条目数量一致。"""
+        """Guarantees the aggregate counters agree with the actual number of entries."""
 
         if self.included_count != len(self.entries):
             raise ValueError("included_count must match entries length")

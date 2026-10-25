@@ -1,23 +1,33 @@
 # -*- coding: utf-8 -*-
-"""A4：通过 Chroma API 删除已确认的孤儿 collection；默认 dry-run，只有 ``--execute`` 才真正删除。
+"""A4: delete the confirmed orphan collections through the Chroma API; dry-run by default,
+only ``--execute`` really deletes.
 
-安全约束：
-- 允许删除的名字写死在 ``ALLOWED_TO_DELETE``，不接受命令行传入；
-- ``FORBIDDEN_TO_DELETE`` 硬编码线上、回滚与历史回滚基线 3 个 collection；
-- 动态保护：读取 lifecycle 状态文件，把 active / previous / staging 指针中的 collection 名并入禁止集合；
-- 允许列表与禁止集合有交集、或状态文件读不出时拒绝执行（退出码 2），什么都不删；
-- 只删除实际存在的名字；删除前把全部 collection 的 name / id / count / metadata 导出到 before JSON，
-  ``--execute`` 完成后再导出 after JSON；
-- 本次运行要写的输出文件（before；``--execute`` 时还有 after）已存在时拒绝执行（退出码 2），
-  避免覆盖 A4 的审计记录；检查在连接 Chroma 之前完成。确需覆盖时显式传 ``--overwrite``。
+Safety constraints:
+- the names that may be deleted are hardcoded in ``ALLOWED_TO_DELETE`` and are not taken
+  from the command line;
+- ``FORBIDDEN_TO_DELETE`` hardcodes the 3 collections for production, rollback, and the
+  historical rollback baseline;
+- dynamic protection: read the lifecycle state file and merge the collection names
+  referenced by the active / previous / staging pointers into the forbidden set;
+- refuse to run (exit code 2) when the allowlist and the forbidden set intersect, or when
+  the state file cannot be read; nothing is deleted;
+- only delete names that actually exist; before deleting, export the name / id / count /
+  metadata of every collection to the before JSON, and after ``--execute`` finishes,
+  export the after JSON;
+- refuse to run (exit code 2) when the output files this run would write (before; plus
+  after under ``--execute``) already exist, so the A4 audit record is never overwritten;
+  the check happens before connecting to Chroma. Pass ``--overwrite`` explicitly to
+  replace them.
 
-用法：
+Usage:
 
-    python scripts/prune_chroma_collections.py            # dry-run：只导出 before 并列出将删除的名字
-    python scripts/prune_chroma_collections.py --execute  # 真正删除，并导出 after
+    python scripts/prune_chroma_collections.py            # dry-run: only export before and list the names that would be deleted
+    python scripts/prune_chroma_collections.py --execute  # really delete, then export after
 
-退出码：0 = 成功（dry-run 或删除完成）；1 = Chroma 操作失败；2 = 拒绝执行（输出文件已存在且未传
-``--overwrite``、保护冲突或状态文件不可读），此时没有连接 Chroma、什么都没改。
+Exit codes: 0 = success (dry-run, or deletion completed); 1 = a Chroma operation failed;
+2 = refused to run (output file already exists and ``--overwrite`` was not passed, a
+protection conflict, or the state file is unreadable); in that case Chroma was never
+connected and nothing was changed.
 """
 
 from __future__ import annotations
@@ -36,20 +46,23 @@ if str(ROOT / "src") not in sys.path:
 from evidenceflow.config import Settings  # noqa: E402
 from evidenceflow.knowledge import LifecycleState  # noqa: E402
 
-# A4.2 已确认的孤儿 collection：staging 残留、refmeta 实验、两个结构实验。只能改代码才能变更。
+# A4.2 confirmed orphan collections: staging leftovers, the refmeta experiment, and two structure
+# experiments. Changing them requires a code change.
 ALLOWED_TO_DELETE: tuple[str, ...] = (
     "ef_research_bge_m3_hybrid_c512_v2_staging",
     "ef_research_bge_m3_c512_o64_refmeta_v1",
     "ef_research_structure_v1",
     "ef_research_structure_v1_elemaware",
 )
-# 当前 active（v2）、上一代 hybrid（v1）与固定回滚基线（c512_o64_v1），任何情况下都不允许删除。
+# The current active index (v2), the previous-generation hybrid index (v1), and the frozen rollback
+# baseline (c512_o64_v1); deleting any of them is never allowed.
 FORBIDDEN_TO_DELETE: tuple[str, ...] = (
     "ef_research_bge_m3_hybrid_c512_v2",
     "ef_research_bge_m3_hybrid_c512_v1",
     "ef_research_bge_m3_c512_o64_v1",
 )
-# 硬编码断言：两份写死的名单本身不能有交集（改代码时的第一道防线）。
+# Hardcoded assertion: the two hardcoded lists themselves must not intersect (the first line of
+# defence when editing the code).
 assert not set(ALLOWED_TO_DELETE) & set(FORBIDDEN_TO_DELETE), "allowlist overlaps hardcoded forbidden list"
 
 DEFAULT_BEFORE = ROOT / "artifacts/stage_a/A4_chroma_before.json"
@@ -57,15 +70,15 @@ DEFAULT_AFTER = ROOT / "artifacts/stage_a/A4_chroma_after.json"
 
 
 class PruneRefused(RuntimeError):
-    """执行前的拒绝（退出码 2）：没有删除任何 collection。"""
+    """A pre-execution refusal (exit code 2): no collection was deleted."""
 
 
 def lifecycle_protected_names(state_path: Path) -> set[str]:
-    """读取状态文件中 active / previous / staging 指针引用的 collection 名；读不出时拒绝。"""
+    """Read the collection names referenced by the active / previous / staging pointers in the state file; refuse when unreadable."""
 
     try:
         state = LifecycleState.model_validate_json(Path(state_path).read_text(encoding="utf-8"))
-    except Exception as exc:  # noqa: BLE001 - 缺失、损坏、校验失败都不能放行删除
+    except Exception as exc:  # noqa: BLE001 - a missing, corrupt, or invalid state must never authorise deletion
         message = " ".join(str(exc).split())
         raise PruneRefused(f"cannot read lifecycle state {state_path}: {type(exc).__name__}: {message}") from exc
     names = {state.active.collection_name}
@@ -76,7 +89,7 @@ def lifecycle_protected_names(state_path: Path) -> set[str]:
 
 
 def check_outputs_writable(paths: list[Path], *, overwrite: bool) -> None:
-    """本次要写的输出文件已存在且未显式允许覆盖时拒绝：before/after 是不可再生的审计记录。"""
+    """Refuse when an output file this run would write already exists and overwriting was not explicitly allowed: before/after are non-regenerable audit records."""
 
     if overwrite:
         return
@@ -86,13 +99,13 @@ def check_outputs_writable(paths: list[Path], *, overwrite: bool) -> None:
 
 
 def forbidden_names(state_path: Path) -> set[str]:
-    """禁止集合 = 硬编码禁止名单 ∪ 状态文件指针引用的名字。"""
+    """Forbidden set = hardcoded forbidden list union the names referenced by the state file pointers."""
 
     return set(FORBIDDEN_TO_DELETE) | lifecycle_protected_names(state_path)
 
 
 def check_allowlist(allowed: tuple[str, ...], forbidden: set[str]) -> None:
-    """允许列表与禁止集合有交集时拒绝：宁可什么都不删，也不能误删线上或回滚索引。"""
+    """Refuse when the allowlist intersects the forbidden set: better to delete nothing than to accidentally delete a production or rollback index."""
 
     overlap = sorted(set(allowed) & forbidden)
     if overlap:
@@ -100,7 +113,7 @@ def check_allowlist(allowed: tuple[str, ...], forbidden: set[str]) -> None:
 
 
 def export_collections(client: Any) -> list[dict[str, Any]]:
-    """导出全部 collection 的 name / id / count / metadata，按名字排序保证输出确定。"""
+    """Export name / id / count / metadata of every collection, sorted by name to keep the output deterministic."""
 
     rows = []
     for collection in client.list_collections():
@@ -116,7 +129,7 @@ def export_collections(client: Any) -> list[dict[str, Any]]:
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    """与项目 write_json 一致：UTF-8、不转义中文、键排序。"""
+    """Consistent with the project's write_json: UTF-8, no CJK escaping, sorted keys."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -141,10 +154,12 @@ def prune(
     after_output: Path,
     overwrite: bool = False,
 ) -> dict[str, Any]:
-    """执行一次清理（或 dry-run），返回摘要；保护冲突时抛 ``PruneRefused``，不删除任何东西。"""
+    """Run one cleanup (or dry-run) and return the summary; raise ``PruneRefused`` without deleting anything on a protection conflict."""
 
-    # 先做全部保护检查，再连接 Chroma：拒绝路径上不会打开存储。
-    # 输出覆盖检查只针对本次会写的文件：dry-run 只写 before，--execute 还会写 after。
+    # Run every protection check before connecting to Chroma, so the refusal path never opens the
+    # store.
+    # The output-overwrite check covers only the files this run writes: dry-run writes before only,
+    # --execute also writes after.
     check_outputs_writable([before_output, after_output] if execute else [before_output], overwrite=overwrite)
     forbidden = forbidden_names(state_path)
     check_allowlist(ALLOWED_TO_DELETE, forbidden)
@@ -155,7 +170,8 @@ def prune(
     before = export_collections(client)
     _write_json(before_output, _snapshot(db_path, before, "before"))
     existing = {row["name"] for row in before}
-    # 只删除实际存在的名字；不存在的允许名单项只记录，不报错。
+    # Only delete names that actually exist; allowlist entries that are absent are just recorded,
+    # not treated as errors.
     targets = [name for name in ALLOWED_TO_DELETE if name in existing]
     absent = [name for name in ALLOWED_TO_DELETE if name not in existing]
     summary: dict[str, Any] = {
@@ -170,7 +186,8 @@ def prune(
         summary["would_remain"] = sorted(existing - set(targets))
         return summary
     for name in targets:
-        # 删除前再确认一次：防御将来有人改动上面的过滤逻辑。
+        # Re-confirm right before deleting: this defends against a future change to the filtering
+        # logic above.
         if name in forbidden:
             raise PruneRefused(f"refusing to delete protected collection {name!r}")
         client.delete_collection(name)
@@ -211,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
     except PruneRefused as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
-    except Exception as exc:  # noqa: BLE001 - Chroma 操作失败统一以一行报告
+    except Exception as exc:  # noqa: BLE001 - Chroma failures are reported uniformly as one line
         print(f"FAILED: {type(exc).__name__}: {' '.join(str(exc).split())}", file=sys.stderr)
         return 1
     print(json.dumps(summary, ensure_ascii=False, indent=2))

@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-# 历史一次性脚本（Stage A A4 标注）：不能再运行。
-# 它依赖的 staging collection ef_research_bge_m3_hybrid_c512_v2_staging 已在 Stage A A4 通过
-# scripts/prune_chroma_collections.py 删除；当前索引变更请使用 scripts/build_staging_index.py。
-# 另外，compute_ir_parity 在函数内动态导入的 experiments/phase13c/metrics13cc.py 也已随 A4.3 删除。
-# 保留本文件仅作历史记录；需要对照时可从 tag stage-a-start 恢复上述依赖。
-"""修复 EvidenceFlow active Chroma 的 metadata 契约（staging-first）。
+# Historic one-off script (Stage A A4 annotation): it can no longer be run.
+# The staging collection it relies on, ef_research_bge_m3_hybrid_c512_v2_staging, was deleted
+# during Stage A A4 via
+# scripts/prune_chroma_collections.py; for current index changes use
+# scripts/build_staging_index.py.
+# In addition, experiments/phase13c/metrics13cc.py, which compute_ir_parity imports dynamically
+# inside the function, was also removed with A4.3.
+# This file is kept for historical record only; the dependencies above can be restored from tag
+# stage-a-start when comparing.
+"""Repair the metadata contract of the EvidenceFlow active Chroma collection (staging-first).
 
-旧 active Collection 只读保留；本脚本从 Phase 13F 已冻结的 Chunk JSONL 与
-embedding NPZ 重建独立 staging Collection，逐项执行数量、Chunk 身份、metadata、
-Domain 恢复、Dense Top20 和标准 IR parity gate。只有显式传入 ``--promote`` 且
-全部 gate 通过时，才复制到新的 active Collection 并更新本地 ``.env`` 的集合名。
+The old active Collection is kept read-only; this script rebuilds an independent staging Collection from the
+Chunk JSONL and embedding NPZ already frozen by Phase 13F, and runs the count, chunk identity, metadata,
+Domain reconstruction, Dense Top20, and standard IR parity gates item by item. Only when ``--promote`` is passed
+explicitly and every gate passes does it copy into the new active Collection and update the collection name in the local ``.env``.
 """
 
 from __future__ import annotations
@@ -49,7 +53,7 @@ OUTPUT_DIR = ROOT / "artifacts" / "cleanup" / "storage_repair"
 
 
 def sha256_of(path: Path) -> str:
-    """流式计算输入工件 hash，便于修复前后追踪冻结来源。"""
+    """Stream the input artifact hash so the frozen provenance can be traced before and after the repair."""
 
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -59,7 +63,7 @@ def sha256_of(path: Path) -> str:
 
 
 def load_reference() -> tuple[list[dict[str, Any]], np.ndarray, list[DocumentChunk]]:
-    """加载并校验 13F 冻结记录、向量及 Domain Chunk 映射。"""
+    """Load and validate the 13F frozen records, the vectors, and the Domain Chunk mapping."""
 
     rows = [
         json.loads(line)
@@ -98,7 +102,7 @@ def load_reference() -> tuple[list[dict[str, Any]], np.ndarray, list[DocumentChu
 
 
 def read_collection_records(collection: Any, *, include_embeddings: bool = False) -> list[dict[str, Any]]:
-    """按分页读取 Chroma 原始记录；旧 metadata=None 会被原样保留。"""
+    """Read raw Chroma records page by page; legacy metadata=None values are preserved verbatim."""
 
     records: list[dict[str, Any]] = []
     offset = 0
@@ -137,7 +141,7 @@ def read_collection_records(collection: Any, *, include_embeddings: bool = False
 def compare_chunk_identity(
     expected_rows: list[dict[str, Any]], actual_records: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    """按 chunk_id 全量比较文本身份，不依赖 Chroma 返回顺序。"""
+    """Compare textual identity exhaustively by chunk_id, independent of the order Chroma returns records in."""
 
     expected = {row["chunk_id"]: row["text"] for row in expected_rows}
     actual = {record["chunk_id"]: record["document"] for record in actual_records}
@@ -161,7 +165,7 @@ def compare_chunk_identity(
 def check_metadata_completeness(
     expected_rows: list[dict[str, Any]], actual_records: list[dict[str, Any]]
 ) -> dict[str, Any]:
-    """检查每条新记录是否具备可恢复 Domain Chunk 所需的来源信息。"""
+    """Check whether every new record carries the source information needed to restore a Domain Chunk."""
 
     rows = {row["chunk_id"]: row for row in expected_rows}
     failures: list[dict[str, Any]] = []
@@ -203,9 +207,10 @@ def check_metadata_completeness(
 
 
 def load_query_vectors(questions: list[dict[str, Any]]) -> np.ndarray:
-    """按 13F 的 BGE-M3 CLS + L2 协议生成冻结题目的查询向量。"""
+    """Generate query vectors for the frozen questions under the 13F BGE-M3 CLS + L2 protocol."""
 
-    # 只使用本机已有模型，避免完整性验证意外触发网络下载。
+    # Use only models already present locally, so the integrity verification never accidentally
+    # triggers a network download.
     os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
     from transformers import AutoModel, AutoTokenizer
     import torch
@@ -235,7 +240,7 @@ def compare_retrieval(
     questions: list[dict[str, Any]],
     expected_run: dict[str, list[str]],
 ) -> dict[str, Any]:
-    """比较旧库、新库和 13F 冻结 run 的 Dense Top20 排名。"""
+    """Compare the Dense Top20 rankings of the old collection, the new collection, and the 13F frozen run."""
 
     query_vectors = load_query_vectors(questions)
     mismatches: list[dict[str, Any]] = []
@@ -258,7 +263,7 @@ def compare_retrieval(
 
 
 def compute_ir_parity(rows: list[dict[str, Any]], run: dict[str, list[str]]) -> dict[str, Any]:
-    """按 13F 同一 qrels 投影与指标实现复算，确认 metadata 修复未改语义结果。"""
+    """Recompute with the same qrels projection and metric implementation as 13F, confirming the metadata repair changed no semantic result."""
 
     sys.path.insert(0, str(ROOT / "experiments" / "phase13c"))
     import metrics13cc
@@ -285,7 +290,7 @@ def compute_ir_parity(rows: list[dict[str, Any]], run: dict[str, list[str]]) -> 
 
 
 def create_collection(client: Any, name: str, *, lifecycle: str) -> Any:
-    """创建明确身份的新 Collection；不删除同名数据，避免误覆盖。"""
+    """Create a new Collection with an explicit identity; existing data of the same name is not deleted, to avoid accidental overwrite."""
 
     if name in {item.name for item in client.list_collections()}:
         raise RuntimeError(f"Refusing to overwrite existing Collection: {name}")
@@ -303,7 +308,7 @@ def create_collection(client: Any, name: str, *, lifecycle: str) -> Any:
 
 
 def update_env_collection(env_path: Path, collection_name: str) -> None:
-    """只更新本地配置中的集合名，不读取或复制任何密钥字段。"""
+    """Update only the collection name in the local configuration; no secret field is read or copied."""
 
     text = env_path.read_text(encoding="utf-8") if env_path.exists() else ""
     lines = text.splitlines()
@@ -319,7 +324,7 @@ def update_env_collection(env_path: Path, collection_name: str) -> None:
 
 
 def run(*, promote: bool = False) -> dict[str, Any]:
-    """执行 staging repair gates，并按需完成新 active Collection 晋升。"""
+    """Run the staging repair gates and, when requested, complete the promotion to the new active Collection."""
 
     started = datetime.now(timezone.utc).isoformat()
     rows, vectors, chunks = load_reference()
@@ -334,13 +339,15 @@ def run(*, promote: bool = False) -> dict[str, Any]:
     if old_collection.count() != EXPECTED_COUNT or not old_identity["pass"]:
         raise RuntimeError("Old active Collection failed count or identity precondition")
 
-    # 已存在的 staging 只读复用并重新验门；绝不为了重跑而静默清空它。
+    # An existing staging collection is reused read-only and re-verified; it is never silently
+    # wiped just to allow a rerun.
     staging = (
         client.get_collection(name=STAGING_COLLECTION)
         if STAGING_COLLECTION in names
         else create_collection(client, STAGING_COLLECTION, lifecycle="STAGING")
     )
-    # 先用项目 Adapter 写入，确保实际生产路径与离线修复共享同一 serializer。
+    # Write through the project Adapter first, so the real production path and the offline repair
+    # share one serializer.
     staging_store = ChromaVectorStore(ROOT / "data" / "chroma", STAGING_COLLECTION)
     if staging.count() == 0:
         staging_store.add_chunks(chunks, vectors.tolist())
@@ -426,7 +433,7 @@ def run(*, promote: bool = False) -> dict[str, Any]:
 
 
 def main() -> int:
-    """命令行入口；默认只构建并验证 staging，不会修改 active 配置。"""
+    """CLI entry point; by default it only builds and verifies staging and never modifies the active configuration."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--promote", action="store_true", help="全部 gate 通过后晋升到 v2 active")

@@ -1,4 +1,4 @@
-"""验证 Phase 9 完整 Runtime 链与 Promotion Gate 产物。"""
+"""Verify the complete Phase 9 runtime chain and the promotion-gate artifacts."""
 
 import json
 from pathlib import Path
@@ -14,24 +14,24 @@ PHASE9 = Path(__file__).parents[1] / "evals/evaluation_v2/phase9_runtime_promoti
 
 
 class CharacterTokenizer:
-    """提供不依赖真实模型的确定性 Context Token 计数。"""
+    """Provide deterministic context token counting that does not depend on a real model."""
 
     def encode(self, text: str) -> list[int]:
-        """把每个字符映射为一个测试 Token。"""
+        """Map each character to one test token."""
 
         return [ord(character) for character in text]
 
     def decode(self, token_ids: list[int]) -> str:
-        """满足 TokenizerProtocol 的完整测试接口。"""
+        """Complete the test interface required by TokenizerProtocol."""
 
         return "".join(chr(token_id) for token_id in token_ids)
 
 
 class FixedDenseRetriever:
-    """模拟正式 ANN，固定返回 20 个带 cosine 的候选。"""
+    """Simulate the production ANN, always returning 20 candidates with a cosine score."""
 
     def __init__(self, count: int = 20) -> None:
-        """构造指定数量且身份唯一的 Dense 候选。"""
+        """Build the requested number of Dense candidates with unique identities."""
 
         self.calls: list[tuple[str, int]] = []
         self.rows = []
@@ -54,23 +54,23 @@ class FixedDenseRetriever:
             )
 
     def retrieve(self, query: str, top_k: int) -> list[RetrievedChunk]:
-        """记录 Candidate Generation 深度并返回固定 ANN 顺序。"""
+        """Record the candidate-generation depth and return the fixed ANN order."""
 
         self.calls.append((query, top_k))
         return self.rows[:top_k]
 
 
 class ReverseScorer:
-    """让后置候选获得更高分，证明最终排序来自 Reranker。"""
+    """Give later candidates a higher score, proving the final order comes from the reranker."""
 
     def score_pairs(self, pairs):
-        """从 passage 序号生成与 batch 无关的有限分数。"""
+        """Produce finite scores independent of the batch from the passage index."""
 
         return [float(passage.rsplit(" ", 1)[1]) for _, passage in pairs]
 
 
 class CitingLLM:
-    """返回符合 Generator 协议且引用首个来源的确定性回答。"""
+    """Return a deterministic answer that follows the Generator protocol and cites the first source."""
 
     def __init__(self) -> None:
         self.calls = 0
@@ -78,14 +78,14 @@ class CitingLLM:
     last_usage = None
 
     def generate_json(self, messages, *, schema_name, json_schema) -> str:
-        """记录调用并返回可通过 Citation 校验的 v3 JSON 回答。"""
+        """Record the call and return a v3 JSON answer that passes citation validation."""
 
         self.calls += 1
         return '{"status": "answered", "answer": "Highest reranked evidence [S1]."}'
 
 
 def _pipeline(dense: FixedDenseRetriever) -> DenseRerankerRetriever:
-    """构造与正式 20→20→5 合同一致的轻量 Pipeline。"""
+    """Build a lightweight pipeline consistent with the production 20->20->5 contract."""
 
     return DenseRerankerRetriever(
         dense,
@@ -97,7 +97,7 @@ def _pipeline(dense: FixedDenseRetriever) -> DenseRerankerRetriever:
 
 
 def test_full_runtime_chain_uses_dense20_reranker5_context_generation_and_citation() -> None:
-    """Normal Query 必须贯通 Retrieval、Context、Generator、Citation 与 RAGAnswer。"""
+    """A normal query must flow through Retrieval, Context, Generator, Citation, and RAGAnswer."""
 
     dense = FixedDenseRetriever()
     llm = CitingLLM()
@@ -118,7 +118,7 @@ def test_full_runtime_chain_uses_dense20_reranker5_context_generation_and_citati
 
 
 def test_empty_runtime_retrieval_keeps_insufficient_context_behavior() -> None:
-    """空 ANN 候选仍走既有确定性不足回答，且不调用 LLM。"""
+    """Empty ANN candidates still go through the existing deterministic insufficient-context answer, without calling the LLM."""
 
     dense = FixedDenseRetriever(count=0)
     llm = CitingLLM()
@@ -135,7 +135,7 @@ def test_empty_runtime_retrieval_keeps_insufficient_context_behavior() -> None:
 
 
 def test_phase9_artifacts_prove_runtime_promotion_and_architecture_roles() -> None:
-    """产物必须覆盖质量、回滚、性能、架构简化及最终 Gate。"""
+    """The artifacts must cover quality, rollback, performance, architecture simplification, and the final Gate."""
 
     required = {
         "run_manifest.json",

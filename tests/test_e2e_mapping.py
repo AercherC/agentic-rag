@@ -1,4 +1,4 @@
-"""验证 rag_e2e_v1 证据映射复用 stable_mapping，并正确合成组与 claim 锚点状态。"""
+"""Verify that rag_e2e_v1 evidence mapping reuses stable_mapping and correctly combines group and claim anchor statuses."""
 
 import pytest
 
@@ -61,7 +61,7 @@ def test_full_fragmented_unmapped_and_source_failure():
 
 
 def test_unmapped_when_chunks_do_not_cover_source():
-    """原文定位成功、但没有 chunk 覆盖（如该页 chunk 不存在）时为 UNMAPPED。"""
+    """Source location succeeds but no chunk covers it (for example the page's chunk does not exist) => UNMAPPED."""
     ds = E2EDataset.model_validate({"dataset_id": "d", "corpus_version": "c",
                                     "cases": [case([{"group_id": "G1", "alternatives": [alt("Intro text.")]}])]})
     mapping = map_dataset(ds, [document()], [CHUNKS[1]], collection_name="col", index_signature="sig")
@@ -81,7 +81,7 @@ def test_claim_anchors_any_alternative_usable():
 
 
 def test_groups_match_map_stable_dataset_when_sources_valid():
-    """全部锚点源文本有效时，组级结果与 canonical map_stable_dataset 完全一致。"""
+    """When every anchor's source text is valid, the group-level results match the canonical map_stable_dataset exactly."""
     groups = [{"group_id": "G1", "alternatives": [alt("Intro text."), alt("tail sentence")]},
               {"group_id": "G2", "alternatives": [alt("answer spans two chunks")]}]
     _, mapping = run([case(groups)])
@@ -107,7 +107,7 @@ def test_is_usable_and_record_consistency():
 
 
 def test_chunk_id_hash_matches_frozen_a1_formula():
-    """chunk_id_hash 口径必须与 A1 基线一致：排序后 id 列表的规范化 JSON sha256。"""
+    """The chunk_id_hash standard must match the A1 baseline: sha256 of the canonical JSON of the sorted id list."""
     assert compute_chunk_id_hash(["b", "a", "c"]) == \
         "fa1844c2988ad15ab7b49e0ece09684500fad94df916859fb9a43ff85f5bb477"
     assert compute_chunk_id_hash([]) == \
@@ -115,7 +115,7 @@ def test_chunk_id_hash_matches_frozen_a1_formula():
 
 
 def test_mapping_records_measured_chunk_identity():
-    """实测 chunk_count / chunk_id_hash 写进产物；与期望一致时不抛错。"""
+    """The measured chunk_count / chunk_id_hash are written into the artifact; no error is raised when they match the expectations."""
     ds = E2EDataset.model_validate({"dataset_id": "d", "corpus_version": "c",
                                     "cases": [case([{"group_id": "G1", "alternatives": [alt("Intro text.")]}])]})
     mapping = map_dataset(ds, [document()], CHUNKS, collection_name="col", index_signature="sig",
@@ -136,7 +136,7 @@ def test_expected_chunk_identity_mismatch_raises():
 
 
 def test_old_mapping_without_identity_fields_still_validates():
-    """旧 pilot 产物没有 chunk_count / chunk_id_hash，仍必须能 model_validate。"""
+    """Older pilot artifacts have no chunk_count / chunk_id_hash and must still pass model_validate."""
     old = {"dataset_fingerprint": "f", "collection_name": "c", "index_signature": "s",
            "groups": [], "claim_anchors": []}
     mapping = E2EMapping.model_validate(old)

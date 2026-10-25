@@ -1,4 +1,4 @@
-"""LLM 消息与带结构化回答状态、尚未解析 Citation 的生成结果模型。"""
+"""LLM messages plus the generation-result model that carries a structured answer status and has not yet parsed Citations."""
 
 from enum import StrEnum
 from typing import Literal
@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class LLMMessage(BaseModel):
-    """表示供应商无关的单条文本 Chat 消息。"""
+    """A single vendor-neutral text Chat message."""
 
     role: Literal["system", "user", "assistant"] = Field(
         description="消息在 Chat 指令层级中的角色。"
@@ -17,7 +17,7 @@ class LLMMessage(BaseModel):
     @field_validator("content")
     @classmethod
     def validate_content(cls, value: str) -> str:
-        """拒绝无语义的空白消息，但不改写原始消息文本。"""
+        """Reject messages that are blank and therefore meaningless, without rewriting the original message text."""
 
         if not value.strip():
             raise ValueError("LLM message content must not be blank")
@@ -25,14 +25,14 @@ class LLMMessage(BaseModel):
 
 
 class AnswerStatus(StrEnum):
-    """区分有证据回答与显式知识库不足，避免下游依赖自然语言猜测。"""
+    """Distinguish an evidence-backed answer from an explicit knowledge-base shortfall, so downstream code need not guess from natural language."""
 
     ANSWERED = "answered"
     INSUFFICIENT_CONTEXT = "insufficient_context"
 
 
 class GeneratedAnswer(BaseModel):
-    """保存 Generator 解析后的状态与尚未经过 Citation Parser 的答案正文。"""
+    """Holds the status parsed by the Generator and the answer body that has not yet passed the Citation Parser."""
 
     status: AnswerStatus = Field(description="决定 Citation 必填语义的结构化回答状态。")
 
@@ -41,7 +41,7 @@ class GeneratedAnswer(BaseModel):
     @field_validator("answer_text")
     @classmethod
     def validate_answer_text(cls, value: str) -> str:
-        """禁止把空白响应伪装为一次成功生成。"""
+        """A blank response must never masquerade as a successful generation."""
 
         if not value.strip():
             raise ValueError("generated answer must not be blank")
@@ -49,7 +49,7 @@ class GeneratedAnswer(BaseModel):
 
 
 class GeneratorOutput(BaseModel):
-    """rag-generator-v3 要求模型输出的 JSON 合同；多余字段一律拒绝。"""
+    """The JSON contract that rag-generator-v3 requires the model to emit; every extra field is rejected."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -59,7 +59,7 @@ class GeneratorOutput(BaseModel):
     @field_validator("answer")
     @classmethod
     def validate_answer(cls, value: str) -> str:
-        """与 GeneratedAnswer 一致，禁止空白回答被当作一次成功生成。"""
+        """Consistent with GeneratedAnswer: a blank answer must never count as a successful generation."""
 
         if not value.strip():
             raise ValueError("generator output answer must not be blank")
@@ -67,10 +67,10 @@ class GeneratorOutput(BaseModel):
 
 
 def generator_output_json_schema() -> dict:
-    """生成发给服务端的 JSON Schema，枚举值直接取自 AnswerStatus，避免两处手写漂移。
+    """Build the JSON Schema sent to the service, taking enum values straight from AnswerStatus so the two cannot drift apart.
 
-    手工内联而不用 ``model_json_schema()``：后者会产生 ``$defs`` 引用，部分
-    OpenAI-compatible 服务的 strict 模式不支持引用。
+    Hand-inlined instead of ``model_json_schema()``: the latter emits ``$defs`` references,
+    which the strict mode of some OpenAI-compatible services does not support.
     """
 
     return {

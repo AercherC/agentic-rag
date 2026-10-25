@@ -1,4 +1,4 @@
-"""公开统一 LLM Client 合同、异常和 OpenAI-compatible Adapter。"""
+"""Public unified LLM Client contract, its exceptions, and the OpenAI-compatible adapter."""
 
 from evidenceflow.llm.base import (
     LLMClient,

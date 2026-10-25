@@ -1,4 +1,4 @@
-"""测试 Text Cleaner 的保守规范化与数据保持规则。"""
+"""Test the Text Cleaner's conservative normalization and data-preservation rules."""
 
 import unicodedata
 from typing import Literal
@@ -15,7 +15,7 @@ def make_document(
     file_type: Literal["pdf", "md", "txt"] = "txt",
     page_numbers: list[int | None] | None = None,
 ) -> Document:
-    """使用固定来源字段创建 Cleaner 测试文档。"""
+    """Create a Cleaner test document with fixed source fields."""
 
     if page_numbers is None:
         page_numbers = [None] * len(contents)

@@ -1,4 +1,4 @@
-"""提供预先固定随机种子的逐题/题族配对比较。"""
+"""Per-question / per-family paired comparison with a fixed random seed."""
 
 import math
 import random
@@ -7,7 +7,7 @@ import random
 def paired_comparison(baseline: dict[str, float], variant: dict[str, float], *,
                       families: dict[str, str] | None = None, seed: int = 20260905,
                       samples: int = 10000) -> dict:
-    """以题族为采样单位保留相关性，返回探索性 CI 与双侧随机化检验。"""
+    """Sample whole families so that correlation is preserved; return an exploratory CI and a two-sided randomization test."""
     if not baseline or baseline.keys() != variant.keys():
         raise ValueError("paired query IDs must match exactly")
     if type(samples) is not int or samples < 100:
@@ -29,7 +29,8 @@ def paired_comparison(baseline: dict[str, float], variant: dict[str, float], *,
     for _ in range(samples):
         selected = rng.choices(clusters, k=len(clusters))
         draws.append(sum(sum(c) for c in selected) / sum(len(c) for c in selected))
-        # 同一题族整体交换系统标签，不能独立打散中英文平行题。
+        # Swap system labels for a whole family at once; parallel zh/en questions must not be
+        # shuffled independently.
         randomized = sum(rng.choice((-1, 1)) * sum(c) for c in clusters) / len(deltas)
         extreme += abs(randomized) >= abs(observed) - 1e-12
     draws.sort()
@@ -44,7 +45,7 @@ def paired_comparison(baseline: dict[str, float], variant: dict[str, float], *,
 
 
 def holm_adjust(p_values: dict[str, float]) -> dict[str, float]:
-    """校正预注册的一组比较；不能事后选择性遗漏检验。"""
+    """Correct a pre-registered family of comparisons; tests must not be dropped selectively after the fact."""
     if any(not math.isfinite(p) or not 0 <= p <= 1 for p in p_values.values()):
         raise ValueError("p values must be finite probabilities")
     result = {}

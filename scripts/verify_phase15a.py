@@ -1,4 +1,4 @@
-"""只读执行 Phase 15A Gate，统一使用 frozen baseline 而不是运行时猜测历史状态。"""
+"""Run the Phase 15A gates read-only, always against the frozen baseline instead of guessing historical state at runtime."""
 
 from __future__ import annotations
 
@@ -35,7 +35,7 @@ REPAIR_REPORT_PATH = ROOT / "artifacts/cleanup/storage_repair/storage_repair_rep
 
 
 def sha256(path: Path) -> str:
-    """以分块方式计算文件 hash，避免一次性加载大型评测产物。"""
+    """Compute a file hash in blocks, avoiding loading one large evaluation artifact in one go."""
 
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -45,7 +45,7 @@ def sha256(path: Path) -> str:
 
 
 def _env_collection_name() -> str | None:
-    """读取 .env 中的非敏感 Collection 配置，不触碰 API Key。"""
+    """Read the non-sensitive collection configuration from .env, never touching an API key."""
 
     for raw in (ROOT / ".env").read_text(encoding="utf-8").splitlines():
         line = raw.strip()
@@ -55,13 +55,13 @@ def _env_collection_name() -> str | None:
 
 
 def _hash_checks(paths: dict[str, str], base: Path) -> dict[str, bool]:
-    """复算一组冻结文件 hash，并返回逐文件结果。"""
+    """Recompute a set of frozen file hashes and return the per-file result."""
 
     return {relative: sha256(base / relative) == expected for relative, expected in paths.items()}
 
 
 def verify_phase15a() -> dict[str, Any]:
-    """读取当前 v2 和 frozen snapshot，返回机器可读的 Phase 15A Gate 报告。"""
+    """Read the current v2 state and the frozen snapshot, and return a machine-readable Phase 15A gate report."""
 
     baseline = json.loads(BASELINE_PATH.read_text(encoding="utf-8"))
     settings = Settings()
@@ -193,7 +193,7 @@ def verify_phase15a() -> dict[str, Any]:
 
 
 def main() -> int:
-    """运行只读 Gate 并将报告写入 Phase 15A artifact 目录。"""
+    """Run the read-only gates and write the report into the Phase 15A artifact directory."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

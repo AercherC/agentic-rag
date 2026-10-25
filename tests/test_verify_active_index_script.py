@@ -1,6 +1,6 @@
-"""测试 scripts/verify_active_index.py 的输出行为：默认只打印到 stdout，不写任何文件。
+"""Test the output behaviour of scripts/verify_active_index.py: by default it only prints to stdout and writes no file.
 
-用 monkeypatch 替换检查函数，不打开任何真实 Chroma 存储。
+The check function is replaced via monkeypatch, so no real Chroma store is opened.
 """
 
 import json
@@ -22,7 +22,7 @@ def fake_inspect(monkeypatch):
         return dict(FAKE_RESULT)
 
     monkeypatch.setattr(module, "inspect_active_index", fake)
-    # 不读取仓库 .env：脚本内部构造的 Settings 改为纯默认值。
+    # Do not read the repository .env: the Settings built inside the script become pure defaults.
     monkeypatch.setattr(module, "Settings", lambda: Settings(_env_file=None))
     return calls
 
@@ -42,8 +42,8 @@ def test_default_writes_no_file_and_prints_json(tmp_path, monkeypatch, capsys, f
     assert code == 0
     assert json.loads(capsys.readouterr().out) == FAKE_RESULT
     assert fake_inspect == [(tmp_path / "chroma", "fake", 3)]
-    assert _snapshot(tmp_path) == before  # 当前目录下没有新文件
-    assert (tracked.read_bytes() if tracked.exists() else None) == tracked_before  # 被跟踪的历史产物未被改写
+    assert _snapshot(tmp_path) == before  # no new file in the current directory
+    assert (tracked.read_bytes() if tracked.exists() else None) == tracked_before  # the tracked historical artifact was not rewritten
 
 
 def test_explicit_output_writes_file(tmp_path, capsys, fake_inspect) -> None:
@@ -61,7 +61,7 @@ def test_failed_check_returns_2(tmp_path, monkeypatch, capsys, fake_inspect) -> 
     assert module.main(["--path", str(tmp_path), "--collection", "fake"]) == 2
 
 
-# ---- B0：真正只读（不创建目录、不创建 Collection）----
+# ---- B0: genuinely read-only (creates no directory and no Collection) ----
 
 
 def test_missing_persist_path_fails_without_creating_dir(tmp_path) -> None:
@@ -72,14 +72,14 @@ def test_missing_persist_path_fails_without_creating_dir(tmp_path) -> None:
     assert result["pass"] is False
     assert result["checks"]["collection_exists"] is False
     assert result["error"].startswith("Persist path does not exist")
-    assert not missing.exists()  # 目录没有被创建
+    assert not missing.exists()  # the directory was not created
 
 
 def test_missing_collection_is_not_created(tmp_path) -> None:
     import chromadb
 
     persist = tmp_path / "chroma"
-    chromadb.PersistentClient(path=str(persist))  # 空库，不打开 data/chroma
+    chromadb.PersistentClient(path=str(persist))  # empty store; data/chroma is not opened
 
     result = module.inspect_active_index(persist, "ghost")
 
@@ -112,4 +112,4 @@ def test_store_opened_with_create_if_missing_false(tmp_path, monkeypatch) -> Non
     result = module.inspect_active_index(persist, "mini")
 
     assert seen == [{"create_if_missing": False}]
-    assert result["pass"] is False  # spy 抛错，流程以失败收尾
+    assert result["pass"] is False  # the spy raised, so the flow ends as a failure

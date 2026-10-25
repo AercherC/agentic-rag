@@ -1,4 +1,4 @@
-"""EvidenceFlow 知识库身份与索引生命周期公共接口。"""
+"""Public interfaces for knowledge-base identity and index lifecycle."""
 
 from evidenceflow.knowledge.job import (
     BUILD_JOB_STATUSES,

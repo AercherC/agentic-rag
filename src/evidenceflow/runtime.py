@@ -1,4 +1,4 @@
-"""集中装配 EvidenceFlow 唯一正式 RAG Runtime。"""
+"""The single composition point that assembles the one official EvidenceFlow RAG runtime."""
 
 from pathlib import Path
 
@@ -30,12 +30,13 @@ from evidenceflow.storage import (
     read_collection_metadata,
 )
 
-# BGE-M3 Dense 向量维度；Exact 索引维度不符说明 collection 与当前 Embedding 模型不匹配。
+# BGE-M3 Dense vector dimension; a mismatched Exact index dimension means the collection does not
+# match the current embedding model.
 EMBEDDING_DIMENSION = 1024
 
 
 def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
-    """在唯一 Composition Root 中把 Settings 映射为显式 LLM Client 参数。"""
+    """Map Settings to explicit LLM client arguments inside the single Composition Root."""
 
     return OpenAICompatibleLLMClient(
         api_key=settings.llm_api_key,
@@ -49,12 +50,16 @@ def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
 
 
 def _lifecycle_governed(settings: Settings) -> bool:
-    """lifecycle 状态文件存在时，线上 collection 由 active 指针决定。
+    """When the lifecycle state file exists, the production collection is decided by the active
+    pointer.
 
-    ``INDEX_STATE_PATH`` 被显式设置（环境变量、.env 或构造参数）而文件不存在时抛
-    ``ActiveCollectionError``：显式路径写错或文件丢失时若静默回落到 ``Settings.collection_name``
-    （其默认值就是线上 v2），active 指针与 ingest 保护都会被悄悄绕过。
-    只有未显式设置、默认路径下也没有文件时，才视为全新环境。
+    If ``INDEX_STATE_PATH`` was set explicitly (environment variable, .env or constructor argument)
+    but the file does not exist, ``ActiveCollectionError`` is raised: silently falling back to
+    ``Settings.collection_name`` (whose default is production v2) when an explicit path is
+    mistyped or the file is lost would quietly bypass both the active pointer and the ingest
+    protection.
+    Only when the path was not set explicitly and no file exists at the default path is it treated
+    as a brand-new environment.
     """
 
     path = Path(settings.index_state_path)
@@ -69,7 +74,8 @@ def _lifecycle_governed(settings: Settings) -> bool:
 
 
 def _load_lifecycle_state(settings: Settings) -> LifecycleState:
-    """读取并校验状态文件；损坏时拒绝启动，不回落到 Settings 以免读到错误的索引。"""
+    """Read and validate the state file; refuse to start when it is corrupt rather than falling
+    back to Settings and reading the wrong index."""
 
     path = Path(settings.index_state_path)
     try:
@@ -81,18 +87,22 @@ def _load_lifecycle_state(settings: Settings) -> LifecycleState:
 
 
 def resolve_active_collection(settings: Settings) -> str:
-    """决定线上读取的 collection；是 runtime 选择 collection 的唯一入口。
+    """Decide which collection production reads; the single entry point for the runtime's
+    collection choice.
 
-    状态文件存在时以 ``state.active.collection_name`` 为准。若用户显式设置了
-    ``COLLECTION_NAME`` 且与 active 不一致，抛 ``ActiveCollectionError``，而不是静默
-    选择其中一个：否则 activate/rollback 之后过期的 .env 会让线上悄悄读到旧索引。
-    状态文件不存在（测试、全新环境）时回落到 ``Settings.collection_name``。
+    When the state file exists, ``state.active.collection_name`` wins. If the user explicitly set
+    ``COLLECTION_NAME`` and it disagrees with active, ``ActiveCollectionError`` is raised instead of
+    silently picking one: otherwise a stale .env after activate/rollback would quietly make
+    production read the old index.
+    When the state file does not exist (tests, brand-new environments) it falls back to
+    ``Settings.collection_name``.
     """
 
     if not _lifecycle_governed(settings):
         return settings.collection_name
     active = _load_lifecycle_state(settings).active.collection_name
-    # 只有“显式设置”才算冲突：默认值与 active 不同是正常的（默认值只服务无状态文件的环境）。
+    # Only an "explicitly set" value counts as a conflict: a default differing from active is
+    # normal (the default only serves environments without a state file).
     if "collection_name" in settings.model_fields_set and settings.collection_name != active:
         raise ActiveCollectionError(
             f"COLLECTION_NAME={settings.collection_name!r} conflicts with the lifecycle active "
@@ -103,14 +113,16 @@ def resolve_active_collection(settings: Settings) -> str:
 
 
 def guard_ingest_target(settings: Settings, collection_name: str) -> None:
-    """拒绝直接向 ACTIVE 索引摄取。
+    """Refuse to ingest directly into the ACTIVE index.
 
-    ACTIVE 索引只能经 staging 构建 + 校验 + activate 变更；直接 ingest 会走
-    IngestionService 的“先删后写”路径，失败时留下半更新的线上索引。两道检查：
-    1. 状态文件存在时，目标等于 active 指针 → 拒绝；
-    2. 纵深防御（与状态文件无关）：只读查询目标 collection 的 metadata，``lifecycle == "ACTIVE"``
-       → 拒绝。用于状态文件缺失或被误删的情况。collection 不存在时放行，保证全新环境的首次
-       ingest 可用。该查询不加载模型、不创建 collection。
+    The ACTIVE index may only change through staging build + validation + activate; a direct
+    ingest would take IngestionService's "delete first, then write" path and leave a half-updated
+    production index on failure. Two checks:
+    1. when the state file exists, a target equal to the active pointer -> refuse;
+    2. defense in depth (independent of the state file): read the target collection's metadata and
+       refuse if ``lifecycle == "ACTIVE"``. This covers a missing or accidentally deleted state
+       file. A non-existent collection is allowed through, so the first ingest in a brand-new
+       environment works. That query loads no model and creates no collection.
     """
 
     if _lifecycle_governed(settings):
@@ -129,11 +141,14 @@ def guard_ingest_target(settings: Settings, collection_name: str) -> None:
 
 
 def _open_active_store(settings: Settings, collection_name: str) -> ChromaVectorStore:
-    """打开由 active 指针解析出的 collection，校验在加载任何模型之前完成。
+    """Open the collection resolved from the active pointer; validation completes before any model
+    is loaded.
 
-    先只读查询 metadata：collection 不存在时报配置错误（而不是像 get_or_create 那样留下一个空
-    collection，再以“大小为 0”之类的间接错误失败）；``lifecycle`` 不是 ACTIVE 时同样拒绝。
-    随后以 ``create_if_missing=False`` 打开，确保读取路径绝不创建 collection。
+    The metadata is queried read-only first: a missing collection raises a configuration error
+    (instead of leaving an empty collection behind as get_or_create would, then failing later with
+    an indirect error such as "size is 0"); and a ``lifecycle`` other than ACTIVE is refused too.
+    It is then opened with ``create_if_missing=False``, ensuring the read path never creates a
+    collection.
     """
 
     metadata = read_collection_metadata(settings.vector_db_path, collection_name)
@@ -157,9 +172,10 @@ def _open_active_store(settings: Settings, collection_name: str) -> ChromaVector
 
 
 def build_ingestion_service(settings: Settings) -> IngestionService:
-    """按统一 Settings 创建正式摄取流程的全部运行时依赖。
+    """Create all runtime dependencies of the official ingestion flow from the unified Settings.
 
-    保护检查先于任何模型加载：目标是 active collection 时直接拒绝。
+    Protection checks run before any model is loaded: a target that is the active collection is
+    refused immediately.
     """
 
     collection_name = resolve_active_collection(settings)
@@ -178,20 +194,24 @@ def build_ingestion_service(settings: Settings) -> IngestionService:
 def build_retriever(
     settings: Settings, *, trace_recorder: TraceRecorder | None = None
 ) -> DenseRerankerRetriever:
-    """装配线上检索：Exact Dense Top20 → Learned Reranker → Top5。
+    """Assemble production retrieval: Exact Dense Top20 -> Learned Reranker -> Top5.
 
-    ``trace_recorder`` 可选（默认 None），原样交给 ``DenseRerankerRetriever``，只观测不改行为。
+    ``trace_recorder`` is optional (default None) and is passed through to
+    ``DenseRerankerRetriever`` unchanged; it only observes and does not change behavior.
 
-    Dense 候选使用进程内 ``ExactDenseIndex``（numpy.exact），而不是 Chroma HNSW：
-    HNSW 的近似结果在不同进程间不保证一致，会让 A/B 实验无法逐题复现；
-    而 817 个向量的全量内积成本可以忽略。Chroma 仍是唯一持久化来源。
+    Dense candidates use the in-process ``ExactDenseIndex`` (numpy.exact) rather than Chroma HNSW:
+    HNSW's approximate results are not guaranteed to be identical across processes, which would
+    make A/B experiments non-reproducible question by question; while the full inner-product cost
+    of 817 vectors is negligible. Chroma remains the single persistent source.
     """
 
     collection_name = resolve_active_collection(settings)
-    # collection 的存在性与 lifecycle 校验先于 Embedding 模型加载：配置错误应立即暴露，
-    # 不必先等模型加载完成。由 active 指针解析出的 collection 必须带 lifecycle=ACTIVE 标记，
-    # 防止指针指向未激活或被标记为 STAGING 的 collection；无状态文件的全新环境没有该标记，
-    # 不校验，且沿用原有的打开方式与顺序（get_or_create）。
+    # Collection existence and lifecycle validation come before the embedding model is loaded: a
+    # configuration error should surface immediately instead of waiting for model loading to
+    # finish. A collection resolved from the active pointer must carry lifecycle=ACTIVE, so the
+    # pointer cannot target an unactivated or STAGING-marked collection; a brand-new environment
+    # without a state file has no such marker, so it is not validated and keeps the original open
+    # order/mode (get_or_create).
     governed = _lifecycle_governed(settings)
     vector_store = _open_active_store(settings, collection_name) if governed else None
     embedding_provider = BgeM3EmbeddingProvider(
@@ -199,13 +219,15 @@ def build_retriever(
     )
     if vector_store is None:
         vector_store = ChromaVectorStore(settings.vector_db_path, collection_name)
-    # 启动时从 Chroma 全量读出向量并构建索引；不写出任何第二份持久化向量文件。
+    # At startup read every vector out of Chroma and build the index; no second persistent vector
+    # file is ever written.
     pairs = list(vector_store.iter_all_chunks_with_embeddings())
     exact_index = ExactDenseIndex(
         [chunk for chunk, _ in pairs], [embedding for _, embedding in pairs]
     )
-    # 启动校验：索引大小必须等于 collection 记录数，维度必须与 BGE-M3 一致，
-    # 否则说明读到了不完整或不匹配的索引，拒绝启动而不是静默降级。
+    # Startup validation: the index size must equal the collection record count and the dimension
+    # must match BGE-M3; otherwise an incomplete or mismatched index was read, so refuse to start
+    # instead of silently degrading.
     if exact_index.size != vector_store.count:
         raise ExactDenseIndexError(
             f"Exact index size {exact_index.size} does not match "
@@ -247,14 +269,16 @@ def build_rag_service(
     generator: GeneratorProtocol | None = None,
     trace_recorder: TraceRecorder | None = None,
 ) -> RAGService:
-    """创建唯一正式 Exact Dense Top20 → Learned Reranker → Top5 Pipeline。
+    """Create the single official Exact Dense Top20 -> Learned Reranker -> Top5 pipeline.
 
-    ``retriever`` 与 ``generator`` 仅供评测脚本注入（记录 Top5、读取 Generator.last_diagnostics、
-    包装 LLM Client 做限流与原始回复留存），未提供时使用正式装配；其余组件始终由本函数按
-    Settings 创建。
+    ``retriever`` and ``generator`` are only for evaluation scripts to inject (to record Top5, read
+    Generator.last_diagnostics, or wrap the LLM client for rate limiting and raw-reply retention);
+    when not provided, the official assembly is used. Every other component is always created by
+    this function from Settings.
 
-    ``trace_recorder`` 会传给本函数自己装配的 retriever、generator 与 RAGService；调用方注入的
-    retriever / generator 不会被自动挂上 recorder（PROJECT_SPEC §12.5）。
+    ``trace_recorder`` is passed to the retriever, generator and RAGService that this function
+    assembles itself; a retriever / generator injected by the caller is not automatically given
+    the recorder (PROJECT_SPEC §12.5).
     """
 
     retriever = (

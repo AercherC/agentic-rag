@@ -1,4 +1,4 @@
-"""验证结构解析纯函数（Phase 13A/13B 移植层）的判定规则与确定性。"""
+"""Verify the decision rules and determinism of the structure-parsing pure functions (Phase 13A/13B port layer)."""
 
 import pytest
 
@@ -13,7 +13,7 @@ from evidenceflow.ingestion.structure import (
 
 
 def _segments(*contents: str) -> list[DocumentSegment]:
-    """构造单页/多页测试 Segment（页码从 1 起）。"""
+    """Build single-page/multi-page test Segments (page numbers start at 1)."""
 
     return [
         DocumentSegment(content=content, page_number=index + 1)
@@ -22,7 +22,7 @@ def _segments(*contents: str) -> list[DocumentSegment]:
 
 
 def test_detect_headings_numbered_and_named_with_dedup() -> None:
-    """编号标题识别 + 具名标题全文唯一性 + 一级编号不重复。"""
+    """Numbered heading detection + full-text uniqueness of named headings + no repeated top-level number."""
 
     segments = _segments(
         "1 Introduction\nSome paragraph text.\n2 Background\nMore text.\n"
@@ -36,19 +36,20 @@ def test_detect_headings_numbered_and_named_with_dedup() -> None:
 
     assert "1 Introduction" in titles
     assert "2 Background" in titles
-    # 一级编号 "2" 重复 → 第二个 "2 Other Thing" 被拒。
+    # The top-level number "2" repeats -> the second "2 Other Thing" is rejected.
     assert "2 Other Thing" not in titles
-    # 具名标题 "Methods" 跨页出现两次 → 全部拒绝（表格列头噪声规则）。
+    # The named heading "Methods" appears twice across pages -> both are rejected (the table-column
+    # noise rule).
     assert "Methods" not in titles
 
 
 def test_resolve_section_builds_two_level_path() -> None:
-    """section 路径 = 最近一级标题 + 其下最近的更深标题。"""
+    """section path = the nearest top-level heading + the nearest deeper heading under it."""
 
     segments = _segments("1 Introduction\nBody line.\n2.1 Setup\nBody line 2.\n")
     headings = detect_headings(segments)
 
-    top = resolve_section(headings, 0, 0)  # 偏移 0 即标题行起点：标题管辖自身位置
+    top = resolve_section(headings, 0, 0)  # offset 0 is the heading line itself: a heading governs its own position
     assert top["section"] == "1 Introduction" and top["section_path"] == ["1 Introduction"]
 
     intro = resolve_section(headings, 0, segments[0].content.index("Body line."))
@@ -61,7 +62,7 @@ def test_resolve_section_builds_two_level_path() -> None:
 
 
 def test_table_body_signals() -> None:
-    """表格体判定：多短行 / 数值密集任一命中；正文段落不命中。"""
+    """Table-body decision: either many short lines or a dense numeric run triggers it; a body paragraph does not."""
 
     multi_short_lines = "Category A\nPlane 1.2\nCabinet 3.4\n"
     dense_numbers = "0.91 0.87 0.95 0.99"
@@ -88,13 +89,13 @@ def test_table_body_signals() -> None:
     ],
 )
 def test_classify_block_text(text: str, expected: str) -> None:
-    """块级类型分类按 13B 冻结优先级：caption > reference > equation > paragraph。"""
+    """Classify block types by the 13B frozen priority: caption > reference > equation > paragraph."""
 
     assert _classify_block_text(text) == expected
 
 
 def test_remove_furniture_elements_keeps_everything_else() -> None:
-    """元素级装饰移除只删 furniture，其余类型（含 caption/table/equation）保留。"""
+    """Element-level furniture removal deletes only furniture; all other types (including caption/table/equation) are kept."""
 
     elements = [
         {"element_id": "a", "element_type": "paragraph"},

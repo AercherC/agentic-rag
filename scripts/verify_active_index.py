@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Production Chroma Index Integrity Smoke。
+"""Production Chroma Index Integrity Smoke.
 
-该脚本只读检查当前配置指向的 Collection：存在性、记录数、metadata 覆盖率、
-Domain Chunk 全量恢复、样本查询以及 Collection 身份。它不会修复、删除或切换
-任何 Collection，适合在 ingestion、runtime promotion 和 cleanup 后重复执行。
+This script read-only checks the Collection the current config points at: existence, record count, metadata coverage,
+full recovery of Domain Chunks, a sample query, and the Collection identity. It never repairs, deletes or switches any
+Collection, so it can be run repeatedly after ingestion, runtime promotion and cleanup.
 
-真正只读：持久化目录不存在时直接判失败，不构造 ``PersistentClient``（它会创建目录）；
-打开 ``ChromaVectorStore`` 时传 ``create_if_missing=False``，即使 Collection 在存在性
-检查之后被删除，也不会留下一个空 Collection。
+Genuinely read-only: a missing persist directory fails immediately instead of constructing ``PersistentClient`` (which
+would create the directory); ``ChromaVectorStore`` is opened with ``create_if_missing=False``, so even if the Collection
+is deleted between the existence check and the open, no empty Collection is left behind.
 
-默认只把 JSON 结果打印到 stdout，不写任何文件；只有显式传入 ``--output PATH`` 时才额外
-写入该文件（避免误改被 git 跟踪的历史产物）。退出码：0 = 全部检查通过；2 = 有检查失败。
+By default it only prints the JSON result to stdout and writes no file; only an explicit ``--output PATH`` additionally
+writes that file (so git-tracked historical artifacts are not modified by accident). Exit codes: 0 = all checks passed;
+2 = some check failed.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ from evidenceflow.storage import ChromaVectorStore
 
 
 def _raw_records(collection: Any) -> list[dict[str, Any]]:
-    """分批读取 Collection 的 id/document/metadata，不读取无关向量。"""
+    """Read the Collection's id/document/metadata in batches, without fetching the unrelated vectors."""
 
     records: list[dict[str, Any]] = []
     offset = 0
@@ -71,7 +72,7 @@ def inspect_active_index(
     expected_count: int | None = None,
     expected_strategy: str = "hybrid",
 ) -> dict[str, Any]:
-    """返回完整性 smoke 结果；失败项保留诊断而不是吞掉异常。"""
+    """Return the integrity smoke result; failed checks keep their diagnostics instead of swallowing the exception."""
 
     result: dict[str, Any] = {
         "persist_path": str(Path(persist_path).resolve()),
@@ -79,7 +80,8 @@ def inspect_active_index(
         "expected_count": expected_count,
         "checks": {},
     }
-    # 先检查目录：chromadb.PersistentClient 在目录不存在时会创建它，只读脚本不能有这种副作用。
+    # Check the directory first: chromadb.PersistentClient creates it when missing, and a read-only
+    # script must not have that side effect.
     if not Path(persist_path).is_dir():
         result["checks"]["collection_exists"] = False
         result["error"] = f"Persist path does not exist: {result['persist_path']}"
@@ -124,13 +126,15 @@ def inspect_active_index(
             and hnsw.get("space") == "cosine"
         )
 
-        # create_if_missing=False：存在性检查与打开之间若 Collection 消失，应报错而不是建一个空的。
+        # create_if_missing=False: if the Collection disappears between the existence check and the
+        # open, this must raise
+        # rather than create an empty one.
         store = ChromaVectorStore(persist_path, collection_name, create_if_missing=False)
         try:
             restored = list(store.iter_all_chunks())
             result["restored_count"] = len(restored)
             result["checks"]["iter_all_chunks"] = len(restored) == count
-        except Exception as exc:  # 记录失败原因，供部署门直接诊断
+        except Exception as exc:  # record the failure reason for direct diagnosis by the deployment gate
             result["checks"]["iter_all_chunks"] = False
             result["iter_all_chunks_error"] = f"{type(exc).__name__}: {exc}"
 
@@ -139,7 +143,8 @@ def inspect_active_index(
         embeddings = list(raw_embeddings) if raw_embeddings is not None else []
         if embeddings:
             try:
-                # Chroma 1.x 可能返回 numpy.ndarray；Adapter 合同接收 Python 序列。
+                # Chroma 1.x may return numpy.ndarray; the Adapter contract accepts a Python
+                # sequence.
                 sample_vector = embeddings[0].tolist() if hasattr(embeddings[0], "tolist") else embeddings[0]
                 sample = store.search(sample_vector, top_k=1)
                 result["sample_query_count"] = len(sample)
@@ -159,7 +164,7 @@ def inspect_active_index(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """执行只读 smoke，结果打印到 stdout；仅在显式给出 ``--output`` 时写文件。"""
+    """Run the read-only smoke and print the result to stdout; write a file only when ``--output`` is given explicitly."""
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--path", type=Path, default=None, help="Chroma 持久化目录")
@@ -181,7 +186,8 @@ def main(argv: list[str] | None = None) -> int:
         expected_count=args.expected_count,
     )
     if args.output is not None:
-        # 只有用户显式指定路径才落盘；默认保持完全只读。
+        # Persist only when the user explicitly gives a path; by default the run stays completely
+        # read-only.
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(result, ensure_ascii=False, indent=2))

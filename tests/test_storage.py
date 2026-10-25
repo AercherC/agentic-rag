@@ -1,4 +1,4 @@
-"""验证 Chroma Adapter 的持久化、映射、查询和文档版本操作。"""
+"""Verify the Chroma adapter's persistence, mapping, querying, and document-version operations."""
 
 import math
 
@@ -25,7 +25,7 @@ def _chunk(
     page_end: int | None = 1,
     metadata: dict[str, object] | None = None,
 ) -> DocumentChunk:
-    """构造包含 Round Trip 所需字段的确定性测试 Chunk。"""
+    """Build a deterministic test chunk containing the fields a round trip needs."""
 
     return DocumentChunk(
         chunk_id=chunk_id,
@@ -42,13 +42,13 @@ def _chunk(
 
 
 def _store(tmp_path, collection_name: str = "test_collection") -> ChromaVectorStore:
-    """在每个测试的临时目录中创建独立的 cosine Collection。"""
+    """Create an independent cosine collection in each test's temporary directory."""
 
     return ChromaVectorStore(tmp_path / "chroma", collection_name)
 
 
 def test_add_and_round_trip_pdf_and_markdown_chunks(tmp_path) -> None:
-    """PDF 与无页码 Markdown 写入后应完整恢复 Domain 字段。"""
+    """A PDF chunk and a page-less Markdown chunk must both restore their Domain fields completely after being written."""
 
     store = _store(tmp_path)
     pdf_chunk = _chunk(
@@ -74,14 +74,16 @@ def test_add_and_round_trip_pdf_and_markdown_chunks(tmp_path) -> None:
     assert restored["MD_A"] == markdown_chunk
     assert restored["MD_A"].page_start is None
     assert restored["MD_A"].page_end is None
-    # Chroma metadata 中不得写入 None 页码，而是通过字段缺失恢复为 None。
+    # None page numbers must not be written into Chroma metadata; they are restored as None through
+    # the
+    # absence of the field.
     raw = store._collection.get(ids=["MD_A"], include=["metadatas"])
     assert "page_start" not in raw["metadatas"][0]
     assert "page_end" not in raw["metadatas"][0]
 
 
 def test_cosine_order_similarity_and_top_k(tmp_path) -> None:
-    """查询按 cosine 排序，similarity 严格使用 1-distance 转换。"""
+    """Queries are ordered by cosine, and similarity strictly uses the 1-distance conversion."""
 
     store = _store(tmp_path)
     chunks = [_chunk("A"), _chunk("B", chunk_index=1), _chunk("C", chunk_index=2)]
@@ -105,7 +107,7 @@ def test_cosine_order_similarity_and_top_k(tmp_path) -> None:
 
 
 def test_empty_collection_and_invalid_top_k(tmp_path) -> None:
-    """空 Collection 返回空结果，非法 top_k 在进入 Chroma 前失败。"""
+    """An empty collection returns an empty result, and an invalid top_k fails before reaching Chroma."""
 
     store = _store(tmp_path)
     assert store.search([1, 0, 0], top_k=3) == []
@@ -115,7 +117,7 @@ def test_empty_collection_and_invalid_top_k(tmp_path) -> None:
 
 
 def test_persistence_across_adapter_instances(tmp_path) -> None:
-    """同路径和 Collection 名称重新创建 Adapter 后数据仍然存在。"""
+    """Data still exists after recreating the adapter with the same path and collection name."""
 
     persist_path = tmp_path / "persistent-chroma"
     first = ChromaVectorStore(persist_path, "persistent_collection")
@@ -129,7 +131,7 @@ def test_persistence_across_adapter_instances(tmp_path) -> None:
 
 
 def test_contains_document_distinguishes_duplicate_states(tmp_path) -> None:
-    """contains_document 的组合结果应区分 NEW、UNCHANGED 和 CHANGED。"""
+    """The combined result of contains_document must distinguish NEW, UNCHANGED, and CHANGED."""
 
     store = _store(tmp_path)
     assert not store.contains_document("DOC_A")  # NEW
@@ -142,7 +144,7 @@ def test_contains_document_distinguishes_duplicate_states(tmp_path) -> None:
 
 
 def test_duplicate_chunk_id_is_rejected(tmp_path) -> None:
-    """重复 Chunk ID 必须由 Adapter 主动拒绝，不能依赖 Chroma 静默忽略。"""
+    """A duplicate chunk ID must be refused actively by the adapter, never left to Chroma to ignore silently."""
 
     store = _store(tmp_path)
     chunk = _chunk("DUPLICATE")
@@ -152,7 +154,7 @@ def test_duplicate_chunk_id_is_rejected(tmp_path) -> None:
 
 
 def test_delete_document_preserves_other_documents(tmp_path) -> None:
-    """按 document_id 删除全部旧 Chunk 时不得影响其他逻辑文档。"""
+    """Deleting all old chunks of one document_id must not affect other logical documents."""
 
     store = _store(tmp_path)
     chunks = [
@@ -171,7 +173,7 @@ def test_delete_document_preserves_other_documents(tmp_path) -> None:
 
 
 def test_clear_recreates_usable_cosine_collection(tmp_path) -> None:
-    """clear 后 Collection 为空且 Adapter 可继续写入和查询。"""
+    """After clear the collection is empty and the adapter can keep writing and querying."""
 
     store = _store(tmp_path)
     store.add_chunks([_chunk("BEFORE_CLEAR")], [[1, 0, 0]])
@@ -186,7 +188,7 @@ def test_clear_recreates_usable_cosine_collection(tmp_path) -> None:
 
 
 def test_iter_all_chunks_returns_id_sorted_round_trip_chunks(tmp_path) -> None:
-    """§17.3.1 Hybrid 集成依赖 iter_all_chunks；输出按 chunk_id 升序且字段完整。"""
+    """The §17.3.1 hybrid integration depends on iter_all_chunks; the output is sorted by chunk_id ascending with complete fields."""
 
     store = _store(tmp_path)
     chunks = [
@@ -201,7 +203,8 @@ def test_iter_all_chunks_returns_id_sorted_round_trip_chunks(tmp_path) -> None:
     assert [chunk.chunk_id for chunk in iterated] == ["AAA", "MMM", "ZZZ"]
     assert {chunk.chunk_id for chunk in iterated} == {chunk.chunk_id for chunk in chunks}
     assert all(isinstance(chunk, DocumentChunk) for chunk in iterated)
-    # Round-trip：必须能从 Chroma Metadata 恢复完整 Domain 字段（含 chunk_index）。
+    # Round trip: the complete Domain fields (including chunk_index) must be recoverable from
+    # Chroma metadata.
     by_id = {chunk.chunk_id: chunk for chunk in iterated}
     assert by_id["AAA"].chunk_index == 0
     assert by_id["MMM"].chunk_index == 1
@@ -209,7 +212,7 @@ def test_iter_all_chunks_returns_id_sorted_round_trip_chunks(tmp_path) -> None:
 
 
 def test_iter_all_chunks_handles_pagination_past_page_size(tmp_path) -> None:
-    """当 Chunk 数量超过单页容量时仍按 chunk_id 升序完整遍历。"""
+    """When the number of chunks exceeds one page's capacity, iteration still walks everything in chunk_id ascending order."""
 
     store = _store(tmp_path)
     chunks = [
@@ -226,7 +229,7 @@ def test_iter_all_chunks_handles_pagination_past_page_size(tmp_path) -> None:
 
 
 def test_iter_all_chunks_with_embeddings_returns_id_sorted_complete_records(tmp_path) -> None:
-    """Exact Index 构建接口必须同时恢复完整 Chunk 和已存向量，且按 ID 排序。"""
+    """The exact-index build interface must restore both the complete chunks and the stored vectors, sorted by ID."""
 
     store = _store(tmp_path)
     chunks = [_chunk("Z"), _chunk("A", chunk_index=1)]
@@ -241,7 +244,7 @@ def test_iter_all_chunks_with_embeddings_returns_id_sorted_complete_records(tmp_
 
 
 def test_add_input_validation_and_metadata_serialization(tmp_path) -> None:
-    """数量、维度、空向量和不可 JSON 化 metadata 应在写入前明确失败。"""
+    """Mismatched counts, wrong dimensions, empty vectors, and non-JSON-serializable metadata must all fail explicitly before writing."""
 
     store = _store(tmp_path)
     chunks = [_chunk("A"), _chunk("B", chunk_index=1)]
@@ -258,7 +261,7 @@ def test_add_input_validation_and_metadata_serialization(tmp_path) -> None:
 
 
 def test_existing_collection_dimension_is_enforced(tmp_path) -> None:
-    """后续写入和 Query 必须匹配 Collection 已有向量维度。"""
+    """Subsequent writes and queries must match the collection's existing vector dimension."""
 
     store = _store(tmp_path)
     store.add_chunks([_chunk("A")], [[1, 0, 0]])
@@ -270,7 +273,7 @@ def test_existing_collection_dimension_is_enforced(tmp_path) -> None:
 
 
 def test_existing_non_cosine_collection_is_rejected(tmp_path) -> None:
-    """已存在的 L2 Collection 不能被 Adapter 静默当作 cosine 使用。"""
+    """An existing L2 collection must not be silently treated as cosine by the adapter."""
 
     persist_path = tmp_path / "wrong-space"
     client = chromadb.PersistentClient(path=str(persist_path))
@@ -284,6 +287,6 @@ def test_existing_non_cosine_collection_is_rejected(tmp_path) -> None:
 
 
 def test_vector_store_protocol_is_satisfied(tmp_path) -> None:
-    """业务层可以通过项目 VectorStore Protocol 使用 Chroma Adapter。"""
+    """The business layer can use the Chroma adapter through the project's VectorStore protocol."""
 
     assert isinstance(_store(tmp_path), VectorStore)

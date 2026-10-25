@@ -1,4 +1,4 @@
-"""测试 Retrieval Evaluation Dataset 的读取、Schema 与真实 Gold 标注。"""
+"""Test loading, Schema and real Gold annotation of the Retrieval Evaluation Dataset."""
 
 import json
 from pathlib import Path
@@ -9,7 +9,7 @@ from evidenceflow.eval import EvaluationDatasetError, load_evaluation_questions
 
 
 def write_dataset(path: Path, data: object) -> None:
-    """以 UTF-8 写入临时 JSON，确保测试关注 Loader 行为而非平台编码。"""
+    """Write a temporary JSON as UTF-8, so the test targets Loader behavior rather than platform encoding."""
 
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
 
@@ -19,7 +19,7 @@ def make_source(
     page_start: int | None = None,
     page_end: int | None = None,
 ) -> dict[str, object]:
-    """构造符合 EvaluationSource 字段合同的最小测试数据。"""
+    """Build the minimal test data that satisfies the EvaluationSource field contract."""
 
     return {
         "document_id": document_id,

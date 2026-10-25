@@ -1,4 +1,4 @@
-"""解析 Generated Answer 中的 Source Label 并组装最终 RAGAnswer。"""
+"""Parse Source Labels out of a Generated Answer and assemble the final RAGAnswer."""
 
 from __future__ import annotations
 
@@ -15,20 +15,22 @@ from evidenceflow.domain.context import BuiltContext
 from evidenceflow.domain.generation import GeneratedAnswer
 from evidenceflow.domain.generation import AnswerStatus
 
-# S0 也先作为正式形状的 Candidate 捕获，再由 Context allowlist 明确判定为未知标签。
+# S0 is captured as a well-formed candidate too, then explicitly judged unknown against the Context
+# allowlist.
 _CITATION_PATTERN = re.compile(r"\[S(?:0|[1-9]\d*)\]")
 
 
 class CitationValidationError(ValueError):
-    """表示答案违反当前 Context 允许标签或必须引用来源的合同。"""
+    """Signals that the answer violates the labels allowed by the current Context or the must-cite-a-source contract."""
 
 
-# 保留旧导入名作为兼容别名；上层从未对两层异常采取不同处理，无需维持空中间类。
+# Keep the old import name as a compatibility alias; callers never handled the two exception layers
+# differently, so an empty intermediate class is not worth keeping.
 CitationError = CitationValidationError
 
 
 def parse_citations(answer_text: str, built_context: BuiltContext) -> CitationParseResult:
-    """按首次出现顺序提取、去重并按 BuiltContext allowlist 分类标签。"""
+    """Extract labels in order of first appearance, deduplicate, and classify them against the BuiltContext allowlist."""
 
     allowed_labels = {entry.source_label for entry in built_context.entries}
     return classify_citation_labels(answer_text, allowed_labels)
@@ -37,7 +39,7 @@ def parse_citations(answer_text: str, built_context: BuiltContext) -> CitationPa
 def classify_citation_labels(
     answer_text: str, allowed_labels: set[str] | frozenset[str]
 ) -> CitationParseResult:
-    """只依赖 allowlist 的标签分类；离线重解析脚本无需重建完整 BuiltContext 即可复用。"""
+    """Classify labels using the allowlist alone, so the offline re-parse script can reuse this without rebuilding a full BuiltContext."""
 
     if not isinstance(answer_text, str) or not answer_text.strip():
         raise CitationValidationError("answer_text must not be blank")
@@ -47,7 +49,8 @@ def classify_citation_labels(
     invalid_labels: list[str] = []
     for match in _CITATION_PATTERN.finditer(answer_text):
         label = match.group(0)
-        # 同一标签只在第一次出现时进入结果，保持最终 Source List 与阅读顺序一致。
+        # A label only enters the result on its first appearance, keeping the final Source List
+        # aligned with reading order.
         if label in seen:
             continue
         seen.add(label)
@@ -61,7 +64,7 @@ def classify_citation_labels(
 
 
 def check_citation_rules(status: AnswerStatus, parsed: CitationParseResult) -> None:
-    """Citation 合同：任何状态都不允许未知标签；answered 至少引用一个来源。"""
+    """Citation contract: no status may carry unknown labels, and answered must cite at least one source."""
 
     if parsed.invalid_labels:
         labels = ", ".join(parsed.invalid_labels)
@@ -77,7 +80,7 @@ def assemble_rag_answer(
     built_context: BuiltContext,
     retrieved_chunks: Sequence[RetrievedChunk | RerankedRetrievedChunk],
 ) -> RAGAnswer:
-    """校验模型标签并以既有 SourceReference 组装最终结构化回答。"""
+    """Validate the model's labels and assemble the final structured answer from the existing SourceReference objects."""
 
     if not isinstance(query, str) or not query.strip():
         raise ValueError("query must not be blank")
@@ -88,11 +91,13 @@ def assemble_rag_answer(
     source_by_label = {
         entry.source_label: entry.source_reference for entry in built_context.entries
     }
-    # 直接复用 Context 已验证的来源对象；不从 Answer 猜测文件名、页码或 Chunk 身份。
+    # Reuse the already-validated source objects from Context; never guess file names, pages, or
+    # Chunk identity from the Answer.
     sources = [source_by_label[label] for label in parsed.valid_labels]
     return RAGAnswer(
         query=query,
-        # status 直接来自 Generator，下游据此区分“已回答”和“拒答”，不再靠自然语言猜测。
+        # status comes straight from the Generator, so downstream code can tell "answered" from
+        # "abstained" without guessing from natural language.
         status=generated_answer.status,
         answer=generated_answer.answer_text,
         sources=sources,

@@ -1,8 +1,9 @@
-"""使用可配置 Token 滑动窗口将 Clean Document 切分为 DocumentChunk。
+"""Split a Clean Document into DocumentChunks using a configurable token sliding window.
 
-Phase 13F 新增混合切分（§9.3）：``chunk_document_structured`` 消费结构解析元素流，
-按 PH1 冻结语义（standalone 独立出块 + body 按 section 聚合、窗口零重叠）切分。
-固定窗口路径保持不变，作为 ``chunk_strategy="fixed"`` 的回滚通道。
+Phase 13F adds hybrid chunking (§9.3): ``chunk_document_structured`` consumes the structured
+element stream and splits it with the PH1 frozen semantics (standalone elements form their own
+chunk, body text is aggregated per section, window overlap is zero). The fixed-window path is
+unchanged and remains the rollback route for ``chunk_strategy="fixed"``.
 """
 
 from copy import deepcopy
@@ -15,18 +16,19 @@ from evidenceflow.ingestion.tokenizer import TokenizerProtocol
 
 SEGMENT_BOUNDARY = "\n\n"
 
-# hybrid 策略的 standalone 元素类型：各成独立 Chunk 并从正文流移除（13C-C PC2/13E PH1 语义）。
+# Standalone element types of the hybrid strategy: each becomes its own Chunk and is removed
+# from the body stream (13C-C PC2 / 13E PH1 semantics).
 HYBRID_STANDALONE_TYPES = {"table", "table_caption", "figure_caption", "equation"}
-# hybrid 策略冻结的窗口重叠为 0（13E PH1 = hybrid_section_o0）。
+# The window overlap frozen by the hybrid strategy is 0 (13E PH1 = hybrid_section_o0).
 HYBRID_OVERLAP_TOKENS = 0
 
 
 class ChunkingError(ValueError):
-    """表示 Chunk 配置、输入数据或 Tokenizer 输出无法生成有效 Chunk。"""
+    """Indicates that the chunk configuration, the input data or the tokenizer output cannot produce valid Chunks."""
 
 
 def _validate_chunk_parameters(chunk_size: int, chunk_overlap: int) -> None:
-    """校验滑动窗口能够以正步长向后推进。"""
+    """Verify that the sliding window can advance with a positive step."""
 
     if chunk_size <= 0:
         raise ChunkingError("chunk_size must be greater than 0")
@@ -43,7 +45,7 @@ def _encode_checked(
     source_name: str,
     allow_empty: bool = False,
 ) -> list[int]:
-    """调用 Tokenizer 并验证返回值符合内部 Token Stream 合同。"""
+    """Call the tokenizer and verify that the return value satisfies the internal token-stream contract."""
 
     try:
         token_ids = tokenizer.encode(text)
@@ -62,7 +64,7 @@ def _build_token_stream(
     document: Document,
     tokenizer: TokenizerProtocol,
 ) -> tuple[list[int], list[int | None]]:
-    """构建连续 Token Stream，并为每个 Token 保存真实来源页码。"""
+    """Build the continuous token stream and keep the real source page number for every token."""
 
     if not document.segments:
         raise ChunkingError("Document contains no segments to chunk")
@@ -74,8 +76,11 @@ def _build_token_stream(
     for segment_index, segment in enumerate(document.segments):
         if segment_index > 0:
             if boundary_ids is None:
-                # 某些 SentencePiece Tokenizer 会忽略纯空白分隔符并返回空列表；
-                # 这不属于异常，后一个 Segment 自身的词首标记仍能避免单词粘连。
+                # Some SentencePiece tokenizers ignore a whitespace-only separator and return an
+                # empty list;
+                # that is not an anomaly, and the following segment's own word-start marker still
+                # prevents
+                # words from being glued together.
                 boundary_ids = _encode_checked(
                     tokenizer,
                     SEGMENT_BOUNDARY,
@@ -83,7 +88,8 @@ def _build_token_stream(
                     allow_empty=True,
                 )
             token_ids.extend(boundary_ids)
-            # 人工分隔符不属于任何真实页面，计算 Chunk 页码时会忽略 None。
+            # The artificial separator belongs to no real page; None is ignored when computing
+            # chunk pages.
             page_numbers.extend([None] * len(boundary_ids))
 
         segment_ids = _encode_checked(
@@ -100,7 +106,7 @@ def _build_token_stream(
 
 
 def _decode_checked(tokenizer: TokenizerProtocol, token_ids: list[int]) -> str:
-    """解码一个窗口，并拒绝无法形成可用正文的结果。"""
+    """Decode one window and reject results that cannot form usable body text."""
 
     try:
         decoded_text = tokenizer.decode(token_ids)
@@ -109,7 +115,8 @@ def _decode_checked(tokenizer: TokenizerProtocol, token_ids: list[int]) -> str:
     if not isinstance(decoded_text, str):
         raise ChunkingError("Tokenizer decode returned non-text output")
 
-    # 只移除窗口外围空白，不重新执行 Cleaner 或修改内部 Markdown 结构。
+    # Only trim the whitespace around the window; do not re-run the Cleaner or alter the internal
+    # Markdown structure.
     decoded_text = decoded_text.strip()
     if not decoded_text:
         raise ChunkingError("Decoded chunk contains no usable text")
@@ -122,7 +129,7 @@ def chunk_document(
     chunk_size: int,
     chunk_overlap: int,
 ) -> list[DocumentChunk]:
-    """按正文 Token 数生成带稳定 ID 和页码范围的滑动窗口 Chunk。"""
+    """Produce sliding-window Chunks with stable IDs and page ranges, based on body token counts."""
 
     _validate_chunk_parameters(chunk_size, chunk_overlap)
     token_ids, page_numbers = _build_token_stream(document, tokenizer)
@@ -136,13 +143,16 @@ def chunk_document(
         chunk_page_numbers = page_numbers[start:end]
         content = _decode_checked(tokenizer, chunk_token_ids)
 
-        # Boundary Token 的 None 页码不参与范围计算，保留 PDF 的真实页码缺口。
+        # None page numbers of boundary tokens do not take part in the range computation,
+        # preserving
+        # the real page gaps of the PDF.
         real_pages = [page for page in chunk_page_numbers if page is not None]
         page_start = min(real_pages) if real_pages else None
         page_end = max(real_pages) if real_pages else None
         chunk_index = len(chunks)
 
-        # Chunk ID 必须基于最终 decode 文本创建，确保重复运行稳定可追踪。
+        # The Chunk ID must be built from the final decoded text, so repeated runs stay stable and
+        # traceable.
         chunk_id = build_chunk_id(
             document_id=document.document_id,
             chunk_size=chunk_size,
@@ -165,7 +175,9 @@ def chunk_document(
             )
         )
 
-        # 当前窗口已经覆盖末尾时立即停止，避免产生几乎全由 overlap 构成的尾块。
+        # Stop as soon as the current window covers the end, avoiding a tail chunk made almost
+        # entirely
+        # of overlap.
         if end == len(token_ids):
             break
         start += step
@@ -176,12 +188,13 @@ def chunk_document(
 
 
 # --------------------------------------------------------------------------------------
-# 混合切分（Phase 13F，§9.3）：元素级打包，语义移植自 13E PH1（hybrid_section_o0）。
+# Hybrid chunking (Phase 13F, §9.3): element-level packing, semantics ported from 13E PH1
+# (hybrid_section_o0).
 # --------------------------------------------------------------------------------------
 
 
 def _count_tokens(tokenizer: TokenizerProtocol, text: str) -> int:
-    """对最终拼接文本精确计数；空文本计 0（与实验口径一致）。"""
+    """Count the final concatenated text exactly; empty text counts 0 (consistent with the experiment convention)."""
 
     if not text:
         return 0
@@ -192,10 +205,11 @@ def _count_tokens(tokenizer: TokenizerProtocol, text: str) -> int:
 def _split_oversized_element(
     text: str, tokenizer: TokenizerProtocol, target: int, overlap: int
 ) -> list[str]:
-    """单个超长元素按词切分为 ≤target token 的窗口，相邻窗口按词近似重叠。
+    """Split one oversized element into word windows of at most `target` tokens, with adjacent windows overlapping approximately by words.
 
-    移植自 14A-C ``_split_oversized_unit``：重叠按词数近似，从上一窗尾部回退词
-    直至 token 和 ≤ overlap（至少回退 0 词）；overlap=0 时尾部仅保留 1 词。
+    Ported from 14A-C ``_split_oversized_unit``: the overlap is approximated by word count,
+    stepping back from the tail of the previous window until the token sum is <= overlap (at least
+    0 words are stepped back); with overlap=0 the tail keeps exactly 1 word.
     """
 
     words = text.split()
@@ -208,7 +222,8 @@ def _split_oversized_element(
         word_tokens = _count_tokens(tokenizer, word + " ")
         if current and current_tokens + word_tokens > target:
             windows.append(" ".join(current))
-            # 计算重叠尾部：从尾部回退词，token 和 ≤ overlap。
+            # Compute the overlap tail: step words back from the tail while the token sum <=
+            # overlap.
             tail: list[str] = []
             tail_tokens = 0
             for prev in reversed(current):
@@ -234,11 +249,12 @@ def _pack_element_windows(
     overlap: int,
     separator: str = SEGMENT_BOUNDARY,
 ) -> list[dict[str, Any]]:
-    """元素 unit 流 → 打包窗口（移植 13C-C ``pack_units_sep``，语义保持一致）。
+    """Element-unit stream -> packed windows (ported from 13C-C ``pack_units_sep``, semantics kept identical).
 
-    - unit token > target → 词级拆分（owners 复制，split=True）；
-    - 顺序贪心打包；关闭窗口时仅当 overlap>0 携带尾部 unit；
-    - 硬预算优先于重叠：尾部与下一 unit 合并若超 target 则放弃尾部。
+    - unit token count > target -> word-level split (owners copied, split=True);
+    - sequential greedy packing; when a window closes, the tail units are carried only when overlap>0;
+    - the hard budget wins over the overlap: if the tail plus the next unit exceeds target, the tail
+      is dropped.
     """
 
     flat: list[tuple[str, list[str], dict[str, Any], bool]] = []
@@ -247,7 +263,9 @@ def _pack_element_windows(
             continue
         token_count = _count_tokens(tokenizer, text)
         if token_count > target:
-            # 超长 unit 拆分为伪 unit（owners 复制；词级重叠为近似口径，记录 split=True）。
+            # An oversized unit is split into pseudo units (owners copied; the word-level overlap
+            # is an
+            # approximation, recorded as split=True).
             for piece in _split_oversized_element(text, tokenizer, target, overlap):
                 flat.append((piece, owners, element, True))
         else:
@@ -261,7 +279,7 @@ def _pack_element_windows(
     for unit in flat:
         text, owners, element, was_split = unit
         if current and _count_tokens(tokenizer, _joined(current) + separator + text) > target:
-            # 关闭当前窗；重叠尾部仅当 overlap>0 时计算。
+            # Close the current window; the overlap tail is computed only when overlap>0.
             tail: list[tuple[str, list[str], dict[str, Any], bool]] = []
             if overlap > 0:
                 for prev in reversed(current):
@@ -269,7 +287,9 @@ def _pack_element_windows(
                     if _count_tokens(tokenizer, _joined(candidate)) > overlap:
                         break
                     tail.insert(0, prev)
-                # 硬预算优先于重叠：尾部与下一 unit 合并若超 target 则放弃尾部。
+                # The hard budget wins over the overlap: if the tail plus the next unit exceeds
+                # target, the
+                # tail is dropped.
                 if tail and _count_tokens(tokenizer, _joined(tail) + separator + text) > target:
                     tail = []
             windows.append(_make_hybrid_window(current, separator))
@@ -283,7 +303,7 @@ def _pack_element_windows(
 def _make_hybrid_window(
     items: list[tuple[str, list[str], dict[str, Any], bool]], separator: str
 ) -> dict[str, Any]:
-    """由 unit 序列构造窗口：text=sep 拼接、owners 去重保序、split 任一为 True。"""
+    """Build a window from a unit sequence: text = the separator-joined units, owners deduplicated in order, split True if any unit was split."""
 
     text = separator.join(item[0] for item in items)
     owners: list[str] = []
@@ -301,14 +321,14 @@ def _make_hybrid_window(
 
 
 def _hybrid_page_range(elements: Sequence[dict[str, Any]]) -> tuple[int | None, int | None]:
-    """owner 元素真实页码的 min/max（无页码时为 None，不推测）。"""
+    """Min/max of the owner elements' real page numbers (None when there is no page number; nothing is guessed)."""
 
     pages = [element["page"] for element in elements if isinstance(element.get("page"), int)]
     return (min(pages), max(pages)) if pages else (None, None)
 
 
 def _hybrid_section_key(element: dict[str, Any]) -> tuple[str, ...]:
-    """section 分组键（section_path 列表 → 元组；缺失用空元组）。"""
+    """Section grouping key (the section_path list becomes a tuple; missing becomes an empty tuple)."""
 
     path = element.get("section_path")
     return tuple(path) if isinstance(path, list) else ()
@@ -320,16 +340,20 @@ def chunk_document_structured(
     tokenizer: TokenizerProtocol,
     chunk_size: int,
 ) -> list[DocumentChunk]:
-    """按 PH1 冻结语义切分结构化元素流（hybrid 策略，§9.3）。
+    """Split the structured element stream with the PH1 frozen semantics (hybrid strategy, §9.3).
 
-    - standalone 类型（table / table_caption / figure_caption / equation）独立成 Chunk
-      并从正文流移除，位于文档 Chunk 序列前部（元素阅读顺序）；
-    - 正文按连续相同 section_path 分组，组边界强制断开，组内顺序贪心打包；
-    - 窗口重叠冻结为 0（``HYBRID_OVERLAP_TOKENS``），组间由 section 边界自然分隔；
-    - 硬预算：任何 Chunk token 数 ≤ chunk_size；
-    - ``chunk_id`` 走 §10 ``build_chunk_id``，overlap 载荷记录 0（hybrid 冻结语义）；
-    - Chunk metadata 记录 ``chunk_strategy="hybrid"``、``element_ids`` 溯源与
-      ``heading_path``（正文组可空）。
+    - standalone types (table / table_caption / figure_caption / equation) become their own Chunk
+      and are removed from the body stream, placed at the front of the document's Chunk sequence
+      (element reading order);
+    - body text is grouped by consecutive identical section_path, group boundaries force a break,
+      and each group is greedily packed in order;
+    - window overlap is frozen at 0 (``HYBRID_OVERLAP_TOKENS``), and groups are naturally separated
+      by the section boundary;
+    - hard budget: every Chunk has at most chunk_size tokens;
+    - ``chunk_id`` goes through §10 ``build_chunk_id`` with an overlap payload of 0 (the hybrid
+      frozen semantics);
+    - Chunk metadata records ``chunk_strategy="hybrid"``, ``element_ids`` provenance and
+      ``heading_path`` (which may be empty for body groups).
     """
 
     if chunk_size <= 0:
@@ -338,14 +362,17 @@ def chunk_document_structured(
         raise ChunkingError("Document contains no structured elements to chunk")
 
     overlap = HYBRID_OVERLAP_TOKENS
-    # 先按元素类型拆分 standalone 与正文 unit 流（保持元素阅读顺序）。
+    # First split the element stream into standalone and body units (keeping element reading
+    # order).
     standalone_units: list[tuple[str, list[str], dict[str, Any]]] = []
     body_units: list[tuple[str, list[str], dict[str, Any]]] = []
     for element in elements:
         text = str(element.get("text", ""))
         element_id = element.get("element_id")
         if not text.strip() or not element_id:
-            # 无文本元素（如图形载体）不入索引；缺 ID 的元素无法溯源，直接拒绝。
+            # Elements with no text (such as figure carriers) do not enter the index; an element
+            # without an
+            # ID cannot be traced, so it is rejected outright.
             if element_id is None:
                 raise ChunkingError("Structured element is missing element_id")
             continue
@@ -356,10 +383,12 @@ def chunk_document_structured(
             body_units.append(unit)
 
     raw_windows: list[dict[str, Any]] = []
-    # standalone 元素各自独立打包（超长时词级拆分为多个窗口）。
+    # Standalone elements are packed one by one (an oversized one is split into several windows at
+    # word level).
     for unit in standalone_units:
         raw_windows.extend(_pack_element_windows([unit], tokenizer, chunk_size, overlap))
-    # 正文按连续 section_path 分组，组边界强制断开；组内贪心打包。
+    # Body text is grouped by consecutive section_path with forced breaks at group boundaries, and
+    # each group is greedily packed.
     body_groups: list[list[tuple[str, list[str], dict[str, Any]]]] = []
     previous_key: tuple[str, ...] | None = None
     for unit in body_units:
@@ -378,7 +407,8 @@ def chunk_document_structured(
     if not raw_windows:
         raise ChunkingError("Document produced no hybrid chunks")
 
-    # 统一构造 DocumentChunk：chunk_index 从 0 连续；页码取 owner 元素真实 min/max。
+    # Build the DocumentChunks uniformly: chunk_index is contiguous from 0; the page range is the
+    # owner elements' real min/max.
     chunks: list[DocumentChunk] = []
     for chunk_index, window in enumerate(raw_windows):
         page_start, page_end = _hybrid_page_range(window["elements"])

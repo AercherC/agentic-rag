@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-"""按二次确认计划逐文件清理 EvidenceFlow 的可再生缓存。
+"""Clean up EvidenceFlow's regenerable caches file by file, following the double-confirmed plan.
 
-默认是 dry-run；必须显式传 ``--execute`` 才会删除。执行前重新校验计划中的
-exact allowlist、路径边界与 snapshot，绝不删除源码、Gold/qrels、PDF、Chroma
-或 artifacts。被删内容均为可由源码/测试/评测输入重建的缓存。
+The default is a dry-run; deletion happens only when ``--execute`` is passed explicitly. Before
+executing, it re-validates the plan's exact allowlist, path boundaries, and snapshot, and never
+deletes source code, Gold/qrels, PDFs, Chroma, or artifacts. Everything deleted is a cache that
+can be rebuilt from source code, tests, or evaluation inputs.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ OUTPUT_DIR = ROOT / "artifacts" / "cleanup"
 
 
 def sha256_of(path: Path) -> str:
-    """删除前计算摘要，保留在 snapshot 以便验证候选集合。"""
+    """Compute the digest before deletion and keep it in the snapshot so the candidate set can be verified."""
 
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -30,7 +31,7 @@ def sha256_of(path: Path) -> str:
 
 
 def validate_plan(plan: dict) -> list[tuple[Path, dict]]:
-    """校验计划中的每个文件仍属于 exact DELETE_SAFE 范围。"""
+    """Validate that every file in the plan still falls inside the exact DELETE_SAFE scope."""
 
     invalid = []
     targets = []
@@ -53,7 +54,7 @@ def validate_plan(plan: dict) -> list[tuple[Path, dict]]:
 
 
 def execute(plan_path: Path, *, perform: bool) -> dict:
-    """生成 snapshot；perform=True 时逐项删除并记录结果。"""
+    """Build the snapshot; when perform=True, delete item by item and record the result."""
 
     plan = json.loads(plan_path.read_text(encoding="utf-8"))
     if not plan.get("pass"):
@@ -94,7 +95,8 @@ def execute(plan_path: Path, *, perform: bool) -> dict:
         for entry in snapshot:
             path = ROOT / entry["path"]
             try:
-                # 删除前再次确认当前文件未被替换，避免误删新生成文件。
+                # Re-confirm the file has not been replaced before deleting, to avoid removing a
+                # newly generated file.
                 if not path.is_file():
                     missing.append(entry["path"])
                     continue
@@ -105,7 +107,9 @@ def execute(plan_path: Path, *, perform: bool) -> dict:
                 removed.append(entry)
             except OSError as exc:
                 errors.append({"path": entry["path"], "reason": str(exc)})
-        # 文件逐项校验删除后，只移除已经为空的标准缓存目录；源码目录和普通空目录不处理。
+        # After each file is verified and deleted, remove only the standard cache directories that
+        # are now empty;
+        # source directories and ordinary empty directories are left alone.
         cache_names = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache"}
         scan_roots = [ROOT / name for name in ("src", "tests", "experiments", "scripts")]
         cache_roots = {
@@ -120,7 +124,8 @@ def execute(plan_path: Path, *, perform: bool) -> dict:
         root_pytest_cache = ROOT / ".pytest_cache"
         if root_pytest_cache.is_dir():
             cache_roots.add(root_pytest_cache)
-        # 先删除缓存根内部的空子目录，再删除缓存根本身，避免 pytest 的 v/cache 壳目录残留。
+        # Delete empty subdirectories inside each cache root first, then the cache root itself,
+        # so pytest's v/cache shell directories are not left behind.
         candidates = {
             child
             for cache_root in cache_roots
@@ -156,7 +161,7 @@ def execute(plan_path: Path, *, perform: bool) -> dict:
 
 
 def main() -> int:
-    """命令行入口；无 --execute 时只生成删除前 snapshot。"""
+    """Command-line entry point; without --execute it only writes the pre-deletion snapshot."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

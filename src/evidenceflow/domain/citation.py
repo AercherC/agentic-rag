@@ -1,4 +1,4 @@
-"""Citation Parser 的确定性分类结果模型。"""
+"""Deterministic classification result of the Citation Parser."""
 
 import re
 
@@ -8,7 +8,7 @@ _CITATION_LABEL_PATTERN = r"^\[S(?:0|[1-9]\d*)\]$"
 
 
 class CitationParseResult(BaseModel):
-    """记录按答案首次出现顺序去重后的合法与未知 Citation 标签。"""
+    """Holds the valid and unknown Citation labels, deduplicated in order of first appearance in the answer."""
 
     valid_labels: tuple[str, ...] = Field(
         default=(),
@@ -22,7 +22,7 @@ class CitationParseResult(BaseModel):
     @field_validator("valid_labels", "invalid_labels")
     @classmethod
     def validate_labels(cls, labels: tuple[str, ...]) -> tuple[str, ...]:
-        """保证结果只包含唯一、格式规范的方括号标签。"""
+        """Guarantees the result only contains unique, well-formed bracket labels."""
 
         if len(labels) != len(set(labels)):
             raise ValueError("citation labels must be unique")
@@ -32,7 +32,7 @@ class CitationParseResult(BaseModel):
 
     @model_validator(mode="after")
     def validate_disjoint_groups(self) -> "CitationParseResult":
-        """同一标签不能同时被分类为合法和无效。"""
+        """The same label must not be classified as both valid and invalid."""
 
         if set(self.valid_labels) & set(self.invalid_labels):
             raise ValueError("valid and invalid citation labels must be disjoint")

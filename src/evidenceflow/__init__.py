@@ -1,4 +1,4 @@
-"""EvidenceFlow 顶层包及公共配置入口。"""
+"""EvidenceFlow top-level package and public configuration entry point."""
 
 from evidenceflow.config import Settings
 

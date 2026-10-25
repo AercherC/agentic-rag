@@ -1,4 +1,4 @@
-"""验证 canonical Exact Dense index 的向量、排序和错误合同。"""
+"""Verify the vectors, ordering, and error contract of the canonical Exact Dense index."""
 
 import numpy as np
 import pytest
@@ -8,7 +8,7 @@ from evidenceflow.retrieval.exact_dense import ExactDenseIndex
 
 
 def _chunk(chunk_id: str, index: int = 0) -> DocumentChunk:
-    """构造最小但可完整恢复来源的 Domain Chunk。"""
+    """Build a minimal Domain Chunk that can still fully recover its source."""
 
     return DocumentChunk(
         chunk_id=chunk_id,
@@ -22,7 +22,7 @@ def _chunk(chunk_id: str, index: int = 0) -> DocumentChunk:
 
 
 def test_exact_index_sorts_ties_by_chunk_id_and_preserves_float32_score() -> None:
-    """相同相似度必须由项目层 chunk_id 决胜，不能依赖后端返回顺序。"""
+    """Equal similarity must be tie-broken by the project-level chunk_id, never by the backend's return order."""
 
     index = ExactDenseIndex(
         [_chunk("B", 1), _chunk("A", 0), _chunk("C", 2)],
@@ -37,7 +37,7 @@ def test_exact_index_sorts_ties_by_chunk_id_and_preserves_float32_score() -> Non
 
 
 def test_exact_index_matches_independent_numpy_order() -> None:
-    """普通分数场景与独立矩阵内积的稳定排序一致。"""
+    """The ordinary-score case matches a stable ordering computed from an independent matrix inner product."""
 
     vectors = np.asarray(
         [[1.0, 0.0], [0.8, 0.6], [0.0, 1.0]],
@@ -71,14 +71,14 @@ def test_exact_index_matches_independent_numpy_order() -> None:
     ],
 )
 def test_exact_index_rejects_invalid_records(chunks, embeddings, message: str) -> None:
-    """身份重复、维度漂移和非有限向量必须在建索引时失败。"""
+    """Duplicate identity, dimension drift, and non-finite vectors must fail at index construction."""
 
     with pytest.raises(ValueError, match=message):
         ExactDenseIndex(chunks, embeddings)
 
 
 def test_exact_index_rejects_wrong_query_dimension_and_empty_search() -> None:
-    """查询维度必须匹配；空索引可安全返回空结果。"""
+    """The query dimension must match; an empty index may safely return an empty result."""
 
     index = ExactDenseIndex([], [])
     assert index.search([1.0, 0.0], top_k=1) == []
@@ -89,7 +89,7 @@ def test_exact_index_rejects_wrong_query_dimension_and_empty_search() -> None:
 
 
 def test_exact_backend_is_fixed_to_numpy_regardless_of_faiss(monkeypatch) -> None:
-    """后端固定为 numpy.exact：环境里即使存在 faiss 也不得被使用（Stage A §S.1）。"""
+    """The backend is fixed to numpy.exact: even if faiss is present in the environment it must not be used (Stage A §S.1)."""
 
     import sys
 
@@ -103,6 +103,6 @@ def test_exact_backend_is_fixed_to_numpy_regardless_of_faiss(monkeypatch) -> Non
     index = ExactDenseIndex([_chunk("A")], [[1.0, 0.0]])
 
     assert index.backend == "numpy.exact"
-    # 模块不再导入 faiss，因此没有 faiss 属性可被误用。
+    # The module no longer imports faiss, so there is no faiss attribute that could be misused.
     assert not hasattr(module, "faiss")
     assert index.search([1.0, 0.0], top_k=1)[0].chunk.chunk_id == "A"

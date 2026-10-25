@@ -1,10 +1,14 @@
-"""RunTrace 记录器：TraceRecorder 协议、空实现、内存实现与安全记录函数（PROJECT_SPEC §12.5）。
+"""RunTrace recorder: the TraceRecorder protocol, a no-op implementation, an in-memory
+implementation and a safe recording helper (PROJECT_SPEC §12.5).
 
-本模块只观测，不改变任何回答或异常传播：
-- 组件（DenseRerankerRetriever、Generator、RAGService）的 ``trace_recorder`` 默认为 ``None``，
-  此时调用方根本不构造 payload，开销与未接入 trace 时一致；
-- 组件一律经 ``safe_record`` 记录，recorder 自身的任何异常都被吞掉，只留一条 warning 日志。
-不得 import ``evidenceflow.eval``（runtime 侧模块不反向依赖评测层）。
+This module only observes; it never changes any answer or exception propagation:
+- The components (DenseRerankerRetriever, Generator, RAGService) default ``trace_recorder`` to
+  ``None``, in which case the caller does not build a payload at all, so the overhead matches an
+  untraced deployment;
+- Components always record through ``safe_record``, and any exception from the recorder itself is
+  swallowed with only a warning log line.
+Importing ``evidenceflow.eval`` is not allowed (runtime-side modules must not depend on the
+evaluation layer in reverse).
 """
 
 from __future__ import annotations
@@ -26,47 +30,51 @@ _STARTED_SUFFIX = ".started"
 
 
 class TraceRecorder(Protocol):
-    """组件记录 trace 事件所需的最小接口。"""
+    """The minimal interface components need to record trace events."""
 
     def record(self, name: str, **payload: Any) -> None:
-        """记录一个事件；payload 只能包含 §12.5 白名单字段。"""
+        """Record one event; the payload may only contain the §12.5 allowlisted fields."""
 
 
 class NullTraceRecorder:
-    """不做任何事的 recorder，供调用方显式使用（组件默认是 None 而不是它）。"""
+    """A recorder that does nothing, for callers to use explicitly (components default to None,
+    not to this)."""
 
     def record(self, name: str, **payload: Any) -> None:
-        """丢弃事件。"""
+        """Discard the event."""
 
 
 def safe_record(recorder: TraceRecorder | None, name: str, **payload: Any) -> None:
-    """安全地记录一个事件：recorder 为 None 时直接返回；recorder 抛错只记异常类名后吞掉。
+    """Record one event safely: return immediately when the recorder is None; if the recorder
+    raises, log only the exception class name and swallow it.
 
-    trace 是旁路观测，recorder 的缺陷绝不能改变回答或原有异常的传播路径；
-    日志只写异常类名，不写消息，避免把可能含有正文的内容写进日志。
+    Tracing is side-channel observation, so a defect in the recorder must never change the answer
+    or the original exception propagation path. The log carries only the exception class name, not
+    the message, to avoid writing potentially content-bearing text into the log.
     """
 
     if recorder is None:
         return
     try:
         recorder.record(name, **payload)
-    except Exception as exc:  # noqa: BLE001 - 观测失败不得影响主流程
+    except Exception as exc:  # noqa: BLE001 - observation failure must not affect the main flow
         logger.warning(
             "trace recorder failed", extra={"trace_event": name, "error_type": type(exc).__name__}
         )
 
 
 def _utc_now() -> datetime:
-    """当前 UTC 时刻（可在测试中替换为固定时钟）。"""
+    """The current UTC instant (replaceable with a fixed clock in tests)."""
 
     return datetime.now(timezone.utc)
 
 
 class RunTraceRecorder:
-    """把一次 run 的事件保存在内存中，并在 ``finish`` 时产出 ``RunTrace``。
+    """Keep one run's events in memory and produce a ``RunTrace`` on ``finish``.
 
-    用法：``start_run(query)`` → 组件调用 ``record`` → ``finish()``。同一实例可跨 run 复用，
-    每次 run 前必须重新 ``start_run``；之前的事件会被清空。
+    Usage: ``start_run(query)`` -> components call ``record`` -> ``finish()``. The same instance
+    can be reused across runs, but ``start_run`` must be called again before each run; earlier
+    events are cleared.
     """
 
     def __init__(
@@ -75,7 +83,8 @@ class RunTraceRecorder:
         clock: Callable[[], float] = time.perf_counter,
         utc_now: Callable[[], datetime] = _utc_now,
     ) -> None:
-        """注入单调时钟（秒）与 UTC 时钟，默认使用 ``time.perf_counter`` 与系统时间。"""
+        """Inject a monotonic clock (seconds) and a UTC clock; the defaults are
+        ``time.perf_counter`` and the system time."""
 
         self._clock = clock
         self._utc_now = utc_now
@@ -85,14 +94,16 @@ class RunTraceRecorder:
         self._started_at_utc = ""
         self._origin = 0.0
         self._events: list[TraceEvent] = []
-        # 记录每个阶段前缀最近一次 started 的 elapsed_ms，用于计算 X.completed 的 duration_ms。
+        # Record the elapsed_ms of the latest started event for each stage prefix, used to compute
+        # duration_ms for X.completed.
         self._last_started_ms: dict[str, float] = {}
 
     def start_run(self, query: str, *, run_id: str | None = None) -> None:
-        """开始一次新 run：重置事件并记录 query 摘要、开始时刻与单调时钟起点。"""
+        """Start a new run: reset the events and record the query digest, the start instant and the
+        monotonic clock origin."""
 
         self._run_id = run_id if run_id is not None else str(uuid.uuid4())
-        # 只保存 UTF-8 query 的 sha256，trace 中不出现 query 原文。
+        # Store only the sha256 of the UTF-8 query; the raw query never appears in the trace.
         self._query_sha256 = hashlib.sha256(query.encode("utf-8")).hexdigest()
         self._started_at_utc = self._utc_now().isoformat()
         self._origin = self._clock()
@@ -101,18 +112,20 @@ class RunTraceRecorder:
         self._started = True
 
     def record(self, name: str, **payload: Any) -> None:
-        """追加一个事件；``start_run`` 之前的调用只记日志并丢弃，不抛异常。"""
+        """Append one event; a call before ``start_run`` is only logged and dropped, never
+        raised."""
 
         if not self._started:
             logger.warning("trace event recorded before start_run; dropped", extra={"trace_event": name})
             return
-        # elapsed_ms 基于单调时钟，不受系统时间调整影响。
+        # elapsed_ms is based on the monotonic clock and is unaffected by system time adjustments.
         elapsed_ms = (self._clock() - self._origin) * 1000.0
         duration_ms: float | None = None
         if name.endswith(_STARTED_SUFFIX):
             self._last_started_ms[name[: -len(_STARTED_SUFFIX)]] = elapsed_ms
         elif name.endswith(_COMPLETED_SUFFIX):
-            # 只有存在配对的 X.started 时才有 duration（citation_validation.completed 没有 started）。
+            # A duration exists only when a matching X.started is present
+            # (citation_validation.completed has no started event).
             started_ms = self._last_started_ms.get(name[: -len(_COMPLETED_SUFFIX)])
             if started_ms is not None:
                 duration_ms = elapsed_ms - started_ms
@@ -128,12 +141,13 @@ class RunTraceRecorder:
 
     @property
     def events(self) -> list[TraceEvent]:
-        """当前 run 已记录事件的副本（只读视图）。"""
+        """A copy of the events recorded so far in the current run (read-only view)."""
 
         return [event.model_copy(deep=True) for event in self._events]
 
     def finish(self) -> RunTrace:
-        """结束当前 run 并返回 RunTrace；最后一个事件必须是 run.completed 或 run.failed。"""
+        """Finish the current run and return the RunTrace; the last event must be run.completed or
+        run.failed."""
 
         if not self._events:
             raise ValueError("run trace has no events; cannot finish")

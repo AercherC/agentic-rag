@@ -1,4 +1,4 @@
-"""验证 Phase 3.5 来源定位、受约束规范化、Corpus 映射和全量分母。"""
+"""Verify Phase 3.5 source location, constrained normalization, Corpus mapping and the full denominator."""
 
 import json
 from pathlib import Path
@@ -13,25 +13,25 @@ from evidenceflow.eval.v2 import evaluate_evidence_coverage
 
 
 def source(text, page=1):
-    """固定版本单页原文。"""
+    """Single-page source text with a fixed version."""
     return Document(document_id="doc", content_hash="hash", source_path="paper.pdf", file_name="paper.pdf",
                     file_type="pdf", segments=[DocumentSegment(content=text, page_number=page)])
 
 
 def alternative(anchor="answer", **locator):
-    """构造独立于 Chunk 的来源定位。"""
+    """Build a source locator that is independent of the Chunk."""
     return EvidenceAlternative(document_id="doc", content_version="hash", evidence_anchor=anchor,
                                locator={"page_start": 1, "page_end": 1, **locator})
 
 
 def chunk(cid, text, page=1):
-    """构造只读 Corpus 的测试记录。"""
+    """Build a test record of the read-only Corpus."""
     return DocumentChunk(chunk_id=cid, document_id="doc", content_hash="hash", file_name="paper.pdf",
                          content=text, token_count=2, chunk_index=0, page_start=page, page_end=page)
 
 
 def test_unique_anchor_and_repeated_anchor():
-    """重复出现必须消歧，不能默认选择首个。"""
+    """Repeated occurrences must be disambiguated; the first one must not be chosen by default."""
     assert validate_source(alternative(), source("the answer exists"))["source_valid"]
     result = validate_source(alternative(), source("wrong answer. right answer."))
     assert not result["source_valid"]
@@ -39,7 +39,7 @@ def test_unique_anchor_and_repeated_anchor():
 
 
 def test_context_and_original_occurrence_disambiguation():
-    """上下文先过滤，occurrence 不按过滤结果重新编号。"""
+    """Context filters first, and occurrence is not renumbered by the filter result."""
     doc = source("wrong answer before. right answer after.")
     a = alternative(left_context="right", right_context="after.")
     result = validate_source(a, doc)
@@ -50,7 +50,7 @@ def test_context_and_original_occurrence_disambiguation():
 
 
 def test_hash_page_and_auxiliary_offsets():
-    """页码/hash 错误失败；辅助 offset 漂移不能覆盖上下文真值。"""
+    """A wrong page/hash fails; an auxiliary offset drift must not override the contextual truth."""
     a = alternative()
     a.content_version = "changed"
     assert not validate_source(a, source("answer"))["source_valid"]
@@ -61,14 +61,14 @@ def test_hash_page_and_auxiliary_offsets():
 
 @pytest.mark.parametrize("legal", ["state-of-the-art", "geometry-aware", "cross-modal"])
 def test_legal_hyphens_preserved(legal):
-    """合法连接符不能被全局删除，其他词的断词规则也不能影响它。"""
+    """A legal hyphen must not be deleted globally, and the hyphen rules of other words must not affect it."""
     rules = hyphen_rules("addi-\ntional evidence", "additional evidence")
     assert normalize_mapping(legal, rules) == legal
     assert normalize_mapping(legal, hyphen_rules(legal, legal)) == legal
 
 
 def test_hyphen_repair_requires_source_proof():
-    """只有原页换行与完整词共同证明，才能修复 Chunk 的 addi- tional。"""
+    """Only when the original page line break and the complete word both prove it may the Chunk's addi- tional be repaired."""
     rules = hyphen_rules("addi-\ntional", "additional")
     assert normalize_mapping("addi- tional", rules) == "additional"
     assert normalize_mapping("addi- tional", hyphen_rules("additional", "additional")) == "addi- tional"
@@ -83,7 +83,7 @@ def test_hyphen_repair_requires_source_proof():
     (["irrelevant text"], "UNMAPPED"),
 ])
 def test_source_valid_corpus_states(texts, expected):
-    """Source 有效与 Corpus 完整覆盖是两个独立判断。"""
+    """Source validity and complete Corpus coverage are two independent judgements."""
     doc = source("alpha beta gamma delta")
     a = alternative("beta gamma")
     validation = validate_source(a, doc)
@@ -92,7 +92,7 @@ def test_source_valid_corpus_states(texts, expected):
 
 
 def test_wrong_occurrence_chunk_cannot_satisfy_gold():
-    """即使同文档同页含相同短词，也不能用错误 occurrence 替代目标。"""
+    """Even if the same document and page contain the same short phrase, a wrong occurrence cannot stand in for the target."""
     doc = source("wrong answer before. right answer after.")
     a = alternative(left_context="right", right_context="after.", occurrence=2)
     status, bundles, _ = map_source_to_chunks(a, doc, [chunk("wrong", "wrong answer before.")], validate_source(a, doc))
@@ -100,7 +100,7 @@ def test_wrong_occurrence_chunk_cannot_satisfy_gold():
 
 
 def test_overall_denominator_retains_unmapped_groups():
-    """防止只有易映射子集的方案因分母缩水而被错误选优。"""
+    """Prevent a scheme that only handles the easily mapped subset from being wrongly preferred because its denominator shrank."""
     data = EvaluationDatasetV2.model_validate({
         "schema_version": "2.1", "dataset_id": "d", "split": "development", "corpus_version": "c",
         "questions": [{"question_id": "q", "family_id": "f", "query": "query", "query_language": "en",
@@ -120,7 +120,7 @@ def test_overall_denominator_retains_unmapped_groups():
 
 
 def test_stable_artifacts_reproduce_from_source_without_rankings():
-    """全量重建保持内容一致；函数输入不含历史排名。"""
+    """A full rebuild stays content-identical; the function inputs contain no historical rankings."""
     from experiments.stabilize_gold_v3 import build
     root = Path(__file__).resolve().parents[1] / "evals/evaluation_v2/phase35_gold_stabilization_v1"
     artifacts = build()

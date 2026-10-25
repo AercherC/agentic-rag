@@ -1,10 +1,12 @@
-"""开发者巡检工具共用的纯格式化函数。
+"""Pure formatting helpers shared by the developer inspection tools.
 
-本模块只放无副作用的展示/筛选函数：不加载模型、不做 IO、不持有全局状态。
-它被 `experiments/debug/` 下的 Inspector 脚本与对应的单元测试共同引用，
-因此放在 src 侧，避免 tests → experiments 的反向依赖。
+This module only holds side-effect-free display/filter helpers: it loads no models, does
+no IO, and keeps no global state. It is imported by the Inspector scripts under
+`experiments/debug/` and by their unit tests, so it lives on the src side to avoid a
+reverse tests -> experiments dependency.
 
-模块不参与 Runtime 检索、Context 构建与生成链路，删除它不会影响问答结果。
+The module takes no part in Runtime retrieval, Context building, or the generation chain;
+removing it would not change any answer.
 """
 
 from __future__ import annotations
@@ -14,7 +16,7 @@ from typing import Any, Mapping, Sequence
 
 
 def content_preview(content: str, preview_chars: int = 500, *, full: bool = False) -> str:
-    """压平外围空白并按字符截断，避免默认把完整 C512 Chunk 刷屏。"""
+    """Flatten surrounding whitespace and truncate by characters, so a full C512 Chunk does not flood the output by default."""
 
     if preview_chars <= 0:
         raise ValueError("preview_chars must be positive")
@@ -25,7 +27,7 @@ def content_preview(content: str, preview_chars: int = 500, *, full: bool = Fals
 
 
 def format_page(page_start: int | None, page_end: int | None) -> str:
-    """将无页码文本和单页/跨页 PDF 转为紧凑的人类可读表示。"""
+    """Render page-less text and single-page or cross-page PDFs as a compact, human-readable form."""
 
     if page_start is None:
         return "None"
@@ -33,7 +35,7 @@ def format_page(page_start: int | None, page_end: int | None) -> str:
 
 
 def format_retrieval_result(result: Any, *, preview_chars: int = 500, full: bool = False) -> str:
-    """格式化单路 RetrievedChunk，保留 cosine 与来源定位字段。"""
+    """Format a single RetrievedChunk, keeping the cosine score and the source locator fields."""
 
     chunk = result.chunk
     return "\n".join(
@@ -58,7 +60,7 @@ def select_records(
     limit: int,
     file_name: str | None = None,
 ) -> list[dict[str, Any]]:
-    """对 Chroma 原始字段做稳定配对、文件过滤和上限裁剪。"""
+    """Stably pair the raw Chroma fields, filter by file, and apply the result limit."""
 
     if limit <= 0:
         raise ValueError("limit must be positive")
@@ -69,12 +71,13 @@ def select_records(
         for chunk_id, content, metadata in zip(ids, documents, metadatas)
         if file_name is None or metadata.get("file_name") == file_name
     ]
-    # Chroma get() 不承诺业务排序；按稳定 chunk_id 排序方便重复检查和测试。
+    # Chroma get() makes no business-ordering promise; sorting by the stable chunk_id makes
+    # repeated checks and tests easier.
     return sorted(records, key=lambda item: item["chunk_id"])[:limit]
 
 
 def format_storage_record(record: Mapping[str, Any], *, preview_chars: int = 500, full: bool = False) -> str:
-    """展示内容与来源 Metadata；默认不输出完整 Embedding。"""
+    """Show content and source Metadata; the full Embedding is not printed by default."""
 
     metadata = record["metadata"]
     domain_metadata = metadata.get("domain_metadata_json", "{}")

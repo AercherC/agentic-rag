@@ -1,4 +1,4 @@
-"""使用 Fake 依赖验证正式增量摄取服务的状态与可靠性语义。"""
+"""Verify the formal incremental ingestion service's state and reliability semantics using Fake dependencies."""
 
 from pathlib import Path
 
@@ -7,7 +7,7 @@ from evidenceflow.ingestion.service import IngestionService, discover_source_fil
 
 
 class WordTokenizer:
-    """以空格分词提供可逆 Tokenizer，隔离真实 BGE。"""
+    """Provide a reversible whitespace-based Tokenizer that isolates the real BGE."""
 
     def encode(self, text: str) -> list[int]:
         if text == "\n\n":
@@ -19,7 +19,7 @@ class WordTokenizer:
 
 
 class FakeEmbeddingProvider:
-    """记录批量文本并可模拟失败或返回数量错误。"""
+    """Record batched texts and can simulate a failure or return a wrong count."""
 
     def __init__(self, events: list[str], *, fail: bool = False, count_delta: int = 0) -> None:
         self.events = events
@@ -40,7 +40,7 @@ class FakeEmbeddingProvider:
 
 
 class FakeVectorStore:
-    """以 document_id/content_hash 集合模拟存储并记录写操作顺序。"""
+    """Simulate storage with a document_id/content_hash set and record the order of write operations."""
 
     def __init__(self, events: list[str], versions: dict[str, str] | None = None, *, fail_add: bool = False) -> None:
         self.events = events
@@ -70,7 +70,7 @@ class FakeVectorStore:
 
 
 def _service(root: Path, provider: FakeEmbeddingProvider, store: FakeVectorStore) -> IngestionService:
-    """构造使用小窗口的测试服务。"""
+    """Build a test service that uses small windows."""
 
     return IngestionService(root, WordTokenizer(), provider, store, chunk_size=3, chunk_overlap=1)
 
@@ -96,7 +96,8 @@ def test_unchanged_document_skips_without_embedding(tmp_path: Path) -> None:
     root.mkdir()
     source = root / "same.txt"
     source.write_text("unchanged content", encoding="utf-8")
-    # 先由 Loader 生成真实版本身份，再让 Fake Store 声明该版本已存在。
+    # First let the Loader produce the real version identity, then have the Fake Store declare that
+    # version present.
     from evidenceflow.ingestion.loader import load_document
 
     document = load_document(source, root)
@@ -187,7 +188,7 @@ def test_embedding_count_mismatch_fails_before_store(tmp_path: Path) -> None:
 
 
 def test_service_integrates_with_temporary_chroma_without_production_db(tmp_path: Path) -> None:
-    """正式 Chroma Adapter 必须只写入测试临时目录，并可检测第二次 unchanged。"""
+    """The formal Chroma Adapter must write only into the test's temporary directory and can detect a second unchanged ingest."""
 
     from evidenceflow.storage import ChromaVectorStore
 

@@ -1,11 +1,12 @@
-"""Evaluation v3：标准 IR 指标 + 多证据诊断，统一编排。
+"""Evaluation v3: standard IR metrics plus multi-evidence diagnostics, orchestrated in one place.
 
-职责边界（对应 Phase 11A 强制边界）：
-- 只做评估计算，绝不调用检索器、Reranker、Embedding 或 Chroma；
-- 标准 qrels 从冻结的 Gold Mapping Artifact 派生，不修改 Canonical Gold；
-- run（排名）由调用方从冻结历史 artifact replay 提供，本模块不重跑 Runtime；
-- 自定义指标不再作为主指标：仅 evidence_group_recall / all_required_evidence /
-  gold_mappability 作为 diagnostic-only 保留，且明确标记 custom=true。
+Responsibility boundaries (the hard boundary for Phase 11A):
+- evaluation arithmetic only; never calls a retriever, Reranker, Embedding, or Chroma;
+- standard qrels are derived from the frozen Gold Mapping Artifact and never modify Canonical Gold;
+- the run (rankings) is supplied by the caller as a replay of a frozen historical artifact, so
+  this module does not re-run the Runtime;
+- custom metrics are no longer primary: only evidence_group_recall / all_required_evidence /
+  gold_mappability survive as diagnostics, explicitly marked custom=true.
 """
 
 import hashlib
@@ -18,7 +19,7 @@ from evidenceflow.eval.ir_metrics import STANDARD_DEPTHS, evaluate_ir_run
 
 
 def _sha256_file(path: Path) -> str:
-    """返回文件 SHA-256 十六进制摘要，用于 artifact 溯源与可审计性。"""
+    """Return the file's SHA-256 hex digest, used for artifact provenance and auditability."""
 
     h = hashlib.sha256()
     with path.open("rb") as f:
@@ -28,13 +29,14 @@ def _sha256_file(path: Path) -> str:
 
 
 def build_qrels(mapping: MappingArtifact) -> dict[str, list[str]]:
-    """从冻结 MappingArtifact 派生标准 IR 二元 qrels。
+    """Derive standard binary IR qrels from the frozen MappingArtifact.
 
-    规则：
-    - 只有状态为 FULLY_MAPPED / FRAGMENTED_ACROSS_CHUNKS 的组进入 qrels；
-    - UNMAPPED / mapping failure 不假装 relevant（不进入 qrels）；
-    - 每个已验证 Gold chunk（含 FRAGMENTED 跨块集合中的每一块）作为 rel=1 的相关单元；
-    - 不把未标注 chunk 自动创造为 relevant。
+    Rules:
+    - only groups with status FULLY_MAPPED / FRAGMENTED_ACROSS_CHUNKS enter the qrels;
+    - UNMAPPED / mapping failure never pretends to be relevant (it stays out of the qrels);
+    - every verified Gold chunk (including each block of a FRAGMENTED cross-chunk set) becomes a
+      rel=1 relevant unit;
+    - an unlabelled chunk is never auto-created as relevant.
     """
 
     qrels: dict[str, list[str]] = {}
@@ -51,7 +53,7 @@ def build_qrels(mapping: MappingArtifact) -> dict[str, list[str]]:
 
 
 def qrels_hash(qrels: dict[str, list[str]]) -> str:
-    """对 qrels 做确定性序列化后取 SHA-256，便于跨 artifact 比对。"""
+    """Serialize the qrels deterministically, then hash them, so artifacts can be compared across runs."""
 
     payload = json.dumps(
         {qid: sorted(cids) for qid, cids in sorted(qrels.items())},
@@ -65,14 +67,16 @@ def qrels_hash(qrels: dict[str, list[str]]) -> str:
 def _diagnostic_block(
     ranked_ids: list[str], groups_chunk_sets: list[list[list[str]]], depths: tuple[int, ...]
 ) -> dict[str, float]:
-    """复用 v2.ranking_metrics 计算多证据诊断，只抽取保持语义一致的两个字段。
+    """Reuse v2.ranking_metrics for the multi-evidence diagnostics, extracting only the two fields whose semantics stay identical.
 
-    若组不可解（理论不会发生，因为 qrels 已保证只纳入已映射组），回退为 0。
+        If a group cannot be resolved (which should not happen, since the qrels only contain mapped
+        groups), fall back to 0.
     """
 
     from evidenceflow.eval.v2 import ranking_metrics
 
-    # 去重保留首次出现顺序，避免历史排名中偶发重复破坏严格校验。
+    # Deduplicate while keeping first-appearance order, so an occasional duplicate in a historical
+    # ranking cannot break strict validation.
     seen: set[str] = set()
     unique = [c for c in ranked_ids if not (c in seen or seen.add(c))]
     try:
@@ -98,11 +102,11 @@ def evaluate_v3(
     metric_depths: tuple[int, ...] = STANDARD_DEPTHS,
     diagnostic_depths: tuple[int, ...] = (5, 10, 20),
 ) -> dict:
-    """对一次冻结排名 replay 计算 v3 标准指标 + 多证据诊断。"""
+    """Compute the v3 standard metrics plus multi-evidence diagnostics for one frozen ranking replay."""
 
     ir = evaluate_ir_run(qrels, run, depths=metric_depths)
 
-    # 按 question_id 归集每题的 chunk_sets（用于多证据诊断）。
+    # Collect each question's chunk_sets by question_id (used for the multi-evidence diagnostics).
     by_question: dict[str, list[list[list[str]]]] = {}
     for group in mapping.groups:
         by_question.setdefault(group.question_id, []).append(group.chunk_sets)
@@ -120,7 +124,7 @@ def evaluate_v3(
             "diagnostics": diag,
         }
 
-    # 聚合诊断（仅 eligible query）。
+    # Aggregate the diagnostics over eligible queries only.
     eligible = [row for row in per_query.values() if row["eligible"]]
     diag_agg: dict[str, float] = {}
     for k in diagnostic_depths:
@@ -155,8 +159,9 @@ def evaluate_v3(
 
 
 def save_artifact(payload: dict, path: Path) -> None:
-    """写入版本化 JSON。仅向 evals/evaluation_v3/standard_ir_v1/ 等新目录落盘，
-    绝不向 evals/evaluation_v2/ 等历史 artifact 目录写入（对应 Step 13 不覆盖规则）。
+    """Write the versioned JSON. Only new directories such as evals/evaluation_v3/standard_ir_v1/
+        are written; historical artifact directories such as evals/evaluation_v2/ are never touched
+        (the no-overwrite rule of Step 13).
     """
 
     text = json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n"

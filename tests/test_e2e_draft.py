@@ -1,7 +1,7 @@
-"""派生式题集工具（draft.py）与 CLI（scripts/e2e_draft.py）的 Fake 测试。
+"""Fake-based tests for the derived question-set tooling (draft.py) and the CLI (scripts/e2e_draft.py).
 
-全部用例不联网：题干生成用 ``--dry-run``，探针用注入的 Fake client；
-Chroma / Settings / 源文档加载在集成测试里用 monkeypatch 替换。
+No case touches the network: question drafting uses ``--dry-run`` and probes use an injected fake client;
+Chroma / Settings / source-document loading are replaced with monkeypatch in the integration tests.
 """
 
 import json
@@ -14,7 +14,9 @@ from evidenceflow.domain.document import Document, DocumentSegment
 from evidenceflow.eval.e2e import draft
 from evidenceflow.eval.stable_mapping import validate_source
 
-# 三个足以通过“自足候选句”过滤的真实形态句子（60–320 字符、非指代开头、含数字或连续专名）。
+# Three realistic-looking sentences that pass the "self-sufficient candidate sentence" filter
+# (60-320 characters, not starting with a pronoun, containing a number or consecutive proper
+# nouns).
 SENTENCE_PERCENT = (
     "Additionally, we randomly set 1% of the measurements to dmax = 1.6, "
     "and each prediction takes only 0.0012s on a Nvidia GeForce 1080Ti GPU."
@@ -29,10 +31,11 @@ SENTENCE_GPU = (
 )
 
 
-# ---------- 规范化与句池 ----------
+# ---------- normalization and the sentence pool ----------
 
 def test_normalize_source_text_does_only_nfkc():
-    # 连字 ﬁ 变成 fi，但大小写与空白保持原样（(d) 才做大小写/空白归一）。
+    # The "fi" ligature becomes "fi", but case and whitespace stay as they are ((d) performs the
+    # case/whitespace normalization).
     assert draft.normalize_source_text("e\uFB03cient") == "efficient"
     assert draft.normalize_source_text("WEIRD  spacing\nkept") == "WEIRD  spacing\nkept"
 
@@ -40,7 +43,9 @@ def test_normalize_source_text_does_only_nfkc():
 def test_sentence_candidates_filters_and_merges_lines():
     assert draft.sentence_candidates(SENTENCE_PERCENT) == [SENTENCE_PERCENT]
 
-    # 指代词/连接词开头、过短、无数字且无连续专名、过长都必须过滤。
+    # Starting with a pronoun/connective, being too short, having no number and no consecutive
+    # proper
+    # nouns, or being too long must all be filtered out.
     pronoun = "We propose a method that uses 42 layers and achieves strong results on the benchmark."
     too_short = "We set 1%."
     no_number_no_proper = (
@@ -51,7 +56,8 @@ def test_sentence_candidates_filters_and_merges_lines():
     text = "\n".join([pronoun, too_short, no_number_no_proper, too_long])
     assert draft.sentence_candidates(text) == []
 
-    # 跨行排版的同一句要合并成一行；重复句只保留一次。
+    # The same sentence wrapped across lines must be merged into one line; duplicate sentences are
+    # kept only once.
     wrapped = (
         "Real-world 3D data are often\nincomplete, causing loss in geometric and\n"
         "semantic information for 3D sensors."
@@ -60,7 +66,8 @@ def test_sentence_candidates_filters_and_merges_lines():
     assert len(merged) == 1 and "\n" not in merged[0] and "often incomplete" in merged[0]
     assert draft.sentence_candidates(f"{SENTENCE_CHAMFER} {SENTENCE_CHAMFER}") == [SENTENCE_CHAMFER]
 
-    # 无数字但有两个连续大写开头的专名（Nvidia GeForce）同样可选。
+    # A sentence without numbers but with two consecutive capitalized proper nouns (Nvidia GeForce)
+    # is also selectable.
     assert draft.sentence_candidates(SENTENCE_GPU) == [SENTENCE_GPU]
 
 
@@ -74,13 +81,16 @@ def test_select_spans_prefers_numbers_and_falls_back_to_entities():
 
     entity_only = draft.select_spans("SnowflakeNet is trained on PCN with chamfer distance")
     assert entity_only and entity_only[0].kind == "entity" and entity_only[0].span == "SnowflakeNet"
-    # 每个 span 都必须是句子的字面子串，否则锚点无法自证。
+    # Every span must be a literal substring of its sentence, otherwise the anchor cannot prove
+    # itself.
     for candidate in percent + seconds + entity_only:
         assert candidate.span in candidate.sentence
 
 
 def test_split_sentences_folds_line_end_hyphenation():
-    """PDF 印刷断词必须在切句时折叠，否则接地检查永远失败（小样校准缺陷 A）。"""
+    """Printed PDF hyphenation must be folded while splitting sentences, otherwise the grounding
+    check can never pass (sample calibration defect A).
+    """
 
     merged = draft.split_sentences(
         "The PN2 encoder follows the same archi-\ntecture as the SSG network in [38]."
@@ -88,51 +98,57 @@ def test_split_sentences_folds_line_end_hyphenation():
     assert merged == ["The PN2 encoder follows the same architecture as the SSG network in [38]."]
     assert "archi-" not in merged[0]
 
-    # 折行带缩进同样要折叠；跨行但不带连字符的句子仍按空白合并。
+    # Wrapped lines with indentation must be folded too; a line break without a hyphen is still
+    # merged on whitespace.
     assert draft.split_sentences("the im-\n    pressive result holds.") == ["the impressive result holds."]
     assert draft.split_sentences("often\nincomplete data.") == ["often incomplete data."]
 
-    # 小数不能被切错或折叠（回归保护）。
+    # Decimal numbers must not be split or folded incorrectly (regression protection).
     assert draft.split_sentences("It takes 0.0012s and scores 7.21 points.") == [
         "It takes 0.0012s and scores 7.21 points."
     ]
 
 
 def test_select_spans_skips_stopwords_and_reference_numbers():
-    """句首虚词/图注词与方括号引用编号都不是答案（小样校准缺陷 B）。"""
+    """Sentence-initial function words, caption words, and bracketed citation numbers are never
+    answers (sample calibration defect B).
+    """
 
-    # `The` 是句首虚词，不是可命名答案；这里回落到下一个真实专名。
+    # `The` is a sentence-initial function word, not a nameable answer; the code falls back to the
+    # next real proper noun.
     stacked = draft.select_spans(
         "The stacked PN encoder used by FC, Folding, PCN-CD and PCN-EMD includes 2 PN layers."
     )
     assert [span.span for span in stacked] and "The" not in [span.span for span in stacked]
 
-    # `Figure` 是图注词、`2` 是图号，答案应是真正的组件名 MLP。
+    # `Figure` is a caption word and `2` is a figure number, so the answer should be the real
+    # component name MLP.
     figure = draft.select_spans(
         "As shown in the lower right of Figure 2, the seed point cloud and the shape code "
         "are sent to MLP respectively and then concatenated."
     )
     assert [span.span for span in figure] == ["MLP"]
 
-    # `[38]` 是文献引用编号，不能作为答案。
+    # `[38]` is a bibliography citation number and cannot serve as an answer.
     citation = draft.select_spans("The PN2 encoder follows the same architecture as the SSG network in [38].")
     assert "38" not in [span.span for span in citation]
 
-    # 正常专名仍可派生（回归保护）。
+    # Ordinary proper nouns can still be derived (regression protection).
     pointnet = draft.select_spans("PointNet++ is trained on ShapeNet.")
     assert pointnet[0].span == "PointNet++"
 
-    # 全部不可用时返回空列表，由调用方按 no_span 丢弃，而不是造一个命中不了的键。
+    # When nothing is usable an empty list is returned and the caller drops the case as no_span,
+    # rather than inventing a key that can never match.
     assert draft.select_spans("The figure and the table are listed above.") == []
 
 
-# ---------- answer_keys 派生表 ----------
+# ---------- answer_keys derivation table ----------
 
 def test_derive_answer_keys_percent_and_unit_forms():
     percent = draft.derive_answer_keys("1%", "we set 1% of the measurements")
     assert len(percent) == 1
     assert {"1%", "1 percent"} <= set(percent[0])
-    # 中文题干时额外给“百分之1”。
+    # For a Chinese query an extra Chinese percent alias is supplied.
     zh = draft.derive_answer_keys("1%", "we set 1% of the measurements", query_language="zh")
     assert "百分之1" in zh[0]
 
@@ -142,9 +158,10 @@ def test_derive_answer_keys_percent_and_unit_forms():
 
 
 def test_derive_answer_keys_drops_long_spans_and_short_aliases():
-    # 41 字符 ⇒ key_matchable=false，返回空列表。
+    # 41 characters => key_matchable=false; an empty list is returned.
     assert draft.derive_answer_keys("a" * 41, "x") == []
-    # 每个别名规范化后长度 >= 2（裸 "1" 被丢弃，是已知限制）。
+    # Every alias is at least 2 characters after normalization (the bare "1" is dropped; a known
+    # limitation).
     for keys in (
         draft.derive_answer_keys("1%", "we set 1% of it", query_language="zh"),
         draft.derive_answer_keys("0.0012s", "it takes 0.0012s"),
@@ -152,28 +169,28 @@ def test_derive_answer_keys_drops_long_spans_and_short_aliases():
     ):
         assert keys and all(len(draft.normalize_text(alias)) >= 2 for alias in keys[0])
 
-    # 含连字符的 span 同时给折叠形与空格形。
+    # A hyphenated span is given both in folded form and with a space.
     hyphen = draft.derive_answer_keys("view-points", "the view-points are listed")
     assert {"viewpoints", "view points"} <= set(hyphen[0])
 
-    # (c)①：至少一个别名来自源句本身。
+    # (c)①: at least one alias comes from the source sentence itself.
     sentence = "we set 1% of the measurements"
     keys = draft.derive_answer_keys("1%", sentence)
     assert any(alias in draft.normalize_text(sentence) for alias in keys[0])
 
 
-# ---------- 3-gram 与连续词长 ----------
+# ---------- 3-grams and consecutive word runs ----------
 
 def test_three_gram_jaccard_and_longest_common_word_run():
     sentence = "the chamfer distance is 7.21 on pcn"
     assert draft.three_gram_jaccard(sentence, sentence) == 1.0
     assert draft.three_gram_jaccard(sentence, "completely unrelated words here") == 0.0
-    # 两侧都为空返回 0.0。
+    # Both sides empty returns 0.0.
     assert draft.three_gram_jaccard("", "") == 0.0
 
     nine = "one two three four five six seven eight nine"
     assert draft.longest_common_word_run(nine, nine) == 9
-    # 只共享 5 个连续词：不触发 §13.1(c′)④（阈值 > 8）。
+    # Only 5 consecutive words are shared: §13.1(c')④ (threshold > 8) is not triggered.
     assert draft.longest_common_word_run(
         "alpha beta gamma delta epsilon zeta", "xx alpha beta gamma delta epsilon yy"
     ) == 5
@@ -181,7 +198,7 @@ def test_three_gram_jaccard_and_longest_common_word_run():
     assert draft.longest_common_word_run("", "anything") == 0
 
 
-# ---------- 配额 ----------
+# ---------- quotas ----------
 
 def _quota_case(document_id="doc-1", question_type="method", language="en", tags=None):
     return {
@@ -196,13 +213,15 @@ def test_plan_quotas_reports_violations_without_raising():
     cases = [_quota_case(tags=["easy"])]
     report = draft.plan_quotas(cases)
     assert report.ok is False
-    # 单篇/单题型/难度三档都不足；中英平衡未触发（|1-0| <= 2）。
+    # A single document / single question type / all three difficulty tiers are all short; the
+    # Chinese-English balance is not triggered (|1-0| <= 2).
     assert any("document doc-1" in violation for violation in report.violations)
     assert any("question_type method" in violation for violation in report.violations)
     assert any("difficulty medium" in violation for violation in report.violations)
     assert report.counts["total"] == 1 and report.counts["difficulty"]["easy"] == 1
 
-    # 完全没有难度标签时只报一条“缺标签”，不伪造三档比例。
+    # With no difficulty labels at all only one "missing labels" violation is reported; the
+    # three-tier proportions are not fabricated.
     no_labels = draft.plan_quotas([_quota_case()])
     assert sum("difficulty labels missing" in violation for violation in no_labels.violations) == 1
 
@@ -229,17 +248,21 @@ def test_plan_near_miss_requires_entity_present_and_attribute_absent():
     items = [_t1_item("c1", "PointNet"), _t1_item("c2", "GhostNet")]
     candidates = draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=5, seed=1)
     entities = {c.entity for c in candidates}
-    # PointNet 在语料里，且与 "gpu model" 等属性未在窗口内共现 ⇒ 应有候选。
+    # PointNet is in the corpus and does not co-occur with attributes such as "gpu model" inside
+    # the
+    # window, so a candidate is expected.
     assert "PointNet" in entities
-    # GhostNet 不在语料里 ⇒ 属 out_of_corpus，不能当 near_miss。
+    # GhostNet is not in the corpus, so it is out_of_corpus and cannot serve as near_miss.
     assert "GhostNet" not in entities
-    # 每个候选的属性确实不与实体共现。
+    # The attribute of every candidate really does not co-occur with its entity.
     for candidate in candidates:
         assert not draft._co_occurs(candidate.entity, candidate.attribute, corpus)
 
 
 def test_plan_near_miss_skips_non_distinctive_entities():
-    # `Feature`/`Natural` 这类普通名词被大写但没有判别力，问它的 optimizer 没有意义。
+    # Common nouns such as `Feature`/`Natural` are capitalized but carry no discriminating power,
+    # so
+    # asking about their optimizer is pointless.
     corpus = "Feature maps are extracted. Natural language is processed."
     items = [_t1_item("c1", "Feature"), _t1_item("c2", "Natural")]
     assert draft.plan_near_miss_candidates(items, corpus_text=corpus, limit=5, seed=1) == []
@@ -277,7 +300,8 @@ def test_build_near_miss_case_satisfies_unanswerable_shape():
         attribute="optimizer",
         approval_basis="gate.json#abc",
     )
-    # 不可答题形态：状态、拒答语义、类型、不得有证据组（dataset.py 的 unanswerable_shape 规则）。
+    # Unanswerable shape: status, abstention semantics, kind, and no evidence groups (the
+    # unanswerable_shape rule in dataset.py).
     assert case.expected_status == "insufficient_context"
     assert case.acceptable_abstention is False
     assert case.unanswerable_kind == "near_miss"
@@ -304,7 +328,9 @@ def test_near_miss_query_names_the_entity():
 
 
 def test_case_id_ranges_do_not_collide_across_constructors():
-    """T3 与 T6 共享 E2E-M* 编号空间，必须接续而不撞号（D2 实测出现过重复的 E2E-M122）。"""
+    """T3 and T6 share the E2E-M* numbering space, so they must continue from each other without
+    collisions (the D2 run produced a duplicate E2E-M122).
+    """
 
     from evidenceflow.eval.e2e import dataset as dataset_module
 
@@ -320,7 +346,7 @@ def test_case_id_ranges_do_not_collide_across_constructors():
         )
         for index in range(1, 3)
     ]
-    # T6 接在 base 之后（start_index = len(cases) + 1），产出 2 道。
+    # T6 continues after the base cases (start_index = len(cases) + 1) and produces 2 cases.
     false_premise, _ = module.build_false_premise_cases(
         [{"candidate_id": "c1", "document_id": document.document_id,
           "sentence": SENTENCE_PERCENT, "span": "1%", "answer_keys": [["1%"]],
@@ -333,7 +359,7 @@ def test_case_id_ranges_do_not_collide_across_constructors():
     all_cases = base + false_premise
     ids = [case.case_id for case in all_cases]
     assert len(ids) == len(set(ids)), f"duplicate case_id: {ids}"
-    # 且必须通过校验器的 ID 唯一规则。
+    # It must also pass the validator's ID uniqueness rule.
     dataset = dataset_module.E2EDataset(dataset_id="d", corpus_version="c", cases=all_cases)
     report = dataset_module.validate_dataset(
         dataset, lambda *args: SENTENCE_PERCENT, require_approved=True, allow_machine=True
@@ -342,10 +368,11 @@ def test_case_id_ranges_do_not_collide_across_constructors():
 
 
 def test_case_ids_have_no_gaps_or_collisions_when_a_constructor_drops_items():
-    """T3 内部会丢弃题，产出的号段有空洞；T6 必须接在**最大号**之后，不能靠数量推号。
+    """T3 drops cases internally, leaving gaps in the number range it emits; T6 must continue after
+    the **highest number** and must not infer numbers from a count.
 
-    D2 实测：T3 产出 5 道但号段是 113–127（有空洞），T6 从 len(cases)+1 起算，
-    与 T3 已用号段重叠，产生重复的 E2E-M118。
+    Measured in D2: T3 produced 5 cases but the range was 113-127 (with gaps), and T6 started from
+    len(cases)+1, overlapping the range already used by T3 and producing a duplicate E2E-M118.
     """
 
     from evidenceflow.eval.e2e import dataset as dataset_module
@@ -360,9 +387,11 @@ def test_case_ids_have_no_gaps_or_collisions_when_a_constructor_drops_items():
             query_language="en", question_type="method", sentence=SENTENCE_PERCENT,
             span="1%", answer_keys=[["1%"]], anchor=anchor, approval_basis="g#x",
         )
-        for index in range(1, 4)  # 号段 1..3
+        for index in range(1, 4)  # number range 1..3
     ]
-    # 模拟 T3 的"号段有空洞"：它从 4 起分配了 5 个号（4..8），但只保留了 2 道。
+    # Simulate T3's "gaps in the number range": it allocated 5 numbers starting at 4 (4..8) but
+    # kept
+    # only 2 cases.
     next_number = len(base) + 1 + 5
     false_premise, _ = module.build_false_premise_cases(
         [{"candidate_id": "c1", "document_id": document.document_id,
@@ -375,7 +404,7 @@ def test_case_ids_have_no_gaps_or_collisions_when_a_constructor_drops_items():
     )
     ids = [case.case_id for case in base + false_premise]
     assert len(ids) == len(set(ids)), f"duplicate case_id: {ids}"
-    # T6 必须落在 9 之后（4..8 已被 T3 占用），不能复用 4。
+    # T6 must land after 9 (4..8 are already taken by T3) and must not reuse 4.
     assert all(int(cid[5:]) >= 9 for cid in [c.case_id for c in false_premise])
 
     dataset = dataset_module.E2EDataset(
@@ -388,7 +417,9 @@ def test_case_ids_have_no_gaps_or_collisions_when_a_constructor_drops_items():
 
 
 def test_quota_counts_final_dataset_not_just_accepted_items(tmp_path, monkeypatch):
-    """配额必须基于最终题集：T3/T6 不来自 accepted_items，早算会漏报（D2 实测漏掉 5 道 T3）。"""
+    """Quotas must be based on the final question set: T3/T6 cases do not come from accepted_items,
+    so computing them early under-reports (the D2 run missed 5 T3 cases).
+    """
 
     items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
     out = tmp_path / "gate.json"
@@ -400,13 +431,17 @@ def test_quota_counts_final_dataset_not_just_accepted_items(tmp_path, monkeypatc
     ]) == 0
 
     report = json.loads(out.read_text(encoding="utf-8"))
-    # 没有 --multi-doc 时题集里没有 multi_document，配额应如实报 0。
+    # Without --multi-doc the set contains no multi_document cases, so the quota must honestly
+    # report 0.
     assert report["quota"]["counts"]["question_types"].get("multi_document", 0) == 0
-    # 报告要带题集草案汇总，便于核对配额与题集是否一致。
+    # The report must carry a draft question-set summary so the quota and the question set can be
+    # cross-checked.
     assert report["dataset_draft"]["cases"] >= 1
     assert report["dataset_draft"]["multi_document"] == 0
 
-    # 题集里每道题的 approval_basis 必须是报告名 + 真实 sha256（不是占位值）。
+    # The approval_basis of every case in the set must be the report path plus the real sha256 (not
+    # a
+    # placeholder value).
     import hashlib
     dataset = json.loads(dataset_path.read_text(encoding="utf-8"))
     digest = hashlib.sha256(out.read_bytes()).hexdigest()
@@ -416,11 +451,11 @@ def test_quota_counts_final_dataset_not_just_accepted_items(tmp_path, monkeypatc
         assert "pending" not in basis
 
 
-# ---------- T3 多文档配对 ----------
+# ---------- T3 multi-document pairing ----------
 
 def _t3_item(candidate_id: str, document_id: str, sentence: str, span: str,
              question_type: str = "method", *, accepted: bool = True) -> dict:
-    """构造一条可参与 T3 配对的 accepted 候选。"""
+    """Build an accepted candidate that can take part in T3 pairing."""
 
     return {
         "candidate_id": candidate_id,
@@ -452,12 +487,15 @@ def test_pair_multi_document_candidates_requires_same_type_and_key_matchable():
         _t3_item("c1", "doc-c", "SeedFormer proposes patch seeds for generation.", "SeedFormer", "method"),
     ]
     pairs = draft.pair_multi_document_candidates(items, limit=5, seed=1)
-    # 只有 a1/c1 同为 method 且文档不同，才能配对；b1 题型不同不参与。
+    # Only a1/c1 are both "method" and from different documents, so only they can pair; b1 has a
+    # different question type and does not participate.
     assert len(pairs) == 1
     assert {pairs[0].candidate_a["document_id"], pairs[0].candidate_b["document_id"]} == {"doc-a", "doc-c"}
     assert pairs[0].question_type == "method"
 
-    # answer_keys 为空的候选不可配对（无法验证"单块只中一半"）。
+    # A candidate with empty answer_keys cannot be paired (there is no way to verify "only half of
+    # it
+    # hits").
     no_keys = [
         _t3_item("a1", "doc-a", "SnowflakeNet uses a Skip-Transformer decoder.", "SnowflakeNet"),
         _t3_item("b1", "doc-b", "PoinTr proposes set-to-set translation.", "PoinTr"),
@@ -478,17 +516,19 @@ def test_pair_multi_document_candidates_is_deterministic_and_respects_limit():
     again = draft.pair_multi_document_candidates(items, limit=4, seed=1)
     assert [p.candidate_a["candidate_id"] for p in first] == [p.candidate_a["candidate_id"] for p in again]
     assert len(first) == 4
-    # 同一 sentence / span 不得在输出里复用。
+    # The same sentence / span must not be reused in the output.
     spans = [p.candidate_a["span"] for p in first] + [p.candidate_b["span"] for p in first]
     assert len(spans) == len(set(spans))
-    # limit<=0 直接返回空列表。
+    # limit<=0 returns an empty list directly.
     assert draft.pair_multi_document_candidates(items, limit=0, seed=1) == []
 
 
 class _FakeSingleBlockClient:
-    """T3 单块探针：只回答被询问的那一块的事实，用于验证「只中一半」判定。
+    """T3 single-block probe: answers only the fact of the block it was asked about, used to verify
+    the "only half hits" verdict.
 
-    ``answers`` 把"上下文里的标记词"映射到答案；给 A 块时答 A 的事实，给 B 块时答 B 的事实。
+    ``answers`` maps "a marker word in the context" to an answer; when given block A it answers A's
+    fact, and when given block B it answers B's fact.
     """
 
     def __init__(self, answers, *, answer_both=False):
@@ -501,7 +541,8 @@ class _FakeSingleBlockClient:
         self.calls += 1
         user = messages[1].content
         if self.answer_both:
-            # 两块的事实都能答出：题目并不真正需要第二块。
+            # Both blocks' facts can be answered: the question does not really need the second
+            # block.
             return json.dumps({"verdict": "answered", "answer": " ".join(self.answers.values()),
                                "reason": "both facts present"})
         for marker, answer in self.answers.items():
@@ -511,7 +552,7 @@ class _FakeSingleBlockClient:
 
 
 def _multi_doc_pair_items():
-    """两条不同文档、同题型、都可 key_match 的候选。"""
+    """Two candidates from different documents, of the same question type, both key_matchable."""
 
     return [
         {"candidate_id": "a1", "document_id": "d1", "chunk_id": "k1",
@@ -553,7 +594,7 @@ def test_build_multi_document_cases_accepts_half_hit():
     assert [g.group_id for g in case.required_evidence_groups] == ["G1", "G2"]
     assert [c.claim_id for c in case.required_claims] == ["C1", "C2"]
     assert "multi_doc" in case.tags
-    # 两篇论文各占一个证据组（multi_doc 校验要求）。
+    # Each paper occupies one evidence group (a multi_doc validation requirement).
     assert {a.document_id for g in case.required_evidence_groups for a in g.alternatives} == {"d1", "d2"}
     assert {r["mode"] for r in results} == {"single_block_a", "single_block_b"}
 
@@ -582,7 +623,8 @@ def test_build_multi_document_cases_rejects_when_other_key_also_hits():
 def test_multi_doc_requires_dataset_out(tmp_path, monkeypatch, capsys):
     items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
     out = tmp_path / "gate.json"
-    # 构造了 T3 却没有落盘点：必须拒绝，而不是静默丢弃。
+    # T3 was constructed but no output path was given: this must be refused, not silently
+    # discarded.
     code = module.main([
         "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
         "--multi-doc", "2",
@@ -591,21 +633,23 @@ def test_multi_doc_requires_dataset_out(tmp_path, monkeypatch, capsys):
     assert "REFUSED" in capsys.readouterr().err
 
 
-# ---------- T6 错误前提题 ----------
+# ---------- T6 false-premise cases ----------
 
 def test_replacement_number_follows_spec_rules():
-    # 小数：最后一位 +1，位数不变（进位后整数增长但小数位固定）。
+    # Decimals: the last digit is +1 and the number of digits is unchanged (the integer part grows
+    # on
+    # a carry but the decimal places stay fixed).
     assert draft.replacement_number("0.19", context_text="") == "0.20"
     assert draft.replacement_number("1.99", context_text="") == "2.00"
     assert draft.replacement_number("2.5", context_text="") == "2.6"
-    # 整数 >= 10：+1。
+    # Integers >= 10: +1.
     assert draft.replacement_number("128", context_text="") == "129"
     assert draft.replacement_number("256", context_text="") == "257"
-    # 单位与百分号保留。
+    # Units and percent signs are preserved.
     assert draft.replacement_number("0.0012s", context_text="") == "0.0013s"
     assert draft.replacement_number("1.5mm", context_text="") == "1.6mm"
     assert draft.replacement_number("50%", context_text="") == "51%"
-    # < 10 的整数不选（含 `1%`：数值部分 < 10）。
+    # Integers < 10 are not selected (including `1%`: the numeric part is < 10).
     for value in ("7", "1%", "2"):
         with pytest.raises(ValueError):
             draft.replacement_number(value, context_text="")
@@ -614,9 +658,11 @@ def test_replacement_number_follows_spec_rules():
 
 
 def test_replacement_number_skips_values_already_in_context():
-    # 129 已在上下文中 ⇒ 再应用一次得到 130。
+    # 129 is already in the context, so applying the rule again yields 130.
     assert draft.replacement_number("128", context_text="the layer has 129 units") == "130"
-    # 3 次仍冲突 ⇒ ValueError，不返回一个原文里已有的值。
+    # Still colliding after 3 attempts => ValueError, rather than returning a value already present
+    # in
+    # the source.
     with pytest.raises(ValueError):
         draft.replacement_number("128", context_text="129 130 131", max_attempts=3)
 
@@ -641,18 +687,21 @@ def test_build_false_premise_case_satisfies_d8():
         approval_basis="gate.json#abc",
         false_value="0.0013s",
     )
-    # D8 形态：按可答题计分、允许拒答、tag 标记、unanswerable_kind 为空。
+    # D8 shape: scored as an answerable case, abstention allowed, tagged, and unanswerable_kind
+    # empty.
     assert case.expected_status == "answered"
     assert case.acceptable_abstention is True
     assert "false_premise" in case.tags
     assert case.unanswerable_kind is None
-    # required claim 写纠正后的事实，forbidden claim 带矛盾锚点。
+    # The required claim states the corrected fact, and the forbidden claim carries the
+    # contradicting
+    # anchor.
     assert len(case.required_claims) == 1 and case.required_claims[0].answer_keys
     assert len(case.forbidden_claims) == 1
     assert case.forbidden_claims[0].evidence_anchors
     assert "0.0013s" in case.forbidden_claims[0].text
 
-    # 通过 validate_dataset 的 D8 规则（用真实文档做页文本 provider）。
+    # Passes the D8 rule of validate_dataset (using the real document as the page-text provider).
     dataset = dataset_module.E2EDataset(
         dataset_id="d", corpus_version="c", cases=[case]
     )
@@ -663,32 +712,36 @@ def test_build_false_premise_case_satisfies_d8():
     assert "false_premise" not in {issue.rule for issue in report.issues}
 
 
-# ---------- 题型分层 ----------
+# ---------- question-type classification ----------
 
 def test_classify_question_type_reaches_implementation():
-    """`implementation` 必须可达：它排在 `method` 之前，否则永远拿不到题（配额必挂）。"""
+    """`implementation` must be reachable: it is checked before `method`, otherwise it could never get
+    a case (the quota would always fail).
+    """
 
     assert draft.classify_question_type(
         "Our model is implemented in PyTorch with the official library.", "entity"
     ) == "implementation"
-    # 纯方法描述仍判 method（回归保护）。
+    # A pure method description is still classified as method (regression protection).
     assert draft.classify_question_type(
         "The architecture consists of an encoder and a decoder.", "entity"
     ) == "method"
-    # 数值 span 一律 quantitative_results（既有语义不变）。
+    # A numeric span is always quantitative_results (existing semantics unchanged).
     assert draft.classify_question_type("we set 1% of the measurements", "numeric") == "quantitative_results"
-    # `experiment_setup` 仍排在 `implementation` 之前：含 GPU/数据集等实验配置的句子归实验设置。
+    # `experiment_setup` is still checked before `implementation`: sentences with experiment
+    # configuration such as GPU/dataset belong to experiment setup.
     assert draft.classify_question_type(
         "The model is implemented in PyTorch and trained on a single GPU.", "entity"
     ) == "experiment_setup"
-    # 8 类题型的关键词表都必须存在对应条目（`multi_document` 由 T3 构造，不靠关键词）。
+    # Every one of the 8 question types must have a corresponding keyword table entry
+    # (`multi_document` is constructed by T3 rather than keywords).
     keyword_types = {name for name, _ in draft._QUESTION_TYPE_KEYWORDS}
     assert keyword_types == set(draft.QUESTION_TYPES) - {"multi_document"}
 
 
-# ---------- 分层抽样 ----------
+# ---------- stratified sampling ----------
 def _candidate(document_id: str, index: int, sentence: str, language: str = "en") -> dict:
-    """构造一条 pool 形态的候选句行。"""
+    """Build one candidate-sentence row in pool form."""
 
     return {
         "candidate_id": f"{document_id}#{index}",
@@ -701,13 +754,16 @@ def _candidate(document_id: str, index: int, sentence: str, language: str = "en"
     }
 
 
-# 两个可出题题型：数值句（quantitative_results）与专名句（method）。
+# Two question-generating types: numeric sentences (quantitative_results) and proper-name sentences
+# (method).
 _NUMERIC_SENTENCE = "The model reduces the chamfer distance to 7.21 on the benchmark."
 _ENTITY_SENTENCE = "SnowflakeNet uses a Skip-Transformer decoder for point generation."
 
 
 def test_stratified_sample_spreads_across_documents():
-    # 3 篇论文 × 2 类题型 × 10 条：前缀截断只会取第一篇，分层抽样应三篇都取到。
+    # 3 papers x 2 question types x 10 rows: prefix truncation would only take the first paper,
+    # while
+    # stratified sampling should reach all three.
     candidates = [
         _candidate(document, index, _NUMERIC_SENTENCE if index % 2 == 0 else _ENTITY_SENTENCE)
         for document in ("doc-a", "doc-b", "doc-c")
@@ -724,29 +780,31 @@ def test_stratified_sample_is_deterministic_and_seed_sensitive():
     first = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=1)]
     again = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=1)]
     other = [row["candidate_id"] for row in draft.stratified_sample(candidates, limit=15, seed=2)]
-    assert first == again          # 同一 seed 逐元素相同（可复算）
-    assert first != other          # 换 seed 得到独立第二遍样本
+    assert first == again          # the same seed gives element-wise identical results (recomputable)
+    assert first != other          # a different seed gives an independent second sample
 
 
 def test_stratified_sample_limits_and_no_span_bucket():
     candidates = [_candidate("doc-a", index, _NUMERIC_SENTENCE) for index in range(5)]
-    # limit 大于总数时返回全部、不重复。
+    # When limit exceeds the total, everything is returned without duplicates.
     assert len(draft.stratified_sample(candidates, limit=99, seed=1)) == 5
     assert draft.stratified_sample(candidates, limit=0, seed=1) == []
     with pytest.raises(ValueError):
         draft.stratified_sample(candidates, limit=-1, seed=1)
 
-    # 取不到 span 的句子归入 no_span 层单独轮转，不挤占可出题的层。
+    # Sentences with no usable span go into the no_span stratum and rotate there on their own, so
+    # they
+    # do not crowd out the strata that can produce questions.
     mixed = candidates + [_candidate("doc-b", 99, "The figure and the table are listed above.")]
     sample = draft.stratified_sample(mixed, limit=6, seed=1)
     no_span = [row for row in sample if row["candidate_id"] == "doc-b#99"]
     assert len(no_span) <= 1
 
 
-# ---------- 锚点定位 ----------
+# ---------- anchor locating ----------
 
 def make_document(pages: dict[int, str], *, document_id="doc-1", content_hash="hash-1") -> Document:
-    """构造带页码 Segment 的小文档。"""
+    """Build a small document with page-numbered Segments."""
 
     return Document(
         document_id=document_id,
@@ -767,7 +825,9 @@ def test_build_evidence_alternative_matches_validate_source():
     assert anchor.locator.page_start == anchor.locator.page_end == 1
     assert anchor.locator.occurrence == 1
     assert anchor.locator.block_index is None and anchor.locator.span_start is None
-    # 偏移量必须与 stable_mapping.validate_source 的返回一致（同一规范化算法）。
+    # The offsets must agree with what stable_mapping.validate_source returns (the same
+    # normalization
+    # algorithm).
     validation = validate_source(anchor, document)
     assert validation["source_valid"] is True
     assert (anchor.locator.source_span_start, anchor.locator.source_span_end) == (
@@ -780,7 +840,7 @@ def test_build_evidence_alternative_matches_validate_source():
         draft.build_evidence_alternative(
             document, sentence="This sentence is not present in the page.", page_start=1, page_end=1
         )
-    # 页码不存在时同样定位不到。
+    # A nonexistent page number is equally unlocatable.
     with pytest.raises(ValueError, match="not found"):
         draft.build_evidence_alternative(document, sentence=sentence, page_start=2, page_end=2)
 
@@ -795,7 +855,7 @@ def test_build_evidence_alternative_reuses_hyphen_folding():
     assert anchor.locator.source_span_start == validation["source_span_start"]
 
 
-# ---------- CLI：构造 3 条 fixture ----------
+# ---------- CLI: three-row fixture ----------
 
 def _write_chunk_fixture(path):
     rows = [
@@ -816,7 +876,7 @@ def test_pool_from_json_reports_read_only_statistics(tmp_path):
     stats = payload["stats"]
     assert stats["chunks"] == 3 and stats["sentences"] == 3
     assert stats["candidate_sentences"] == 3
-    # 只有第一句同时含数字与单位（1% / 0.0012s）。
+    # Only the first sentence carries both a number and a unit (1% / 0.0012s).
     assert stats["numeric_unit_sentences"] == 1
     assert set(stats["per_document"]) == {"d1", "d2", "d3"}
     assert all(entry["chunks"] == 1 for entry in stats["per_document"].values())
@@ -825,7 +885,7 @@ def test_pool_from_json_reports_read_only_statistics(tmp_path):
         payload["candidates"][0]
     )
 
-    # --limit 只截断 chunk 数。
+    # --limit only truncates the number of chunks.
     limited = tmp_path / "pool_limited.json"
     assert module.main(["pool", "--from-json", str(fixture), "--report", str(limited), "--limit", "1"]) == 0
     assert json.loads(limited.read_text(encoding="utf-8"))["stats"]["chunks"] == 1
@@ -847,11 +907,12 @@ def test_draft_dry_run_writes_expected_jsonl_fields(tmp_path):
         assert row["generation"]["prompt_version"] == "draft-v1"
         assert row["generation"]["usage"] is None
         assert row["source"] in {"derived_t1", "derived_t2"}
-    # 中英按候选序号交替，天然接近各半。
+    # Chinese and English alternate by candidate index, so the split is naturally close to half and
+    # half.
     assert {row["query_language"] for row in lines} == {"en", "zh"}
 
 
-# ---------- CLI：输出保护与 gates 前置拒绝 ----------
+# ---------- CLI: output protection and the gates pre-check refusal ----------
 
 def test_cli_refuses_outputs_under_evals(tmp_path, capsys):
     target_dir = module.ROOT / "evals" / "_b3a2_test_never_created"
@@ -866,12 +927,15 @@ def test_cli_refuses_outputs_under_evals(tmp_path, capsys):
         assert module.main(argv) == 2, argv
     captured = capsys.readouterr()
     assert captured.err.count("REFUSED:") == len(commands)
-    # 输出保护在读取输入之前生效：目标目录/文件一个都不应被创建。
+    # Output protection takes effect before any input is read: neither the target directory nor any
+    # file should be created.
     assert not target_dir.exists()
 
 
 def test_gates_refuses_same_vendor_before_reading_items(tmp_path, monkeypatch, capsys):
-    # judge 模型以 deepseek 开头 ⇒ 同厂商；必须在读 items / 连 Chroma 之前拒绝。
+    # The judge model starts with "deepseek", so it is the same vendor; the refusal must happen
+    # before
+    # reading items or connecting to Chroma.
     monkeypatch.setenv("EVAL_JUDGE_BASE_URL", "https://api.deepseek.com")
     monkeypatch.setenv("EVAL_JUDGE_MODEL", "deepseek-chat")
     monkeypatch.setenv("EVAL_JUDGE_API_KEY", "test-key-not-real")
@@ -912,10 +976,12 @@ def test_report_renders_markdown(tmp_path):
     assert "document doc-1: 1 < 6" in text and "k9#0" in text and "probe-v1" in text
 
 
-# ---------- gates 全链路（Fake client，无网络） ----------
+# ---------- full gates path (fake client, no network) ----------
 
 class _FakeProbeClient:
-    """上下文含 1% 时答 answered，否则 insufficient_context；不联网。"""
+    """Answers with the tested value when the context contains it, and abstains otherwise; never
+    goes online.
+    """
 
     def __init__(self, **kwargs):
         self.kwargs = kwargs
@@ -931,7 +997,9 @@ class _FakeProbeClient:
 
 
 def _prepare_gates_env(tmp_path, monkeypatch):
-    """搭好 gates 的 Fake 环境：假探针、假 Chroma、单页文档；返回 (items_path, dense_path, query)。"""
+    """Set up the fake environment for gates: fake probe, fake Chroma, single-page document; returns
+    (items_path, dense_path, query).
+    """
 
     monkeypatch.setenv("EVAL_JUDGE_BASE_URL", "https://open.bigmodel.cn")
     monkeypatch.setenv("EVAL_JUDGE_MODEL", "glm-4-flash")
@@ -999,12 +1067,12 @@ def test_gates_pipeline_with_fake_probe(tmp_path, monkeypatch):
     assert report["quota"]["ok"] is False and "difficulty" in report["quota"]["counts"]
     modes = {entry["mode"] for entry in report["probe_results"]}
     assert modes == {"gold", "distractor"}
-    # 未提供 --rerun 时不得伪造一致率：available=false 且 value=null。
+    # Without --rerun the consistency rate must not be fabricated: available=false and value=null.
     assert report["rerun_consistency"]["available"] is False
     assert report["rerun_consistency"]["value"] is None
 
 
-# ---------- 题集草案落盘 ----------
+# ---------- persisting the question-set draft ----------
 
 def test_gates_dataset_out_writes_valid_dataset(tmp_path, monkeypatch):
     from evidenceflow.eval.e2e import dataset as dataset_module
@@ -1020,7 +1088,9 @@ def test_gates_dataset_out_writes_valid_dataset(tmp_path, monkeypatch):
     ])
     assert code == 0 and dataset_path.is_file()
 
-    # fingerprint 必须能自校验，否则题集与 mapping 的身份绑定就不可信。
+    # The fingerprint must self-verify, otherwise the identity binding between the question set and
+    # the
+    # mapping is untrustworthy.
     dataset = dataset_module.load_dataset(dataset_path, verify_fingerprint=True)
     assert dataset.dataset_id == "rag_e2e_v1"
     assert dataset.corpus_version == "test-corpus-version"
@@ -1029,9 +1099,11 @@ def test_gates_dataset_out_writes_valid_dataset(tmp_path, monkeypatch):
     assert case.case_id == "E2E-M001"
     assert case.query == query
     assert case.expected_status == "answered"
-    # approval_basis 指向报告名 + 该报告字节的 sha256（报告先落盘再算哈希）。
+    # approval_basis points at the report path plus the sha256 of that report's bytes (the report
+    # is
+    # written to disk first, then hashed).
     assert case.provenance.approval_basis.startswith("gate.json#")
-    # 落盘固定 LF：dataset.sha256 的口径依赖这一点。
+    # Persisted with fixed LF: the dataset.sha256 standard depends on this.
     assert b"\r\n" not in dataset_path.read_bytes()
 
 
@@ -1039,7 +1111,8 @@ def test_gates_dataset_out_requires_dataset_id_and_corpus_version(tmp_path, monk
     items_path, dense_path, _ = _prepare_gates_env(tmp_path, monkeypatch)
     out = tmp_path / "gate.json"
     dataset_path = tmp_path / "dataset.json"
-    # 只给 --dataset-out 不够：corpus_version 口径未定案，不能由脚本猜默认值。
+    # --dataset-out alone is not enough: the corpus_version standard is not settled, so the script
+    # must not guess a default.
     code = module.main([
         "gates", "--items", str(items_path), "--out", str(out), "--dense", str(dense_path),
         "--dataset-out", str(dataset_path),
@@ -1062,10 +1135,10 @@ def test_gates_dataset_out_refuses_evals_path(tmp_path, monkeypatch, capsys):
     assert not target.exists()
 
 
-# ---------- 复跑一致性 ----------
+# ---------- rerun consistency ----------
 
 def _rerun_item(candidate_id: str, span: str, keys: list[str], *, accepted: bool = True) -> dict:
-    """构造一条 draft 形态的候选，供复跑一致性比较。"""
+    """Build a candidate in draft form for rerun-consistency comparison."""
 
     return {
         "candidate_id": candidate_id,
@@ -1092,9 +1165,9 @@ def test_rerun_consistency_counts_conflicts_and_accepts_key_overlap():
         _rerun_item("k1#1", "1.6", ["1.6"]),
     ]
     second = [
-        # span 相同 → 一致，即使别名集合不完全相同。
+        # Same span => consistent, even when the alias sets are not exactly identical.
         _rerun_item("k1#0", "1%", ["1 percent"]),
-        # span 不同且别名无交集 → 冲突。
+        # Different span with no alias overlap => conflict.
         _rerun_item("k1#1", "9.9", ["9.9"]),
     ]
     report, conflicts = module.compute_rerun_consistency(first, second)
@@ -1107,7 +1180,9 @@ def test_rerun_consistency_counts_conflicts_and_accepts_key_overlap():
 
 def test_rerun_consistency_ignores_single_sided_acceptance():
     first = [_rerun_item("k1#0", "1%", ["1%"]), _rerun_item("k1#1", "1.6", ["1.6"])]
-    # 第二遍把 k1#1 丢了：它没有可比性，既不计入 checked 也不算冲突。
+    # The second pass dropped k1#1: it has nothing comparable, so it counts neither as checked nor
+    # as
+    # a conflict.
     second = [_rerun_item("k1#0", "1%", ["1%"]), _rerun_item("k1#1", "1.6", ["1.6"], accepted=False)]
     report, conflicts = module.compute_rerun_consistency(first, second)
     assert report["checked"] == 1 and report["consistent"] == 1
@@ -1120,6 +1195,6 @@ def test_rerun_consistency_empty_denominator_is_null():
     )
     assert report["available"] is True
     assert report["checked"] == 0
-    # 空分母返回 null，而不是伪造 0（§13.1(e) 口径）。
+    # An empty denominator returns null rather than a fabricated 0 (§13.1(e) standard).
     assert report["value"] is None
     assert conflicts == []

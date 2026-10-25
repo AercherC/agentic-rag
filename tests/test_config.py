@@ -1,4 +1,4 @@
-"""测试 Settings 默认值、环境变量覆盖和敏感配置处理。"""
+"""Test the Settings defaults, environment-variable overrides, and sensitive-configuration handling."""
 
 from pathlib import Path
 
@@ -59,7 +59,7 @@ def test_default_settings_can_be_instantiated(monkeypatch) -> None:
 
 
 def test_collection_name_explicit_setting_is_tracked_in_fields_set(monkeypatch) -> None:
-    """runtime 靠 model_fields_set 区分“显式设置”和“默认值”，该语义必须稳定。"""
+    """runtime relies on model_fields_set to tell "explicitly set" from "default"; that semantics must stay stable."""
 
     monkeypatch.delenv("COLLECTION_NAME", raising=False)
     assert "collection_name" not in Settings(_env_file=None).model_fields_set
@@ -112,7 +112,7 @@ def test_sensitive_setting_has_no_hardcoded_default(monkeypatch) -> None:
     ],
 )
 def test_invalid_llm_settings_are_rejected(overrides) -> None:
-    """Endpoint、模型及采样/超时数值必须具备明确可执行语义。"""
+    """The endpoint, model, and sampling/timeout numbers must all carry explicit executable semantics."""
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None, **overrides)
@@ -132,7 +132,7 @@ def test_invalid_llm_settings_are_rejected(overrides) -> None:
     ],
 )
 def test_invalid_reranker_settings_are_rejected(overrides) -> None:
-    """候选深度、模型设备与 float32 精度必须符合显式配置合同。"""
+    """Candidate depth, model device, and float32 precision must conform to the explicit configuration contract."""
 
     with pytest.raises(ValidationError):
         Settings(_env_file=None, **overrides)

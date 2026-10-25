@@ -1,4 +1,4 @@
-"""Phase 15A 的 staging validation、active pointer、activation 与 rollback。"""
+"""Phase 15A staging validation, active pointer, activation and rollback."""
 
 from __future__ import annotations
 
@@ -22,29 +22,29 @@ LifecyclePointerStatus = Literal["ACTIVE", "STAGING", "PREVIOUS"]
 
 
 class ActiveCollectionError(RuntimeError):
-    """线上 collection 的解析或身份校验失败：配置冲突、状态文件损坏或 lifecycle 标记不符。"""
+    """Resolving the serving collection or verifying its identity failed: configuration conflict, corrupt state file or mismatching lifecycle flag."""
 
 
 class ActiveIndexProtectedError(RuntimeError):
-    """目标 collection 是 lifecycle active 指针指向的索引，禁止直接 ingest。"""
+    """The target collection is the index the lifecycle active pointer references; ingesting into it directly is forbidden."""
 
 
 class CollectionReader(Protocol):
-    """生命周期校验所需的 Vector Store 只读能力。"""
+    """The read-only Vector Store capabilities that lifecycle validation needs."""
 
     def iter_all_chunks(self) -> Iterator[DocumentChunk]:
-        """返回当前 Collection 的全部可恢复 Chunk。"""
+        """Return every recoverable Chunk in the current Collection."""
 
         ...
 
     def search(self, query_embedding: Sequence[float], top_k: int) -> list[Any]:
-        """执行一次只读 Dense smoke query。"""
+        """Run one read-only Dense smoke query."""
 
         ...
 
 
 class IndexPointer(BaseModel):
-    """active/staging/previous 指针中的不可变索引身份摘要。"""
+    """Immutable index identity summary of the active/staging/previous pointers."""
 
     knowledge_base_id: str = Field(min_length=1, description="所属知识库 ID。")
     collection_name: str = Field(min_length=1, description="绑定的 Chroma Collection 名称。")
@@ -62,7 +62,7 @@ class IndexPointer(BaseModel):
         status: LifecyclePointerStatus | None = None,
         manifest_path: str | None = None,
     ) -> "IndexPointer":
-        """从 manifest 生成指针，默认沿用 manifest 的 index 状态。"""
+        """Build a pointer from a manifest, defaulting to the manifest's index status."""
 
         pointer_status = status or manifest.index.status
         if pointer_status not in {"ACTIVE", "STAGING", "PREVIOUS"}:
@@ -79,7 +79,7 @@ class IndexPointer(BaseModel):
 
 
 class LifecycleState(BaseModel):
-    """单机知识库的 active/previous/staging 单一状态记录。"""
+    """The single active/previous/staging state record of a single-machine knowledge base."""
 
     schema_version: str = Field(default="index-lifecycle-v1", min_length=1)
     knowledge_base_id: str = Field(min_length=1, description="状态所属知识库 ID。")
@@ -89,7 +89,7 @@ class LifecycleState(BaseModel):
 
     @model_validator(mode="after")
     def validate_pointer_ownership(self) -> "LifecycleState":
-        """确保指针不会跨知识库或携带错误生命周期状态。"""
+        """Ensure pointers never cross knowledge bases or carry the wrong lifecycle status."""
 
         if self.active.status != "ACTIVE":
             raise ValueError("active pointer must have status ACTIVE")
@@ -105,7 +105,7 @@ class LifecycleState(BaseModel):
 
 
 class CollectionValidationReport(BaseModel):
-    """staging Collection 在 activation 前的完整性验证结果。"""
+    """Result of validating a staging Collection before activation."""
 
     passed: bool = Field(description="所有启用的 validation checks 是否通过。")
     manifest_document_count: int = Field(ge=0)
@@ -127,10 +127,10 @@ class CollectionValidationReport(BaseModel):
 
 
 class StagingBuildCoordinator:
-    """驱动一次同步 staging build，并把真实阶段写入 BuildJob。"""
+    """Drive one synchronous staging build and write the real stages into the BuildJob."""
 
     def __init__(self, lifecycle: "IndexLifecycle", job_store: BuildJobStore) -> None:
-        """注入 lifecycle pointer 和 Job 持久化器，不创建后台任务。"""
+        """Inject the lifecycle pointer and the Job persistence backend; creates no background task."""
 
         self.lifecycle = lifecycle
         self.job_store = job_store
@@ -144,11 +144,12 @@ class StagingBuildCoordinator:
         smoke_query_embedding: Sequence[float] | None = None,
         expected_embedding_dimension: int | None = None,
     ) -> tuple[BuildJob, CollectionValidationReport | None]:
-        """在新 Collection 上执行受回调阶段约束的 build，再进行 validation。
+        """Run a build on the new Collection under the callback-driven stage contract, then validate.
 
-        `build` 负责在传入的 Collection 名称上复用既有 IngestionService；它必须在实际
-        进入 PARSING/CHUNKING/EMBEDDING/INDEXING 时调用阶段回调。Coordinator 不会复制
-        ingestion pipeline，也不会在 validation 失败时调用 activation。
+        `build` is responsible for reusing the existing IngestionService against the Collection name it
+        is given, and it must invoke the stage callback when it actually enters
+        PARSING/CHUNKING/EMBEDDING/INDEXING. The Coordinator does not duplicate the ingestion pipeline,
+        and it never calls activation when validation fails.
         """
 
         tracker = BuildJobTracker.create(
@@ -163,7 +164,7 @@ class StagingBuildCoordinator:
             tracker.advance("SCANNING")
 
             def report_stage(status: BuildJobStatus) -> None:
-                """将 builder 报告的真实阶段推进到同一个持久化 Job。"""
+                """Advance the same persisted Job to the real stage reported by the builder."""
 
                 if status not in {"PARSING", "CHUNKING", "EMBEDDING", "INDEXING"}:
                     raise ValueError(f"invalid staging build stage: {status}")
@@ -190,18 +191,21 @@ class StagingBuildCoordinator:
             )
             return tracker.job, report
         except Exception as exc:
-            # 失败只落 Job 诊断，不改 active pointer；staging 可由调用方按生命周期策略清理。
+            # A failure only writes Job diagnostics and never touches the active pointer; staging
+            # can be
+            # cleaned up by the caller per the lifecycle policy.
             if tracker.job.status not in {"FAILED", "BLOCKED", "ACTIVATED"}:
                 tracker.fail("BUILD_ERROR", f"{type(exc).__name__}: {exc}")
             return tracker.job, None
 
 
-# staging 名称的组成长度：base 前缀 24 + "-" + base 短哈希 8 + "__staging__" 11 + signature 前缀 16 = 60，
-# 低于 Chroma 名称上限 63。
+# Total length of a staging name: base prefix 24 + "-" + base short hash 8 + "__staging__" 11 +
+# signature prefix 16 = 60, below Chroma's 63-character name limit.
 _STAGING_BASE_PREFIX = 24
 _STAGING_BASE_HASH = 8
 _STAGING_SIGNATURE_PREFIX = 16
-# 避让 reserved 名称时最多尝试的候选数；超过说明输入异常，直接报错而不是无限尝试。
+# Maximum number of candidates tried when avoiding reserved names; going beyond it means the
+# input is anomalous, so raise instead of retrying forever.
 _STAGING_NAME_ATTEMPTS = 8
 
 
@@ -211,29 +215,35 @@ def build_staging_collection_name(
     *,
     reserved: Collection[str] = (),
 ) -> str:
-    """为 staging 生成确定性、可读且不依赖随机 UUID 的 Collection 名称。
+    """Generate a deterministic, readable Collection name for staging that does not rely on a random UUID.
 
-    名称 = 截断的 base 前缀 + 完整 base 的短哈希 + ``__staging__`` + signature 前缀。
-    短哈希基于**完整** base 计算：仅靠截断前缀时，对生成结果再生成一次会得到它本身（A3 审查发现），
-    激活后重建的 staging 名就会等于 active。加入完整 base 的哈希后，以生成结果为 base 再生成
-    得到的名称必然不同于它自身（除非 32 位哈希碰撞）。
+    Name = truncated base prefix + short hash of the complete base + ``__staging__`` + signature
+    prefix. The short hash is computed from the **complete** base: with only the truncated prefix,
+    generating a name from a generated name would return that name itself (found in the A3 review),
+    so a staging name rebuilt after activation would equal active. With the hash of the complete base
+    included, generating from a generated result necessarily differs from itself (barring a 32-bit
+    hash collision).
 
-    ``reserved``（通常是 active 与 previous）中的名称会被避让：同一 base + signature 在 rollback
-    之后重建时，首选名称恰好等于 previous（它就是上一次的 staging），此时按固定顺序改用带序号盐的
-    候选，结果仍只由输入决定。所有候选都被占用时抛 ``ValueError``。
+    Names in ``reserved`` (usually active and previous) are steered around: when rebuilding with the
+    same base + signature after a rollback, the preferred name happens to equal previous (it was the
+    last staging name), so the code falls back to candidates salted with an index in a fixed order,
+    and the result is still decided only by the input. Raises ``ValueError`` when every candidate is taken.
     """
 
     if not base_collection.strip() or not index_signature.strip():
         raise ValueError("base_collection and index_signature must not be empty")
-    # 只保留 Chroma 允许的字符，并截断以满足名称长度上限；首尾的 . 和 - 不允许，去掉。
+    # Keep only the characters Chroma allows and truncate to the name-length limit; leading and
+    # trailing . and - are not allowed, so strip them.
     safe_base = (
         re.sub(r"[^A-Za-z0-9._-]", "-", base_collection)[:_STAGING_BASE_PREFIX].strip(".-")
         or "evidenceflow"
     )
     taken = set(reserved)
     for attempt in range(_STAGING_NAME_ATTEMPTS):
-        # 第 0 个候选只哈希 base 本身，使首次构建的名称是 (base, signature) 的纯函数；
-        # 之后的候选在哈希输入里追加序号，仅用于避让 reserved。
+        # Candidate 0 hashes the base itself, making the first build's name a pure function of
+        # (base, signature); later candidates append an index to the hash input only to avoid
+        # reserved
+        # names.
         salt = "" if attempt == 0 else f"#{attempt}"
         digest = hashlib.sha256(f"{base_collection}{salt}".encode("utf-8")).hexdigest()
         name = (
@@ -248,7 +258,7 @@ def build_staging_collection_name(
 
 
 def _read_embedding_dimension(store: Any) -> int | None:
-    """从具体 Store 的只读 inspection 能力读取向量维度。"""
+    """Read the vector dimension from the concrete Store's read-only inspection capability."""
 
     value = getattr(store, "embedding_dimension", None)
     if callable(value):
@@ -265,7 +275,7 @@ def validate_collection(
     expected_embedding_dimension: int | None = None,
     required_metadata_keys: Sequence[str] = ("chunk_strategy", "element_ids"),
 ) -> CollectionValidationReport:
-    """校验 staging 的文档/Chunk/metadata/维度/可读性和 Dense smoke。"""
+    """Validate the staging document/Chunk/metadata/dimension/readability and the Dense smoke query."""
 
     errors: list[str] = []
     try:
@@ -347,7 +357,7 @@ def validate_collection(
 
 
 def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
-    """原子替换生命周期 JSON，失败时保留原 active pointer。"""
+    """Atomically replace the lifecycle JSON, preserving the original active pointer on failure."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
@@ -367,10 +377,10 @@ def _write_json_atomic(path: Path, payload: dict[str, Any]) -> None:
 
 
 class IndexLifecycle:
-    """管理单机 active/staging/previous 指针，不执行索引重建或检索。"""
+    """Manage the single-machine active/staging/previous pointers; it performs no index rebuild or retrieval."""
 
     def __init__(self, state_path: str | Path, knowledge_base_id: str) -> None:
-        """注入状态文件路径和知识库身份；所有写入仅限该状态文件。"""
+        """Inject the state file path and the knowledge base identity; all writes are confined to that state file."""
 
         if not knowledge_base_id.strip():
             raise ValueError("knowledge_base_id must not be empty")
@@ -378,7 +388,7 @@ class IndexLifecycle:
         self.knowledge_base_id = knowledge_base_id
 
     def load_state(self) -> LifecycleState:
-        """读取并校验当前 active pointer state。"""
+        """Read and validate the current active pointer state."""
 
         state = LifecycleState.model_validate_json(self.state_path.read_text(encoding="utf-8"))
         if state.knowledge_base_id != self.knowledge_base_id:
@@ -391,7 +401,7 @@ class IndexLifecycle:
         *,
         manifest_path: str | None = None,
     ) -> LifecycleState:
-        """以一个已知良好 manifest 建立初始 active state。"""
+        """Establish the initial active state from one known-good manifest."""
 
         if manifest.knowledge_base_id != self.knowledge_base_id:
             raise ValueError("manifest belongs to another knowledge base")
@@ -409,7 +419,7 @@ class IndexLifecycle:
         return state
 
     def prepare_staging(self, manifest: KnowledgeBaseManifest) -> LifecycleState:
-        """登记 staging identity；此步骤不触碰 active Collection。"""
+        """Register the staging identity; this step does not touch the active Collection."""
 
         if manifest.knowledge_base_id != self.knowledge_base_id:
             raise ValueError("manifest belongs to another knowledge base")
@@ -429,7 +439,7 @@ class IndexLifecycle:
         *,
         manifest_path: str | None = None,
     ) -> LifecycleState:
-        """仅在 validation PASS 后把 staging 变为 active，并保留旧 active。"""
+        """Turn staging into active only after validation PASSES, keeping the old active index."""
 
         if manifest.index.status != "STAGING":
             raise ValueError("activation requires a staging manifest")
@@ -452,7 +462,7 @@ class IndexLifecycle:
         return next_state
 
     def rollback(self) -> LifecycleState:
-        """直接恢复 previous pointer，不重新解析、Embedding 或构建旧索引。"""
+        """Restore the previous pointer directly, without re-parsing, re-Embedding or rebuilding the old index."""
 
         state = self.load_state()
         if state.previous is None:
@@ -467,11 +477,12 @@ class IndexLifecycle:
         return next_state
 
     def discard_staging(self) -> LifecycleState:
-        """只清空 staging 指针，不改动 active/previous，也不删除 Chroma collection。
+        """Clear only the staging pointer; active/previous are untouched and no Chroma collection is deleted.
 
-        调用方负责先通过 Chroma API 删除 staging collection，并事先确认它不是 active 或
-        previous；本方法只维护指针，避免手工编辑 JSON。staging 本来为 null 时直接返回，
-        不重写状态文件。
+        The caller is responsible for deleting the staging collection through the Chroma API first and
+        for confirming beforehand that it is neither active nor previous; this method only maintains the
+        pointer, avoiding hand-edited JSON. When staging is already null it returns immediately without
+        rewriting the state file.
         """
 
         state = self.load_state()

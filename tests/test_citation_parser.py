@@ -1,4 +1,4 @@
-"""测试 Citation 标签的严格解析、去重、顺序和 allowlist 分类。"""
+"""Test strict parsing, deduplication, ordering and allowlist classification of Citation labels."""
 
 from copy import deepcopy
 
@@ -7,7 +7,7 @@ from evidenceflow.domain import BuiltContext, ContextEntry, SourceReference
 
 
 def make_context(count: int = 3) -> BuiltContext:
-    """创建带连续正式标签的 Context，支持验证多位数标签。"""
+    """Create a Context with consecutive formal labels, able to verify multi-digit labels."""
 
     entries: list[ContextEntry] = []
     rendered: list[str] = []
@@ -44,7 +44,7 @@ def make_context(count: int = 3) -> BuiltContext:
 
 
 def empty_context() -> BuiltContext:
-    """创建没有任何允许标签的正式空 Context。"""
+    """Create a formal empty Context that allows no labels at all."""
 
     return BuiltContext(
         context_text="",

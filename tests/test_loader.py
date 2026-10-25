@@ -1,4 +1,4 @@
-"""测试 PDF、Markdown 和 TXT Document Loader。"""
+"""Test the PDF, Markdown, and TXT Document Loaders."""
 
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from evidenceflow.ingestion import load_document
 
 
 def create_pdf(path: Path, page_texts: list[str]) -> None:
-    """动态创建可提取文本的小型 PDF，避免单元测试依赖真实资料。"""
+    """Dynamically create a small PDF with extractable text, so unit tests need no real material."""
 
     document = pymupdf.open()
     for text in page_texts:
@@ -42,8 +42,9 @@ def test_load_markdown_preserves_original_syntax_and_uppercase_extension(
     source = ingestion_root / "README.MD"
     ingestion_root.mkdir()
     markdown = "# Agent\n\nUse **tools** when needed.\n"
-    # 使用明确 bytes 固定换行符，避免 Windows write_text() 自动转换换行后
-    # 把操作系统行为误判成 Loader 改写了 Markdown 原文。
+    # Write explicit bytes to pin the line endings, so that after Windows write_text() converts
+    # newlines automatically the OS behaviour is not misread as the Loader rewriting the Markdown
+    # source.
     source.write_bytes(markdown.encode("utf-8"))
 
     document = load_document(source, ingestion_root)

@@ -1,4 +1,4 @@
-"""测试 Composition Root 的正式组件选择与 Settings 映射，不加载真实模型。"""
+"""Test the Composition Root's formal component selection and Settings mapping without loading real models."""
 
 from types import SimpleNamespace
 
@@ -16,10 +16,12 @@ from evidenceflow.runtime import (
 
 @pytest.fixture(autouse=True)
 def _no_lifecycle_state(monkeypatch, tmp_path) -> None:
-    """模拟没有 lifecycle 状态文件的全新环境。
+    """Simulate a fresh environment with no lifecycle state file.
 
-    切换到临时目录，使默认的相对路径 ``artifacts/phase15a/index_state.json`` 不存在；
-    不能显式传入一个不存在的路径，因为显式设置的 INDEX_STATE_PATH 缺失会被视为配置错误。
+    Switch to a temporary directory so the default relative path
+    ``artifacts/phase15a/index_state.json`` does not exist; an explicitly passed non-existent path
+    is not an option, because a missing explicitly configured INDEX_STATE_PATH counts as a
+    configuration error.
     """
 
     monkeypatch.chdir(tmp_path)
@@ -28,7 +30,7 @@ def _no_lifecycle_state(monkeypatch, tmp_path) -> None:
 
 
 class _FakeExactIndex:
-    """记录构建参数的 Exact 索引替身；size/dimension 可由用例覆盖。"""
+    """An exact-index stand-in that records construction arguments; size/dimension can be overridden per case."""
 
     size = 2
     dimension = 1024
@@ -55,7 +57,8 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
     class FakeDense:
         def __init__(self, embedding, search, top_k):
             events.append(("dense", top_k))
-            # DenseRetriever 收到的 search 对象必须是 Exact 索引，而不是 Chroma Store。
+            # The search object handed to DenseRetriever must be the Exact index, not the Chroma
+            # Store.
             events.append(("dense_search_is_exact", isinstance(search, _FakeExactIndex)))
 
     class FakeScorer:
@@ -138,7 +141,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
 
 
 def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) -> None:
-    """摄取生产装配也集中在 runtime.py，CLI 不再选择具体依赖。"""
+    """Ingestion production wiring is centralised in runtime.py too; the CLI no longer picks concrete dependencies."""
 
     events: list[tuple[str, object]] = []
 
@@ -155,7 +158,8 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
         def __init__(
             self, root, tokenizer, embedding, store, *, chunk_size, chunk_overlap, chunk_strategy
         ):
-            # Phase 13F：runtime 装配必须把 Settings.chunk_strategy 传入摄取服务。
+            # Phase 13F: runtime wiring must pass Settings.chunk_strategy into the ingestion
+            # service.
             events.append(("ingestion", (root, chunk_size, chunk_overlap, chunk_strategy)))
 
     monkeypatch.setattr("evidenceflow.runtime.BgeM3Tokenizer", FakeTokenizer)
@@ -184,7 +188,7 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
 
 
 def _patch_retriever_deps(monkeypatch, *, store_count: int, index_size: int, dimension: int):
-    """为 build_retriever 的启动校验用例替换重依赖。"""
+    """Replace the heavy dependencies for build_retriever's startup-validation cases."""
 
     class FakeStore:
         count = store_count
@@ -214,7 +218,7 @@ def _patch_retriever_deps(monkeypatch, *, store_count: int, index_size: int, dim
 
 
 def test_build_retriever_rejects_index_size_mismatch(monkeypatch, tmp_path) -> None:
-    """Exact 索引大小与 collection 记录数不一致时必须拒绝启动。"""
+    """Startup must be refused when the Exact index size disagrees with the collection record count."""
 
     _patch_retriever_deps(monkeypatch, store_count=817, index_size=816, dimension=1024)
 
@@ -223,7 +227,7 @@ def test_build_retriever_rejects_index_size_mismatch(monkeypatch, tmp_path) -> N
 
 
 def test_build_retriever_rejects_wrong_dimension(monkeypatch, tmp_path) -> None:
-    """维度不是 1024 说明 collection 与 BGE-M3 不匹配，必须拒绝启动。"""
+    """A dimension other than 1024 means the collection does not match BGE-M3, so startup must be refused."""
 
     _patch_retriever_deps(monkeypatch, store_count=2, index_size=2, dimension=768)
 
@@ -232,7 +236,7 @@ def test_build_retriever_rejects_wrong_dimension(monkeypatch, tmp_path) -> None:
 
 
 def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, tmp_path) -> None:
-    """校验通过时返回装配好的检索器。"""
+    """Return the wired retriever once validation passes."""
 
     _patch_retriever_deps(monkeypatch, store_count=2, index_size=2, dimension=1024)
 
@@ -244,7 +248,7 @@ def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, t
 
 
 def test_build_rag_service_accepts_injected_retriever_and_generator(monkeypatch, tmp_path) -> None:
-    """评测脚本可注入检索器与 Generator；注入时不得再装配正式检索或创建 LLM Client。"""
+    """Evaluation scripts may inject a retriever and a Generator; when injected, no formal retrieval may be wired and no LLM Client created."""
 
     class FakeTokenizer:
         def __init__(self, model): ...

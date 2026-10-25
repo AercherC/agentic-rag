@@ -1,4 +1,4 @@
-"""测试结构化输出：三种请求模式的纯函数构造、generate_json 与 last_usage（不联网）。"""
+"""Test structured output: pure-function request construction for the three modes, generate_json, and last_usage (no network)."""
 
 from types import SimpleNamespace
 
@@ -36,7 +36,7 @@ def test_json_schema_mode_params_use_strict_schema() -> None:
             "json_schema": {"name": "generator_output", "strict": True, "schema": SCHEMA},
         }
     }
-    # 合同：additionalProperties=false，status/answer 均 required。
+    # Contract: additionalProperties=false, and both status/answer are required.
     assert SCHEMA["additionalProperties"] is False
     assert set(SCHEMA["required"]) == {"status", "answer"}
 
@@ -77,7 +77,7 @@ def test_unknown_mode_is_rejected_everywhere() -> None:
 
 
 class RecordingCompletions:
-    """返回预置 content / usage，并记录每次请求参数。"""
+    """Return preset content / usage and record the request arguments of every call."""
 
     def __init__(self, contents: list[object], usage: object = None, message_extra: dict | None = None) -> None:
         self.contents = list(contents)
@@ -145,18 +145,18 @@ def test_last_usage_reflects_only_the_latest_call_and_is_none_without_usage() ->
     usage = SimpleNamespace(prompt_tokens=12, completion_tokens=3)
     completions = RecordingCompletions(["a", "b"], usage=usage)
     client = make_client(completions, "prompt_only")
-    assert client.last_usage is None  # 尚未调用
+    assert client.last_usage is None  # no call made yet
 
     client.generate(PLAIN_MESSAGES)
     assert client.last_usage == {"prompt_tokens": 12, "completion_tokens": 3}
 
-    completions.usage = None  # 第二次调用服务没有返回 usage
+    completions.usage = None  # the service returned no usage on the second call
     client.generate(PLAIN_MESSAGES)
     assert client.last_usage is None
 
 
 def test_failed_call_resets_last_usage() -> None:
-    """请求抛出异常时不能残留上一次调用的 usage。"""
+    """When the request raises, the usage of the previous call must not linger."""
 
     usage = SimpleNamespace(prompt_tokens=1, completion_tokens=1)
     completions = RecordingCompletions(["a"], usage=usage)
@@ -164,7 +164,7 @@ def test_failed_call_resets_last_usage() -> None:
     client.generate(PLAIN_MESSAGES)
     assert client.last_usage is not None
 
-    completions.contents = []  # 下一次 create 内部 pop 空列表 -> 抛 IndexError，被统一包装
+    completions.contents = []  # the next create() pops from an empty list -> IndexError, which is wrapped uniformly
     with pytest.raises(LLMRequestError):
         client.generate(PLAIN_MESSAGES)
     assert client.last_usage is None

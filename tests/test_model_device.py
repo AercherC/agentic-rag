@@ -1,4 +1,4 @@
-"""验证模型推理设备解析规则，不依赖真实 CUDA 硬件。"""
+"""Verify the model inference device resolution rules without depending on real CUDA hardware."""
 
 import sys
 from types import SimpleNamespace
@@ -15,7 +15,7 @@ from evidenceflow.model_device import ModelDeviceError, resolve_model_device
 def test_resolves_automatic_and_forced_cpu_devices(
     monkeypatch, requested: str, available: bool, expected: str
 ) -> None:
-    """auto 仅在 CUDA 可用时选首张卡，强制 CPU 不受 CUDA 状态影响。"""
+    """auto picks the first card only when CUDA is available; a forced CPU is unaffected by the CUDA state."""
 
     fake_torch = SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: available))
     monkeypatch.setitem(sys.modules, "torch", fake_torch)
@@ -24,7 +24,7 @@ def test_resolves_automatic_and_forced_cpu_devices(
 
 
 def test_explicit_cuda_fails_clearly_when_unavailable(monkeypatch) -> None:
-    """显式 CUDA 请求不可用时必须报错，不静默回退到 CPU。"""
+    """An explicit CUDA request must raise when unavailable, and must not silently fall back to CPU."""
 
     fake_torch = SimpleNamespace(cuda=SimpleNamespace(is_available=lambda: False))
     monkeypatch.setitem(sys.modules, "torch", fake_torch)
@@ -34,7 +34,7 @@ def test_explicit_cuda_fails_clearly_when_unavailable(monkeypatch) -> None:
 
 
 def test_invalid_device_is_rejected_without_cuda_probe() -> None:
-    """设备配置只接受 auto、cpu、cuda 三种稳定取值。"""
+    """The device setting accepts only the three stable values auto, cpu and cuda."""
 
     with pytest.raises(ValueError, match="auto, cpu, cuda"):
         resolve_model_device("gpu")

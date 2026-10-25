@@ -1,23 +1,31 @@
-"""B3a-2′ 派生式题集 CLI：句池统计、题干抽取、机器闸门与 Markdown 报告。
+"""B3a-2′ derived-dataset CLI: pool statistics, question extraction, machine gates, Markdown report.
 
-子命令（全部输出 UTF-8、键排序、``newline="\\n"`` 的 JSON/JSONL）：
-- ``pool``：只读句池统计。``--from-index`` 读取 active collection（``resolve_active_collection`` +
-  ``ChromaVectorStore(create_if_missing=False)`` + ``iter_all_chunks``），``--from-json`` 读取
-  ``[{"chunk_id","document_id","text","page_start","page_end"}]`` 供离线重放；两者行为一致。
-  不加载模型、不发请求，只统计 chunk 数、句数、候选句数、含数字+单位句数与每篇候选句数，
-  并把候选句列表写进报告，供 ``draft --from-json`` 复用。
-- ``draft``：对候选句派生 span/answer_keys，调用生成器写题干（``--dry-run`` 用占位符
-  ``"<DRY-RUN>"``，不联网），再做 §2.3 的确定性检查，产出候选 JSONL。
-- ``gates``：对 accepted 候选跑 G3/G4/G5（确定性）与 G6（跨厂商探针），写 ``B3_gate_report.json``。
-  探针配置取 ``EVAL_JUDGE_*``（进程环境优先，其次 ``.env``）；同厂商时拒绝运行（退出码 2，不写报告）。
-- ``report``：把闸门 JSON 渲染成 Markdown（配额表、每闸门通过率、失败原因 Top-N、丢弃清单、探针配置）。
+Subcommands (all emit UTF-8, key-sorted JSON/JSONL with a fixed ``newline="\\n"``):
+- ``pool``: read-only sentence-pool statistics. ``--from-index`` reads the active collection
+  (``resolve_active_collection`` + ``ChromaVectorStore(create_if_missing=False)`` +
+  ``iter_all_chunks``), while ``--from-json`` reads
+  ``[{"chunk_id","document_id","text","page_start","page_end"}]`` for offline replay; both behave
+  identically. It loads no model and issues no request; it only counts chunks, sentences, candidate
+  sentences, sentences that hold a number+unit, and candidate sentences per document, and writes the
+  candidate sentence list into the report so that ``draft --from-json`` can reuse it.
+- ``draft``: derive span/answer_keys for the candidate sentences, call the generator for the question
+  text (``--dry-run`` uses the placeholder ``"<DRY-RUN>"`` and stays offline), then run the
+  deterministic §2.3 checks and emit candidate JSONL.
+- ``gates``: run G3/G4/G5 (deterministic) and G6 (cross-vendor probe) over the accepted candidates and
+  write ``B3_gate_report.json``. Probe configuration comes from ``EVAL_JUDGE_*`` (process environment
+  first, then ``.env``); a same-vendor setup is refused (exit code 2, no report written).
+- ``report``: render the gate JSON into Markdown (quota table, per-gate pass rate, failure-reason
+  Top-N, discard list, probe configuration).
 
-输出保护：任何输出路径解析后位于仓库 ``evals/`` 下 → 一律拒绝（stderr ``REFUSED``，退出码 2），
-且在读取输入、连接 Chroma、创建 LLM client 之前判断。
+Output guard: any output path that resolves under the repository's ``evals/`` is refused outright
+(stderr ``REFUSED``, exit code 2), and the check runs before inputs are read, before Chroma is
+connected, and before any LLM client is created.
 
-退出码：0 = 成功跑完（gates 的失败项与配额未达标写进报告，由报告判定是否冻结；
-池统计/draft/report 成功写出）；2 = 被拒绝（输出在 ``evals/`` 下、探针配置缺失、探针与生成器
-同厂商；均不写产物）；1 = 运行错误（输入不可读、单条生成异常等未归类错误）。
+Exit codes: 0 = completed successfully (gate failures and unmet quotas go into the report, which then
+decides whether to freeze; pool/draft/report wrote their output); 2 = refused (output under
+``evals/``, missing probe configuration, or probe and generator from the same vendor; no artifact is
+written in any case); 1 = runtime error (unreadable input, single-record generation failure, other
+unclassified errors).
 """
 
 from __future__ import annotations
@@ -54,8 +62,10 @@ from evidenceflow.runtime import resolve_active_collection  # noqa: E402
 from evidenceflow.storage.chroma import ChromaVectorStore  # noqa: E402
 
 EVALS_ROOT = ROOT / "evals"
-# Phase 12 的不可答题资产（只读）：题干在 generation_eval_dataset.json，
-# 零命中验证在 unanswerable_verification.json。T4 复用这两份，不改它们。
+# Phase 12 unanswerable assets (read-only): the question text lives in
+# generation_eval_dataset.json,
+# and the zero-hit verification in unanswerable_verification.json. T4 reuses both and changes
+# neither.
 PHASE12_DIR = EVALS_ROOT / "evaluation_v3" / "phase12_rag_quality_v1"
 EXIT_OK, EXIT_ERROR, EXIT_REFUSED = 0, 1, 2
 
@@ -64,12 +74,13 @@ GATES_VERSION = "b3-gates-v1"
 DRAFT_PROMPT_VERSION = "draft-v1"
 DRAFT_SCHEMA_NAME = "draft_question"
 QUERY_MIN_CHARS, QUERY_MAX_CHARS = 8, 200
-# 无信息前缀不允许出现在题干开头（设计 §2.6 反推的额外闸门）。
+# Uninformative prefixes may not open a question (an extra gate derived backwards from design
+# §2.6).
 _BAD_QUERY_PREFIXES = ("according to the passage", "根据上文")
 PROBE_MAX_ATTEMPTS = 2
 JUDGE_KEYS = ("EVAL_JUDGE_BASE_URL", "EVAL_JUDGE_MODEL", "EVAL_JUDGE_API_KEY")
 
-# 题干生成 JSON 合同（§3）：字段固定，多余字段一律拒绝。
+# Question-generation JSON contract (§3): fields are fixed; any extra field is rejected outright.
 DRAFT_JSON_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
@@ -96,17 +107,18 @@ _REPAIR_INSTRUCTION = (
     'Your previous reply did not match the required JSON schema. Reply again with ONLY the JSON object '
     '{"question": "...", "answer": "...", "reason": "..."} and nothing else.'
 )
-# 与 Generator / probe 相同的清理顺序：去首尾空白 → 去开头 <think> → 去外层 ```json。
+# Same cleanup order as Generator / probe: strip surrounding whitespace -> drop a leading <think>
+# -> drop the outer ```json fence.
 _THINK_BLOCK = re.compile(r"\A<think>.*?</think>", re.DOTALL)
 _CODE_FENCE = re.compile(r"\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\Z", re.DOTALL)
 
 
 class Refused(Exception):
-    """被输出保护或前置条件拒绝；此时不应读取后续输入、也不应写任何产物。"""
+    """Refused by the output guard or a precondition; no further reads and no artifact writes."""
 
 
 class DraftOutput(BaseModel):
-    """题干生成结果；多余字段拒绝（§3）。"""
+    """Question-generation result; extra fields are rejected (§3)."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -116,7 +128,7 @@ class DraftOutput(BaseModel):
 
 
 def check_output(path: Path) -> None:
-    """输出保护：``evals/`` 下任何路径一律拒绝（冻结目录不得由本工具写入）。"""
+    """Output guard: any path under ``evals/`` is refused outright (frozen tree, never written)."""
 
     resolved = path.resolve()
     if resolved.is_relative_to(EVALS_ROOT.resolve()):
@@ -124,16 +136,16 @@ def check_output(path: Path) -> None:
 
 
 def write_json(path: Path, payload: dict) -> None:
-    """UTF-8、键排序、缩进 2、固定 LF 换行。"""
+    """UTF-8, key-sorted, 2-space indent, fixed LF line endings."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    # newline="\n" 阻止 Windows 把 \n 翻译成 \r\n，保证同一输入在任意 OS 上产出同一字节。
+    # newline="\n" stops Windows turning \n into \r\n; the same input then yields the same bytes.
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
                     encoding="utf-8", newline="\n")
 
 
 def write_jsonl(path: Path, rows: list[dict]) -> None:
-    """UTF-8、每行键排序、固定 LF 换行的 JSONL。"""
+    """JSONL with UTF-8, per-line key sorting, and fixed LF line endings."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     lines = [json.dumps(row, ensure_ascii=False, sort_keys=True) for row in rows]
@@ -141,17 +153,19 @@ def write_jsonl(path: Path, rows: list[dict]) -> None:
 
 
 def write_text(path: Path, text: str) -> None:
-    """UTF-8、固定 LF 的 Markdown 文本。"""
+    """Markdown text with UTF-8 and fixed LF."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text if text.endswith("\n") else text + "\n", encoding="utf-8", newline="\n")
 
 
 def write_dataset(path: Path, dataset: Any) -> None:
-    """写出题集草案：UTF-8、键排序、缩进 2、固定 LF，与 ``dataset.sha256`` 的字节口径一致。
+    """Write the dataset draft: UTF-8, key-sorted, 2-space indent, fixed LF, matching the byte
+    definition of ``dataset.sha256``.
 
-    固定 LF 是关键：``dataset.sha256`` 记录的是文件字节的 sha256，若换行随 OS 变成 CRLF，
-    同一份题集在不同平台会得到不同指纹，冻结产物就不可复现了。
+    Fixed LF matters: ``dataset.sha256`` records the sha256 of the file bytes, so if the line ending
+    followed the OS into CRLF the same dataset would produce a different fingerprint on a different
+    platform, and the frozen artifact could no longer be reproduced.
     """
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -161,7 +175,7 @@ def write_dataset(path: Path, dataset: Any) -> None:
 
 
 def _host(url: str) -> str:
-    """取 URL 主机名（小写），用于报告里记录 base_url_host；允许裸域名。"""
+    """Return the URL host name (lower-case) for ``base_url_host``; bare domains are allowed."""
 
     candidate = url.strip()
     if "://" not in candidate:
@@ -170,7 +184,7 @@ def _host(url: str) -> str:
 
 
 def _extract_json_text(raw_text: str) -> str:
-    """按 §9 顺序清理模型回复；未闭合 ``<think>`` 视为格式失败。"""
+    """Clean a model reply in the §9 order; an unclosed ``<think>`` counts as a format failure."""
 
     text = raw_text.strip()
     if text.startswith("<think>"):
@@ -185,7 +199,10 @@ def _extract_json_text(raw_text: str) -> str:
 
 
 def parse_draft_response(raw: str) -> DraftOutput:
-    """解析题干生成回复：清理 → json.loads → Pydantic extra="forbid"；失败抛 ValueError。"""
+    """Parse a question-generation reply: clean -> json.loads -> Pydantic extra="forbid".
+
+    Raises ValueError when the reply cannot be cleaned, decoded, or validated.
+    """
 
     text = _extract_json_text(raw)
     try:
@@ -205,7 +222,9 @@ def parse_draft_response(raw: str) -> DraftOutput:
 def build_draft_messages(
     *, sentence: str, span: str, query_language: str, question_type: str
 ) -> list[LLMMessage]:
-    """构造题干生成消息：system 含 "JSON" 与硬约束，user 给源句、span、语言、题型。"""
+    """Build the question-generation messages: the system message carries "JSON" and the hard constraints,
+    the user message supplies the source sentence, span, language, and question type.
+    """
 
     user_content = (
         f"Source sentence:\n<sentence>\n{sentence}\n</sentence>\n\n"
@@ -220,14 +239,15 @@ def build_draft_messages(
     ]
 
 
-# ---------- 输入读取 ----------
+# ---------- Input loading ----------
 
 
 def load_json(path: Path) -> Any:
-    """读取 JSON，失败时抛出带路径的 ValueError。
+    """Load JSON, raising a ValueError that carries the path on failure.
 
-    使用 ``utf-8-sig``：Windows 工具（如 PowerShell ``Set-Content -Encoding utf8``）常在文件头
-    写 BOM，离线 fixture 很常见；BOM 是编码标记而不是 JSON 内容，读入时应透明忽略。
+    ``utf-8-sig`` is used because Windows tools (e.g. PowerShell ``Set-Content -Encoding utf8``)
+    often write a BOM at the head of the file, which is common in offline fixtures; the BOM is an
+    encoding marker rather than JSON content and should be ignored transparently.
     """
 
     try:
@@ -237,10 +257,10 @@ def load_json(path: Path) -> Any:
 
 
 def normalize_chunk_rows(payload: Any, *, source: str) -> list[dict[str, Any]]:
-    """把 ``[{"chunk_id","document_id","text","page_start","page_end"}]`` 规范成内部行。
+    """Normalise ``[{"chunk_id","document_id","text","page_start","page_end"}]`` into internal rows.
 
-    ``pool --from-json`` 与 ``draft --from-json`` 共用；缺字段或类型错误直接报错，
-    不静默跳过（否则句池统计会失真）。
+    Shared by ``pool --from-json`` and ``draft --from-json``; a missing field or a wrong type raises
+    immediately instead of being skipped silently (silent skips would distort the sentence-pool counts).
     """
 
     if not isinstance(payload, list):
@@ -265,7 +285,8 @@ def normalize_chunk_rows(payload: Any, *, source: str) -> list[dict[str, Any]]:
 
 
 def load_index_chunks(settings: Settings) -> tuple[str, list[dict[str, Any]]]:
-    """只读打开 active collection 并读出全部 chunk；目录不存在时直接失败（不创建）。"""
+    """Open the active collection read-only and read out every chunk; fail outright when the directory
+    is missing (never create it)."""
 
     collection_name = resolve_active_collection(settings)
     db_path = Path(settings.vector_db_path)
@@ -287,7 +308,7 @@ def load_index_chunks(settings: Settings) -> tuple[str, list[dict[str, Any]]]:
 
 
 def candidates_from_chunks(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """从 chunk 行派生候选句列表（与 ``pool`` 的报告内容同构）。"""
+    """Derive the candidate sentence list from chunk rows (isomorphic to ``pool``'s report content)."""
 
     candidates: list[dict[str, Any]] = []
     for row in rows:
@@ -306,7 +327,7 @@ def candidates_from_chunks(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def read_candidates(path: Path) -> list[dict[str, Any]]:
-    """读取候选句：支持 ``pool`` 报告（含 ``candidates``）或裸 chunk 列表。"""
+    """Load candidate sentences: a ``pool`` report (with ``candidates``) or a bare chunk list."""
 
     payload = load_json(path)
     if isinstance(payload, dict) and "candidates" in payload:
@@ -332,7 +353,8 @@ def read_candidates(path: Path) -> list[dict[str, Any]]:
 
 
 def pool_statistics(rows: list[dict[str, Any]]) -> tuple[dict[str, Any], list[dict[str, Any]]]:
-    """统计句池：chunk 数、句数、候选句数、含数字+单位句数与每篇分布。"""
+    """Count the sentence pool: chunks, sentences, candidate sentences, sentences holding a number+unit,
+    and the per-document distribution."""
 
     per_document: dict[str, dict[str, int]] = defaultdict(
         lambda: {"chunks": 0, "sentences": 0, "candidate_sentences": 0}
@@ -374,7 +396,7 @@ def pool_statistics(rows: list[dict[str, Any]]) -> tuple[dict[str, Any], list[di
 
 
 def run_pool(args: argparse.Namespace) -> int:
-    """只读句池统计；``--from-index`` 与 ``--from-json`` 行为一致。"""
+    """Read-only sentence-pool statistics; ``--from-index`` and ``--from-json`` behave identically."""
 
     source: dict[str, Any] = {"limit": args.limit}
     if args.limit is not None and args.limit < 0:
@@ -387,7 +409,8 @@ def run_pool(args: argparse.Namespace) -> int:
         collection_name, rows = load_index_chunks(settings)
         source.update(kind="index", path=None, collection=collection_name)
     if args.limit is not None:
-        # limit 截断的是 chunk 数：离线重放与在线统计用同一把尺子。
+        # limit truncates the chunk count, so offline replay and online statistics use the same
+        # ruler.
         rows = rows[: args.limit]
     stats, candidates = pool_statistics(rows)
     payload = {
@@ -409,14 +432,16 @@ def run_pool(args: argparse.Namespace) -> int:
 
 
 def _call_llm(client: OpenAICompatibleLLMClient, messages: list[LLMMessage]) -> tuple[DraftOutput, Any]:
-    """调用一次题干生成，解析失败时按 §3 修复一次；仍失败则抛 ValueError。"""
+    """Call question generation once, repairing once per §3 when parsing fails; a second failure raises
+    ValueError."""
 
     raw = client.generate_json(messages, schema_name=DRAFT_SCHEMA_NAME, json_schema=DRAFT_JSON_SCHEMA)
     usage = getattr(client, "last_usage", None)
     try:
         return parse_draft_response(raw), usage
     except ValueError:
-        # 只修复一次：带上原始回复要求模型改正格式，不改变业务约束。
+        # Repair exactly once: send the original reply back and ask the model to fix the format,
+        # without relaxing any business constraint.
         repair_messages = [
             *messages,
             LLMMessage(role="assistant", content=raw if raw.strip() else "(empty reply)"),
@@ -431,7 +456,7 @@ def _call_llm(client: OpenAICompatibleLLMClient, messages: list[LLMMessage]) -> 
 def draft_failures(
     *, sentence: str, span: str, answer_keys: list[list[str]], query: str
 ) -> list[str]:
-    """§2.3 / §3 的确定性检查；返回失败规则名列表（空列表表示 accepted）。"""
+    """Deterministic checks of §2.3 / §3; returns the list of failed rule names (empty means accepted)."""
 
     failures: list[str] = []
     if span not in sentence:
@@ -441,13 +466,17 @@ def draft_failures(
     lowered = query.strip().lower()
     if lowered.startswith(_BAD_QUERY_PREFIXES) or query.strip().startswith("根据上文"):
         failures.append("query_prefix")
-    # §13.1(c)②：任何别名都不得命中题干，否则自然回答复述题干也会被算命中。
+    # §13.1(c)②: no alias may hit the question text, otherwise a natural answer that merely repeats
+    # the question would also count as a hit.
     if any(alias_hits(alias, query) for group in answer_keys for alias in group):
         failures.append("key_in_query")
-    # §13.1(c′)④：题干不得连续复制源句超过 8 个词。
+    # §13.1(c′)④: the question must not copy more than 8 consecutive words from the source
+    # sentence.
     if draft.longest_common_word_run(query, sentence) > draft.MAX_COMMON_WORD_RUN:
         failures.append("query_copies_source")
-    # 派生自检：至少一个别名必须来自源句（(c)①），否则该题无法用原文自证。
+    # Derivation self-check: at least one alias must come from the source sentence ((c)①),
+    # otherwise
+    # the question cannot be proven from the source text itself.
     if answer_keys:
         normalized_sentence = normalize_text(sentence)
         if not any(normalize_text(alias) in normalized_sentence for group in answer_keys for alias in group):
@@ -456,11 +485,13 @@ def draft_failures(
 
 
 def run_draft(args: argparse.Namespace) -> int:
-    """派生 span/answer_keys 并生成题干，写候选 JSONL。
+    """Derive span/answer_keys, generate the question text, and write candidate JSONL.
 
-    ``--limit`` 走分层抽样（``draft.stratified_sample``）而不是前缀截断：候选按 chunk 遍历顺序
-    排列，前缀截断会让部分论文只有一两条候选，Gate 的「每篇 ≥6 题」必然失败。
-    ``--seed`` 决定层内排序，复跑时用另一个 seed 得到独立但可复算的第二遍样本。
+    ``--limit`` goes through stratified sampling (``draft.stratified_sample``) rather than prefix
+    truncation: candidates are ordered by chunk traversal, so a prefix cut would leave some papers
+    with only one or two candidates and must fail the Gate rule of ">=6 questions per paper".
+    ``--seed`` decides the within-stratum ordering; rerunning with another seed yields an independent
+    but recomputable second sample.
     """
 
     candidates = read_candidates(args.from_json)
@@ -486,7 +517,9 @@ def run_draft(args: argparse.Namespace) -> int:
     accepted = 0
     for index, candidate in enumerate(candidates):
         sentence = candidate["sentence"]
-        # 语言按候选序号奇偶交替（确定性、与重跑一致），保证中英各约一半的配额可满足。
+        # Language alternates with the parity of the candidate index (deterministic and stable
+        # across
+        # reruns), keeping the roughly half-and-half zh/en quota satisfiable.
         query_language = candidate.get("query_language") or ("en" if index % 2 == 0 else "zh")
         spans = draft.select_spans(sentence)
         row: dict[str, Any] = {
@@ -501,7 +534,8 @@ def run_draft(args: argparse.Namespace) -> int:
             "dry_run": bool(args.dry_run),
         }
         if not spans:
-            # 没有可命名答案的句子不是坏数据，只是不适合做派生题：记录后跳过。
+            # A sentence with no nameable answer is not bad data, just unsuitable for a derived
+            # question: record it and skip.
             row.update(
                 span=None,
                 answer_keys=[],
@@ -527,14 +561,16 @@ def run_draft(args: argparse.Namespace) -> int:
             sentence=sentence, span=chosen.span, query_language=query_language, question_type=question_type
         )
         if args.dry_run:
-            # dry-run 只验证管线（JSONL 字段、下游 gates 读取），绝不产生网络请求。
+            # dry-run only exercises the pipeline (JSONL fields, downstream gates reading) and
+            # never
+            # issues a network request.
             query = "<DRY-RUN>"
             usage = None
         else:
             assert client is not None
             try:
                 output, usage = _call_llm(client, messages)
-            except Exception as exc:  # noqa: BLE001 - 单条失败不应中断整批
+            except Exception as exc:  # noqa: BLE001 - one failure must not abort the whole batch
                 row.update(
                     query=None,
                     generation={
@@ -574,10 +610,10 @@ def run_draft(args: argparse.Namespace) -> int:
 
 
 def load_items(path: Path) -> list[dict[str, Any]]:
-    """读取 draft 产出的 JSONL；空行跳过，非对象行报错。"""
+    """Load the JSONL produced by draft; blank lines are skipped and non-object lines raise."""
 
     items: list[dict[str, Any]] = []
-    # utf-8-sig 兼容 Windows 工具在首行写 BOM 的 JSONL。
+    # utf-8-sig tolerates JSONL whose first line carries a BOM written by a Windows tool.
     for line_number, line in enumerate(path.read_text(encoding="utf-8-sig").splitlines(), 1):
         if not line.strip():
             continue
@@ -594,21 +630,25 @@ def load_items(path: Path) -> list[dict[str, Any]]:
 def compute_rerun_consistency(
     items: list[dict[str, Any]], rerun_items: list[dict[str, Any]]
 ) -> tuple[dict[str, Any], list[dict[str, str]]]:
-    """比较两遍独立生成，返回 (``rerun_consistency`` 报告, 冲突丢弃清单)。
+    """Compare two independent generations; returns (``rerun_consistency`` report, conflict discard list).
 
-    配对键优先用 ``candidate_id``；不同 ``--seed`` 下候选句可能不同，此时退化为
-    ``(document_id, normalize_text(sentence))``，因为同一源句才算同一道题。
+    The pairing key prefers ``candidate_id``; a different ``--seed`` may select different candidate
+    sentences, in which case it falls back to ``(document_id, normalize_text(sentence))``, because only
+    the same source sentence counts as the same question.
 
-    一致性判定照计划原文：``span`` 相同 **或** 两遍 ``answer_keys`` 交集非空（按 ``normalize_text``
-    比较）。只统计两遍都 ``decision == "accepted"`` 的候选——只在一遍通过的候选没有可比性，
-    若计入分母会因丢弃率差异而失真。
+    Consistency follows the plan text: identical ``span`` **or** a non-empty intersection of the two
+    runs' ``answer_keys`` (compared through ``normalize_text``). Only candidates that are
+    ``decision == "accepted"`` in both runs are counted - a candidate that passed only one run is not
+    comparable, and putting it in the denominator would distort the rate through differing discard
+    volumes.
 
-    冲突条目进 ``discarded``（``stage="rerun"``），由调用方决定丢弃；``value`` 在
-    ``checked == 0`` 时为 ``None``，不伪造 0（空分母返回 null 是 §13.1(e) 的既定口径）。
+    Conflicting entries go into ``discarded`` (``stage="rerun"``) for the caller to drop; ``value`` is
+    ``None`` when ``checked == 0``, never a fabricated 0 (returning null for an empty denominator is
+    the established §13.1(e) definition).
     """
 
     def key_of(item: dict[str, Any]) -> tuple[str, str]:
-        """配对键：candidate_id 优先，缺失时退回源句身份。"""
+        """Pairing key: candidate_id first, falling back to source-sentence identity when absent."""
 
         candidate_id = str(item.get("candidate_id") or "")
         if candidate_id:
@@ -619,7 +659,7 @@ def compute_rerun_consistency(
         )
 
     def aliases_of(item: dict[str, Any]) -> set[str]:
-        """把 answer_keys 摊平成规范化别名集合，用于"交集非空"判定。"""
+        """Flatten answer_keys into a set of normalised aliases for the "non-empty intersection" test."""
 
         return {
             normalize_text(str(alias))
@@ -642,7 +682,7 @@ def compute_rerun_consistency(
         first, second = accepted_first[key], accepted_second[key]
         same_span = str(first.get("span") or "") == str(second.get("span") or "")
         shared_keys = aliases_of(first) & aliases_of(second)
-        # 计划口径：span 相同或 answer_keys 有交集，任一成立即视为两遍一致。
+        # Plan definition: identical span OR a non-empty answer_keys intersection; either suffices.
         if same_span or shared_keys:
             consistent += 1
             continue
@@ -674,14 +714,16 @@ def build_dataset_cases(
     approval_basis: str,
     start_index: int = 1,
 ) -> tuple[list[Any], list[dict[str, str]]]:
-    """把通过闸门的候选组装成 ``EvalCase`` 列表，返回 (cases, 组装失败清单)。
+    """Assemble the gate-passing candidates into an ``EvalCase`` list; returns (cases, build failures).
 
-    每个候选用 ``--from-json`` 的源句重新定位锚点（``draft.build_evidence_alternative``）；
-    定位失败或 span 已不在句内的候选不产题，记入失败清单——这些是上游数据的真实缺陷，
-    不能在落盘阶段静默跳过。
+    Each candidate re-locates its anchor from the ``--from-json`` source sentence
+    (``draft.build_evidence_alternative``); a candidate whose anchor cannot be located, or whose span is
+    no longer inside the sentence, produces no question and enters the failure list - these are genuine
+    upstream data defects and must not be skipped silently at the write stage.
 
-    ``case_id`` 在 ``E2E-M{序号:03d}`` 的独立 ID 空间里连续编号，``start_index`` 供多文档题接续；
-    ``family_id`` 用 ``derived_<source>``，让配对比较能按题族 bootstrap。
+    ``case_id`` is numbered consecutively in the standalone ``E2E-M{index:03d}`` ID space, with
+    ``start_index`` letting a later multi-document question continue it; ``family_id`` uses
+    ``derived_<source>`` so that paired comparison can bootstrap by question family.
     """
 
     cases: list[Any] = []
@@ -704,7 +746,9 @@ def build_dataset_cases(
         except ValueError as exc:
             failures.append({"candidate_id": candidate_id, "reason": f"anchor: {exc}"})
             continue
-        # 难度标签（来自 --dense 排名）只作标签，用户可用它做分片统计，不参与淘汰。
+        # The difficulty label (from the --dense ranking) is a label only: callers may slice
+        # statistics
+        # by it, and it never causes elimination.
         tags = [str(item["question_type"])]
         if item.get("difficulty"):
             tags.append(str(item["difficulty"]))
@@ -731,11 +775,13 @@ def build_dataset_cases(
 
 
 def _next_case_number(cases: list[Any], *, prefix: str = "E2E-M") -> int:
-    """返回 ``prefix`` 号段里的下一个可用编号（比"最大已用号 +1"，不是"数量 +1"）。
+    """Return the next available number in the ``prefix`` range ("maximum used number + 1", not
+    "count + 1").
 
-    为什么不能用 ``len(cases) + 1``：各构造器都会丢弃候选（锚点失败、探针不通过），
-    产出的号段因此有空洞。D2 实测：T3 产出 6 道但号段是 114..127，而 ``len(cases)``
-    只增加了 6，于是 T6 从 119 起算，与 T3 已用的 119..122 撞号。
+    Why ``len(cases) + 1`` cannot be used: every constructor discards candidates (anchor failures,
+    failing probes), so the emitted number ranges have holes. Measured on D2: T3 produced 6 questions but
+    used the range 114..127, while ``len(cases)`` grew by only 6, so T6 started counting at 119 and
+    collided with 119..122 already used by T3.
     """
 
     used: list[int] = []
@@ -759,14 +805,17 @@ def build_multi_document_cases(
     start_index: int = 1,
     probe_results: list[dict[str, Any]] | None = None,
 ) -> tuple[list[Any], list[dict[str, str]]]:
-    """把 T3 配对构造成多文档 ``EvalCase``，并用「单块只中一半」探针验收（G6③）。
+    """Build a T3 pair into a multi-document ``EvalCase``, accepted by the "single block hits only half"
+    probe (G6③).
 
-    每题两条证据组（G1/G2）+ 两条 required claim（C1/C2），分别来自两篇不同论文。
-    ``tags`` 带 ``multi_doc`` 与 ``comparison``，``question_type="multi_document"``——
-    ``validate_dataset`` 的 ``multi_doc`` 规则要求「≥2 组且分属不同文档」，这里由构造保证。
+    Each question has two evidence groups (G1/G2) plus two required claims (C1/C2), taken from two
+    different papers. ``tags`` carries ``multi_doc`` and ``comparison``, and
+    ``question_type="multi_document"``, so ``validate_dataset``'s ``multi_doc`` rule ("at least 2 groups
+    belonging to different documents") holds by construction.
 
-    验收：对 A 块、B 块各跑一次 ``single_block`` 探针，两次都要满足
-    「本块 key 命中且另一块 key 不命中」；任一不满足即丢弃（设计 §3 表：G6③ 是必过项）。
+    Acceptance: run a ``single_block`` probe on block A and on block B, and both must satisfy "this
+    block's keys hit while the other block's keys do not"; failing either drops the question (design §3
+    table: G6③ is mandatory).
     """
 
     cases: list[Any] = []
@@ -795,7 +844,8 @@ def build_multi_document_cases(
 
         keys_a = [list(group) for group in first.get("answer_keys") or []]
         keys_b = [list(group) for group in second.get("answer_keys") or []]
-        # 单块探针：给 A 块只应命中 A 的 key，给 B 块只应命中 B 的 key。
+        # Single-block probe: feeding block A may hit only A's keys, and feeding block B only B's
+        # keys.
         chunk_a = chunks_by_id.get(str(first.get("chunk_id", "")))
         chunk_b = chunks_by_id.get(str(second.get("chunk_id", "")))
         if chunk_a is None or chunk_b is None:
@@ -809,11 +859,13 @@ def build_multi_document_cases(
             ("b", chunk_b, keys_b, keys_a),
         ):
             try:
-                # 与 gold/distractor 走同一条修复重试路径，避免 T3 单块探针因格式问题误杀好题。
+                # Goes through the same repair-retry path as gold/distractor, so a format problem
+                # cannot
+                # kill a good T3 question in the single-block probe.
                 verdict = probe.probe_with_repair(
                     client, query=query, context_text=str(own_chunk["text"]), mode="single_block"
                 )[0]
-            except Exception as exc:  # noqa: BLE001 - 单条探针失败不该中断整批
+            except Exception as exc:  # noqa: BLE001 - one probe failure should not abort the whole batch
                 failures.append({"candidate_id": str(first.get("candidate_id", "")),
                                  "reason": f"multi_doc_probe_error: {_describe_error(exc)}"})
                 passed = False
@@ -831,7 +883,9 @@ def build_multi_document_cases(
                     "tag": "ok" if ok else reason,
                 })
             if not ok:
-                # 不满足"只中一半"说明两块证据并非缺一不可，或探针答不出：丢弃该题。
+                # Failing "only half hits" means the two evidence blocks are not both
+                # indispensable, or
+                # the probe cannot answer: drop the question.
                 failures.append({"candidate_id": str(first.get("candidate_id", "")),
                                  "reason": f"t3_single_block_inconclusive: {reason}"})
                 passed = False
@@ -841,8 +895,11 @@ def build_multi_document_cases(
         try:
             cases.append(
                 draft.build_case(
-                    # 用 `len(cases)` 而不是 `offset`：`offset` 是配对序号，被丢弃的配对
-                    # 会留下号空洞，而这里只需要"本函数已产出的第几道题"。
+                    # Use `len(cases)` rather than `offset`: `offset` is the pair ordinal, so
+                    # discarded
+                    # pairs leave holes in the numbering, while all that is needed here is "how
+                    # many
+                    # questions this function has produced so far".
                     case_id=f"E2E-M{start_index + len(cases):03d}",
                     family_id=f"derived_{pair.question_type}",
                     query=query,
@@ -874,10 +931,11 @@ def build_multi_document_cases(
 
 
 def _multi_doc_query(first: dict[str, Any], second: dict[str, Any]) -> str:
-    """为 T3 合成题干：把两条单证据题干合成一个对比问句。
+    """Synthesise the T3 question text: merge two single-evidence questions into one comparison question.
 
-    不调用模型（T3 的题干由构造决定，避免生成器在合并时引入新的不可控内容）；
-    中英各按语言模板拼接，保持 ``query_language`` 与题干一致。
+    No model call is made (T3's question text is fixed by construction, so the generator cannot inject
+    new uncontrolled content while merging); Chinese and English are assembled from their own language
+    templates, keeping ``query_language`` consistent with the question text.
     """
 
     left = str(first.get("query") or "").strip()
@@ -896,10 +954,11 @@ def build_false_premise_cases(
     approval_basis: str,
     start_index: int = 1,
 ) -> tuple[list[Any], list[dict[str, str]]]:
-    """从数值题派生 T6 错误前提题（D8），返回 (cases, 失败清单)。
+    """Derive T6 false-premise questions (D8) from numeric questions; returns (cases, failure list).
 
-    只从 ``derived_t2``（数值 span）里取，因为 SPEC §13.1(f) 的替换规则只对数字有定义。
-    篡改值必须不在锚点页文本中；构造不出来的候选记入失败清单，不静默跳过。
+    Only ``derived_t2`` (numeric spans) are drawn on, because the SPEC §13.1(f) substitution rule is
+    defined for numbers only. The tampered value must not occur in the anchor-page text; candidates
+    that cannot be built are recorded in the failure list, never skipped silently.
     """
 
     cases: list[Any] = []
@@ -936,9 +995,11 @@ def build_false_premise_cases(
         try:
             cases.append(
                 draft.build_false_premise_case(
-                    # 编号必须基于 `start_index` 递增，不能用 `len(cases)`：调用方传的是
-                    # "本题集里已有多少题 + 1"，而 cases 从 0 开始增长，两者叠加会与
-                    # 之前构造的题（T3 多文档题）撞号——D2 实测产生重复的 E2E-M122。
+                    # Numbering must increase from `start_index` and must not use `len(cases)`: the
+                    # caller passes "how many questions the dataset already holds + 1", while cases
+                    # grows from 0, and adding the two collides with the questions built earlier
+                    # (the
+                    # T3 multi-document ones) - D2 measured a duplicate E2E-M122 this way.
                     case_id=f"E2E-M{start_index + len(cases):03d}",
                     family_id="derived_t6",
                     query=_false_premise_query(item, false_value),
@@ -959,7 +1020,8 @@ def build_false_premise_cases(
 
 
 def _false_premise_query(item: dict[str, Any], false_value: str) -> str:
-    """把原题干改成带被篡改值的确认式问句（不复制源句超过 8 个连续词）。"""
+    """Rewrite the original question as a confirmation-style question carrying the tampered value
+    (without copying more than 8 consecutive words from the source sentence)."""
 
     base = str(item.get("query") or "").strip().rstrip("?")
     if str(item.get("query_language") or "en").lower().startswith("zh"):
@@ -976,11 +1038,13 @@ def build_near_miss_cases(
     start_index: int = 1,
     seed: int = 1,
 ) -> tuple[list[Any], list[dict[str, str]]]:
-    """从 T1 题派生 T5 near_miss 不可答题（实体在语料里、实体×属性共现为 0）。
+    """Derive T5 near_miss unanswerable questions from T1 questions (the entity is in the corpus while
+    entity x attribute co-occurrence is 0).
 
-    不可答题**不参与映射**（`dataset.py` 的 `unanswerable_shape` 禁止证据组），因此
-    这里不需要 `documents` / `chunks_by_id`，也不需要锚点定位——这是它与可答题构造器的
-    本质区别，也是「不可答题可以晚于 D2 构造」的技术原因。
+    Unanswerable questions **take no part in mapping** (`dataset.py`'s `unanswerable_shape` forbids
+    evidence groups), so `documents` / `chunks_by_id` and anchor locating are not needed here - that is
+    the essential difference from the answerable constructors, and the technical reason why
+    "unanswerable questions can be built after D2".
     """
 
     candidates = draft.plan_near_miss_candidates(
@@ -1001,7 +1065,9 @@ def build_near_miss_cases(
         )
     failures: list[dict[str, str]] = []
     if len(cases) < count:
-        # 不足不是错误，但必须记录：配额要求 near_miss 占两类不可答题 ≥50%。
+        # Falling short is not an error but must be recorded: the quota requires near_miss to make
+        # up
+        # >=50% of the two unanswerable kinds.
         failures.append({
             "candidate_id": "<near_miss>",
             "reason": f"near_miss_shortfall: produced {len(cases)} of {count}",
@@ -1016,15 +1082,18 @@ def load_out_of_corpus_cases(
     verification_path: Path,
     questions_path: Path,
 ) -> tuple[list[Any], list[dict[str, str]]]:
-    """复用 Phase 12 的 `GEN-U01..05` 作为 out_of_corpus 不可答题，并在当前语料上复核零命中。
+    """Reuse Phase 12's `GEN-U01..05` as out_of_corpus unanswerable questions, re-checking zero hits on
+    the current corpus.
 
-    为什么复用而不是重造：`unanswerable_verification.json` 已记录每道题的 `absence_terms`
-    与零命中验证，计划 B3 表明确写「沿用」。题干原文在 `generation_eval_dataset.json` 的
-    `questions[*].query` 里，这里按 `question_id` 关联，**不自己编题干**。
+    Why reuse instead of rebuild: `unanswerable_verification.json` already records each question's
+    `absence_terms` and its zero-hit verification, and the plan's B3 table explicitly says "carry over".
+    The question text itself lives under `questions[*].query` in `generation_eval_dataset.json`; it is
+    joined here by `question_id` and **no question text is invented**.
 
-    复核是必须的——语料从 361 chunks 换到 817，旧结论不能直接信。零命中判定用
-    `normalize_text` 字面子串规则（与 §13.1(d) 同口径）；任一 absence term 命中即判该题失效，
-    记入失败清单而不静默收录。
+    The re-check is mandatory - the corpus moved from 361 chunks to 817, so old conclusions cannot be
+    trusted directly. Zero hits are decided by the literal-substring rule of `normalize_text` (the same
+    definition as §13.1(d)); if any absence term hits, the question is void and goes into the failure
+    list instead of being included silently.
     """
 
     if not verification_path.is_file():
@@ -1048,7 +1117,9 @@ def load_out_of_corpus_cases(
             continue
         query = queries.get(question_id)
         if not query:
-            # 题干缺失就不能建题：编一条题干等于自造数据，违反"题集只存原文派生"的原则。
+            # Without a question text no case can be built: inventing one means fabricating data
+            # and
+            # breaks the principle that the dataset only holds source-derived text.
             failures.append({"candidate_id": question_id,
                              "reason": f"phase12 query text not found in {questions_path.name}"})
             continue
@@ -1065,9 +1136,10 @@ def load_out_of_corpus_cases(
 
 
 def _load_phase12_queries(path: Path) -> tuple[dict[str, str], dict[str, str]]:
-    """从 Phase 12 的 generation eval dataset 取 `GEN-U*` 的题干与语言。
+    """Take the `GEN-U*` question text and language from the Phase 12 generation eval dataset.
 
-    只读既有冻结产物，不修改它；找不到文件时返回空字典，由调用方记失败而不是崩。
+    The existing frozen artifact is only read, never modified; a missing file returns empty dicts so the
+    caller records a failure instead of crashing.
     """
 
     if not path.is_file():
@@ -1087,14 +1159,16 @@ def _load_phase12_queries(path: Path) -> tuple[dict[str, str], dict[str, str]]:
 
 
 def load_judge_config() -> dict[str, str | None]:
-    """探针配置：进程环境优先，其次 ``.env``（与 B0 探针同一口径，不注入全局 Settings）。"""
+    """Probe configuration: process environment first, then ``.env`` (the same definition as the B0 probe;
+    global Settings are not injected)."""
 
     file_values = dotenv_values(ROOT / ".env") if (ROOT / ".env").exists() else {}
     return {key: (os.environ.get(key) or file_values.get(key) or None) for key in JUDGE_KEYS}
 
 
 def load_source_documents(source_root: Path) -> dict[str, Document]:
-    """按相对路径字典序加载源文档；只用 ``load_document``、不做 clean（与 Gold 映射同一文本基础）。"""
+    """Load source documents in relative-path lexicographic order; only ``load_document`` is used and no
+    clean is applied (the same textual basis as the Gold mapping)."""
 
     paths = sorted(
         path for path in source_root.rglob("*")
@@ -1106,14 +1180,16 @@ def load_source_documents(source_root: Path) -> dict[str, Document]:
 
 def _probe_with_retry(client: OpenAICompatibleLLMClient, *, query: str, context_text: str,
                       mode: str) -> tuple[probe.ProbeVerdict | None, str | None]:
-    """探针最多尝试 ``PROBE_MAX_ATTEMPTS`` 次；返回 (判定, 错误描述)。
+    """Try the probe at most ``PROBE_MAX_ATTEMPTS`` times; returns (verdict, error description).
 
-    每次尝试内部先走 ``probe_with_repair``（SPEC §13.1(g)：格式失败修复一次），
-    因此"修复"与"重试"是两层：修复处理格式问题，重试处理传输/瞬时故障。
+    Each attempt first goes through ``probe_with_repair`` (SPEC §13.1(g): repair a format failure once),
+    so "repair" and "retry" are two layers: repair handles format problems, retry handles
+    transport/transient failures.
 
-    错误描述必须带上**最底层的原因**：``LLMRequestError`` 是客户端对所有供应商/传输失败的
-    统一包装，只记它的类型名会让报告里永远看不出是截断、限流还是超时（D2 全量 340 次
-    探针全失败时就是这样失去了诊断能力）。这里记录 `外层<-(最底层类型: 消息)`。
+    The error description must carry the **root cause**: ``LLMRequestError`` is the client's uniform
+    wrapper around every provider/transport failure, so recording only its type name would leave the
+    report unable to tell truncation from rate limiting or timeout (that is exactly how D2 lost its
+    diagnostic power when all 340 probes failed). Here it records `outer<-(root type: message)`.
     """
 
     last_error: Exception | None = None
@@ -1123,13 +1199,14 @@ def _probe_with_retry(client: OpenAICompatibleLLMClient, *, query: str, context_
                 client, query=query, context_text=context_text, mode=mode
             )
             return verdict, None
-        except Exception as exc:  # noqa: BLE001 - 记录在报告里，不中断整批
+        except Exception as exc:  # noqa: BLE001 - recorded in the report; the batch is not aborted
             last_error = exc
     return None, _describe_error(last_error)
 
 
 def _describe_error(exc: Exception | None) -> str:
-    """把异常展开成 `外层<-(最底层类型: 摘要)`，保留诊断信息而不泄漏完整回复。"""
+    """Expand an exception into `outer<-(root type: summary)`, keeping diagnostics without leaking the
+    full reply."""
 
     if exc is None:
         return "unknown"
@@ -1145,7 +1222,8 @@ def _describe_error(exc: Exception | None) -> str:
 
 def _neighbor_chunks(chunks_by_document: dict[str, list[dict[str, Any]]], gold: dict[str, Any],
                      count: int = 2) -> list[dict[str, Any]]:
-    """没有 ``--dense`` 时用 gold chunk 的邻近 chunk 当干扰块（同文档、按 chunk 顺序）。"""
+    """Without ``--dense``, use the gold chunk's neighbouring chunks as distractors (same document,
+    in chunk order)."""
 
     ordered = chunks_by_document.get(gold["document_id"], [])
     position = next(
@@ -1166,7 +1244,8 @@ def _neighbor_chunks(chunks_by_document: dict[str, list[dict[str, Any]]], gold: 
 
 
 def _difficulty_for(query: str, chunk_id: str, dense: dict[str, list[str]] | None) -> str | None:
-    """按 dense 排名标注难度（仅标签、不作淘汰）：Top5 easy / Top6–20 medium / 其余 hard。"""
+    """Label difficulty from the dense ranking (label only, never elimination): Top5 easy / Top6-20
+    medium / the rest hard."""
 
     if dense is None:
         return None
@@ -1185,10 +1264,12 @@ def _difficulty_for(query: str, chunk_id: str, dense: dict[str, list[str]] | Non
 
 
 def run_gates(args: argparse.Namespace) -> int:
-    """G3/G4/G5（确定性）+ G6（探针），写闸门报告。"""
+    """Run G3/G4/G5 (deterministic) plus G6 (probe) and write the gate report."""
 
-    # 题集草案的三个参数必须成套出现：只给 --dataset-out 会让 corpus_version 无从决定，
-    # 而该口径在合同里仍未定案，不能由脚本替调用方猜一个默认值。
+    # The three dataset-draft parameters must appear as a set: --dataset-out alone leaves
+    # corpus_version undecidable, and that definition is still unsettled in the contract, so the
+    # script
+    # must not guess a default on the caller's behalf.
     if args.dataset_out is not None and not (args.dataset_id and args.corpus_version):
         raise Refused("--dataset-out requires --dataset-id and --corpus-version")
 
@@ -1207,7 +1288,9 @@ def run_gates(args: argparse.Namespace) -> int:
         generator_base_url=generator_base_url,
         generator_model=generator_model,
     ):
-        # 同厂商探针没有独立性；必须在读取 items / 连接 Chroma / 发请求之前拒绝。
+        # A same-vendor probe has no independence; refuse before reading items / connecting Chroma
+        # /
+        # issuing any request.
         raise Refused("judge and generator share a vendor; probe would not be independent")
 
     items = load_items(args.items)
@@ -1219,7 +1302,9 @@ def run_gates(args: argparse.Namespace) -> int:
     for row in chunk_rows:
         chunks_by_document[row["document_id"]].append(row)
     for ordered in chunks_by_document.values():
-        # 邻近 chunk 必须按文档内顺序取，不能按 ID 字典序；index 缺失时退化为原读取顺序。
+        # Neighbouring chunks must be taken in document order, not ID lexicographic order; when the
+        # index
+        # is missing, fall back to the original read order.
         ordered.sort(key=lambda row: (row.get("chunk_index") if isinstance(row.get("chunk_index"), int) else 0,
                                       row["chunk_id"]))
 
@@ -1246,7 +1331,7 @@ def run_gates(args: argparse.Namespace) -> int:
     span_counts: Counter[tuple[str, str]] = Counter()
 
     def record(gate: str, candidate_id: str, rule: str, message: str) -> None:
-        """记录一条闸门失败。"""
+        """Record one gate failure."""
 
         gates[gate]["failures"].append(
             {"candidate_id": candidate_id, "rule": rule, "message": message}
@@ -1255,7 +1340,9 @@ def run_gates(args: argparse.Namespace) -> int:
     for item in items:
         candidate_id = str(item.get("candidate_id", ""))
         if item.get("decision") != "accepted":
-            # draft 阶段已丢弃的候选不再跑闸门，但要进报告的丢弃清单。
+            # Candidates already discarded in the draft stage do not run the gates again, but they
+            # still
+            # belong in the report's discard list.
             discarded.append(
                 {
                     "candidate_id": candidate_id,
@@ -1277,14 +1364,16 @@ def run_gates(args: argparse.Namespace) -> int:
         normalized_sentence = normalize_text(sentence)
         normalized_page = normalize_text(page_text)
 
-        # G3 接地（§13.1(c′)）：claim 必须是锚点页文本的字面子串，答案必须是 claim 的子串。
+        # G3 grounding (§13.1(c′)): the claim must be a literal substring of the anchor-page text,
+        # and
+        # the answer must be a substring of the claim.
         if not normalized_sentence or normalized_sentence not in normalized_page:
             record("G3", candidate_id, "claim_grounded", "claim text not found in anchor page text")
         try:
             draft.build_evidence_alternative(
                 document, sentence=sentence, page_start=page_start, page_end=page_end
             )
-        except Exception as exc:  # noqa: BLE001 - 定位失败是一种闸门失败
+        except Exception as exc:  # noqa: BLE001 - a locating failure is a gate failure
             record("G3", candidate_id, "claim_grounded", f"anchor locator failed: {exc}")
         if answer_keys and not any(
             normalize_text(alias) and normalize_text(alias) in normalized_sentence
@@ -1296,7 +1385,8 @@ def run_gates(args: argparse.Namespace) -> int:
         if draft.longest_common_word_run(query, sentence) > draft.MAX_COMMON_WORD_RUN:
             record("G3", candidate_id, "query_claim_copy", "query copies >8 consecutive words from the claim")
 
-        # G4 别名（§13.1(c)①②③）；没有 answer_keys 时该闸门对该候选视为通过。
+        # G4 aliases (§13.1(c)①②③); with no answer_keys the gate counts as passed for that
+        # candidate.
         for group_index, group in enumerate(answer_keys):
             label = f"group #{group_index}"
             if not group:
@@ -1320,7 +1410,9 @@ def run_gates(args: argparse.Namespace) -> int:
             ):
                 record("G4", candidate_id, "answer_keys_source", f"{label}: no alias found in anchor page text")
 
-        # G5 去重与泄漏（确定性部分）：题干两两 Jaccard、题干与源句重叠、span 复用次数。
+        # G5 dedup and leakage (deterministic part): pairwise question Jaccard,
+        # question/source-sentence
+        # overlap, and how often a span is reused.
         for previous in seen_queries:
             if draft.three_gram_jaccard(previous, query) >= 0.5:
                 record("G5", candidate_id, "query_duplicate", "query is >= 0.5 3-gram Jaccard with an earlier query")
@@ -1333,7 +1425,9 @@ def run_gates(args: argparse.Namespace) -> int:
         if span_counts[span_key] > 2:
             record("G5", candidate_id, "span_reused", "same span reused more than twice in one document")
 
-        # G6 探针：gold-only 必须答中；distractor-only 只打标签，歧义才丢弃。
+        # G6 probes: gold-only must answer correctly; distractor-only merely labels, and only
+        # ambiguity
+        # causes a drop.
         gold_chunk = chunks_by_id.get(str(item.get("chunk_id", "")))
         if gold_chunk is None:
             record("G6", candidate_id, "missing_chunk", "gold chunk not found in active index")
@@ -1389,7 +1483,9 @@ def run_gates(args: argparse.Namespace) -> int:
                         and distractor_verdict.answer.strip()
                         and normalize_text(distractor_verdict.answer) in normalized_page
                     ):
-                        # 干扰块答出了另一个“原文里也有”的值：该事实在语料中重复，题目歧义 → 丢弃。
+                        # The distractor block answered another value that also appears in the
+                        # source:
+                        # the fact repeats in the corpus, making the question ambiguous -> drop it.
                         record("G6", candidate_id, "ambiguous_distractor",
                                "distractor block yields a different value that also appears in the gold page")
                         tag = "ambiguous"
@@ -1420,20 +1516,27 @@ def run_gates(args: argparse.Namespace) -> int:
         item["difficulty"] = _difficulty_for(query, str(item.get("chunk_id", "")), dense)
         accepted_items.append(item)
 
-    # 通过全部闸门的候选才进配额统计；难度标签来自 --dense 排名（只作标签，不淘汰）。
-    # 注意：`quota` 在下面构造完 T3/T6 之后会基于最终题集重算（见 `_finalize_quota`），
-    # 否则 multi_document 与 false_premise 两类永远统计不到（它们不来自 accepted_items）。
+    # Only candidates that pass every gate proceed to question construction and quota counting; the
+    # difficulty label comes from the --dense ranking (label only, never elimination).
+    # Note: `quota` is recomputed from the final dataset once T3/T6 are built below (see
+    # `_finalize_quota`), otherwise the multi_document and false_premise kinds would never be
+    # counted
+    # (they do not come from accepted_items).
     accepted_total = len({item["candidate_id"] for item in items if item.get("decision") == "accepted"})
     for gate in gates.values():
-        # passed/failed 以候选为单位：一个候选在同一闸门里可能触发多条失败，只计一次。
+        # passed/failed count candidates, not failures: one candidate may trip several rules inside
+        # the
+        # same gate and is still counted once.
         gate["failed"] = len({failure["candidate_id"] for failure in gate["failures"]})
         gate["passed"] = max(accepted_total - gate["failed"], 0)
 
-    # 复跑一致性：提供 --rerun 时按计划口径真算；缺省时保留 available=false 且 value=null。
+    # Rerun consistency: really computed per the plan definition when --rerun is given; otherwise
+    # available=false and value=null are kept.
     if args.rerun is not None:
         rerun_consistency, rerun_conflicts = compute_rerun_consistency(items, load_items(args.rerun))
         discarded.extend(rerun_conflicts)
-        # 冲突条目从可冻结集合中移除，避免"报告说一致率不足、题集里却留着冲突题"。
+        # Conflicting entries are removed from the freezable set, so the report cannot say "the
+        # consistency rate falls short" while the dataset still keeps the conflicting questions.
         conflict_ids = {entry["candidate_id"] for entry in rerun_conflicts}
         accepted_items = [item for item in accepted_items if item["candidate_id"] not in conflict_ids]
     else:
@@ -1445,9 +1548,12 @@ def run_gates(args: argparse.Namespace) -> int:
             "note": "未提供 --rerun；复跑一致性需要第二遍独立生成（Gate 要求 >= 0.8）",
         }
 
-    # 题集草案：先组装 EvalCase（含 T3/T6），配额基于**最终题集**统计——
-    # multi_document 与 false_premise 不来自 accepted_items，早算会漏掉它们（D2 实测漏报 5 道 T3）。
-    # 报告与题集的落盘顺序仍由 approval_basis 决定：报告先写、再算 sha256、最后写题集。
+    # Dataset draft: assemble EvalCase first (T3/T6 included) and count quotas against the **final
+    # dataset** - multi_document and false_premise do not come from accepted_items, so counting
+    # early
+    # would miss them (D2 measured 5 unreported T3 questions).
+    # The write order of report and dataset is still dictated by approval_basis: write the report,
+    # compute its sha256, then write the dataset.
     cases: list[Any] = []
     case_failures: list[dict[str, str]] = []
     multi_doc_failures: list[dict[str, str]] = []
@@ -1456,16 +1562,21 @@ def run_gates(args: argparse.Namespace) -> int:
     out_of_corpus_failures: list[dict[str, str]] = []
     if args.dataset_out is not None or args.multi_doc > 0 or args.false_premise > 0 \
             or args.near_miss > 0 or args.out_of_corpus:
-        # approval_basis 需要一个已存在的报告；先写一版占位报告拿到字节哈希，
-        # 再用它组装题集，最后把最终 payload（含重算后的 quota）覆盖写回。
+        # approval_basis needs an already written report: build the cases against a placeholder
+        # reference, then write the final payload (quota recomputed) and backfill the real byte
+        # hash.
         placeholder_basis = "B3_gate_report.json#pending"
         cases, case_failures = build_dataset_cases(
             accepted_items, documents=documents, approval_basis=placeholder_basis
         )
-        # case_id 必须单调递增且唯一。不能靠 `len(cases)+1` 推出下一个号：
-        # 各构造器都会丢弃候选，产出的号段有空洞，而 `len(cases)` 只反映数量而非最大号——
-        # D2 实测因此产生重复的 E2E-M122（T3 号段 114..127，T6 从 119 起算撞号）。
-        # `_next_case_number` 按"最大已用号 +1"推进，每个构造器用完就重新求一次。
+        # case_id must be strictly increasing and unique. The next number cannot be derived as
+        # `len(cases)+1`: every constructor discards candidates, so the emitted number ranges have
+        # holes,
+        # while `len(cases)` reflects only the count and not the maximum -
+        # D2 measured a duplicate E2E-M122 this way (T3 used 114..127 and T6 started at 119,
+        # colliding).
+        # `_next_case_number` advances by "maximum used number + 1", re-evaluated after each
+        # constructor.
         if args.multi_doc > 0:
             pairs = draft.pair_multi_document_candidates(
                 accepted_items, limit=args.multi_doc, seed=args.seed_for_pairs
@@ -1490,7 +1601,9 @@ def run_gates(args: argparse.Namespace) -> int:
                 start_index=_next_case_number(cases),
             )
             cases.extend(fp_cases)
-        # 不可答题（T4 out_of_corpus + T5 near_miss）最后追加，使用独立的 E2E-U* ID 空间。
+        # Unanswerable questions (T4 out_of_corpus + T5 near_miss) are appended last, in the
+        # separate
+        # E2E-U* ID space.
         corpus_text = "\n".join(row["text"] for row in chunk_rows)
         if args.near_miss > 0:
             nm_cases, near_miss_failures = build_near_miss_cases(
@@ -1510,7 +1623,8 @@ def run_gates(args: argparse.Namespace) -> int:
             )
             cases.extend(oc_cases)
 
-    # 配额基于最终题集：包含单证据题、T3 多文档题与 T6 错误前提题。
+    # Quotas are counted against the final dataset: single-evidence questions, T3 multi-document
+    # questions, and T6 false-premise questions all included.
     quota = draft.plan_quotas(cases) if cases else draft.plan_quotas(accepted_items)
 
     payload = {
@@ -1556,11 +1670,13 @@ def run_gates(args: argparse.Namespace) -> int:
     )
 
     if args.dataset_out is not None:
-        # approval_basis 指向报告名 + 该报告字节的 sha256；占位值在此被真实哈希替换。
+        # approval_basis points at the report name plus the sha256 of that report's bytes; the
+        # placeholder value is replaced here by the real hash.
         report_bytes = args.out.read_bytes()
         approval_basis = f"{args.out.name}#{hashlib.sha256(report_bytes).hexdigest()}"
         for case in cases:
-            # Provenance 是 ContractModel；用 model_copy 换掉 approval_basis，其余字段不变。
+            # Provenance is a ContractModel; model_copy swaps approval_basis and leaves the rest
+            # intact.
             case.provenance = case.provenance.model_copy(update={"approval_basis": approval_basis})
         dataset = dataset_schema.E2EDataset(
             dataset_id=args.dataset_id,
@@ -1574,13 +1690,17 @@ def run_gates(args: argparse.Namespace) -> int:
             f"fingerprint={dataset.fingerprint or 'computed'} dataset_out={args.dataset_out}"
         )
     elif args.multi_doc > 0 or args.false_premise > 0 or args.near_miss > 0 or args.out_of_corpus:
-        # 构造了额外题却没有落盘点：题不会进任何题集，静默丢弃会让人误以为已产出。
+        # Extra questions were built but there is no write target: they would enter no dataset, and
+        # dropping them silently would look as if they had been produced.
         raise Refused(
             "--multi-doc/--false-premise/--near-miss/--out-of-corpus require --dataset-out "
             "so the constructed cases are persisted"
         )
-    # 闸门失败与配额未达标是报告内容（D2 据此决定丢弃/补题），不是命令失败；
-    # 只有“被拒绝”（同厂商/缺配置/写 evals）才用退出码 2。
+    # Gate failures and unmet quotas are report content (D2 decides from them whether to drop or
+    # add
+    # questions), not a command failure; only "refused" (same vendor / missing config / writing
+    # under
+    # evals/) uses exit code 2.
     return EXIT_OK
 
 
@@ -1588,7 +1708,7 @@ def run_gates(args: argparse.Namespace) -> int:
 
 
 def render_markdown(report: dict[str, Any]) -> str:
-    """把闸门 JSON 渲染成确定性 Markdown（不写入时间戳，保证重跑字节一致）。"""
+    """Render the gate JSON as deterministic Markdown (no timestamps, so reruns stay byte-identical)."""
 
     lines: list[str] = ["# B3 机器闸门报告", ""]
     items = report.get("items", {})
@@ -1612,7 +1732,9 @@ def render_markdown(report: dict[str, Any]) -> str:
         rate = f"{passed / total:.1%}" if total else "n/a"
         lines.append(f"| {gate_name} | {passed} | {failed} | {rate} |")
 
-    # 失败原因 Top-N：按 (rule, message) 聚合，计数降序、规则名升序，保证确定性。
+    # Failure-reason Top-N: aggregated by (rule, message), counts descending and rule names
+    # ascending,
+    # which keeps the output deterministic.
     counts: Counter[tuple[str, str]] = Counter()
     for gate_name in sorted(report.get("gates", {})):
         for failure in report["gates"][gate_name].get("failures", []):
@@ -1677,7 +1799,7 @@ def render_markdown(report: dict[str, Any]) -> str:
 
 
 def run_report(args: argparse.Namespace) -> int:
-    """读取闸门 JSON，写 Markdown 报告。"""
+    """Read the gate JSON and write the Markdown report."""
 
     report = load_json(args.gate)
     if not isinstance(report, dict):
@@ -1691,7 +1813,7 @@ def run_report(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """命令行参数。"""
+    """Command-line arguments."""
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1743,19 +1865,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def _output_paths(args: argparse.Namespace) -> list[Path]:
-    """该次调用会写出的全部路径；输出保护必须先于任何输入读取。"""
+    """Every path this invocation will write; the output guard must run before any input is read."""
 
     if args.command == "pool":
         return [args.report]
     paths = [args.out]
-    # `--dataset-out` 与主输出是两处写盘，两处都要过 evals/ 保护，防止只挡住报告却漏掉题集。
+    # `--dataset-out` and the main output are two separate writes, and both must clear the evals/
+    # guard,
+    # so blocking only the report does not let the dataset slip through.
     if getattr(args, "dataset_out", None) is not None:
         paths.append(args.dataset_out)
     return paths
 
 
 def main(argv: list[str] | None = None) -> int:
-    """入口：先做输出保护，再执行子命令；``Refused`` → 退出码 2，其余异常 → 1。"""
+    """Entry point: run the output guard first, then the subcommand; ``Refused`` -> exit code 2, any
+    other exception -> 1."""
 
     args = build_parser().parse_args(argv)
     try:
@@ -1775,7 +1900,7 @@ def main(argv: list[str] | None = None) -> int:
     except Refused as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)
         return EXIT_REFUSED
-    except Exception as exc:  # noqa: BLE001 - CLI 边界统一转换为退出码 1
+    except Exception as exc:  # noqa: BLE001 - converted to exit code 1 at the CLI boundary
         print(f"FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return EXIT_ERROR
 

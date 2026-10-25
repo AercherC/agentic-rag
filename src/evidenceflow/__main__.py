@@ -1,4 +1,4 @@
-"""EvidenceFlow 命令行入口。"""
+"""EvidenceFlow command-line entry point."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from evidenceflow.tracing import RunTraceRecorder
 
 
 def render_ingestion_summary(summary: IngestionSummary, root: Path) -> str:
-    """渲染逐文件状态和批量统计，不泄露 Embedding 内容。"""
+    """Render per-file status and batch statistics without leaking Embedding content."""
 
     lines = ["EvidenceFlow Ingestion", "", f"Root: {root.resolve()}", "", f"Discovered: {summary.files_discovered} files", ""]
     for item in summary.results:
@@ -44,9 +44,10 @@ def render_ingestion_summary(summary: IngestionSummary, root: Path) -> str:
 
 
 def render_rag_answer(answer: RAGAnswer) -> str:
-    """面向用户渲染 Answer 与实际引用来源，不暴露内部 ID 或检索分数。"""
+    """Render the Answer and its actually cited sources for the user, exposing no internal IDs or retrieval scores."""
 
-    # Status 行让用户和下游区分“已回答”与“证据不足拒答”。
+    # The Status line lets users and downstream code tell "answered" from "insufficient evidence,
+    # abstained".
     lines = [
         "EvidenceFlow",
         "",
@@ -68,7 +69,8 @@ def render_rag_answer(answer: RAGAnswer) -> str:
             lines.append("")
         lines.extend([source.source_label, f"File: {source.file_name}"])
         if source.page_start is not None:
-            # 单页避免冗余范围；Markdown/TXT 两端为 None 时完全省略页码行。
+            # A single page avoids a redundant range; when both ends are None (Markdown/TXT) the
+            # page line is omitted entirely.
             pages = (
                 str(source.page_start)
                 if source.page_start == source.page_end
@@ -79,7 +81,7 @@ def render_rag_answer(answer: RAGAnswer) -> str:
 
 
 def _render_ask_error(exc: Exception) -> str:
-    """将已知 Public Boundary 失败转成稳定、无敏感值的用户提示。"""
+    """Turn known Public Boundary failures into stable user hints that contain no sensitive values."""
 
     if isinstance(exc, ActiveCollectionError):
         prefix = "Index configuration error"
@@ -103,7 +105,7 @@ def main(
     ingestion_service: IngestionService | None = None,
     rag_service: RAGService | None = None,
 ) -> int:
-    """解析命令并返回适合 shell 的退出码。"""
+    """Parse the command and return a shell-friendly exit code."""
 
     parser = argparse.ArgumentParser(prog="python -m evidenceflow")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -124,14 +126,16 @@ def main(
     if args.command == "ingest":
         try:
             if ingestion_service is None:
-                # CLI 只触发装配；生产依赖的选择和配置映射统一由 runtime.py 负责。
+                # The CLI only triggers assembly; choosing production dependencies and mapping
+                # configuration is runtime.py's job.
                 from evidenceflow.runtime import build_ingestion_service
 
                 ingestion_service = build_ingestion_service(active_settings)
             service = ingestion_service
             summary = service.ingest(args.path)
         except ActiveIndexProtectedError as exc:
-            # 保护拒绝与执行失败区分：退出码 2 表示“被策略拒绝，没有改动任何索引”。
+            # Distinguish a protective refusal from an execution failure: exit code 2 means
+            # "rejected by policy, no index was changed".
             print(f"Ingestion refused: {exc}", file=sys.stderr)
             return 2
         except Exception as exc:
@@ -140,14 +144,16 @@ def main(
         print(render_ingestion_summary(summary, service.ingestion_root))
         return 1 if summary.failed else 0
 
-    # 只有传 --trace 时才创建 recorder；否则与未接入 trace 时的调用路径完全一致。
+    # Create a recorder only when --trace is passed; otherwise the call path is identical to
+    # running without tracing.
     recorder: RunTraceRecorder | None = None
     if args.trace is not None:
         recorder = RunTraceRecorder()
         recorder.start_run(args.query)
     try:
         try:
-            # 延迟导入 Composition Root，Fake Service CLI 测试不会加载模型或 Chroma。
+            # Import the Composition Root lazily so Fake Service CLI tests load neither models nor
+            # Chroma.
             if rag_service is None:
                 from evidenceflow.runtime import build_rag_service
 
@@ -162,17 +168,19 @@ def main(
         print(render_rag_answer(answer))
         return 0
     finally:
-        # 成功与失败都写 trace（KeyboardInterrupt 也会经过这里，但不会被转换）；
-        # 写入失败只在 stderr 警告一行，不改变退出码与原有输出。
+        # Write the trace on both success and failure (KeyboardInterrupt also passes through here,
+        # but is not converted);
+        # a write failure only warns on stderr and changes neither the exit code nor the existing
+        # output.
         if recorder is not None:
             _write_trace(recorder, args.trace)
 
 
 def _write_trace(recorder: RunTraceRecorder, path: Path) -> None:
-    """结束 run 并把 RunTrace 写成 UTF-8、键排序的 JSON；任何失败只输出一行警告。
+    """Finish the run and write the RunTrace as UTF-8, key-sorted JSON; any failure only prints one warning line.
 
-    装配阶段失败时 RAGService 尚未记录 run.* 终止事件，``finish()`` 会抛 ValueError，
-    同样按“trace 写入失败”处理。
+        When assembly fails, RAGService has not recorded a run.* terminal event yet, so ``finish()``
+        raises ValueError; that is handled the same way, as a trace write failure.
     """
 
     try:
@@ -181,7 +189,7 @@ def _write_trace(recorder: RunTraceRecorder, path: Path) -> None:
             trace.model_dump(mode="json"), sort_keys=True, ensure_ascii=False, indent=2
         )
         path.write_text(text + "\n", encoding="utf-8")
-    except Exception as exc:  # noqa: BLE001 - trace 是旁路产物，不得影响 ask 的结果
+    except Exception as exc:  # noqa: BLE001 - the trace is a side channel and must not affect the result of ask
         print(f"Warning: failed to write trace: {type(exc).__name__}", file=sys.stderr)
 
 

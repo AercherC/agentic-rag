@@ -1,4 +1,4 @@
-"""公开正式单轮 RAG 编排服务。"""
+"""Public single-turn formal RAG orchestration service."""
 
 from evidenceflow.rag.service import RAGService
 

@@ -1,4 +1,4 @@
-"""验证证据组合同、碎片覆盖、旧指标迁移与配对比较。"""
+"""Verify evidence-group composition, fragment coverage, legacy metric migration and paired comparison."""
 
 import json
 from pathlib import Path
@@ -15,7 +15,7 @@ from evidenceflow.eval.v2 import ranking_metrics, evaluate_rankings, save_artifa
 
 
 def dataset():
-    """构造一题两组的最小 Canonical Gold。"""
+    """Build a minimal Canonical Gold with one question and two groups."""
     return EvaluationDatasetV2.model_validate({
         "dataset_id": "d", "split": "development", "corpus_version": "c",
         "questions": [{"question_id": "q", "family_id": "f", "query": "compare",
@@ -28,7 +28,7 @@ def dataset():
 
 
 def test_partial_complete_and_fragmented_groups():
-    """首个相关片段与完整组覆盖不能混为一个排名。"""
+    """The first relevant fragment and full-group coverage must not be conflated into one rank."""
     result = ranking_metrics(["a", "noise", "b", "c"], [[["a", "b"]], [["c"]]], (1, 3, 4))
     assert result["first_relevant_rr_at_1"] == 1
     assert result["evidence_group_recall_at_1"] == 0
@@ -40,7 +40,7 @@ def test_partial_complete_and_fragmented_groups():
 
 
 def test_mapping_failure_is_excluded_not_retrieval_failure():
-    """不完整映射单列，避免降低 Retriever 分数。"""
+    """Incomplete mappings are reported separately, so they do not lower the Retriever score."""
     data = dataset()
     mapping = MappingArtifact(dataset_id="d", corpus_version="c", index_version="i", groups=[
         GroupMapping(question_id="q", group_id="g1", status="FULLY_MAPPED", chunk_sets=[["a"]], reason="exact"),
@@ -56,7 +56,7 @@ def test_mapping_failure_is_excluded_not_retrieval_failure():
 
 
 def test_schema_and_family_leakage():
-    """定位范围、不可回答性与跨 split 题族都需明确。"""
+    """Locator ranges, unanswerability and cross-split question families all have to be explicit."""
     with pytest.raises(ValueError):
         EvidenceLocator(page_start=2, page_end=1)
     data = dataset()
@@ -74,7 +74,7 @@ def test_schema_and_family_leakage():
 
 
 def test_legacy_metrics_match_frozen_baseline():
-    """以保存的逐题结果验证共享化没有改变历史平均值。"""
+    """Use the saved per-question results to verify that sharing the implementation did not change the historical averages."""
     root = Path(__file__).resolve().parents[1]
     payload = json.loads((root / "evals/research_retrieval/research_dense_baseline_v1.json").read_text(encoding="utf-8"))
     assert legacy_research_metrics(payload["question_results"]) == payload["breakdowns"]["overall"]
@@ -83,7 +83,7 @@ def test_legacy_metrics_match_frozen_baseline():
 
 
 def test_paired_comparison_deterministic_clusters_and_zero_baseline():
-    """平行问题共用题族；统计结果可复现且不伪造零分母相对变化。"""
+    """Parallel questions share a question family; statistics are reproducible and never fake a relative change over a zero denominator."""
     args = dict(baseline={"en": 0., "zh": 0.}, variant={"en": 1., "zh": 1.},
                 families={"en": "f", "zh": "f"}, samples=100)
     result = paired_comparison(**args)
@@ -97,7 +97,7 @@ def test_paired_comparison_deterministic_clusters_and_zero_baseline():
 
 
 def test_artifact_never_overwrites(tmp_path):
-    """新实验必须使用新文件名，不能写回旧结果。"""
+    """A new experiment must use a new filename; old results can never be written back."""
     path = tmp_path / "report.json"
     save_artifact({"version": 2}, path)
     with pytest.raises(FileExistsError):
@@ -106,7 +106,7 @@ def test_artifact_never_overwrites(tmp_path):
 
 
 def test_quality_requires_explicit_judgments():
-    """标签合法不等于引用支持，服务错误不当成拒答。"""
+    """A valid label does not mean the citation supports the claim, and a service error is not counted as abstention."""
     from evidenceflow.eval.quality import ClaimJudgment, answer_metrics, abstention_metrics, context_metrics
     claim = ClaimJudgment(correct=False, grounded=False, citations=[{"label_valid": True, "supports_claim": False}])
     result = answer_metrics([claim], [False], annotation_source="human-fixture")

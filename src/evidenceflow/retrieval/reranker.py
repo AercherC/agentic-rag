@@ -1,4 +1,4 @@
-"""提供线上检索链路使用的 Learned Cross-Encoder 重排边界与 Transformers 实现（Exact Dense20 → Reranker → Top5）。"""
+"""Provides the Learned Cross-Encoder rerank boundary and the Transformers implementation used by the online retrieval chain (Exact Dense20 -> Reranker -> Top5)."""
 
 from __future__ import annotations
 
@@ -23,19 +23,19 @@ logger = logging.getLogger(__name__)
 
 
 class RerankerError(RuntimeError):
-    """表示候选已召回但 Learned Reranker 无法产生可信排序。"""
+    """Signals that candidates were recalled but the Learned Reranker could not produce a trustworthy ordering."""
 
 
 class PairScorerProtocol(Protocol):
-    """定义 Reranker 所需的最小 Query–Passage 批量评分接口。"""
+    """Defines the minimal Query-Passage batch scoring interface the Reranker needs."""
 
     def score_pairs(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
-        """返回与输入顺序一一对应的有限 relevance scores。"""
+        """Return finite relevance scores in one-to-one correspondence with the input order."""
 
 
 @dataclass(frozen=True)
 class RerankedChunk:
-    """保存 Learned score、最终排名与候选原始顺序。"""
+    """Holds the Learned score, the final rank and the candidate's original order."""
 
     chunk: DocumentChunk
     rank: int
@@ -44,7 +44,7 @@ class RerankedChunk:
 
 
 class LearnedReranker:
-    """以可替换 PairScorer 对候选批量评分，并执行稳定确定性排序。"""
+    """Batch-scores candidates with a replaceable PairScorer and applies a stable deterministic ordering."""
 
     def __init__(
         self,
@@ -53,7 +53,7 @@ class LearnedReranker:
         batch_size: int = 4,
         max_candidates: int = 100,
     ) -> None:
-        """保存批量与候选上限；拒绝布尔值冒充正整数。"""
+        """Store the batch size and candidate cap; reject booleans posing as positive integers."""
 
         for value, name in ((batch_size, "batch_size"), (max_candidates, "max_candidates")):
             if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
@@ -62,7 +62,8 @@ class LearnedReranker:
         self.batch_size = batch_size
         self.max_candidates = max_candidates
         self.last_truncated_pair_count = 0
-        # 仅汇总 scorer 暴露的阶段耗时，缺失字段的测试替身按零处理。
+        # Aggregate only the stage timings the scorer exposes; test doubles missing the field are
+        # treated as zero.
         self.last_timing_seconds: dict[str, float] = {}
 
     def rerank(
@@ -72,7 +73,7 @@ class LearnedReranker:
         *,
         top_k: int | None = None,
     ) -> list[RerankedChunk]:
-        """重排冻结候选；只改变顺序，不增删或修改 Chunk。"""
+        """Rerank the frozen candidates; only the order changes, chunks are never added, removed or modified."""
 
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
@@ -91,13 +92,15 @@ class LearnedReranker:
         scores: list[float] = []
         self.last_truncated_pair_count = 0
         self.last_timing_seconds = {}
-        # 分批只控制内存；所有分数汇总后统一排序，保证 batch size 不改变结果。
+        # Batching only bounds memory; all scores are collected and sorted together, so batch size
+        # never changes the result.
         for start in range(0, len(candidates), self.batch_size):
             batch = candidates[start : start + self.batch_size]
             batch_scores = self.scorer.score_pairs(
                 [(query, chunk.content) for chunk in batch]
             )
-            # 正式 Transformers scorer 暴露每批截断数；测试替身没有该字段时按 0 处理。
+            # The real Transformers scorer exposes the per-batch truncation count; a test double
+            # without that field counts as 0.
             self.last_truncated_pair_count += int(
                 getattr(self.scorer, "last_truncated_pair_count", 0)
             )
@@ -118,7 +121,7 @@ def rank_scored_candidates(
     *,
     top_k: int | None = None,
 ) -> list[RerankedChunk]:
-    """对已计算的 Learned scores 排序，供预算实验复用同一次模型前向。"""
+    """Sort precomputed Learned scores so budget experiments can reuse a single model forward pass."""
 
     if len(candidates) != len(scores):
         raise ValueError("candidates and scores must have the same length")
@@ -128,7 +131,7 @@ def rank_scored_candidates(
     if isinstance(effective_top_k, bool) or not isinstance(effective_top_k, int) or effective_top_k < 0:
         raise ValueError("top_k must be a non-negative integer")
     indexed = list(enumerate(zip(candidates, scores), start=1))
-    # 同分优先保留冻结候选顺序，chunk_id 作为最终稳定身份决胜键。
+    # Ties keep the frozen candidate order first; chunk_id is the final stable-identity tiebreaker.
     indexed.sort(key=lambda item: (-item[1][1], item[0], item[1][0].chunk_id))
     return [
         RerankedChunk(
@@ -144,7 +147,7 @@ def rank_scored_candidates(
 
 
 class TransformersCrossEncoderScorer:
-    """使用 Hugging Face Sequence Classification 模型计算 Cross-Encoder logits。"""
+    """Compute Cross-Encoder logits with a Hugging Face Sequence Classification model."""
 
     def __init__(
         self,
@@ -155,14 +158,15 @@ class TransformersCrossEncoderScorer:
         max_length: int = 512,
         inference_mode: bool = False,
     ) -> None:
-        """加载冻结模型；设备与截断长度必须由实验 manifest 显式记录。"""
+        """Load the frozen model; the device and truncation length must be recorded explicitly by the experiment manifest."""
 
         if not model_name.strip():
             raise ValueError("model_name must not be blank")
         if isinstance(max_length, bool) or not isinstance(max_length, int) or max_length <= 0:
             raise ValueError("max_length must be a positive integer")
         if dtype != "float32":
-            # Phase 9 只晋升已验证的 CPU float32 路径；低精度属于后续性能阶段。
+            # Phase 9 promotes only the validated CPU float32 path; lower precision belongs to a
+            # later performance phase.
             raise ValueError("dtype must be float32 in the promoted runtime")
         effective_device = resolve_model_device(device)
         import torch
@@ -174,14 +178,17 @@ class TransformersCrossEncoderScorer:
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        # Tokenizer 保持 CPU；只有编码后的 batch 在前向前迁移到模型设备。
+        # The Tokenizer stays on CPU; only the encoded batch is moved to the model device before
+        # the forward pass.
         self.model.to(device=self.device, dtype=torch.float32)
         self.model.eval()
         self._torch = torch
         self.forward_passes = 0
         self.last_truncated_pair_count = 0
         self.inference_mode = inference_mode
-        # 仅保存最近一批的阶段耗时，供性能实验定位瓶颈，不参与评分或排序。
+        # Only the stage timings of the most recent batch are kept, to locate bottlenecks in
+        # performance experiments;
+        # they take no part in scoring or ranking.
         self.last_timing_seconds = {
             "untruncated_tokenization": 0.0,
             "model_tokenization": 0.0,
@@ -190,12 +197,13 @@ class TransformersCrossEncoderScorer:
         }
 
     def score_pairs(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
-        """对一个 batch 执行一次前向，并返回原始 logit。"""
+        """Run one forward pass over a single batch and return the raw logits."""
 
         if not pairs:
             self.last_truncated_pair_count = 0
             return []
-        # 先取得未截断长度，只用于可观测性；不得把达到上限误报为已截断。
+        # First obtain the untruncated length for observability only; reaching the limit must never
+        # be misreported as truncation.
         tokenization_started = time.perf_counter()
         untruncated = self.tokenizer(
             list(pairs),
@@ -219,7 +227,8 @@ class TransformersCrossEncoderScorer:
         ).to(self.device)
         self.last_timing_seconds["model_tokenization"] = time.perf_counter() - tokenization_started
         forward_started = time.perf_counter()
-        # inference_mode 仅移除 autograd 元数据；模型、输入和 float32 logits 保持不变。
+        # inference_mode only removes autograd metadata; the model, inputs and float32 logits stay
+        # unchanged.
         context = self._torch.inference_mode if self.inference_mode else self._torch.no_grad
         with context():
             logits = self.model(**inputs, return_dict=True).logits.view(-1).float()
@@ -232,7 +241,7 @@ class TransformersCrossEncoderScorer:
 
 
 class DenseRerankerRetriever:
-    """执行 Original Dense Candidate Generation 与 Learned Reranker 最终检索。"""
+    """Execute Original Dense Candidate Generation followed by final retrieval with the Learned Reranker."""
 
     retrieval_strategy = "dense_reranker"
 
@@ -246,10 +255,10 @@ class DenseRerankerRetriever:
         final_top_k: int = 5,
         trace_recorder: TraceRecorder | None = None,
     ) -> None:
-        """冻结候选池、Reranker 输入与最终深度的分层合同。
+        """Freeze the layered contract of candidate pool, Reranker input and final depth.
 
-        ``trace_recorder`` 可选（默认 None）：只观测 retrieval.dense.* 与 rerank.* 事件，
-        不影响候选、排序、分数、异常或日志（PROJECT_SPEC §12.5）。
+        ``trace_recorder`` is optional (default None): it only observes retrieval.dense.* and rerank.* events and does not
+        affect candidates, ordering, scores, exceptions or logging (PROJECT_SPEC §12.5).
         """
 
         for value, name in (
@@ -268,7 +277,8 @@ class DenseRerankerRetriever:
         self.candidate_pool_k = candidate_pool_k
         self.reranker_input_k = reranker_input_k
         self.final_top_k = final_top_k
-        # 公开属性：调用方（含 B2 trace 对照实验）可在两次 retrieve 之间替换 recorder。
+        # Public attribute: callers (including the B2 trace comparison experiment) may swap the
+        # recorder between two retrieve calls.
         self.trace_recorder = trace_recorder
 
     def retrieve(
@@ -276,7 +286,7 @@ class DenseRerankerRetriever:
         query: str,
         top_k: int | None = None,
     ) -> list[RerankedRetrievedChunk]:
-        """以 ANN Top-K 生成候选并重排；失败时明确报错且不返回 Dense 顺序。"""
+        """Generate candidates via ANN Top-K and rerank them; on failure raise explicitly and never return the Dense order."""
 
         if not isinstance(query, str) or not query.strip():
             raise InvalidQueryError("query must not be empty or whitespace")
@@ -290,12 +300,13 @@ class DenseRerankerRetriever:
         if effective_top_k > self.reranker_input_k:
             raise ValueError("top_k must not exceed reranker_input_k")
 
-        # 本次调用固定使用同一个 recorder；为 None 时下面不构造任何 payload，开销与未接 trace 一致。
+        # This call pins a single recorder; when it is None no payload is built below, so the cost
+        # matches an untraced run.
         recorder = self.trace_recorder
         safe_record(recorder, "retrieval.dense.started")
         candidates = self.dense_retriever.retrieve(query, top_k=self.candidate_pool_k)
         if recorder is not None:
-            # 只记 ID 与原始 float32 相似度，不记 chunk 正文。
+            # Record only IDs and the raw float32 similarity, never the chunk body.
             safe_record(
                 recorder,
                 "retrieval.dense.completed",
@@ -323,7 +334,8 @@ class DenseRerankerRetriever:
                 top_k=effective_top_k,
             )
         except Exception as exc:
-            # 未验证的 Dense 原排序不能伪装成成功的 Reranker 输出。
+            # An unvalidated raw Dense ordering must not pass itself off as a successful Reranker
+            # output.
             raise RerankerError("learned reranker failed") from exc
         latency = time.perf_counter() - started
         candidate_by_id = {item.chunk.chunk_id: item for item in selected}
@@ -350,7 +362,8 @@ class DenseRerankerRetriever:
             },
         )
         if recorder is not None:
-            # truncated_pair_count 是整批一个值；结果按重排后 rank 记录 ID 与分数。
+            # truncated_pair_count is one value for the whole batch; results are recorded with ID
+            # and score by reranked rank.
             safe_record(
                 recorder,
                 "rerank.completed",

@@ -1,4 +1,4 @@
-"""测试 Storage Inspector 的记录过滤、限制和 Metadata 展示。"""
+"""Test the Storage Inspector's record filtering, limiting, and metadata rendering."""
 
 import pytest
 
@@ -6,7 +6,7 @@ from evidenceflow.inspection import format_storage_record, select_records
 
 
 def test_select_records_filters_file_sorts_and_limits() -> None:
-    """脚本层过滤不要求修改正式 VectorStore Contract。"""
+    """Script-level filtering must not require changing the formal VectorStore Contract."""
 
     records = select_records(
         ["z", "a", "b"],
@@ -26,7 +26,7 @@ def test_select_records_filters_file_sorts_and_limits() -> None:
 
 
 def test_storage_format_includes_content_and_metadata_without_embedding() -> None:
-    """输出证明 Store 保存文本与 Metadata，但不打印不可读的完整向量。"""
+    """The output proves the Store keeps text and metadata but does not print unreadable full vectors."""
 
     rendered = format_storage_record(
         {

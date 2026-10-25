@@ -1,4 +1,4 @@
-"""使用确定性 Domain Objects 验证 Retrieval Gold 匹配与指标公式。"""
+"""Verify Retrieval Gold matching and the metric formulas using deterministic Domain Objects."""
 
 import pytest
 
@@ -19,7 +19,7 @@ def make_result(
     page_start: int | None = 12,
     page_end: int | None = 13,
 ) -> RetrievedChunk:
-    """构造不依赖 Embedding 或 Chroma 的固定检索结果。"""
+    """Build a fixed retrieval result that depends on neither Embedding nor Chroma."""
 
     return RetrievedChunk(
         chunk=DocumentChunk(

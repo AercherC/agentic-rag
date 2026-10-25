@@ -1,4 +1,4 @@
-"""将 PDF、Markdown 和 TXT 文件转换为项目内部 Document。"""
+"""Convert PDF, Markdown, and TXT files into the project's internal Document."""
 
 import unicodedata
 from pathlib import Path
@@ -11,7 +11,7 @@ from evidenceflow.domain.ids import build_content_hash, build_document_id
 
 FileType = Literal["pdf", "md", "txt"]
 
-# 扩展名匹配统一转为小写，因此 README.MD 等文件也能被正确识别。
+# Extension matching is always lower-cased, so files such as README.MD are still recognized.
 SUPPORTED_FILE_TYPES: dict[str, FileType] = {
     ".pdf": "pdf",
     ".md": "md",
@@ -20,7 +20,7 @@ SUPPORTED_FILE_TYPES: dict[str, FileType] = {
 
 
 def _resolve_source_path(path: Path, ingestion_root: Path) -> tuple[Path, str]:
-    """校验文件边界，并返回真实文件路径及规范化相对路径。"""
+    """Validate the file boundary and return the real file path plus its normalized relative path."""
 
     if not path.exists():
         raise FileNotFoundError(f"File does not exist: {path}")
@@ -31,8 +31,8 @@ def _resolve_source_path(path: Path, ingestion_root: Path) -> tuple[Path, str]:
     if not ingestion_root.is_dir():
         raise NotADirectoryError(f"Ingestion root is not a directory: {ingestion_root}")
 
-    # resolve() 会展开符号链接；随后再检查 relative_to()，可防止链接逃逸出
-    # ingestion root 后仍被错误地用于生成 document_id。
+    # resolve() expands symlinks; the subsequent relative_to() check then prevents a link
+    # that escapes the ingestion root from still being used to build a document_id.
     resolved_path = path.resolve()
     resolved_root = ingestion_root.resolve()
     try:
@@ -40,21 +40,22 @@ def _resolve_source_path(path: Path, ingestion_root: Path) -> tuple[Path, str]:
     except ValueError as exc:
         raise ValueError(f"File is outside ingestion root: {path}") from exc
 
-    # source_path 与 document_id 使用同一套 NFC + POSIX 表示，避免平台差异。
+    # source_path and document_id use the same NFC + POSIX representation to avoid platform
+    # differences.
     normalized_relative_path = unicodedata.normalize("NFC", relative_path.as_posix())
     return resolved_path, normalized_relative_path
 
 
 def _load_pdf(path: Path) -> tuple[list[DocumentSegment], dict[str, int]]:
-    """按原始页面顺序提取 PDF 文本，并保留真实的 1-based 页码。"""
+    """Extract PDF text in original page order, preserving the real 1-based page numbers."""
 
     segments: list[DocumentSegment] = []
     with pymupdf.open(path) as pdf:
         page_count = pdf.page_count
         for page_index, page in enumerate(pdf):
             content = page.get_text()
-            # 空页不生成 Segment，但 page_index 不会重排，因此后续有文本页面
-            # 仍保留其在原 PDF 中的真实页码。
+            # Empty pages produce no Segment, but page_index is never renumbered, so a later page
+            # with text still keeps its true page number from the original PDF.
             if not content.strip():
                 continue
             segments.append(
@@ -65,30 +66,33 @@ def _load_pdf(path: Path) -> tuple[list[DocumentSegment], dict[str, int]]:
                 )
             )
 
-    # 当前阶段不实现 OCR；整份 PDF 无文本时应明确失败，而不是返回空文档。
+    # OCR is not implemented at this stage; a PDF with no text at all must fail loudly rather than
+    # yield an empty document.
     if not segments:
         raise ValueError("PDF contains no extractable text")
     return segments, {"page_count": page_count}
 
 
 def _load_utf8_text(file_bytes: bytes) -> list[DocumentSegment]:
-    """将完整 UTF-8 文本作为一个无页码 Segment 返回。"""
+    """Return the whole UTF-8 text as a single page-less Segment."""
 
-    # 直接解码首次读取的原始 bytes，既避免重复 I/O，也保证 content_hash 与
-    # 实际解析的是同一个文件快照；解码失败时保留 Python 清晰的 UTF-8 异常。
+    # Decode the raw bytes read on the first pass: this avoids duplicate IO and guarantees
+    # content_hash and
+    # the parsed content come from the same file snapshot; a decode failure keeps Python's clear
+    # UTF-8 exception.
     content = file_bytes.decode("utf-8")
     return [DocumentSegment(content=content, page_number=None, metadata={})]
 
 
 def load_document(path: Path, ingestion_root: Path) -> Document:
-    """加载一个受支持文件并转换为统一 Document Domain Model。
+    """Load one supported file and convert it into the unified Document Domain Model.
 
-    Args:
-        path: 待加载文件路径，可以是相对路径或绝对路径。
-        ingestion_root: 知识库摄取根目录，也是 document_id 的路径基准。
+        Args:
+            path: Path of the file to load; may be relative or absolute.
+            ingestion_root: Knowledge-base ingestion root, and the path basis for document_id.
 
-    Returns:
-        包含稳定 ID、原始内容 Hash 和有序 Segment 的 Document。
+        Returns:
+            A Document with a stable ID, the raw content Hash, and ordered Segments.
     """
 
     source_path, normalized_relative_path = _resolve_source_path(
@@ -101,7 +105,7 @@ def load_document(path: Path, ingestion_root: Path) -> Document:
         display_suffix = suffix or "<no extension>"
         raise ValueError(f"Unsupported file type: {display_suffix}") from exc
 
-    # content_hash 必须基于原始文件 bytes，不能使用 PDF 提取文本或解码后文本。
+    # content_hash must be based on the raw file bytes, never on PDF-extracted or decoded text.
     file_bytes = source_path.read_bytes()
     content_hash = build_content_hash(file_bytes)
 
@@ -110,7 +114,8 @@ def load_document(path: Path, ingestion_root: Path) -> Document:
         segments, pdf_metadata = _load_pdf(source_path)
         metadata.update(pdf_metadata)
     else:
-        # Markdown/TXT 在 Loader 阶段保持完整原文，不解析标题，也不执行清洗。
+        # Markdown/TXT stay as the complete original text at the Loader stage; no heading parsing
+        # and no cleaning.
         segments = _load_utf8_text(file_bytes)
 
     return Document(

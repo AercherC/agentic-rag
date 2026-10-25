@@ -1,24 +1,33 @@
-"""A3：在 staging collection 上全量重建索引，校验后可选激活或丢弃；绝不直接改动 ACTIVE 索引。
+"""A3: fully rebuild the index into a staging collection, then optionally activate or discard it after
+validation; the ACTIVE index itself is never modified directly.
 
-复用 ``StagingBuildCoordinator``（阶段推进 + 校验）、``IngestionService``（作为 builder 回调）与
-``validate_collection``，不复制 ingestion 逻辑。默认只构建并校验，不激活：
+It reuses ``StagingBuildCoordinator`` (stage progression + validation), ``IngestionService`` (as the
+builder callback) and ``validate_collection`` instead of duplicating ingestion logic. By default it
+only builds and validates, never activates:
 
     python scripts/build_staging_index.py --expected-chunk-ids-from-active --discard-after-validate
 
-上次 discard 中途失败（例如 collection 已删、指针未清）时，可单独清理已登记的 staging：
+If a previous discard failed halfway (for example the collection was already deleted while the
+pointer was not cleared yet), the registered staging can be cleaned up on its own:
 
     python scripts/build_staging_index.py --discard-staging
 
-退出码：0 = 校验通过且所选动作完成（或 --discard-staging 完成）；1 = 构建或校验失败（staging 与指针
-原样保留供诊断）；2 = 拒绝开始，没有构建、没有删除、没有改动状态文件（已有 staging 指针、生成的
-staging 名与 active/previous 或已有 collection 重名、参数冲突、--discard-staging 时没有登记的
-staging 或其名称是 active/previous）；3 = 校验已通过，但构建之后的收尾动作被保护拒绝（staging
-collection 与指针保留，状态文件在构建期间被外部改动时才可能发生）。
+Exit codes: 0 = validation passed and the chosen action completed (or --discard-staging completed);
+1 = the build or the validation failed (staging and the pointer are kept as-is for diagnosis);
+2 = refused to start: nothing was built, deleted or written to the state file (a staging pointer
+already exists, the generated staging name collides with active/previous or with an existing
+collection, the options conflict, or --discard-staging was requested with no registered staging or
+with a target that is active/previous); 3 = validation passed but the wrap-up action after the build
+was refused by the guard (staging collection and pointer are kept; this can only happen when the
+state file was changed externally during the build).
 
---discard-staging 的退出码（A3.2）：0 = 删除并清指针完成；2 = 拒绝，什么都没改（状态文件不存在、读不了或
-校验失败，stderr 为 ``REFUSED: cannot read lifecycle state <path>: <异常类型>: <消息>``；没有登记的 staging；
-目标是 active/previous）；1 = 连接 Chroma、列出或删除 collection 时出错（stderr 为 ``FAILED: <异常类型>: <消息>``；
-删除失败时 staging 指针保持不变，可修复后重试）。两种错误都只输出一行，不抛 traceback。
+--discard-staging exit codes (A3.2): 0 = the collection was deleted and the pointer cleared;
+2 = refused, nothing was changed (the state file is missing, unreadable or fails validation, with
+stderr ``REFUSED: cannot read lifecycle state <path>: <exception type>: <message>``; no registered
+staging; the target is active/previous); 1 = an error occurred while connecting to Chroma, listing
+or deleting the collection (stderr ``FAILED: <exception type>: <message>``; when the deletion fails
+the staging pointer is left unchanged so the operation can be retried after a fix). Both error kinds
+print a single line and never raise a traceback.
 """
 
 from __future__ import annotations
@@ -55,34 +64,38 @@ from evidenceflow.knowledge.job import BuildJobStatus  # noqa: E402
 from evidenceflow.knowledge.lifecycle import CollectionReader  # noqa: E402
 
 DEFAULT_JOB_DIR = ROOT / "artifacts/stage_a/A3_staging_jobs"
-# BGE-M3 Dense 向量维度；与 runtime.EMBEDDING_DIMENSION 同值（此处不导入 runtime 以免加载模型依赖）。
+# BGE-M3 Dense vector dimension; the same value as runtime.EMBEDDING_DIMENSION (runtime is not
+# imported here, to avoid pulling in the model dependencies).
 EMBEDDING_DIMENSION = 1024
 SMOKE_QUERY = "PoinTr point cloud representation for Transformer"
-# 构建阶段只允许单向前进；ingestion 逐文件循环时同一阶段会重复出现，只在首次出现时上报。
+# Build stages may only move forward; ingestion loops per file so the same stage recurs, and it is
+# reported only on first entry.
 _STAGE_ORDER: tuple[BuildJobStatus, ...] = ("PARSING", "CHUNKING", "EMBEDDING", "INDEXING")
 
 
 class StagingBuildRefused(RuntimeError):
-    """开始构建之前的拒绝（退出码 2）：不会创建 collection，也不会改动状态文件。"""
+    """Refusal before a build starts (exit code 2): no collection is created and the state file is untouched."""
 
 
 class ProtectedCollectionError(RuntimeError):
-    """试图删除 active 或 previous 的 collection 时抛出；这两个是线上与回滚依赖的索引。
+    """Raised when something tries to delete the active or previous collection; those two are the
+    indexes that serving and rollback depend on.
 
-    能前置的场景（生成的 staging 名与它们重名）在构建前以 ``StagingBuildRefused`` 拒绝；
-    构建之后仍抛出本异常说明状态文件在构建期间被改动，退出码 3。
+    Scenarios that can be detected up front (the generated staging name collides with them) are
+    refused before the build via ``StagingBuildRefused``; this exception still being raised after the
+    build means the state file changed during the build, and maps to exit code 3.
     """
 
 
 class StageReporter:
-    """把 ingestion 过程中“首次进入某阶段”的事实单向上报给 Coordinator。"""
+    """Report the "first entry into a stage" facts from ingestion one-way to the Coordinator."""
 
     def __init__(self, report: Callable[[BuildJobStatus], None]) -> None:
         self._report = report
         self._reached = -1
 
     def reach(self, stage: BuildJobStatus) -> None:
-        """推进到 stage；逐级补报被跳过的中间阶段，重复或回退的事件直接忽略。"""
+        """Advance to stage; skipped intermediate stages are reported one by one, and repeated or backward events are ignored."""
 
         target = _STAGE_ORDER.index(stage)
         while self._reached < target:
@@ -91,7 +104,7 @@ class StageReporter:
 
 
 class Observed:
-    """透明代理：指定方法首次被调用时触发回调，其余属性与方法原样转发。"""
+    """Transparent proxy: the configured hooks fire when the named method is first called, and every other attribute or method is forwarded unchanged."""
 
     def __init__(self, inner: Any, hooks: dict[str, Callable[[], None]]) -> None:
         self._inner = inner
@@ -112,7 +125,7 @@ class Observed:
 
 @dataclass
 class StagingPorts:
-    """脚本与外部世界（磁盘、Chroma、模型）的全部接触点；测试时整体替换为 Fake。"""
+    """Every contact point between the script and the outside world (disk, Chroma, models); tests replace the whole set with Fakes."""
 
     scan_sources: Callable[[], list[SourceRecord]]
     list_collections: Callable[[], set[str]]
@@ -124,7 +137,7 @@ class StagingPorts:
 
 
 def _protected_names(state: LifecycleState) -> set[str]:
-    """active 与 previous 是线上与回滚依赖的 collection，任何删除或复用都必须避开。"""
+    """Active and previous are the collections serving and rollback depend on, so any deletion or reuse must avoid them."""
 
     names = {state.active.collection_name}
     if state.previous is not None:
@@ -137,12 +150,14 @@ def discard_staging_collection(
     delete_collection: Callable[[str], None],
     list_collections: Callable[[], set[str]],
 ) -> LifecycleState:
-    """删除已登记的 staging collection，然后清空 staging 指针；可重复执行（幂等）。
+    """Delete the registered staging collection, then clear the staging pointer; safe to repeat (idempotent).
 
-    删除前先确认目标不是 active 或 previous：这两个 collection 一旦被删，线上或回滚就会失效。
-    顺序是先删 collection、后清指针；删除失败时指针保持不变，状态仍与实际一致。
-    若上次执行已删掉 collection 但清指针失败，再次执行时 collection 已不存在，只清指针并成功返回，
-    否则这种半完成状态会让后续构建永远因“已有 staging 指针”被拒绝。
+    The target is confirmed not to be active or previous first: deleting either of those would break
+    serving or rollback. The order is collection first, pointer second, so a failed deletion leaves the
+    pointer unchanged and the state still matches reality.
+    If a previous run already deleted the collection but failed to clear the pointer, the collection no
+    longer exists on the next run, so only the pointer is cleared and the call succeeds; otherwise that
+    half-finished state would make every later build fail with "a staging pointer is already registered".
     """
 
     state = lifecycle.load_state()
@@ -153,19 +168,24 @@ def discard_staging_collection(
         raise ProtectedCollectionError(
             f"refusing to delete collection {name!r}: it is the active or previous index"
         )
-    # collection 已不存在（上次删除成功、清指针失败）时跳过删除，只补做清指针。
+    # When the collection no longer exists (last deletion succeeded, clearing the pointer failed),
+    # skip
+    # the deletion and only finish the pointer cleanup.
     if name in list_collections():
         delete_collection(name)
     return lifecycle.discard_staging()
 
 
 def mark_collection_lifecycle(client: Any, collection_name: str, lifecycle: str) -> None:
-    """通过 Chroma API 改写 collection metadata 中的 lifecycle 标记，其余业务 metadata 原样保留。
+    """Rewrite the lifecycle flag in the collection metadata through the Chroma API, keeping every other
+    business metadata field unchanged.
 
-    Chroma 的 modify 以整体替换方式写 metadata，且拒绝**包含** ``hnsw:space`` 键的 metadata。
-    合并时去掉该旧键即可让带它创建的历史 collection（如 v2）也能被改写：距离度量由 collection
-    的 configuration 决定，modify metadata 不会改变它（Chroma 1.5.9 实测，见对应测试）。
-    改写后 metadata 中不再有 ``hnsw:space``；源码中没有任何地方读取该键。
+    Chroma's modify replaces the metadata wholesale and rejects metadata that **contains** the
+    ``hnsw:space`` key. Dropping that legacy key while merging lets historical collections created with
+    it (such as v2) be rewritten too: the distance metric is decided by the collection configuration and
+    modify metadata does not change it (measured on Chroma 1.5.9, see the corresponding test).
+    After the rewrite the metadata no longer carries ``hnsw:space``; nothing in the source reads that
+    key.
     """
 
     collection = client.get_collection(name=collection_name)
@@ -174,14 +194,14 @@ def mark_collection_lifecycle(client: Any, collection_name: str, lifecycle: str)
 
 
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    """与项目 write_json 一致：UTF-8、不转义中文、键排序。"""
+    """Match the project's write_json: UTF-8, non-ASCII characters left unescaped, keys sorted."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
 def _repo_relative(path: Path) -> str:
-    """状态文件里的 manifest_path 使用仓库相对路径，仓库外的路径保持原样。"""
+    """Use a repo-relative path for manifest_path in the state file; paths outside the repo stay as they are."""
 
     try:
         return path.resolve().relative_to(ROOT).as_posix()
@@ -198,11 +218,13 @@ def run_staging_build(
     activate: bool,
     discard_after_validate: bool,
 ) -> tuple[int, dict[str, Any]]:
-    """执行一次 staging 全量重建，返回 (退出码, 摘要)；摘要同时写入 job_dir。"""
+    """Run one full staging rebuild and return (exit code, summary); the summary is also written to job_dir."""
 
     if activate and discard_after_validate:
         raise StagingBuildRefused("--activate and --discard-after-validate are mutually exclusive")
-    # 状态文件是唯一事实来源；读不出知识库身份时在此失败，而不是自行猜测。
+# The state file is the single source of truth; fail here when the knowledge-base identity cannot
+# be
+# read instead of guessing it.
     state = LifecycleState.model_validate_json(Path(settings.index_state_path).read_text(encoding="utf-8"))
     lifecycle = IndexLifecycle(settings.index_state_path, state.knowledge_base_id)
     if state.staging is not None:
@@ -215,15 +237,22 @@ def run_staging_build(
     pipeline: PipelineIdentity = current_pipeline_from_settings(settings)
     index_signature = build_index_signature(build_corpus_signature(sources), pipeline)
     protected = _protected_names(state)
-    # active/previous 作为 reserved 传入，生成器会避让它们（例如 rollback 后同 signature 重建时，
-    # 首选名称恰好是 previous）。
+    # active/previous are passed in as reserved so the generator steers around them (for example
+    # when
+    # rebuilding with the same signature after a rollback, the preferred name is exactly previous).
     staging_name = build_staging_collection_name(
         state.active.collection_name, index_signature, reserved=protected
     )
-    # 纵深防御：无论生成规则如何，staging 名绝不能等于线上或回滚依赖的 collection，
-    # 否则构建会写进 ACTIVE/PREVIOUS 索引，discard 还会删除它。
-    # A3.2 说明：现有生成器已通过 reserved 避让 active/previous，这个检查在当前实现下不会触发；
-    # 有意保留，作为防止生成器以后回归的兜底（测试中以 monkeypatch 生成器的方式覆盖）。
+    # Defense in depth: whatever the naming rule, the staging name must never equal the collection
+    # that
+    # serving or rollback depends on, otherwise the build would write into the ACTIVE/PREVIOUS
+    # index and
+    # discard would even delete it.
+    # A3.2 note: the current generator already avoids active/previous through reserved, so this
+    # check
+    # cannot fire with the current implementation; it is kept on purpose as a backstop against
+    # future
+    # generator regressions (covered in tests by monkeypatching the generator).
     if staging_name in protected:
         raise StagingBuildRefused(
             f"generated staging name {staging_name!r} equals the active or previous collection; "
@@ -239,7 +268,9 @@ def run_staging_build(
     expected_ids = (
         ports.active_chunk_ids(state.active.collection_name) if expected_chunk_ids_from_active else None
     )
-    # 本脚本只做“同一 corpus 的全量重建”，预期规模取 active 的数量；规模变化会被校验如实报告失败。
+    # This script only performs a full rebuild of the same corpus, so the expected magnitude is
+    # taken
+    # from active; any change in size is faithfully reported as a validation failure.
     manifest = build_manifest(
         knowledge_base_id=state.knowledge_base_id,
         sources=sources,
@@ -270,7 +301,9 @@ def run_staging_build(
     }
     passed = job.status == "READY" and report is not None and report.passed
     if not passed:
-        # 失败时保留 staging collection 与指针：它们是诊断证据，由用户决定如何处置。
+        # On failure keep the staging collection and the pointer: they are diagnostic evidence and
+        # the
+        # user decides how to handle them.
         summary["outcome"] = "FAILED_KEPT_STAGING"
         _write_json(job_dir / "staging_build_summary.json", summary)
         return 1, summary
@@ -278,7 +311,9 @@ def run_staging_build(
     if activate:
         manifest_path = job_dir / f"{staging_name}.manifest.json"
         save_manifest(manifest_path, manifest.with_index_state(status="ACTIVE"))
-        # 先把 collection 的 lifecycle 标记改为 ACTIVE，再切换指针；否则新 active 会被 runtime 的校验拒绝。
+        # Mark the collection lifecycle ACTIVE before switching the pointer; otherwise runtime
+        # validation
+        # rejects the new active index.
         ports.mark_collection_active(staging_name)
         lifecycle.activate(manifest, report, manifest_path=_repo_relative(manifest_path))
         job_store.save(job.transition("ACTIVATED"))
@@ -288,8 +323,12 @@ def run_staging_build(
         try:
             discard_staging_collection(lifecycle, ports.delete_collection, ports.list_collections)
         except ProtectedCollectionError as exc:
-            # 构建前已确认 staging 名不是 active/previous；到这里说明状态文件在构建期间被改动。
-            # 此时已经构建完成，不能再用“2 = 拒绝开始”，改用退出码 3，staging 与指针保留。
+            # The staging name was confirmed not to be active/previous before the build; reaching
+            # this
+            # point means the state file changed during the build. The build has already happened,
+            # so
+            # "2 = refused to start" no longer applies: use exit code 3 and keep staging and the
+            # pointer.
             summary["outcome"] = "VALIDATED_DISCARD_REFUSED"
             summary["error"] = str(exc)
             _write_json(job_dir / "staging_build_summary.json", summary)
@@ -304,7 +343,7 @@ def run_staging_build(
 
 
 def make_real_ports(settings: Settings) -> StagingPorts:
-    """用真实的磁盘、Chroma 与本地模型装配端口；模型与 Chroma 依赖延迟到调用时才加载。"""
+    """Assemble the ports from the real disk, Chroma and local models; the model and Chroma dependencies are imported lazily when called."""
 
     import chromadb
 
@@ -323,7 +362,8 @@ def make_real_ports(settings: Settings) -> StagingPorts:
         return manifest_sources_from_documents(documents)
 
     def active_chunk_ids(collection_name: str) -> list[str]:
-        # 只读打开 active：ChromaVectorStore 对已存在的 collection 不会改动其 metadata。
+        # Open active read-only: ChromaVectorStore does not modify the metadata of an existing
+        # collection.
         return [chunk.chunk_id for chunk in ChromaVectorStore(settings.vector_db_path, collection_name).iter_all_chunks()]
 
     def build(collection_name: str, report_stage: Callable[[BuildJobStatus], None]) -> ChromaVectorStore:
@@ -332,8 +372,11 @@ def make_real_ports(settings: Settings) -> StagingPorts:
         store = ChromaVectorStore(
             settings.vector_db_path,
             collection_name,
-            # 不写旧的 "hnsw:space" 键：源码中没有任何地方读取它，cosine 由 ChromaVectorStore 的
-            # configuration 保证。（含该键的 collection 也能改写 lifecycle，见 mark_collection_lifecycle。）
+            # Do not write the legacy "hnsw:space" key: nothing in the source reads it and cosine
+            # is
+            # guaranteed by ChromaVectorStore's configuration. (Collections carrying that key can
+            # still be
+            # rewritten for lifecycle, see mark_collection_lifecycle.)
             collection_metadata={
                 "chunk_strategy": settings.chunk_strategy,
                 "storage_contract": "domain_chunk_metadata_v2",
@@ -368,27 +411,29 @@ def make_real_ports(settings: Settings) -> StagingPorts:
 
 
 def _one_line(exc: BaseException) -> str:
-    """把异常消息压成一行：Pydantic 等异常的消息是多行的，CLI 约定错误只输出一行。"""
+    """Flatten an exception message into one line: Pydantic-style messages span several lines while the CLI contract is one line per error."""
 
     return " ".join(str(exc).split())
 
 
 def run_discard_only(settings: Settings) -> int:
-    """--discard-staging：只连接 Chroma 删除已登记的 staging 并清指针，不加载任何模型。
+    """--discard-staging: only connect to Chroma to delete the registered staging and clear the pointer, loading no model at all.
 
-    错误一律收敛为一行 stderr 加退出码，不抛 traceback：
-    - 状态文件缺失、读不了或校验失败 → ``REFUSED: cannot read lifecycle state …``，退出码 2（什么都没改）；
-    - 没有登记的 staging 或目标受保护 → ``REFUSED: …``，退出码 2（什么都没改）；
-    - 连接 Chroma、列出或删除 collection（以及之后清指针）时出错 → ``FAILED: …``，退出码 1。
-      删除失败时指针保持不变：``discard_staging_collection`` 先删 collection、后清指针。
+    Every error collapses into a single stderr line plus an exit code, never a traceback:
+    - the state file is missing, unreadable or fails validation -> ``REFUSED: cannot read lifecycle state ...``, exit code 2 (nothing changed);
+    - no registered staging, or the target is protected -> ``REFUSED: ...``, exit code 2 (nothing changed);
+    - an error while connecting to Chroma, listing or deleting the collection (or clearing the pointer afterwards) -> ``FAILED: ...``, exit code 1.
+      The pointer stays unchanged when the deletion fails: ``discard_staging_collection`` deletes the collection first and clears the pointer second.
     """
 
     state_path = Path(settings.index_state_path)
-    # 第一步只读状态文件：此时还没有连接 Chroma，任何失败都意味着什么都没改，属于“拒绝开始”。
+    # Step one only reads the state file: Chroma is not connected yet, so any failure here means
+    # nothing
+    # changed and counts as "refused to start".
     try:
         state = LifecycleState.model_validate_json(state_path.read_text(encoding="utf-8"))
         lifecycle = IndexLifecycle(settings.index_state_path, state.knowledge_base_id)
-    except Exception as exc:  # noqa: BLE001 - 缺失/权限/编码/JSON/Pydantic 校验错误都按拒绝处理
+    except Exception as exc:  # noqa: BLE001 - a missing file / permissions / encoding / JSON / Pydantic validation error all count as a refusal
         print(
             f"REFUSED: cannot read lifecycle state {state_path}: {type(exc).__name__}: {_one_line(exc)}",
             file=sys.stderr,
@@ -404,11 +449,14 @@ def run_discard_only(settings: Settings) -> int:
             lambda: {item.name for item in client.list_collections()},
         )
     except (StagingBuildRefused, ProtectedCollectionError) as exc:
-        # 尚未删除任何东西、也没有改动状态文件，属于“拒绝开始”。
+        # Nothing has been deleted and the state file is untouched, so this counts as "refused to
+        # start".
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
-    except Exception as exc:  # noqa: BLE001 - Chroma 连接/列出/删除失败统一报告为执行失败
-        # 删除失败时 discard_staging_collection 尚未清指针，状态仍与实际一致，可修复后重试。
+    except Exception as exc:  # noqa: BLE001 - Chroma connect/list/delete failures are all reported as an execution failure
+        # When the deletion fails, discard_staging_collection has not cleared the pointer yet, so
+        # the state
+        # still matches reality and the operation can be retried after a fix.
         print(f"FAILED: {type(exc).__name__}: {_one_line(exc)}", file=sys.stderr)
         return 1
     print(json.dumps({"outcome": "STAGING_DISCARDED"}, ensure_ascii=False))
@@ -452,7 +500,8 @@ def main(argv: list[str] | None = None) -> int:
             discard_after_validate=args.discard_after_validate,
         )
     except StagingBuildRefused as exc:
-        # 只有构建前的拒绝会走到这里；构建后的保护拒绝由 run_staging_build 以退出码 3 返回。
+        # Only pre-build refusals reach this point; post-build guard refusals are returned by
+        # run_staging_build through exit code 3.
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
     validation = summary["validation"] or {}

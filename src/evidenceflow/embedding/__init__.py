@@ -1,4 +1,4 @@
-"""提供与具体模型库解耦的 Dense Embedding 公共接口。"""
+"""Public Dense Embedding interface decoupled from any specific model library."""
 
 from evidenceflow.embedding.base import EmbeddingProvider
 from evidenceflow.embedding.bge_m3 import (

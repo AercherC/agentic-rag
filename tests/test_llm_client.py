@@ -1,4 +1,4 @@
-"""测试统一 LLM 合同与 OpenAI-compatible Chat Adapter。"""
+"""Test the unified LLM contract and the OpenAI-compatible Chat Adapter."""
 
 from types import SimpleNamespace
 
@@ -16,7 +16,7 @@ from evidenceflow.llm import (
 
 
 class FakeCompletions:
-    """记录 Chat 请求并返回可配置的 SDK 形状响应。"""
+    """Record Chat requests and return a configurable SDK-shaped response."""
 
     def __init__(self, content: object = "Grounded answer [S1].", error: Exception | None = None) -> None:
         self.content = content
@@ -24,7 +24,7 @@ class FakeCompletions:
         self.calls: list[dict[str, object]] = []
 
     def create(self, **kwargs: object) -> object:
-        """模拟 `client.chat.completions.create`。"""
+        """Simulate `client.chat.completions.create`."""
 
         self.calls.append(kwargs)
         if self.error is not None:
@@ -35,7 +35,7 @@ class FakeCompletions:
 
 
 class SequencedCompletions(FakeCompletions):
-    """按顺序返回异常或响应，用于验证一次性瞬态重试。"""
+    """Return exceptions or responses in sequence, to verify the single transient retry."""
 
     def __init__(self, outcomes: list[object]) -> None:
         super().__init__()
@@ -52,7 +52,7 @@ class SequencedCompletions(FakeCompletions):
 
 
 def make_sdk_client(completions: FakeCompletions) -> object:
-    """构造最小 SDK Client 对象树。"""
+    """Build a minimal SDK client object tree."""
 
     return SimpleNamespace(chat=SimpleNamespace(completions=completions))
 
@@ -188,7 +188,8 @@ def test_openai_adapter_rejects_missing_or_empty_text(content: object) -> None:
 
 
 def test_explicit_constructor_passes_timeout_and_disables_sdk_retries(monkeypatch) -> None:
-    """正式 Client 构造必须显式传入 Endpoint、禁用系统代理、显式超时且关闭隐藏自动重试。"""
+    """The production client constructor must pass the endpoint explicitly, disable system
+    proxies, set an explicit timeout, and turn off hidden automatic retries."""
 
     captured: dict[str, object] = {}
 

@@ -1,6 +1,7 @@
-"""提供 Retrieval Evaluation Dataset 与 Metrics 公共接口。
+"""Public interfaces for the Retrieval Evaluation Dataset and Metrics.
 
-legacy ``eval/runner.py``（EvaluationRunner 等）已在 Stage A A4 删除，可从 tag ``stage-a-start`` 恢复。
+The legacy ``eval/runner.py`` (EvaluationRunner and friends) was removed in Stage A A4
+and can be restored from tag ``stage-a-start``.
 """
 
 from evidenceflow.eval.dataset import EvaluationDatasetError, load_evaluation_questions

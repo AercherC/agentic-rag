@@ -1,4 +1,4 @@
-"""测试 RAGService 的固定编排顺序、数据传递与错误传播。"""
+"""Test RAGService's fixed orchestration order, data passing and error propagation."""
 
 from copy import deepcopy
 
@@ -20,7 +20,7 @@ from evidenceflow.rag import RAGService
 
 
 def make_retrieved() -> list[RerankedRetrievedChunk]:
-    """创建正式 Dense + Learned Reranker 检索追踪记录。"""
+    """Create a retrieval trace record matching the official Dense + Learned Reranker path."""
 
     chunk = DocumentChunk(
         chunk_id="chunk-1",
@@ -45,7 +45,7 @@ def make_retrieved() -> list[RerankedRetrievedChunk]:
 
 
 def make_context() -> BuiltContext:
-    """创建与正式候选一致的单来源 Context。"""
+    """Create a single-source Context consistent with the official candidates."""
 
     source = SourceReference(
         source_label="[S1]",
@@ -217,7 +217,7 @@ def test_blank_query_is_rejected_before_retrieval() -> None:
 
 
 def test_status_flows_from_generator_to_rag_answer() -> None:
-    """拒答状态经 Generator → Citation → RAGAnswer 保持不变。"""
+    """The refusal status is preserved unchanged through Generator -> Citation -> RAGAnswer."""
 
     generator = FakeGenerator(answer="知识库信息不足。", status=AnswerStatus.INSUFFICIENT_CONTEXT)
 

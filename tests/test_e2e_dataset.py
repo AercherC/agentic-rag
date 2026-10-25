@@ -1,4 +1,4 @@
-"""验证 rag_e2e_v1 schema、fingerprint 与确定性校验（SPEC §13.1(a)(c)，含 D8）。"""
+"""Verify the rag_e2e_v1 schema, fingerprint and deterministic validation (SPEC §13.1(a)(c), including D8)."""
 
 import json
 from pathlib import Path
@@ -20,7 +20,7 @@ PAGES = {("doc-a", 1, 1): "SnowflakeNet achieves a Chamfer distance of 7.21 on P
 
 
 def provider(document_id, page_start, page_end):
-    """小 fixture：按 (文档, 页) 返回源文本。"""
+    """Small fixture: return the source text for one (document, page)."""
     return PAGES[(document_id, page_start, page_end)]
 
 
@@ -71,7 +71,7 @@ def check(*cases, require_approved=False):
     return validate_dataset(dataset(*cases), provider, require_approved=require_approved)
 
 
-# ---------- schema 与 fingerprint ----------
+# ---------- schema and fingerprint ----------
 
 def test_schema_forbids_extra_fields_and_old_false_premise_kind():
     with pytest.raises(ValidationError):
@@ -85,7 +85,7 @@ def test_fingerprint_is_stable_and_content_bound():
     assert compute_fingerprint(ds) == compute_fingerprint(dataset(answerable(), unanswerable()))
     filled = with_fingerprint(ds)
     assert ds.fingerprint is None and filled.fingerprint == compute_fingerprint(ds)
-    # fingerprint 字段本身不参与计算。
+    # The fingerprint field itself does not take part in the computation.
     assert compute_fingerprint(filled.model_copy(update={"fingerprint": "x"})) == filled.fingerprint
     changed = dataset(answerable(query="Another question?"), unanswerable())
     assert compute_fingerprint(changed) != filled.fingerprint
@@ -113,14 +113,15 @@ def test_validate_reports_fingerprint_mismatch():
     assert "fingerprint_mismatch" in rules(report)
 
 
-# ---------- 每条规则：正例 + 反例 ----------
+# ---------- each rule: positive case + counterexample ----------
 
 def test_valid_dataset_has_no_issues_and_ratios():
     report = check(answerable(), unanswerable(), unanswerable("E2E-U002", kind="out_of_corpus"), false_premise(),
                    require_approved=True)
     assert report.ok and report.issue_count == 0
     assert report.near_miss_ratio.numerator == 1 and report.near_miss_ratio.denominator == 2
-    # 错误前提题按可答题计（D8），其 required claim 计入分母。
+    # False-premise cases count as answerable (D8), and their required claims enter the
+    # denominator.
     assert report.key_matchable_required_claim_ratio.denominator == 2
     assert report.key_matchable_required_claim_ratio.value == 1.0
 
@@ -195,19 +196,21 @@ def _with_keys(keys, query="What CD does SnowflakeNet report?", anchors=None):
 
 
 def test_answerable_needs_evidence_group():
-    """可答题至少 1 个必需证据组；没有证据组的可答题在冻结前必须被拦下。"""
+    """An answerable case needs at least 1 required evidence group; a case without one must be stopped before freezing."""
     assert "answerable_evidence_group" not in rules(check(answerable()))
     assert "answerable_evidence_group" in rules(check(answerable(required_evidence_groups=[])))
-    # 错误前提题按 D8 也是可答题，同样要求至少 1 个证据组。
+    # A false-premise case is also answerable per D8, so it likewise requires at least 1 evidence
+    # group.
     assert "answerable_evidence_group" in rules(check(false_premise(required_evidence_groups=[])))
 
 
 def test_old_pilot_dataset_still_validates():
-    """旧 pilot 数据集（40 组、无 claims）仍能加载并校验，不因新规则抛错。"""
+    """The old pilot dataset (40 groups, no claims) still loads and validates, and a new rule does not make it raise."""
     pilot = Path(__file__).resolve().parents[1] / "artifacts/stage_b/B3a1_pilot_dataset.json"
     ds = E2EDataset.model_validate_json(pilot.read_text(encoding="utf-8"))
     report = validate_dataset(ds, provider, require_approved=False)
-    # 只有“可答题缺 required claim”这一既有问题；新规则不应误伤。
+    # Only the existing "answerable case without a required claim" issue; the new rules must not
+    # cause false hits.
     assert {issue.rule for issue in report.issues} == {"answerable_required_claim"}
     assert report.issue_count == 40
 
@@ -215,13 +218,13 @@ def test_old_pilot_dataset_still_validates():
 def test_answer_keys_rule_source_text():
     assert rules(check(_with_keys([["7.21"], ["倒角距离", "chamfer distance"]]))) == []
     assert "answer_keys_source" in rules(check(_with_keys([["8.88"]])))
-    # 锚点页取不到文本时记录问题，不抛错。
+    # Record an issue when the anchor page yields no text instead of raising.
     missing = _with_keys([["7.21"]], anchors=[anchor("doc-x")])
     assert "answer_keys_source" in rules(check(missing))
 
 
 def test_answer_keys_rule_source_text_is_literal_substring():
-    """规则① 只要求规范化后字面子串：原文 `1.5mm` 允许别名 `1.5`，不套 ASCII 边界。"""
+    """Rule ① only requires a literal substring after normalization: `1.5mm` in the source allows the alias `1.5`, with no ASCII boundary applied."""
 
     def provider_mm(document_id, page_start, page_end):
         return "The reported error is 1.5mm on average."
@@ -234,7 +237,7 @@ def test_answer_keys_rule_source_text_is_literal_substring():
 
 
 def test_answer_keys_rule_source_text_uses_same_hyphen_folding():
-    """规则① 与 (d) 共用 normalize_text：页文本 `view-\\npoints` 能证明别名 `viewpoints`。"""
+    """Rule ① shares normalize_text with (d): page text `view-\npoints` proves the alias `viewpoints`."""
 
     def provider_hyphen(document_id, page_start, page_end):
         return "the view-\npoints of the paper"
@@ -247,7 +250,7 @@ def test_answer_keys_rule_source_text_uses_same_hyphen_folding():
 
 
 def test_answer_keys_rule_query_still_uses_ascii_boundary():
-    """规则② 仍按 (d) 匹配（含 ASCII 边界）：1.5 不命中 11.5，但命中独立出现的 1.5。"""
+    """Rule ② still matches per (d) (with ASCII boundaries): 1.5 does not hit 11.5, but does hit a standalone 1.5."""
     assert "answer_keys_query" not in rules(check(_with_keys([["1.5"]], query="Is the error 11.5?")))
     assert "answer_keys_query" in rules(check(_with_keys([["1.5"]], query="Is the error 1.5?")))
 
@@ -277,10 +280,10 @@ def test_issues_grouped_by_case():
     assert not report.ok
 
 
-# ---------- §13.1(a)：machine 确认与 approval_basis ----------
+# ---------- §13.1(a): machine confirmation and approval_basis ----------
 
 def test_provenance_approval_basis_contract():
-    """machine 必须带 <path>#<sha256>；user / 未确认不得携带 basis。"""
+    """machine must carry <path>#<sha256>; user / unconfirmed must not carry a basis."""
     with pytest.raises(ValidationError):
         Provenance(drafted_by="agent", approved_by="machine", source="new")
     with pytest.raises(ValidationError):
@@ -289,7 +292,7 @@ def test_provenance_approval_basis_contract():
         Provenance(drafted_by="agent", approved_by="user", approval_basis="a.json#abc", source="new")
     with pytest.raises(ValidationError):
         Provenance(drafted_by="agent", approval_basis="a.json#abc", source="new")
-    # 合法组合。
+    # Legal combinations.
     assert Provenance(drafted_by="agent", approved_by="user", source="new").approval_basis is None
     machine = Provenance(
         drafted_by="agent", approved_by="machine",
@@ -297,7 +300,9 @@ def test_provenance_approval_basis_contract():
     )
     assert machine.approval_basis.endswith("#abc123")
 
-    # 向后兼容：approval_basis 为 None 时与“旧模型没有该字段”的数据集 fingerprint 相同。
+    # Backward compatibility: with approval_basis None, the fingerprint equals that of a dataset
+    # from the old
+    # model that had no such field.
     base_case = answerable()
     legacy = dataset(base_case)
     with_null = dataset({**base_case,
@@ -305,7 +310,9 @@ def test_provenance_approval_basis_contract():
                                         "approval_basis": None, "source": "new"}})
     assert compute_fingerprint(legacy) == compute_fingerprint(with_null)
 
-    # 有机器验收依据时，依据内容参与 fingerprint（换报告/换 sha256 即换身份）。
+    # With a machine acceptance basis, the basis content takes part in the fingerprint (a different
+    # report or
+    # a different sha256 means a different identity).
     def machine_case(basis):
         return answerable(provenance={"drafted_by": "agent", "approved_by": "machine",
                                       "approval_basis": basis, "source": "derived_t1"})
@@ -319,12 +326,14 @@ def test_validate_dataset_allow_machine():
     machine = {"drafted_by": "agent", "approved_by": "machine",
                "approval_basis": "artifacts/stage_b/B3_gate_report.json#abc", "source": "derived_t1"}
     case = answerable(provenance=machine)
-    # allow_machine=True 时机器验收可过；默认口径仍只接受 user。
+    # With allow_machine=True a machine acceptance passes; the default convention still accepts
+    # only user.
     assert "not_approved" not in rules(validate_dataset(dataset(case), provider,
                                                         require_approved=True, allow_machine=True))
     assert "not_approved" in rules(check(case, require_approved=True))
 
-    # machine 但 basis 为空：用 model_copy 绕过构造校验，模拟被篡改的落盘数据。
+    # machine but an empty basis: bypass constructor validation via model_copy to simulate tampered
+    # persisted data.
     good = dataset(answerable()).cases[0]
     broken = good.model_copy(update={
         "provenance": good.provenance.model_copy(update={"approved_by": "machine", "approval_basis": None})
@@ -334,7 +343,7 @@ def test_validate_dataset_allow_machine():
     assert "not_approved" in rules(report)
 
 
-# ---------- §13.1(c′)：接地规则 ----------
+# ---------- §13.1(c′): grounding rules ----------
 
 GROUNDING_TEXT = (
     "SnowflakeNet reports a chamfer distance of 7.21 on the PCN benchmark under the standard protocol."
@@ -367,7 +376,7 @@ def test_grounding_claim_must_be_in_source_text():
 def test_grounding_key_must_be_substring_of_claim():
     claim = "the measured chamfer distance is 7.21 on pcn"
     assert "claim_key_in_text" in _grounding_rules(_grounding_case(claim_text=claim, keys=[["8.88"]]))
-    # 别名是 claim 的子串时通过（7.21 既能接地也能匹配）。
+    # Passes when the alias is a substring of the claim (7.21 both grounds and matches).
     assert "claim_key_in_text" not in _grounding_rules(_grounding_case(claim_text=claim, keys=[["7.21"]]))
 
 
@@ -382,14 +391,16 @@ def test_grounding_claim_too_short():
 
 def test_grounding_query_copy_rule():
     claim = "snflk reports the chamfer distance value of 7.21 on the pcn benchmark under the protocol"
-    # 共享 9 个连续词（the chamfer distance value of 7.21 on the pcn）> 8 ⇒ 触发。
+    # 9 consecutive shared words (the chamfer distance value of 7.21 on the pcn) > 8 => triggered.
     copied = _grounding_case(
         claim_text=claim,
         query="what does snflk report about the chamfer distance value of 7.21 on the pcn",
     )
     assert "query_claim_copy" in _grounding_rules(copied)
 
-    # 只共享 5 个连续词（the chamfer distance value of）时低于阈值，不触发，避免数值题被误杀。
+    # Only 5 consecutive shared words (the chamfer distance value of) is below the threshold and
+    # does not
+    # trigger, so numeric questions are not killed by mistake.
     clean = _grounding_case(
         claim_text=claim,
         query="what does snflk report about the chamfer distance value of",
@@ -404,7 +415,8 @@ def test_grounding_forbidden_claims_only_need_length_and_copy():
                  "evidence_anchors": [anchor()], "answer_keys": [["7.21"]]}]
     case = false_premise(required_claims=required, forbidden_claims=[forbidden])
     report_rules = _grounding_rules(case)
-    # F1 是错误前提，本来就不在原文：不要求 ①，其余规则全部通过。
+    # F1 is the false premise and is by design not in the source: ① is not required and all other
+    # rules pass.
     assert "claim_grounded" not in report_rules and "claim_too_short" not in report_rules
     assert report_rules == []
 
@@ -414,7 +426,7 @@ def test_grounding_forbidden_claims_only_need_length_and_copy():
 
 
 def test_grounding_is_opt_in():
-    """enforce_grounding=False 时新规则一律不出现，保持既有语义。"""
+    """With enforce_grounding=False the new rules never appear, keeping the existing semantics."""
     case = _grounding_case(claim_text="the paper describes an unrelated baseline method")
     assert _grounding_rules(case) == ["claim_grounded"]
     report = validate_dataset(dataset(case), grounding_provider, require_approved=False)

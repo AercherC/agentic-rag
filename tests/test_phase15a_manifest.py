@@ -1,4 +1,4 @@
-"""验证 Phase 15A manifest、signature、source diff 和 rebuild decision 合同。"""
+"""Verify the Phase 15A manifest, signature, source diff and rebuild decision contracts."""
 
 from evidenceflow.knowledge.manifest import (
     PipelineIdentity,
@@ -14,7 +14,7 @@ from evidenceflow.knowledge.manifest import (
 
 
 def _source(path: str, document_id: str, content_hash: str, size: int = 10) -> SourceRecord:
-    """构造测试 source；hash 使用固定占位值，不依赖真实文件。"""
+    """Build a test source; hashes use fixed placeholder values and do not depend on real files."""
 
     return SourceRecord(
         relative_path=path,
@@ -25,7 +25,7 @@ def _source(path: str, document_id: str, content_hash: str, size: int = 10) -> S
 
 
 def _pipeline(**overrides: object) -> PipelineIdentity:
-    """构造最小 indexing pipeline，便于逐字段测试 signature 变化。"""
+    """Build a minimal indexing pipeline so the signature change can be tested field by field."""
 
     values: dict[str, object] = {
         "parser_version": "parser-v1",
@@ -45,7 +45,7 @@ def _manifest(
     pipeline: PipelineIdentity | None = None,
     collection_name: str = "collection-a",
 ) :
-    """生成包含稳定签名的测试 manifest。"""
+    """Produce a test manifest containing stable signatures."""
 
     actual_sources = sources or [_source("a.pdf", "doc-a", "hash-a")]
     return build_manifest(
@@ -59,7 +59,7 @@ def _manifest(
 
 
 def test_manifest_serialization_and_source_order_are_deterministic() -> None:
-    """同一输入换顺序后，corpus/index signature 和 canonical bytes 必须不变。"""
+    """After reordering the same input, the corpus/index signature and the canonical bytes must not change."""
 
     sources = [_source("b.pdf", "doc-b", "hash-b"), _source("a.pdf", "doc-a", "hash-a")]
     first = _manifest(sources)
@@ -72,7 +72,7 @@ def test_manifest_serialization_and_source_order_are_deterministic() -> None:
 
 
 def test_corpus_signature_changes_only_with_source_identity_or_content() -> None:
-    """size_bytes 是审计字段，不应改变 corpus identity。"""
+    """size_bytes is an audit field and must not change the corpus identity."""
 
     base = [_source("a.pdf", "doc-a", "hash-a", size=10)]
     assert build_corpus_signature(base) == build_corpus_signature([_source("a.pdf", "doc-a", "hash-a", size=99)])
@@ -81,7 +81,7 @@ def test_corpus_signature_changes_only_with_source_identity_or_content() -> None
 
 
 def test_index_signature_sensitivity_and_isolation() -> None:
-    """parser/chunker/embedding 变化会重建；retrieval/generator 变化不进入签名。"""
+    """Changes in parser/chunker/embedding trigger a rebuild; retrieval/generator changes never enter the signature."""
 
     corpus = build_corpus_signature([_source("a.pdf", "doc-a", "hash-a")])
     baseline = build_index_signature(corpus, _pipeline())
@@ -91,12 +91,13 @@ def test_index_signature_sensitivity_and_isolation() -> None:
     assert build_index_signature(corpus, _pipeline(chunker_config={"strategy": "hybrid", "chunk_size": 1024})) != baseline
     assert build_index_signature(corpus, _pipeline(embedding_model="BAAI/other")) != baseline
     assert build_index_signature(corpus, _pipeline(embedding_version="embedding-v2")) != baseline
-    # reranker、TopK、generator 不属于 PipelineIdentity，故不会改变 index signature。
+    # reranker, TopK and generator are not part of PipelineIdentity, so they cannot change the
+    # index signature.
     assert build_index_signature(corpus, _pipeline()) == baseline
 
 
 def test_source_diff_reports_five_states() -> None:
-    """显式 scan 可确定区分 unchanged/added/updated/deleted/renamed。"""
+    """An explicit scan can deterministically distinguish unchanged/added/updated/deleted/renamed."""
 
     previous = [
         _source("same.pdf", "doc-same", "same"),
@@ -125,7 +126,7 @@ def test_source_diff_reports_five_states() -> None:
 
 
 def test_ambiguous_rename_is_blocked_without_guessing() -> None:
-    """同一 hash 有多个 rename 候选时必须停止，而不是随意配对。"""
+    """When several rename candidates share one hash, the run must stop rather than pair them arbitrarily."""
 
     diff = compare_sources(
         [_source("old-a.pdf", "old-a", "same"), _source("old-b.pdf", "old-b", "same")],
@@ -137,7 +138,7 @@ def test_ambiguous_rename_is_blocked_without_guessing() -> None:
 
 
 def test_rebuild_decision_is_deterministic_and_rename_rebuilds() -> None:
-    """当前 document_id 由路径决定，因此 rename 也必须建立新索引。"""
+    """The current document_id is derived from the path, so a rename must also build a new index."""
 
     previous = _manifest()
     unchanged = compare_sources(previous.sources, previous.sources)
@@ -153,7 +154,7 @@ def test_rebuild_decision_is_deterministic_and_rename_rebuilds() -> None:
 
 
 def test_manifest_round_trip_revalidates_derived_signatures(tmp_path) -> None:
-    """落盘后重新加载仍需通过 signature 校验。"""
+    """After being persisted and reloaded, the manifest must still pass the signature check."""
 
     path = tmp_path / "manifest.json"
     second_path = tmp_path / "manifest-second.json"

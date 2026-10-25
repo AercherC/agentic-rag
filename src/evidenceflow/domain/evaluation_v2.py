@@ -1,4 +1,4 @@
-"""定义与 Chunk 策略解耦的 Evaluation v2 真值和映射合同。"""
+"""Define the Evaluation v2 ground-truth and mapping contracts decoupled from any Chunk strategy."""
 
 from typing import Literal
 
@@ -6,13 +6,13 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ContractModel(BaseModel):
-    """拒绝未声明字段，防止版本迁移时悄悄丢弃标注。"""
+    """Reject undeclared fields so a version migration cannot silently drop annotations."""
 
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
 
 class EvidenceLocator(ContractModel):
-    """定位页码或有序 Segment，字符范围为块内半开区间。"""
+    """Locate pages or an ordered Segment; character ranges are block-local half-open intervals."""
 
     page_start: int | None = Field(default=None, ge=1, description="1-based 起始页。")
     page_end: int | None = Field(default=None, ge=1, description="1-based 结束页。")
@@ -27,7 +27,7 @@ class EvidenceLocator(ContractModel):
 
     @model_validator(mode="after")
     def validate_location(self):
-        """拒绝不完整或相互冲突的定位范围。"""
+        """Reject incomplete or conflicting locator ranges."""
         if (self.page_start is None) != (self.page_end is None):
             raise ValueError("page endpoints must be paired")
         if self.page_start is not None and self.page_start > self.page_end:
@@ -47,7 +47,7 @@ class EvidenceLocator(ContractModel):
 
 
 class EvidenceAlternative(ContractModel):
-    """同组内可独立支持所需事实的一种来源。"""
+    """One source that can independently support the required fact within its group."""
 
     document_id: str = Field(min_length=1, description="稳定文档身份。")
     content_version: str = Field(min_length=1, description="原始文件 content_hash。")
@@ -56,14 +56,14 @@ class EvidenceAlternative(ContractModel):
 
 
 class EvidenceGroup(ContractModel):
-    """必需证据组；alternatives 为 OR，不同组为 AND。"""
+    """A required evidence group; alternatives are OR, different groups are AND."""
 
     group_id: str = Field(min_length=1, description="题内唯一证据组 ID。")
     alternatives: list[EvidenceAlternative] = Field(min_length=1, description="可互换的来源。")
 
 
 class EvaluationQuestionV2(ContractModel):
-    """保存问题、切片和独立标注真值。"""
+    """Holds the question, its slices, and independently annotated ground truth."""
 
     question_id: str = Field(min_length=1, description="数据集内唯一 ID。")
     family_id: str = Field(min_length=1, description="平行改写族；不能跨 split。")
@@ -79,7 +79,7 @@ class EvaluationQuestionV2(ContractModel):
 
     @model_validator(mode="after")
     def validate_gold(self):
-        """可回答题必须有证据；不可回答题不伪造正例。"""
+        """An answerable question must have evidence; an unanswerable one must not fake a positive example."""
         if bool(self.required_evidence_groups) != (self.answerability == "answerable"):
             raise ValueError("answerability and required groups disagree")
         ids = [g.group_id for g in self.required_evidence_groups]
@@ -91,7 +91,7 @@ class EvaluationQuestionV2(ContractModel):
 
 
 class EvaluationDatasetV2(ContractModel):
-    """冻结同一 split 与语料版本的问题集合。"""
+    """A frozen set of questions sharing one split and one corpus version."""
 
     schema_version: Literal["2.0", "2.1"] = "2.0"
     dataset_id: str = Field(min_length=1, description="数据集版本身份。")
@@ -101,7 +101,7 @@ class EvaluationDatasetV2(ContractModel):
 
     @model_validator(mode="after")
     def validate_ids(self):
-        """拒绝重复问题，确保配对比较不会错位。"""
+        """Reject duplicate questions so paired comparisons cannot misalign."""
         ids = [q.question_id for q in self.questions]
         if len(ids) != len(set(ids)):
             raise ValueError("duplicate question_id")
@@ -115,7 +115,7 @@ MappingStatus = Literal[
 
 
 class GroupMapping(ContractModel):
-    """保存组的候选证据集合；外层 OR、内层 AND。"""
+    """Holds the candidate evidence sets of a group; outer OR, inner AND."""
 
     question_id: str
     group_id: str
@@ -125,7 +125,7 @@ class GroupMapping(ContractModel):
 
     @model_validator(mode="after")
     def validate_sets(self):
-        """未解决映射不得携带可评分的伪 Gold。"""
+        """An unresolved mapping must not carry scorable pseudo-Gold."""
         mapped = self.status in {"FULLY_MAPPED", "FRAGMENTED_ACROSS_CHUNKS"}
         if mapped != bool(self.chunk_sets):
             raise ValueError("mapping status and chunk_sets disagree")
@@ -135,7 +135,7 @@ class GroupMapping(ContractModel):
 
 
 class MappingArtifact(ContractModel):
-    """把映射绑定到数据、语料与索引版本。"""
+    """Bind a mapping to the dataset, corpus, and index versions."""
 
     mapping_version: str = "gold-mapper-v2"
     dataset_id: str
@@ -146,7 +146,7 @@ class MappingArtifact(ContractModel):
 
     @model_validator(mode="after")
     def validate_group_identity(self):
-        """重复映射不能覆盖另一条记录。"""
+        """A duplicate mapping must not overwrite another record."""
         keys = [(g.question_id, g.group_id) for g in self.groups]
         if len(keys) != len(set(keys)):
             raise ValueError("duplicate mapping group")
@@ -154,7 +154,7 @@ class MappingArtifact(ContractModel):
 
 
 def validate_dataset_splits(datasets: list[EvaluationDatasetV2]) -> None:
-    """检查题族泄漏；不推断文本相似性或自动拆分人工题族。"""
+    """Check for family leakage; do not infer text similarity or auto-split human-made families."""
     splits: dict[str, str] = {}
     for dataset in datasets:
         for question in dataset.questions:

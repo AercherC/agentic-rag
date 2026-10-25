@@ -1,4 +1,4 @@
-"""验证 Phase 10 性能实验 artifact 的冻结合同。"""
+"""Verify the frozen contract of the Phase 10 performance experiment artifacts."""
 
 import json
 from pathlib import Path
@@ -8,13 +8,13 @@ PHASE10 = Path(__file__).parents[1] / "evals/evaluation_v2/phase10_reranker_perf
 
 
 def _load(name: str):
-    """读取 Phase 10 的确定性 JSON 产物。"""
+    """Read a deterministic Phase 10 JSON artifact."""
 
     return json.loads((PHASE10 / name).read_text(encoding="utf-8"))
 
 
 def test_phase10_artifacts_prove_frozen_quality_and_no_runtime_promotion() -> None:
-    """性能实验必须保留 Phase 9 质量，且 p95 回归时不得晋升配置。"""
+    """The performance experiment must preserve Phase 9 quality, and must not promote a config when p95 regresses."""
 
     required = {
         "run_manifest.json",

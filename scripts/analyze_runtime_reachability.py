@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-"""生成 Post-13F Runtime Consolidation 的只读盘点与清理 dry-run 证据。
+"""Produce the read-only inventory and cleanup dry-run evidence for Post-13F Runtime Consolidation.
 
-本脚本只分析和写入 ``artifacts/cleanup/post13f``，不删除、移动或改写项目
-已有源码、评测数据、冻结产物和 Chroma 数据。静态 import 图用于识别候选，
-但不会把 ``unreachable`` 直接解释为可删除；最终清理仍需满足方案中的多重
-引用与可恢复性门槛。
+This script only analyzes and writes under ``artifacts/cleanup/post13f``; it never deletes, moves,
+or rewrites the project's existing source code, evaluation data, frozen artifacts, or Chroma data.
+The static import graph identifies candidates, but ``unreachable`` is never read directly as
+"deletable": final cleanup still has to satisfy the plan's multiple-reference and recoverability
+gates.
 """
 
 from __future__ import annotations
@@ -30,19 +31,19 @@ DOC_SOURCE_NAMES = {"README.md", "PROJECT_SPEC.md", "PROJECT_VISION.md"}
 
 
 def now() -> str:
-    """返回统一的 UTC 时间，便于多个证据文件互相追踪。"""
+    """Return a uniform UTC timestamp so the evidence files can be correlated with each other."""
 
     return datetime.now(timezone.utc).isoformat()
 
 
 def rel(path: Path) -> str:
-    """将本地路径转换成证据文件中稳定的 POSIX 相对路径。"""
+    """Convert a local path into a stable POSIX relative path for the evidence files."""
 
     return path.relative_to(ROOT).as_posix()
 
 
 def is_under(path: Path, parent: Path) -> bool:
-    """判断路径是否位于指定目录内，避免输出目录被再次纳入盘点。"""
+    """Whether a path lies inside the given directory; keeps the output directory out of the inventory."""
 
     try:
         path.relative_to(parent)
@@ -52,11 +53,11 @@ def is_under(path: Path, parent: Path) -> bool:
 
 
 def iter_project_files(*, include_output: bool = False) -> list[Path]:
-    """枚举项目受控文件；模型缓存和输出目录默认不参与自引用统计。"""
+    """Enumerate project-controlled files; model caches and the output directory are excluded from self-reference counting by default."""
 
     files: list[Path] = []
-    # 用 os.walk 在目录层面剪枝；模型缓存体积很大，但只需要知道它受保护，
-    # 不应为了清理盘点逐文件进入缓存目录。
+    # Prune at the directory level with os.walk: the model cache is huge, but all we need to know
+    # is that it is protected, so the cleanup inventory must not descend into it file by file.
     for directory, dirnames, filenames in os.walk(ROOT):
         current = Path(directory)
         dirnames[:] = [
@@ -74,7 +75,7 @@ def iter_project_files(*, include_output: bool = False) -> list[Path]:
 
 
 def sha256(path: Path) -> str:
-    """流式计算文件 hash，避免把 PDF、SQLite 或大型评测 JSON 一次性载入。"""
+    """Stream the file hash so PDFs, SQLite files, or large evaluation JSONs are never loaded at once."""
 
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -84,14 +85,14 @@ def sha256(path: Path) -> str:
 
 
 def write_json(path: Path, value: Any) -> None:
-    """以 UTF-8、稳定缩进写出机器可读证据。"""
+    """Write machine-readable evidence as UTF-8 with a stable indent."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
 def read_text(path: Path) -> str | None:
-    """读取文本文件；二进制或损坏编码只返回 None，不阻断全量盘点。"""
+    """Read a text file; return None for binary or badly-encoded content instead of aborting the whole inventory."""
 
     try:
         return path.read_text(encoding="utf-8")
@@ -100,7 +101,7 @@ def read_text(path: Path) -> str | None:
 
 
 def source_python_files() -> list[Path]:
-    """返回参与代码图的源码、测试、脚本和实验 Python 文件。"""
+    """Return the source, test, script, and experiment Python files that take part in the code graph."""
 
     return [
         path
@@ -110,7 +111,7 @@ def source_python_files() -> list[Path]:
 
 
 def module_index() -> dict[str, Path]:
-    """建立项目内模块名到文件的映射，兼容 namespace experiments 包。"""
+    """Build the project-wide module-name to file mapping, supporting the namespace experiments package."""
 
     result: dict[str, Path] = {}
     roots = {"evidenceflow": ROOT / "src" / "evidenceflow", "experiments": ROOT / "experiments"}
@@ -127,7 +128,7 @@ def module_index() -> dict[str, Path]:
 
 
 def module_for_path(path: Path, modules: dict[str, Path]) -> str | None:
-    """根据已建索引反查当前文件的 Python 模块名。"""
+    """Look up a file's Python module name from the already-built index."""
 
     for name, candidate in modules.items():
         if candidate == path:
@@ -136,7 +137,7 @@ def module_for_path(path: Path, modules: dict[str, Path]) -> str | None:
 
 
 def resolve_module(name: str, modules: dict[str, Path]) -> tuple[str, Path] | None:
-    """解析项目模块；第三方依赖和无法静态解析的 import 不会伪造为项目边。"""
+    """Resolve a project module; third-party dependencies and statically unresolvable imports never become fabricated project edges."""
 
     if name in modules:
         return name, modules[name]
@@ -152,7 +153,7 @@ def resolve_import(
     level: int,
     modules: dict[str, Path],
 ) -> list[tuple[str, Path]]:
-    """把绝对或相对 import 转换成项目内边，保留 package 导入语义。"""
+    """Turn absolute or relative imports into project-internal edges, preserving package import semantics."""
 
     if level and current_module is None:
         return []
@@ -169,7 +170,7 @@ def resolve_import(
 
 
 def ast_edges(path: Path, modules: dict[str, Path]) -> tuple[list[dict[str, str]], list[str], list[str]]:
-    """提取静态 import 边、未解析 import 和动态导入风险。"""
+    """Extract static import edges, unresolved imports, and dynamic-import risks."""
 
     text = read_text(path)
     if text is None:
@@ -204,8 +205,9 @@ def ast_edges(path: Path, modules: dict[str, Path]) -> tuple[list[dict[str, str]
                                 {"from": rel(path), "to": rel(child[1]), "kind": "from_import_child"}
                             )
             elif node.module and node.module.startswith(("evidenceflow", "experiments")):
-                # ``experiments`` 没有 __init__.py，是合法 namespace package；
-                # 从其根包导入具体 runner 时直接解析 alias 子模块。
+                # ``experiments`` has no __init__.py and is a valid namespace package; when a
+                # concrete runner is imported from its root package, resolve the alias submodule
+                # directly.
                 child_edges = 0
                 for alias in node.names:
                     child = resolve_module(f"{node.module}.{alias.name}", modules)
@@ -225,7 +227,7 @@ def ast_edges(path: Path, modules: dict[str, Path]) -> tuple[list[dict[str, str]
 
 
 def build_module_graph() -> tuple[dict[str, Path], list[dict[str, str]], dict[str, list[str]], list[str]]:
-    """构建全项目 Python import 图，并保留解析失败信息供 REVIEW。"""
+    """Build the project-wide Python import graph and keep resolution failures as evidence for REVIEW."""
 
     modules = module_index()
     edges: list[dict[str, str]] = []
@@ -237,13 +239,14 @@ def build_module_graph() -> tuple[dict[str, Path], list[dict[str, str]], dict[st
         if missing:
             unresolved[rel(path)].extend(missing)
         dynamic.extend(risks)
-    # 同一文件多次导入同一模块只保留一条结构边，引用次数另由文本/入口统计。
+    # Repeated imports of the same module within one file keep a single structural edge; reference
+    # counts are tallied separately from text/entry-point analysis.
     unique_edges = sorted({(item["from"], item["to"], item["kind"]): item for item in edges}.values(), key=lambda item: (item["from"], item["to"], item["kind"]))
     return modules, unique_edges, dict(unresolved), sorted(dynamic)
 
 
 def runtime_reachability(modules: dict[str, Path], edges: list[dict[str, str]], unresolved: dict[str, list[str]], dynamic: list[str]) -> dict[str, Any]:
-    """从 CLI、runtime 和包入口递归计算静态生产可达集合。"""
+    """Recursively compute the statically production-reachable set starting from the CLI, runtime, and package entry points."""
 
     entry_names = ["evidenceflow", "evidenceflow.__main__", "evidenceflow.runtime"]
     entry_paths = [rel(modules[name]) for name in entry_names if name in modules]
@@ -288,10 +291,11 @@ def runtime_reachability(modules: dict[str, Path], edges: list[dict[str, str]], 
 def text_reference_summary(
     modules: dict[str, Path], edges: list[dict[str, str]], reachable: set[str]
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
-    """为每个 Python 目标累计 runtime/test/CLI/frozen 与字符串路径引用。"""
+    """Tally runtime/test/CLI/frozen and string-path references for every Python target."""
 
     all_text = [path for path in iter_project_files() if path.suffix.lower() in TEXT_SUFFIXES]
-    # 评测目录中文本文件较多；先一次性读取，避免按目标模块重复扫描大型 JSON。
+    # The evaluation directories hold many text files; read them once up front rather than
+    # rescanning large JSONs for each target module.
     text_contents = {
         path: content
         for path in all_text
@@ -315,7 +319,8 @@ def text_reference_summary(
                 continue
             matches = sum(content.count(needle) for needle in needles if needle)
             if not matches and source.suffix == ".py":
-                # 对旧脚本的 ``from module import`` 兼容简写使用模块末段作辅助证据。
+                # For legacy scripts' shorthand ``from module import``, use the module's last
+                # segment as supporting evidence.
                 matches = content.count(basename) if basename not in {"__init__.py", "__main__.py"} else 0
             if matches:
                 source_rel = rel(source)
@@ -359,7 +364,7 @@ def text_reference_summary(
 
 
 def chroma_inventory() -> dict[str, Any]:
-    """只读解析本地 Chroma SQLite，按 collection 输出身份、规模和清理分类。"""
+    """Read the local Chroma SQLite read-only and report identity, scale, and cleanup class per collection."""
 
     db = ROOT / "data" / "chroma" / "chroma.sqlite3"
     active = "ef_research_bge_m3_hybrid_c512_v1"
@@ -374,7 +379,8 @@ def chroma_inventory() -> dict[str, Any]:
     try:
         collections = con.execute("select id,name,dimension,config_json_str,schema_str from collections order by name").fetchall()
         for collection_id, name, dimension, config_json, schema_text in collections:
-            # Chroma 的 scope 才区分 VECTOR/METADATA；type 是内部 segment URI。
+            # Chroma's scope is what distinguishes VECTOR/METADATA; type is the internal segment
+            # URI.
             segments = con.execute("select id,scope from segments where collection=?", (collection_id,)).fetchall()
             vector_segments = [segment_id for segment_id, kind in segments if kind == "VECTOR"]
             metadata_segments = [segment_id for segment_id, kind in segments if kind == "METADATA"]
@@ -386,8 +392,9 @@ def chroma_inventory() -> dict[str, Any]:
                     (segment_id,),
                 ).fetchone()[0]
             if document_count == 0 and name == "ef_research_bge_m3_hybrid_c512_v1":
-                # 当前活动 collection 的新 Chroma schema 只保留 chroma:document 元数据；
-                # 文档数从同一 Phase 13F 冻结状态的 doc_stats 交叉核对，避免写出 0。
+                # The active collection's newer Chroma schema keeps only chroma:document metadata;
+                # cross-check the document count against doc_stats from the same Phase 13F frozen
+                # state so a bogus 0 is never written.
                 status_path = ROOT / "evals" / "evaluation_v3" / "phase13f_hybrid_runtime_promotion" / "status.json"
                 try:
                     status = json.loads(status_path.read_text(encoding="utf-8"))
@@ -448,7 +455,7 @@ def chroma_inventory() -> dict[str, Any]:
 
 
 def duplicate_files() -> dict[str, Any]:
-    """扫描 MD/JSON/CSV 的 exact hash 和规范化文本重复，后者只供 REVIEW。"""
+    """Scan MD/JSON/CSV for exact-hash and normalized-text duplicates; the latter is for REVIEW only."""
 
     exact: dict[str, list[str]] = defaultdict(list)
     normalized: dict[str, list[str]] = defaultdict(list)
@@ -482,14 +489,14 @@ def duplicate_files() -> dict[str, Any]:
 
 
 def function_duplicates() -> dict[str, Any]:
-    """按 AST 去除位置信息后找完全重复函数，并对同名近似函数生成 REVIEW。"""
+    """Find exactly duplicated functions by AST comparison with location info stripped, and raise REVIEW for close same-name functions."""
 
     exact: dict[str, list[dict[str, Any]]] = defaultdict(list)
     structural: dict[str, list[dict[str, Any]]] = defaultdict(list)
     parse_errors: list[str] = []
 
     class _StructureNormalizer(ast.NodeTransformer):
-        """只保留控制/调用结构，抹平局部变量和字面量以产生审查线索。"""
+        """Keep only control/call structure, flattening local names and literals to produce review leads."""
 
         def visit_Constant(self, node: ast.Constant) -> ast.AST:
             return ast.copy_location(ast.Constant(value="<literal>"), node)
@@ -521,7 +528,9 @@ def function_duplicates() -> dict[str, Any]:
             shape_digest = hashlib.sha256(shape.encode("utf-8")).hexdigest()
             structural[shape_digest].append({**item, "exact_hash": digest})
     exact_groups = [items for items in exact.values() if len(items) > 1]
-    # 结构归一化相同但完整 AST 不同的函数仅列为 REVIEW，不暗示可直接合并。
+    # Functions that are structurally identical but have different full ASTs are listed for REVIEW
+    # only;
+    # this does not imply they can be merged directly.
     similarity = [
         {"structural_similarity": 1.0, "candidates": items}
         for items in structural.values()
@@ -539,7 +548,7 @@ def function_duplicates() -> dict[str, Any]:
 
 
 def candidate_reports(reference_rows: list[dict[str, Any]], reachability: dict[str, Any]) -> tuple[str, str, str, dict[str, Any]]:
-    """生成 eval 分离、debug 盘点、obsolete Python 候选和分层清理计划。"""
+    """Produce the eval separation, debug inventory, obsolete Python candidates, and the tiered cleanup plan."""
 
     refs = {row["path"]: row for row in reference_rows}
     reachable = {row["path"] for row in reachability["reachable"]}
@@ -620,7 +629,7 @@ def candidate_reports(reference_rows: list[dict[str, Any]], reachability: dict[s
 
 
 def config_report() -> str:
-    """比较 Settings、.env、示例配置和文档中的关键生产值。"""
+    """Compare key production values across Settings, .env, the example config, and the docs."""
 
     env = read_text(ROOT / ".env") or ""
     example = read_text(ROOT / ".env.example") or ""
@@ -654,7 +663,7 @@ def config_report() -> str:
         "- `README.md` 和 `PROJECT_SPEC.md` 仍含 fixed collection、旧指标或旧阶段描述；历史文档需区分后再修订，本轮不改写。",
         "- `TOP_K` 虽存在 Settings 字段，但默认 Runtime 实际由 `reranker_input_k=20` 与 `reranker_final_k=5` 控制；其余消费者需由 reachability/reference graph 继续约束。",
     ]
-    # 仅报告是否存在过期文本，不把历史证据误判为可删除。
+    # Only report whether stale text is present; never misread historical evidence as deletable.
     stale = []
     for needle, path in [("ef_research_bge_m3_c512_o64_v1", "README.md"), ("408 passed", "PROJECT_SPEC.md"), ("Phase 11C", "PROJECT_SPEC.md")]:
         if needle in (readme if path == "README.md" else spec):
@@ -664,7 +673,7 @@ def config_report() -> str:
 
 
 def retrieval_inventory(reference_rows: list[dict[str, Any]]) -> dict[str, Any]:
-    """记录默认、fallback、兼容和实验 Retrieval 模块，避免按文件名删除。"""
+    """Record the default, fallback, compatibility, and experimental Retrieval modules so nothing is deleted by filename."""
 
     known = {
         "src/evidenceflow/retrieval/retriever.py": ("default", False),
@@ -695,7 +704,7 @@ def retrieval_inventory(reference_rows: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def runtime_source_fingerprint() -> str:
-    """按 Phase 13F 约定计算 src/evidenceflow 全部 Python 文件的组合指纹。"""
+    """Compute the combined fingerprint of all Python files under src/evidenceflow per the Phase 13F convention."""
 
     rows = []
     for path in sorted((ROOT / "src" / "evidenceflow").rglob("*.py")):
@@ -704,7 +713,7 @@ def runtime_source_fingerprint() -> str:
 
 
 def frozen_integrity() -> dict[str, Any]:
-    """复算现有冻结 manifest，明确记录缺失或 hash 漂移而不是静默忽略。"""
+    """Recompute the existing frozen manifests, recording missing files or hash drift explicitly instead of silently ignoring them."""
 
     manifest_paths = [
         ROOT / "evals" / "evaluation_v3" / "phase13c_scientific_ingestion_benchmark" / "phase13c_c" / "manifest.json",
@@ -753,7 +762,7 @@ def frozen_integrity() -> dict[str, Any]:
 
 
 def main() -> int:
-    """执行完整只读盘点，并在所有证据生成后打印摘要。"""
+    """Run the full read-only inventory and print a summary once all evidence has been generated."""
 
     OUT.mkdir(parents=True, exist_ok=True)
     files = iter_project_files()

@@ -1,4 +1,4 @@
-"""用固定原文验证映射分类，不依赖真实模型或网络。"""
+"""Verify mapping classification with fixed source text, without depending on a real model or the network."""
 
 import pytest
 
@@ -9,19 +9,19 @@ from test_evaluation_v2 import dataset
 
 
 def source(text="the answer exists"):
-    """构造与 canonical fixture 相同版本的单页来源。"""
+    """Build a single-page source with the same version as the canonical fixture."""
     return Document(document_id="g1", source_path="s.pdf", file_name="s.pdf", file_type="pdf",
                     content_hash="h", segments=[DocumentSegment(content=text, page_number=1)])
 
 
 def chunk(cid, text):
-    """构造同文档同版本的固定索引文本。"""
+    """Build fixed index text with the same document and the same version."""
     return DocumentChunk(chunk_id=cid, document_id="g1", content_hash="h", file_name="s.pdf",
                          content=text, token_count=3, chunk_index=0, page_start=1, page_end=1)
 
 
 def mapped(text, chunks, anchor="answer"):
-    """仅保留一组，方便独立验证分类。"""
+    """Keep only one group, so the classification can be verified independently."""
     data = dataset()
     data.questions[0].required_evidence_groups = data.questions[0].required_evidence_groups[:1]
     data.questions[0].required_evidence_groups[0].alternatives[0].evidence_anchor = anchor
@@ -29,7 +29,7 @@ def mapped(text, chunks, anchor="answer"):
 
 
 def test_complete_and_fragmented_source_alignment():
-    """跨块必须能回到连续原文位置，两个关键词命中不等于完整证据。"""
+    """Crossing chunks must still map back to a contiguous source position; two keyword hits do not equal complete evidence."""
     assert mapped("the answer exists", [chunk("a", "the answer exists")]).status == "FULLY_MAPPED"
     result = mapped("alpha beta gamma delta", [chunk("a", "alpha beta"), chunk("b", "gamma delta")], "beta gamma")
     assert result.status == "FRAGMENTED_ACROSS_CHUNKS"
@@ -38,7 +38,7 @@ def test_complete_and_fragmented_source_alignment():
 
 
 def test_normalization_ambiguity_and_missing_source():
-    """宽松断词只诊断，不自动转换为 Gold。"""
+    """Loose hyphen breaking only diagnoses, it never becomes Gold automatically."""
     result = mapped("additional detail", [chunk("a", "addi- tional detail")], "additional detail")
     assert result.status == "ANCHOR_NORMALIZATION_FAILURE"
     assert result.chunk_sets == []
@@ -48,7 +48,7 @@ def test_normalization_ambiguity_and_missing_source():
 
 
 def test_index_version_mismatch_rejected():
-    """内容版本变化必须重新审计，而非继续使用旧 Gold 映射。"""
+    """A content-version change requires a new audit instead of continuing to use the old Gold mapping."""
     item = chunk("a", "answer")
     item.content_hash = "wrong-version"
     with pytest.raises(ValueError, match="index content version"):
@@ -56,7 +56,7 @@ def test_index_version_mismatch_rejected():
 
 
 def test_alternatives_are_or_and_source_missing_is_explicit():
-    """一个可用替代来源足以覆盖组；全部缺来源则明确归类。"""
+    """One usable alternative source is enough to cover the group; when all sources are missing the class is explicit."""
     data = dataset()
     data.questions[0].required_evidence_groups = data.questions[0].required_evidence_groups[:1]
     alternative = data.questions[0].required_evidence_groups[0].alternatives[0]
@@ -67,7 +67,7 @@ def test_alternatives_are_or_and_source_missing_is_explicit():
 
 
 def test_frozen_full_audit_covers_every_group():
-    """检查正式审计产物无漏题漏组，失败不混入检索分母。"""
+    """Check that the formal audit artifact misses no question or group, and failures do not leak into the retrieval denominator."""
     import json
     from pathlib import Path
     from evidenceflow.domain.evaluation_v2 import EvaluationDatasetV2, MappingArtifact

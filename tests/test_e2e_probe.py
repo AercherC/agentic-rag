@@ -1,6 +1,7 @@
-"""跨厂商探针的 Fake 测试（B3a-2′）：解析、判定、厂商隔离与干扰块选择。
+"""Fake tests for the cross-vendor probe (B3a-2′): parsing, verdicts, vendor isolation and
+distractor-chunk selection.
 
-全部用例不联网：探针只接受注入的 Fake client。
+No test touches the network: the probe only accepts an injected Fake client.
 """
 
 import json
@@ -11,7 +12,7 @@ from evidenceflow.eval.e2e import probe
 
 
 class FakeClient:
-    """记录调用参数的 Fake LLM client；不发起任何网络请求。"""
+    """A Fake LLM client that records call arguments; it makes no network request."""
 
     def __init__(self, reply: str = '{"verdict": "answered", "answer": "1%", "reason": "ok"}'):
         self.reply = reply
@@ -22,20 +23,20 @@ class FakeClient:
         return self.reply
 
 
-# ---------- 消息构造 ----------
+# ---------- message construction ----------
 
 @pytest.mark.parametrize("builder", [probe.build_gold_messages, probe.build_distractor_messages])
 def test_messages_contain_json_and_full_schema(builder):
     messages = builder("What percentage is used?", "we set 1% of the measurements")
     assert messages[0].role == "system" and messages[1].role == "user"
-    # json_object 模式要求 Prompt 出现 "JSON" 一词。
+    # json_object mode requires the prompt to contain the word "JSON".
     assert any("json" in message.content.lower() for message in messages)
     user = messages[1].content
     for token in ("verdict", "answered", "insufficient_context", "answer", "reason", "JSON"):
         assert token in user
 
 
-# ---------- 解析 ----------
+# ---------- parsing ----------
 
 def test_parse_probe_response_strips_think_and_code_fence():
     raw = (
@@ -91,11 +92,11 @@ def test_key_match_verdict_hit_miss_and_empty_keys():
     keys = [["1%", "1 percent"]]
     assert probe.key_match_verdict(keys, "about 1 percent of measurements")
     assert not probe.key_match_verdict(keys, "about 5 percent of measurements")
-    # 空 keys ⇒ False 而不是抛错，便于报告统计 key_matchable=false 的题。
+    # Empty keys => False instead of raising, so the report can count key_matchable=false cases.
     assert probe.key_match_verdict([], "anything") is False
 
 
-# ---------- 厂商隔离 ----------
+# ---------- vendor isolation ----------
 
 def test_same_vendor():
     assert not probe.same_vendor(
@@ -110,7 +111,7 @@ def test_same_vendor():
         generator_base_url="https://api.deepseek.com",
         generator_model="deepseek-flash",
     )
-    # judge_model 以 deepseek 开头 ⇒ 无论网关都视为同源。
+    # judge_model starting with deepseek => treated as the same source regardless of gateway.
     assert probe.same_vendor(
         judge_base_url="https://api.deepseek.com",
         judge_model="deepseek-chat",
@@ -119,7 +120,7 @@ def test_same_vendor():
     )
 
 
-# ---------- 干扰块选择 ----------
+# ---------- distractor-chunk selection ----------
 
 def test_select_distractors_skips_gold_keeps_order_and_handles_shortage():
     ranked = ["a", "gold", "b", "a", "c"]
@@ -128,10 +129,10 @@ def test_select_distractors_skips_gold_keeps_order_and_handles_shortage():
     assert probe.select_distractors(gold_chunk_ids=set(), dense_ranked_ids=["a"], count=2) == ["a"]
 
 
-# ---------- 修复重试（SPEC §13.1(g)） ----------
+# ---------- repair retry (SPEC §13.1(g)) ----------
 
 class RepairingClient:
-    """首次返回截断 JSON，第二次（修复轮）返回合法 JSON。"""
+    """Return truncated JSON on the first call and valid JSON on the second (repair) round."""
 
     def __init__(self, broken: str, fixed: str):
         self.broken = broken
@@ -144,7 +145,8 @@ class RepairingClient:
 
 
 def test_probe_with_repair_recovers_from_truncated_json():
-    """实测探针会返回被截断的 JSON（Unterminated string）；修复一次应能救回。"""
+    """In practice the probe does return truncated JSON (Unterminated string); one repair should
+    recover it."""
 
     truncated = '{"verdict": "answered", "answer": "128", "reason": "the contex'
     client = RepairingClient(truncated, '{"verdict": "answered", "answer": "128", "reason": "ok"}')
@@ -154,7 +156,8 @@ def test_probe_with_repair_recovers_from_truncated_json():
     assert verdict.verdict == "answered" and verdict.answer == "128"
     assert repair == "repaired"
     assert len(client.calls) == 2
-    # 修复轮必须带上原始回复与修复指令，否则同请求重发会再次截断。
+    # The repair round must carry the original reply and the repair instruction; otherwise
+    # resending the same request would be truncated again.
     repair_messages = client.calls[1]
     assert repair_messages[-2].role == "assistant" and repair_messages[-2].content == truncated
     assert repair_messages[-1].role == "user"
@@ -167,20 +170,21 @@ def test_probe_with_repair_reports_first_pass_success():
         client, query="Q?", context_text="ctx", mode="gold"
     )
     assert verdict.verdict == "answered"
-    # 首次成功时 repair 为 None，且只调用一次。
+    # On first-pass success repair is None, and the client is called exactly once.
     assert repair is None and len(client.calls) == 1
 
 
 def test_probe_with_repair_raises_after_repair_fails():
-    client = FakeClient(reply='{"verdict": "answered"')  # 始终截断
+    client = FakeClient(reply='{"verdict": "answered"')  # always truncated
     with pytest.raises(ValueError, match="unparseable after repair"):
         probe.probe_with_repair(client, query="Q?", context_text="ctx", mode="gold")
-    # 首次 + 修复一次 = 2 次调用，不多不少。
+    # First call + one repair = 2 calls, no more and no fewer.
     assert len(client.calls) == 2
 
 
 def test_probe_without_repair_still_raises_on_first_failure():
-    """``probe`` 保持"调用一次、失败即抛"，便于精确控制调用次数。"""
+    """``probe`` keeps "call once, raise on failure" so the call count can be controlled
+    precisely."""
 
     client = FakeClient(reply='{"verdict": "answered"')
     with pytest.raises(ValueError):
@@ -188,14 +192,15 @@ def test_probe_without_repair_still_raises_on_first_failure():
     assert len(client.calls) == 1
 
 
-# ---------- T3 单块探针 ----------
+# ---------- T3 single-block probe ----------
 
 def _verdict(text: str, status: str = "answered") -> probe.ProbeVerdict:
     return probe.ProbeVerdict(verdict=status, answer=text, reason="test")
 
 
 def test_single_block_prompt_is_isomorphic_with_gold():
-    """G6③ 比较的是"给 A 块 vs 给 B 块"，prompt 必须与 gold 逐字节相同。"""
+    """What G6 (3) compares is "give block A vs give block B", so the prompt must be byte-for-byte
+    identical to the gold one."""
 
     gold = probe.build_gold_messages("Q?", "context body")
     single = probe.build_single_block_messages("Q?", "context body")
@@ -212,7 +217,8 @@ def test_single_block_verdict_accepts_half_hit():
 
 
 def test_single_block_verdict_rejects_when_other_key_also_hits():
-    # 另一块的事实也出现在这一块里 ⇒ 题目并不真正需要两块。
+    # The other block's fact also appears in this block => the question does not really need both
+    # blocks.
     passed, reason = probe.single_block_verdict(
         verdict=_verdict("128 and 512"), own_keys=[["128"]], other_keys=[["512"]]
     )
@@ -227,7 +233,8 @@ def test_single_block_verdict_rejects_own_key_miss():
 
 
 def test_single_block_verdict_rejects_insufficient_context():
-    # 答不出 ≠ 只中一半：不能把探针失败当成多证据性的证据。
+    # Failing to answer is not the same as half a hit: a probe failure must not be used as
+    # evidence of multi-evidence need.
     passed, reason = probe.single_block_verdict(
         verdict=_verdict("", status="insufficient_context"), own_keys=[["128"]], other_keys=[["512"]]
     )

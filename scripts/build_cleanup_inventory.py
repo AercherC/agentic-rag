@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""EvidenceFlow 清理第一阶段工具：盘点 + 分类 + dry-run 计划（只读，不修改任何文件）。
+"""EvidenceFlow cleanup phase-1 tooling: inventory + classification + dry-run plan (read-only; modifies no file).
 
-产出（全部写入 artifacts/cleanup/）：
-- pre_cleanup_manifest.json   Step 0 工作区冻结清单（path/size/sha256）
-- runtime_reachability.json   Step 2 runtime 可达性分析（AST import 扫描）
-- cleanup_inventory.json/.md  Step 3 全文件分类清单
-- cleanup_plan.json           Step 4 清理计划（机器可读）
-- cleanup_dry_run.md          Step 4 dry-run 报告（dry_run=true，含 before/projected after）
+Outputs (all written under artifacts/cleanup/):
+- pre_cleanup_manifest.json   Step 0 workspace freeze inventory (path/size/sha256)
+- runtime_reachability.json   Step 2 runtime reachability analysis (AST import scan)
+- cleanup_inventory.json/.md  Step 3 full-file classification inventory
+- cleanup_plan.json           Step 4 cleanup plan (machine readable)
+- cleanup_dry_run.md          Step 4 dry-run report (dry_run=true, with before/projected after)
 
-设计约束：本脚本不删除、不移动、不改写任何被盘点文件。
+Design constraint: this script deletes, moves, and rewrites none of the inventoried files.
 """
 
 import ast
@@ -22,12 +22,13 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(ROOT, "artifacts", "cleanup")
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# 盘点排除目录：工具缓存/会话数据，不属于项目产物
+# Directories excluded from the inventory: tool caches/session data, which are not project
+# artifacts
 EXCLUDE_DIRS = {".cache", ".workbuddy", ".vscode", "artifacts"}
 
 
 def sha256_of(path: str) -> str:
-    """流式计算文件 sha256，避免大文件一次性载入内存。"""
+    """Stream the file's sha256 so large files are never loaded into memory in one go."""
     h = hashlib.sha256()
     with open(path, "rb") as f:
         for chunk in iter(lambda: f.read(1 << 20), b""):
@@ -36,11 +37,11 @@ def sha256_of(path: str) -> str:
 
 
 def walk_files():
-    """遍历仓库，返回相对路径列表（统一正斜杠）。"""
+    """Walk the repository and return the list of relative paths (forward slashes normalised)."""
     result = []
     for dirpath, dirnames, filenames in os.walk(ROOT):
         rel_dir = os.path.relpath(dirpath, ROOT).replace("\\", "/")
-        # 剪枝排除目录
+        # Prune the excluded directories
         dirnames[:] = [d for d in dirnames if d not in EXCLUDE_DIRS]
         for name in filenames:
             rel = os.path.join(rel_dir, name).replace("\\", "/")
@@ -51,24 +52,26 @@ def walk_files():
 
 
 def classify(rel: str) -> str:
-    """按方案 §7 的 A-H 体系给单个文件分类。
+    """Classify a single file with the A-H scheme of plan §7.
 
-    规则按优先级从高到低匹配；缓存类最先判断，避免 src 下的 __pycache__ 被误判为 CORE_RUNTIME。
+    Rules are matched from highest to lowest priority; cache entries are decided first so that
+    __pycache__ directories under src are not misclassified as CORE_RUNTIME.
     """
     p = rel
-    # F. GENERATED_REPRODUCIBLE：缓存与可重建中间产物
+    # F. GENERATED_REPRODUCIBLE: caches and rebuildable intermediate artifacts
     if "__pycache__" in p or p.endswith(".pyc") or ".pytest_cache" in p:
         return "GENERATED_REPRODUCIBLE"
-    # Phase14A-C benchmark 的 Chroma 索引：可由 chunks+embeddings 经 runner 重建
+    # Chroma index of the Phase14A-C benchmark: rebuildable from chunks+embeddings via the runner
     if p.startswith("evals/evaluation_v3/phase14a_multiformat_ingestion_benchmark/phase14a_c/chroma/"):
         return "GENERATED_REPRODUCIBLE"
-    # Phase14A-C embeddings：被冻结 manifest hash 锚定，视为冻结产物保留
+    # Phase14A-C embeddings: anchored by the frozen manifest hash, so treated as a frozen artifact
+    # and kept
     if p.startswith("evals/evaluation_v3/phase14a_multiformat_ingestion_benchmark/phase14a_c/embeddings/"):
         return "MULTIFORMAT_ARCHIVE"
-    # E. MULTIFORMAT_ARCHIVE：Office 分支
+    # E. MULTIFORMAT_ARCHIVE: the Office branch
     if p.startswith("evals/evaluation_v3/phase14a_multiformat_ingestion_benchmark/") or p.startswith("experiments/phase14a/"):
         return "MULTIFORMAT_ARCHIVE"
-    # A. CORE_RUNTIME + 根配置/规范文档
+    # A. CORE_RUNTIME plus root config/specification documents
     if p.startswith("src/") or p in (
         "pyproject.toml", ".env", ".env.example",
         "AGENTS.md", "PROJECT_SPEC.md", "PROJECT_VISION.md", "README.md",
@@ -77,32 +80,33 @@ def classify(rel: str) -> str:
     # B. CORE_TEST
     if p.startswith("tests/"):
         return "CORE_TEST"
-    # D. PDF_ACTIVE_RESEARCH：Phase 13 系列与 experiments/phase13c
+    # D. PDF_ACTIVE_RESEARCH: the Phase 13 series and experiments/phase13c
     if p.startswith("evals/evaluation_v3/phase13") or p.startswith("experiments/phase13c/"):
         return "PDF_ACTIVE_RESEARCH"
-    # C. CORE_EVAL：标准 IR、历史正式评测、research 检索实验结论
+    # C. CORE_EVAL: standard IR, historical formal evaluations, research retrieval experiment
+    # conclusions
     if p.startswith(("evals/evaluation_v2/", "evals/evaluation_v3/", "evals/research_ingestion/", "evals/research_retrieval/")):
         return "CORE_EVAL"
-    # 真实语料 PDF 与页面渲染输入：不可重建，保留
+    # Real corpus PDFs and page-render inputs: not rebuildable, keep
     if p.startswith("tmp/pdfs/"):
         return "SOURCE_OF_TRUTH"
-    # tmp 其余中间工作文件：Phase12 标注/转储等
+    # Remaining intermediate work files under tmp: Phase12 annotations/dumps etc.
     if p.startswith("tmp/"):
         return "TEMP_REVIEW"
     if p.startswith("docs/"):
         return "DOCS"
     if p.startswith("experiments/"):
-        return "REVIEW"  # experiments/debug 等
+        return "REVIEW"  # experiments/debug etc.
     return "REVIEW"
 
 
 def action_for(category: str, rel: str) -> str:
-    """分类 -> 本轮建议动作。第一轮只自动清理纯缓存；Phase14 chroma 需先导出 collection inventory。"""
+    """Category -> recommended action for this round. The first round only auto-cleans pure caches; Phase14 chroma requires exporting a collection inventory first."""
     if category == "GENERATED_REPRODUCIBLE":
-        # __pycache__/.pyc/.pytest_cache：无条件安全
+        # __pycache__/.pyc/.pytest_cache: unconditionally safe
         if "__pycache__" in rel or rel.endswith(".pyc") or ".pytest_cache" in rel:
             return "DELETE_CANDIDATE"
-        # Phase14 chroma：先导出 collection inventory 再删
+        # Phase14 chroma: export the collection inventory before deleting
         return "DELETE_CANDIDATE"
     if category == "MULTIFORMAT_ARCHIVE":
         return "ARCHIVE"
@@ -114,7 +118,7 @@ def action_for(category: str, rel: str) -> str:
 
 
 def scan_imports(package_dir: str) -> dict:
-    """AST 扫描一个目录下所有 .py 的 import，返回内部依赖与外部顶层模块统计。"""
+    """AST-scan the imports of every .py under a directory and return internal dependencies plus external top-level module counts."""
     internal, external = {}, {}
     for dirpath, dirnames, filenames in os.walk(package_dir):
         dirnames[:] = [d for d in dirnames if d != "__pycache__"]
@@ -147,7 +151,7 @@ def main():
     now = datetime.now(timezone.utc).isoformat()
     files = walk_files()
 
-    # ---- Step 0: 冻结清单 ----
+    # ---- Step 0: freeze inventory ----
     records = []
     for rel in files:
         abs_p = os.path.join(ROOT, rel)
@@ -168,27 +172,28 @@ def main():
         json.dump(pre, f, ensure_ascii=False, indent=1)
     print(f"[Step0] pre_cleanup_manifest.json: {len(records)} files, {pre['total_bytes']} bytes")
 
-    # ---- Step 2: runtime 可达性（AST import 扫描）----
+    # ---- Step 2: runtime reachability (AST import scan) ----
     reach = {
         "generated_at": now,
         "entrypoint_note": "无 CLI entrypoint（pyproject 无 [project.scripts]）；runtime 入口为 src/evidenceflow 包本身",
         "src": scan_imports(os.path.join(ROOT, "src")),
         "tests": scan_imports(os.path.join(ROOT, "tests")),
     }
-    # 关键判定：src 与 tests 对 experiments/phase14a 的依赖必须为 0（Archive Gate §28）
+    # Key decision: src and tests must have zero dependency on experiments/phase14a (Archive Gate
+    # §28)
     src_refs = [m for ms in reach["src"]["internal"].values() for m in ms if "phase14a" in m]
     test_refs = [m for ms in reach["tests"]["internal"].values() for m in ms if "phase14a" in m]
     reach["archive_gate"] = {
         "src_imports_phase14a": len(src_refs),
         "tests_import_phase14a": len(test_refs),
-        "cli_imports_phase14a": 0,  # 无 CLI entrypoint
+        "cli_imports_phase14a": 0,  # no CLI entrypoint
         "passed": not src_refs and not test_refs,
     }
     with open(os.path.join(OUT_DIR, "runtime_reachability.json"), "w", encoding="utf-8") as f:
         json.dump(reach, f, ensure_ascii=False, indent=1)
     print(f"[Step2] archive_gate: src_refs={len(src_refs)}, test_refs={len(test_refs)}, passed={reach['archive_gate']['passed']}")
 
-    # ---- Step 3: 分类清单 ----
+    # ---- Step 3: classification inventory ----
     inventory = []
     for r in records:
         cat = classify(r["path"])
@@ -197,7 +202,7 @@ def main():
             "size_bytes": r["size_bytes"],
             "sha256": r["sha256"],
             "category": cat,
-            "imported_by": [],  # 缓存/产物无被 import 关系；src/tests 依赖已由 reachability 单独证明
+            "imported_by": [],  # caches/artifacts have no import relationships; src/tests dependencies were separately proven by reachability
             "referenced_by": [],
             "generated": cat in ("GENERATED_REPRODUCIBLE", "TEMP_REVIEW"),
             "reproducible": cat in ("GENERATED_REPRODUCIBLE",),
@@ -214,7 +219,7 @@ def main():
     with open(os.path.join(OUT_DIR, "cleanup_inventory.json"), "w", encoding="utf-8") as f:
         json.dump(inv, f, ensure_ascii=False, indent=1)
 
-    # 分类汇总表
+    # Category summary table
     agg = {}
     for it in inventory:
         a = agg.setdefault(it["category"], {"count": 0, "bytes": 0, "actions": {}})
@@ -243,11 +248,11 @@ def main():
         f.write("\n".join(md))
     print(f"[Step3] cleanup_inventory: {len(inventory)} files classified")
 
-    # ---- Step 4: 清理计划 + dry-run ----
+    # ---- Step 4: cleanup plan + dry-run ----
     delete_candidates = [it for it in inventory if it["recommended_action"] == "DELETE_CANDIDATE"]
     plan = {
         "generated_at": now,
-        "dry_run": True,  # 本计划生成阶段为 dry-run；执行脚本另行翻转
+        "dry_run": True,  # this plan-generation stage is a dry-run; the execution script flips it separately
         "mode": "NON_DESTRUCTIVE_SCOPE_CONSOLIDATION",
         "delete_candidates": {
             "count": len(delete_candidates),
@@ -284,7 +289,7 @@ def main():
            f"- 项目文件（回收字节数）：{plan['delete_candidates']['bytes']:,} bytes",
            f"- PROJECTED AFTER：{len(records) - len(delete_candidates)} files / {proj_bytes:,} bytes",
            "", "## 删除候选（仅可再生缓存 + Phase14 chroma）", ""]
-    # 按目录聚合展示，避免逐文件刷屏
+    # Aggregate by directory to avoid printing every file
     by_dir = {}
     for it in delete_candidates:
         d = "/".join(it["path"].split("/")[:-1])
@@ -302,11 +307,11 @@ def main():
         f.write("\n".join(dry))
     print(f"[Step4] delete_candidates: {len(delete_candidates)} files, {plan['delete_candidates']['bytes']:,} bytes")
 
-    # 记录 src hash 基线摘要，供 Gate1 快速复核
+    # Record a src hash baseline summary for a quick Gate1 review
     src_hashes = {r["path"]: r["sha256"] for r in records if r["path"].startswith("src/")}
     with open(os.path.join(OUT_DIR, "src_hash_baseline.json"), "w", encoding="utf-8") as f:
         json.dump({"generated_at": now, "files": src_hashes}, f, ensure_ascii=False, indent=1)
-    # frozen artifact 基线（CORE_EVAL + PDF_ACTIVE_RESEARCH + phase14 归档）
+    # Frozen artifact baseline (CORE_EVAL + PDF_ACTIVE_RESEARCH + phase14 archive)
     frozen = {r["path"]: r["sha256"] for r in records
               if classify(r["path"]) in ("CORE_EVAL", "PDF_ACTIVE_RESEARCH", "MULTIFORMAT_ARCHIVE")}
     with open(os.path.join(OUT_DIR, "frozen_hash_baseline.json"), "w", encoding="utf-8") as f:

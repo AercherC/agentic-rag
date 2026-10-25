@@ -1,4 +1,4 @@
-"""使用 Fake Provider 和 Store 验证 DenseRetriever 的调用编排。"""
+"""Verify the call orchestration of DenseRetriever with a Fake Provider and Store."""
 
 import pytest
 
@@ -7,7 +7,7 @@ from evidenceflow.retrieval import DenseRetriever, InvalidQueryError
 
 
 class FakeEmbeddingProvider:
-    """返回固定 Query Vector，并记录收到的原始 Query。"""
+    """Return a fixed query vector and record the original queries received."""
 
     def __init__(self, vector: list[float] | None = None) -> None:
         self.vector = vector or [1.0, 0.0, 0.0]
@@ -19,7 +19,7 @@ class FakeEmbeddingProvider:
 
 
 class FakeVectorStore:
-    """返回预设检索结果，并记录 Query Vector 和 Top-K。"""
+    """Return preset retrieval results and record the query vector and top-K."""
 
     def __init__(self, results: list[RetrievedChunk] | None = None) -> None:
         self.results = results if results is not None else []
@@ -35,7 +35,7 @@ class FakeVectorStore:
 
 
 def _result(rank: int, score: float) -> RetrievedChunk:
-    """构造用于验证排名和分数保持不变的检索结果。"""
+    """Build a retrieval result used to verify that rank and score are preserved."""
 
     chunk = DocumentChunk(
         chunk_id=f"chunk-{rank}",
@@ -53,7 +53,7 @@ def _result(rank: int, score: float) -> RetrievedChunk:
 
 
 def test_retrieve_passes_original_query_vector_and_default_top_k_once() -> None:
-    """一次调用只编码和搜索一次，并原样返回 Store 的排名结果。"""
+    """One call encodes and searches exactly once and returns the Store's ranking unchanged."""
 
     provider = FakeEmbeddingProvider([1.0, 0.0, 0.0])
     expected = [_result(1, 0.8), _result(2, 0.7)]
@@ -71,7 +71,7 @@ def test_retrieve_passes_original_query_vector_and_default_top_k_once() -> None:
 
 
 def test_top_k_override_does_not_change_retriever_default() -> None:
-    """单次 Top-K 覆盖只影响当前请求，后续仍使用构造时默认值。"""
+    """A single top-K override only affects the current request; later calls still use the constructor default."""
 
     provider = FakeEmbeddingProvider()
     store = FakeVectorStore()
@@ -87,7 +87,7 @@ def test_top_k_override_does_not_change_retriever_default() -> None:
 
 @pytest.mark.parametrize("query", ["", "   ", "\n\t"])
 def test_invalid_query_fails_before_provider_and_store(query: str) -> None:
-    """空白 Query 必须在任何模型或数据库调用前失败。"""
+    """A blank query must fail before any model or database call."""
 
     provider = FakeEmbeddingProvider()
     store = FakeVectorStore()
@@ -102,7 +102,7 @@ def test_invalid_query_fails_before_provider_and_store(query: str) -> None:
 
 @pytest.mark.parametrize("top_k", [0, -1, True])
 def test_invalid_default_top_k_is_rejected(top_k: int) -> None:
-    """构造阶段必须拒绝非正整数默认 Top-K。"""
+    """Construction must reject a non-positive-integer default top-K."""
 
     provider = FakeEmbeddingProvider()
     store = FakeVectorStore()
@@ -114,7 +114,7 @@ def test_invalid_default_top_k_is_rejected(top_k: int) -> None:
 
 @pytest.mark.parametrize("top_k", [0, -1, True])
 def test_invalid_override_top_k_fails_before_calls(top_k: int) -> None:
-    """单次非法 Top-K 不得触发 Query Embedding 或 Vector Search。"""
+    """A single invalid top-K must not trigger query embedding or a vector search."""
 
     provider = FakeEmbeddingProvider()
     store = FakeVectorStore()
@@ -128,14 +128,14 @@ def test_invalid_override_top_k_fails_before_calls(top_k: int) -> None:
 
 
 def test_empty_store_result_is_returned_without_error() -> None:
-    """空知识库结果保持空列表，不在 Retriever 生成用户级错误。"""
+    """An empty knowledge-base result stays an empty list; the Retriever does not raise a user-level error."""
 
     retriever = DenseRetriever(FakeEmbeddingProvider(), FakeVectorStore())
     assert retriever.retrieve("What is ReAct?") == []
 
 
 def test_provider_error_propagates_and_store_is_not_called() -> None:
-    """Embedding 错误保留原始类型和原因，且不得继续查询 Store。"""
+    """An embedding error keeps its original type and cause and must not go on to query the Store."""
 
     class FailingProvider(FakeEmbeddingProvider):
         def embed_query(self, query: str) -> list[float]:
@@ -150,7 +150,7 @@ def test_provider_error_propagates_and_store_is_not_called() -> None:
 
 
 def test_store_error_propagates_after_one_embedding_call() -> None:
-    """Storage 错误保留原始类型，同时 Query 只生成一次向量。"""
+    """A storage error keeps its original type, while the query produces only one vector."""
 
     class FailingStore(FakeVectorStore):
         def search(

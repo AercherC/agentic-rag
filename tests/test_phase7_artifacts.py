@@ -1,4 +1,4 @@
-"""验证已生成的 Phase 7 冻结候选与 Gate 产物。"""
+"""Verify the already-generated Phase 7 frozen candidates and Gate artifacts."""
 
 import json
 from pathlib import Path
@@ -8,13 +8,13 @@ PHASE7 = Path(__file__).parents[1] / "evals" / "evaluation_v2" / "phase7_reranke
 
 
 def _load(name: str):
-    """读取确定性实验 artifact，避免测试依赖外部模型或网络。"""
+    """Read a deterministic experiment artifact, keeping the test independent of external models or the network."""
 
     return json.loads((PHASE7 / name).read_text(encoding="utf-8"))
 
 
 def test_phase7_required_artifacts_and_gate_are_present() -> None:
-    """计划要求的 11 个 JSON/Markdown 产物必须完整且 Gate 为 PASS。"""
+    """The 11 JSON/Markdown artifacts required by the plan must all be present, and the Gate must be PASS."""
 
     names = [
         "run_manifest.json", "candidate_pool_manifest.json", "candidate_replay.json",
@@ -29,7 +29,7 @@ def test_phase7_required_artifacts_and_gate_are_present() -> None:
 
 
 def test_candidate_replay_ids_and_sources_are_stable() -> None:
-    """每道题的三个架构均保存 100 个唯一候选及来源分支。"""
+    """All three architectures preserve 100 unique candidates per question together with their source branches."""
 
     replay = _load("candidate_replay.json")
     assert replay["replay_equal"] is True
@@ -44,7 +44,7 @@ def test_candidate_replay_ids_and_sources_are_stable() -> None:
 
 
 def test_reranker_candidate_coverage_guardrail_is_unchanged() -> None:
-    """预算和架构变化只能影响排序，不能改变候选覆盖率。"""
+    """Budget and architecture changes may affect ranking only, never candidate coverage."""
 
     results = _load("reranker_results.json")
     for architecture in ("c0_original_dense", "c1_translation_dense", "c2_hybrid"):

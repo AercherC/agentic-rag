@@ -1,4 +1,4 @@
-"""提供正式 Dense Retrieval 与 Learned Reranker 公共接口。"""
+"""Public interfaces for formal Dense Retrieval and the Learned Reranker."""
 
 from evidenceflow.retrieval.reranker import (
     DenseRerankerRetriever,

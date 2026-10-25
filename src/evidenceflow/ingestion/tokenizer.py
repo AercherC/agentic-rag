@@ -1,4 +1,4 @@
-"""为 Chunker 提供与 Hugging Face 实现解耦的 Tokenizer 接口。"""
+"""Provide the Chunker with a Tokenizer interface decoupled from the Hugging Face implementation."""
 
 from typing import Protocol, runtime_checkable
 
@@ -7,38 +7,39 @@ from transformers import AutoTokenizer
 
 @runtime_checkable
 class TokenizerProtocol(Protocol):
-    """Chunker 所需的最小 Tokenizer 合同。"""
+    """The minimal Tokenizer contract the Chunker needs."""
 
     def encode(self, text: str) -> list[int]:
-        """将正文编码为不含模型特殊 Token 的 ID 序列。"""
+        """Encode a body into an ID sequence that contains no model special tokens."""
 
         ...
 
     def decode(self, token_ids: list[int]) -> str:
-        """将正文 Token IDs 解码为文本。"""
+        """Decode body Token IDs back into text."""
 
         ...
 
 
 class TokenizerError(RuntimeError):
-    """Tokenizer 加载、编码或解码失败的统一基础异常。"""
+    """Common base exception for Tokenizer load, encode, or decode failures."""
 
 
 class TokenizerLoadError(TokenizerError):
-    """表示 Hugging Face Tokenizer 无法加载。"""
+    """Signals that the Hugging Face Tokenizer cannot be loaded."""
 
 
 class BgeM3Tokenizer:
-    """基于配置模型名称加载 BGE-M3 兼容的 Hugging Face Tokenizer。"""
+    """Load a BGE-M3-compatible Hugging Face Tokenizer from the configured model name."""
 
     def __init__(self, model_name: str) -> None:
-        """仅加载 Tokenizer 文件，不加载模型权重或初始化 GPU。"""
+        """Load only the Tokenizer files; do not load model weights or initialize a GPU."""
 
         if not model_name.strip():
             raise ValueError("Tokenizer model name must not be empty")
         self.model_name = model_name
         try:
-            # 模型名由 Settings.embedding_model 注入，避免 Adapter 重复硬编码。
+            # The model name is injected via Settings.embedding_model so that the Adapter does not
+            # hardcode it twice.
             self._tokenizer = AutoTokenizer.from_pretrained(model_name)
         except Exception as exc:
             raise TokenizerLoadError(
@@ -46,10 +47,11 @@ class BgeM3Tokenizer:
             ) from exc
 
     def encode(self, text: str) -> list[int]:
-        """将文本编码为正文 Token IDs，不计入模型 special tokens。"""
+        """Encode text into body Token IDs without counting model special tokens."""
 
         try:
-            # chunk_size 的合同是正文 Token 数，因此必须显式关闭自动特殊 Token。
+            # The chunk_size contract counts body tokens, so automatic special tokens must be
+            # explicitly disabled.
             token_ids = self._tokenizer.encode(text, add_special_tokens=False)
         except Exception as exc:
             raise TokenizerError("Tokenizer failed to encode text") from exc
@@ -60,10 +62,11 @@ class BgeM3Tokenizer:
         return token_ids
 
     def decode(self, token_ids: list[int]) -> str:
-        """解码正文 Token IDs，并关闭额外的空格清理。"""
+        """Decode body Token IDs with extra whitespace cleanup disabled."""
 
         try:
-            # 不让 Transformers 再做空格格式化，Chunker 只允许外围 strip()。
+            # Do not let Transformers re-format whitespace; the Chunker only permits a surrounding
+            # strip().
             text = self._tokenizer.decode(
                 token_ids,
                 skip_special_tokens=False,

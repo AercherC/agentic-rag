@@ -1,4 +1,4 @@
-"""验证 scripts/e2e_dataset.py 的输出保护、退出码与只读映射路径（全部在临时目录中）。"""
+"""Verify the output guards, exit codes and read-only mapping path of scripts/e2e_dataset.py (all inside temporary directories)."""
 
 import json
 
@@ -16,7 +16,7 @@ REAL_EVALS_FILE = module.ROOT / "evals/evaluation_v2/phase35_gold_stabilization_
 
 @pytest.fixture
 def no_chroma(monkeypatch):
-    """任何读取 Settings、解析 active 或连接 Chroma 的调用都会让测试失败。"""
+    """Any call that reads Settings, resolves the active pointer or connects to Chroma makes the test fail."""
     calls = []
 
     def forbid(*args, **kwargs):
@@ -52,7 +52,7 @@ def test_refuses_existing_evals_file_even_with_overwrite(tmp_path, capsys, no_ch
 
 
 def test_refuses_nonexistent_output_under_evals(tmp_path, capsys, no_chroma):
-    """`evals/` 下任何路径都拒绝，即使目标文件尚不存在（冻结目录不得由工具写入）。"""
+    """Any path under `evals/` is refused, even when the target file does not exist yet (a tool must never write into the frozen directory)."""
     target = module.ROOT / "evals" / "_b3a1_test_never_created" / "out.json"
     assert not target.exists()
     assert main(["validate", "--dataset", str(tmp_path / "missing.json"), "--report", str(target)]) == 2
@@ -61,7 +61,7 @@ def test_refuses_nonexistent_output_under_evals(tmp_path, capsys, no_chroma):
 
 
 def test_write_json_fixes_lf_newlines(tmp_path):
-    """JSON 产物固定 LF，避免 Windows 的 CRLF 让 dataset.sha256 随 OS 漂移。"""
+    """JSON artifacts are pinned to LF so Windows CRLF cannot make dataset.sha256 drift from OS to OS."""
     path = tmp_path / "nested" / "out.json"
     module.write_json(path, {"b": 2, "a": [1]})
     data = path.read_bytes()
@@ -97,7 +97,8 @@ def test_validate_exit_codes(tmp_path):
     report = tmp_path / "r.json"
     assert main(["validate", "--dataset", str(good), "--report", str(report), "--source-root", str(root)]) == 0
     assert json.loads(report.read_text(encoding="utf-8"))["ok"] is True
-    # --require-approved 时未确认的题算问题 → 2；已存在的报告需 --overwrite。
+    # With --require-approved an unapproved case counts as a problem -> 2;
+    # an existing report needs --overwrite.
     args = ["validate", "--dataset", str(good), "--report", str(report), "--source-root", str(root),
             "--require-approved", "--overwrite"]
     assert main(args) == 2
@@ -137,14 +138,15 @@ def test_map_reads_active_pointer_and_opens_readonly(tmp_path, monkeypatch):
     assert opened == [("active_col", False)]
     mapping = json.loads(out.read_text(encoding="utf-8"))
     assert mapping["index_signature"] == "sig-123" and mapping["collection_name"] == "active_col"
-    # 映射文件同时记录实测 chunk 身份，供 score 做四项身份校验。
+    # The mapping file also records the measured chunk identity, so `score` can
+    # run its four-item identity check.
     assert mapping["chunk_count"] == 1 and mapping["chunk_id_hash"] == compute_chunk_id_hash(["k1"])
     assert mapping["groups"][0]["status"] == "FULLY_MAPPED" and mapping["groups"][0]["chunk_sets"] == [["k1"]]
     assert mapping["claim_anchors"][0]["kind"] == "required"
 
 
 def _install_store(monkeypatch, tmp_path, root, doc, content, *, chunk_count=1, document_count=1):
-    """装一个只读 FakeStore 与 lifecycle 状态文件；指针计数由参数控制。"""
+    """Install a read-only FakeStore plus a lifecycle state file; the parameters set the pointer counts."""
 
     state = tmp_path / "index_state.json"
     pointer = {"chunk_count": chunk_count, "collection_name": "active_col", "document_count": document_count,
@@ -168,10 +170,10 @@ def _install_store(monkeypatch, tmp_path, root, doc, content, *, chunk_count=1, 
     monkeypatch.setattr(module, "ChromaVectorStore", FakeStore)
 
 
-# ---------- freeze（B3b 唯一写入口） ----------
+# ---------- freeze (the only write entry point of B3b) ----------
 
 def _approved_dataset(tmp_path, doc):
-    """构造一份可通过 freeze 全部检查的题集：已 machine 确认、有 approval_basis、接地成立。"""
+    """Build a case set that passes every freeze check: approved by machine, carries an approval_basis, and is grounded."""
 
     anchor = {"document_id": doc.document_id, "content_version": doc.content_hash,
               "evidence_anchor": "Chamfer distance of 7.21", "locator": {"block_index": 0}}
@@ -201,12 +203,12 @@ def test_freeze_writes_dataset_sha256_and_readme(tmp_path):
     assert (target / "dataset.json").is_file()
     assert (target / "dataset.sha256").is_file()
     assert (target / "README.md").is_file()
-    # dataset.sha256 必须与**落盘字节**一致（含固定 LF）。
+    # dataset.sha256 must match the **bytes actually written to disk** (fixed LF included).
     data = (target / "dataset.json").read_bytes()
     assert b"\r" not in data
     recorded = (target / "dataset.sha256").read_text(encoding="utf-8").split()[0]
     assert recorded == hashlib.sha256(data).hexdigest()
-    # README 记录指纹与校验值，便于冻结后复核。
+    # The README records the fingerprint and the checksum so the freeze can be re-verified later.
     readme = (target / "README.md").read_text(encoding="utf-8")
     assert recorded in readme and "fingerprint" in readme
 
@@ -220,14 +222,14 @@ def test_freeze_refuses_existing_target(tmp_path, capsys):
     assert main(["freeze", "--dataset", str(dataset), "--target", str(target),
                  "--source-root", str(root)]) == 2
     assert "REFUSED" in capsys.readouterr().err
-    # 目标已存在时绝不写入任何冻结产物。
+    # When the target already exists, no frozen artifact is ever written.
     assert (target / "keep.txt").read_text(encoding="utf-8") == "keep"
     assert not (target / "dataset.json").exists()
 
 
 def test_freeze_refuses_dataset_that_fails_validation(tmp_path, capsys):
     root, doc = _source(tmp_path)
-    # 未确认（approved_by=null）的题集不得冻结。
+    # A case set that is not approved (approved_by=null) must not be frozen.
     dataset = _dataset(tmp_path, doc, [["7.21"]])
     target = tmp_path / "frozen"
     assert main(["freeze", "--dataset", str(dataset), "--target", str(target),
@@ -237,7 +239,7 @@ def test_freeze_refuses_dataset_that_fails_validation(tmp_path, capsys):
 
 
 def test_map_with_no_usable_records_exits_2_but_writes_file(tmp_path, monkeypatch, capsys):
-    """全部锚点不可用时映射文件照常写出便于诊断，但退出码必须非 0（2）。"""
+    """When every anchor is unusable the mapping file is still written for diagnosis, but the exit code must be non-zero (2)."""
 
     root, doc = _source(tmp_path)
     dataset = _dataset(tmp_path, doc, [["7.21"]])
@@ -255,7 +257,7 @@ def test_map_with_no_usable_records_exits_2_but_writes_file(tmp_path, monkeypatc
     (1, 2, "document_count mismatch"),
 ])
 def test_map_identity_mismatch_exits_1(tmp_path, monkeypatch, capsys, chunk_count, document_count, needle):
-    """active 指针与真实 chunk 集合不一致时必须失败（exit 1），不写出错误身份的映射。"""
+    """When the active pointer and the real chunk set disagree the run must fail (exit 1) and write no mapping with a wrong identity."""
     root, doc = _source(tmp_path)
     dataset = _dataset(tmp_path, doc, [["7.21"]])
     _install_store(monkeypatch, tmp_path, root, doc, doc.segments[0].content,

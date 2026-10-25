@@ -1,4 +1,4 @@
-"""验证 BGE-M3 Embedding Provider 的接口、归一化与真实模型输出。"""
+"""Verify the BGE-M3 Embedding Provider's interface, normalization and real model output."""
 
 import math
 
@@ -14,7 +14,7 @@ from evidenceflow.embedding.bge_m3 import (
 
 
 class _FakeSentenceTransformer:
-    """返回确定向量并记录调用，用于隔离模型下载和推理。"""
+    """Return deterministic vectors and record calls, isolating model download and inference."""
 
     def __init__(self) -> None:
         self.calls: list[tuple[object, dict[str, object]]] = []
@@ -27,13 +27,13 @@ class _FakeSentenceTransformer:
 
 
 def _norm(vector: list[float]) -> float:
-    """计算测试向量的 L2 norm。"""
+    """Compute the L2 norm of a test vector."""
 
     return math.sqrt(sum(value * value for value in vector))
 
 
 def test_normalize_vector_and_reject_zero_or_non_finite_values() -> None:
-    """显式归一化应保持方向，并拒绝零向量及非有限数值。"""
+    """Explicit normalization must preserve direction and reject zero vectors and non-finite values."""
 
     assert _normalize_vector([3.0, 4.0]) == pytest.approx([0.6, 0.8])
     with pytest.raises(EmbeddingNormalizationError):
@@ -45,7 +45,7 @@ def test_normalize_vector_and_reject_zero_or_non_finite_values() -> None:
 def test_provider_loads_once_batches_documents_and_returns_python_floats(
     monkeypatch,
 ) -> None:
-    """模型只在初始化时加载一次，文档 Batch 只调用一次底层 encode。"""
+    """The model is loaded only once at initialization, and a document Batch calls the underlying encode once."""
 
     model = _FakeSentenceTransformer()
     loaded_names: list[str] = []
@@ -57,7 +57,9 @@ def test_provider_loads_once_batches_documents_and_returns_python_floats(
     monkeypatch.setattr(
         "evidenceflow.embedding.bge_m3.SentenceTransformer", fake_loader
     )
-    # 显式指定 CPU：默认 auto 在有 CUDA 的机器上会解析为 cuda:0，导致断言依赖运行环境。
+    # Specify CPU explicitly: the default auto resolves to cuda:0 on machines with CUDA, which
+    # would make
+    # the assertions depend on the runtime environment.
     provider = BgeM3EmbeddingProvider("configured/model", device="cpu")
     texts = ["first document", "second document", "third document"]
     vectors = provider.embed_documents(texts)
@@ -85,7 +87,8 @@ def test_provider_loads_once_batches_documents_and_returns_python_floats(
 
 
 def test_empty_inputs_are_handled_without_model_inference(monkeypatch) -> None:
-    """空文档批次不推理，Query 或批次内空文本应明确拒绝。"""
+    """An empty document batch performs no inference, while a blank Query or blank text inside a batch
+    must be rejected explicitly."""
 
     model = _FakeSentenceTransformer()
     monkeypatch.setattr(
@@ -106,7 +109,7 @@ def test_empty_inputs_are_handled_without_model_inference(monkeypatch) -> None:
 
 
 def test_model_loading_failure_is_wrapped(monkeypatch) -> None:
-    """底层模型无法加载时应提供带模型上下文的项目异常。"""
+    """When the underlying model cannot load, a project exception carrying the model context is provided."""
 
     def fail_loading(model_name: str, *, device: str) -> None:
         raise OSError(model_name)
@@ -119,7 +122,7 @@ def test_model_loading_failure_is_wrapped(monkeypatch) -> None:
 
 
 def test_embedding_model_and_encoding_share_selected_device(monkeypatch) -> None:
-    """模型初始化与 Query/Document 编码必须使用同一解析设备。"""
+    """Model initialization and Query/Document encoding must use the same resolved device."""
 
     model = _FakeSentenceTransformer()
     loaded_devices: list[str] = []
@@ -146,7 +149,7 @@ def test_embedding_model_and_encoding_share_selected_device(monkeypatch) -> None
 
 @pytest.fixture(scope="module")
 def real_bge_m3_provider() -> BgeM3EmbeddingProvider:
-    """加载一次 Settings 指定的真实 BGE-M3，供集成测试共享。"""
+    """Load the real BGE-M3 specified by Settings once, shared by the integration tests."""
 
     settings = Settings(_env_file=None)
     return BgeM3EmbeddingProvider(settings.embedding_model)
@@ -163,7 +166,7 @@ def test_real_bge_m3_embeds_english_and_chinese_queries(
     real_bge_m3_provider: BgeM3EmbeddingProvider,
     query: str,
 ) -> None:
-    """真实 BGE-M3 应返回非空、有限且归一化的 Python 查询向量。"""
+    """The real BGE-M3 must return a non-empty, finite and normalized Python query vector."""
 
     vector = real_bge_m3_provider.embed_query(query)
 
@@ -175,7 +178,7 @@ def test_real_bge_m3_embeds_english_and_chinese_queries(
 def test_real_bge_m3_batch_and_query_dimensions_match(
     real_bge_m3_provider: BgeM3EmbeddingProvider,
 ) -> None:
-    """真实文档 Batch 与 Query 必须处于维度一致的归一化向量空间。"""
+    """Real document Batches and Queries must land in a normalized vector space of matching dimension."""
 
     texts = [
         "LangGraph supports stateful agent workflows.",

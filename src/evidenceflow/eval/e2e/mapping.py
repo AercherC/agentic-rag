@@ -1,14 +1,19 @@
-"""把 rag_e2e_v1 题集的文本锚点映射到某个索引的 chunk（PROJECT_SPEC §13.1(b)）。
+"""Map the text anchors of the rag_e2e_v1 question set onto the chunks of a given index
+(PROJECT_SPEC §13.1(b)).
 
-定位与规范化完全复用 `eval/stable_mapping.py` 的 `validate_source` 与 `map_source_to_chunks`
-（与 canonical Gold v3 映射同一算法），本模块只负责：
-- 遍历题集中的全部锚点（证据组，以及 required / forbidden claim 的 `evidence_anchors`）；
-- 按 `map_stable_dataset` 相同的方式把多个 alternative 的结果合成一条记录（外层 OR、内层 AND）；
-- 输出与题集分离、绑定 `dataset_fingerprint` / `collection_name` / `index_signature` / `chunk_count` /
-  `chunk_id_hash` 的映射文件模型。
+Locating and normalization fully reuse `validate_source` and `map_source_to_chunks` from
+`eval/stable_mapping.py` (the same algorithm as the canonical Gold v3 mapping). This module only:
+- walks every anchor in the question set (evidence groups, plus the `evidence_anchors` of required /
+  forbidden claims);
+- combines the results of several alternatives into one record the same way `map_stable_dataset` does
+  (outer OR, inner AND);
+- emits a mapping-file model that is separate from the question set and bound to `dataset_fingerprint` /
+  `collection_name` / `index_signature` / `chunk_count` / `chunk_id_hash`.
 
-与 `map_stable_dataset` 的唯一差别：某个锚点源文本校验失败时，`map_stable_dataset` 整体返回 None，
-这里只把该锚点记为 `SOURCE_EXTRACTION_FAILURE`，其余锚点照常映射，便于一次列出全部问题。
+The only difference from `map_stable_dataset`: when one anchor's source text fails validation,
+`map_stable_dataset` returns None overall, whereas here only that anchor is recorded as
+`SOURCE_EXTRACTION_FAILURE` and the remaining anchors are still mapped, so every problem can be listed
+at once.
 """
 
 from __future__ import annotations
@@ -27,22 +32,25 @@ from evidenceflow.eval.e2e.dataset import E2EDataset, compute_fingerprint
 from evidenceflow.eval.stable_mapping import map_source_to_chunks, validate_source
 
 MAPPING_SCHEMA_VERSION = "rag-e2e-mapping-v1"
-# SPEC §13.1(b)：只有这两种状态可用于计分，其余统称 UNMAPPABLE。
+# SPEC §13.1(b): only these two statuses may be used for scoring; everything else is
+# lumped together as UNMAPPABLE.
 USABLE_STATUSES: frozenset[str] = frozenset({"FULLY_MAPPED", "FRAGMENTED_ACROSS_CHUNKS"})
 
 
 def is_usable(status: str) -> bool:
-    """映射状态是否可用于上下文类指标与失败层归因。"""
+    """Whether the mapping status can feed context metrics and failure-layer attribution."""
 
     return status in USABLE_STATUSES
 
 
 def compute_chunk_id_hash(chunk_ids: Iterable[str]) -> str:
-    """按 A1 基线口径计算 chunk_id_hash：排序后 chunk_id 列表的规范化 JSON 的 sha256。
+    """Compute chunk_id_hash on the A1 baseline standard: sha256 of the canonical JSON of the
+    sorted chunk_id list.
 
-    口径固定为 `json.dumps(sorted(ids), ensure_ascii=False, separators=(",", ":"))` 的 UTF-8
-    字节 sha256（与 `artifacts/stage_a/A1_exact_baseline.json` 相同）。跨机器/时区/进程都确定，
-    用于证明映射文件对应的正是某个已冻结的 chunk 集合。
+    The standard is fixed as the UTF-8 byte sha256 of
+    `json.dumps(sorted(ids), ensure_ascii=False, separators=(",", ":"))` (identical to
+    `artifacts/stage_a/A1_exact_baseline.json`). It is deterministic across machines, time zones,
+    and processes, and proves that the mapping file corresponds to one specific frozen chunk set.
     """
 
     serialized = json.dumps(sorted(chunk_ids), ensure_ascii=False, separators=(",", ":"))
@@ -50,7 +58,7 @@ def compute_chunk_id_hash(chunk_ids: Iterable[str]) -> str:
 
 
 class _MappedRecord(ContractModel):
-    """映射记录公共部分：状态与 chunk 集合必须一致。"""
+    """Shared part of a mapping record: the status and the chunk sets must be consistent."""
 
     status: MappingStatus
     chunk_sets: list[list[str]] = Field(
@@ -59,7 +67,8 @@ class _MappedRecord(ContractModel):
 
     @model_validator(mode="after")
     def validate_sets(self):
-        """可用状态必须有集合，不可用状态不得携带伪 Gold（与 GroupMapping 同一约束）。"""
+        """A usable status requires chunk sets; an unusable status must not carry fake Gold
+        (the same constraint as GroupMapping)."""
 
         if is_usable(self.status) != bool(self.chunk_sets):
             raise ValueError("mapping status and chunk_sets disagree")
@@ -69,14 +78,14 @@ class _MappedRecord(ContractModel):
 
 
 class E2EGroupMapping(_MappedRecord):
-    """一个必需证据组的映射。"""
+    """Mapping of one required evidence group."""
 
     case_id: str
     group_id: str
 
 
 class E2EClaimMapping(_MappedRecord):
-    """一条 claim 的锚点映射；多个锚点之间“任一可用即可”。"""
+    """Anchor mapping of one claim; among several anchors, any usable one suffices."""
 
     case_id: str
     claim_id: str
@@ -84,13 +93,15 @@ class E2EClaimMapping(_MappedRecord):
 
 
 class E2EMapping(ContractModel):
-    """题集对某个索引的证据映射文件；身份四项任一不一致时 score 拒绝计分。"""
+    """Evidence mapping of the question set onto one index; if any of the four identity items
+    disagrees, scoring refuses to score."""
 
     schema_version: Literal["rag-e2e-mapping-v1"] = MAPPING_SCHEMA_VERSION
     dataset_fingerprint: str = Field(min_length=1, description="题集内容 fingerprint（§13.1(a)）。")
     collection_name: str = Field(min_length=1, description="被映射的 Chroma collection。")
     index_signature: str = Field(min_length=1, description="lifecycle active 指针记录的 index_signature。")
-    # 两个字段可选：旧 pilot 产物没有它们，读取时必须仍能通过 model_validate。
+    # Both fields are optional: older pilot artifacts lack them, and reading such files must
+    # still pass model_validate.
     chunk_count: int | None = Field(
         default=None, ge=0, description="实测 chunk 总数；必须等于 active 指针的 chunk_count。"
     )
@@ -102,7 +113,7 @@ class E2EMapping(ContractModel):
 
     @model_validator(mode="after")
     def validate_identity(self):
-        """同一 (case, group) 或 (case, claim) 不得出现两次。"""
+        """The same (case, group) or (case, claim) must not appear twice."""
 
         group_keys = [(g.case_id, g.group_id) for g in self.groups]
         claim_keys = [(c.case_id, c.claim_id) for c in self.claim_anchors]
@@ -116,13 +127,16 @@ def map_alternatives(
     documents_by_id: dict[str, Document],
     chunks: Sequence[DocumentChunk],
 ) -> tuple[MappingStatus, list[list[str]]]:
-    """映射一组可互换锚点，返回合成后的状态与 chunk 集合。
+    """Map one group of interchangeable anchors and return the combined status and chunk sets.
 
-    每个锚点：先 `validate_source`（只看原文），通过后 `map_source_to_chunks`（对齐 chunk）。
-    合成规则与 `map_stable_dataset` 一致：所有锚点的 chunk 集合按顺序并列（外层 OR）；
-    有单 chunk 集合 → FULLY_MAPPED；只有多 chunk 集合 → FRAGMENTED_ACROSS_CHUNKS；
-    都没有时，有 PARTIALLY_MAPPED 取之，否则 UNMAPPED。
-    额外约定：没有锚点 → UNMAPPED；全部锚点源文本校验失败 → SOURCE_EXTRACTION_FAILURE。
+    Each anchor: first `validate_source` (source text only), then, if it passes,
+    `map_source_to_chunks` (chunk alignment). The combination rule matches
+    `map_stable_dataset`: the chunk sets of all anchors are listed side by side in order
+    (outer OR); a single-chunk set -> FULLY_MAPPED; only multi-chunk sets ->
+    FRAGMENTED_ACROSS_CHUNKS; when there are none, PARTIALLY_MAPPED is taken if present,
+    otherwise UNMAPPED.
+    Additional conventions: no anchors -> UNMAPPED; all anchors fail source-text validation ->
+    SOURCE_EXTRACTION_FAILURE.
     """
 
     outcomes: list[tuple[str, list[list[str]]]] = []
@@ -130,7 +144,8 @@ def map_alternatives(
         document = documents_by_id.get(alternative.document_id)
         validation = validate_source(alternative, document)
         if not validation["source_valid"]:
-            # 源文本定位失败（文档缺失、hash 不符、页码不符或 occurrence 不唯一）：不进入 chunk 对齐。
+            # Source-text location failed (missing document, hash mismatch, page mismatch, or a
+            # non-unique occurrence): skip chunk alignment.
             outcomes.append(("SOURCE_EXTRACTION_FAILURE", []))
             continue
         status, bundles, _trace = map_source_to_chunks(alternative, document, chunks, validation)
@@ -157,21 +172,25 @@ def map_dataset(
     expected_chunk_count: int | None = None,
     expected_chunk_id_hash: str | None = None,
 ) -> E2EMapping:
-    """把题集全部锚点映射到给定 chunk 集合（只读，不依赖检索排名或模型）。
+    """Map every anchor of the question set onto the given chunk set (read-only; independent
+    of retrieval ranking and models).
 
-    `documents` 必须是与锚点 `content_version` 同一版本的原文（`load_document` 结果，未经 clean，
-    与 canonical Gold v3 映射使用同一文本基础）；`chunks` 是目标索引的全部 chunk。
+    `documents` must be the source text of the same version as the anchors' `content_version`
+    (the `load_document` result, not cleaned, i.e. the same text basis used by the canonical
+    Gold v3 mapping); `chunks` are all chunks of the target index.
 
-    传入 `expected_chunk_count` / `expected_chunk_id_hash` 时，实测值不等即抛 `ValueError`：
-    映射文件必须与 lifecycle 指针/manifest 记录的真实索引身份绑定，不能只抄写指针字符串。
-    实测值无论是否传入期望都会写进返回模型，便于事后审计。
+    When `expected_chunk_count` / `expected_chunk_id_hash` are supplied, a measured value that
+    differs raises `ValueError`: the mapping file must be bound to the real index identity
+    recorded by the lifecycle pointer/manifest, not merely repeat the pointer string. The
+    measured values are written into the returned model whether or not expectations are
+    supplied, so they can be audited later.
     """
 
     documents = list(documents)
     documents_by_id = {d.document_id: d for d in documents}
     if len(documents_by_id) != len(documents) or len({c.chunk_id for c in chunks}) != len(chunks):
         raise ValueError("duplicate document/chunk IDs")
-    # 先核对索引身份，避免把映射写到错误的 chunk 集合上。
+    # Verify the index identity first, so the mapping is never written against the wrong chunk set.
     chunk_count = len(chunks)
     chunk_id_hash = compute_chunk_id_hash(chunk.chunk_id for chunk in chunks)
     if expected_chunk_count is not None and chunk_count != expected_chunk_count:

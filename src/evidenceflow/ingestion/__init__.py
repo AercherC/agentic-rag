@@ -1,4 +1,4 @@
-"""对外提供本地文档摄取入口。"""
+"""Public entry point for local document ingestion."""
 
 from evidenceflow.ingestion.cleaner import DocumentCleaningError, clean_document
 from evidenceflow.ingestion.chunker import (

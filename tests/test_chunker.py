@@ -1,4 +1,4 @@
-"""使用确定性 Fake Tokenizer 验证 Token 滑动窗口和页码追踪算法。"""
+"""Verify the token sliding window and page-tracking algorithm with a deterministic Fake Tokenizer."""
 
 from copy import deepcopy
 
@@ -11,7 +11,7 @@ from evidenceflow.ingestion.tokenizer import BgeM3Tokenizer
 
 
 class FakeTokenizer:
-    """把空格分隔的整数视为 Token，并用 -1 表示 Segment 边界。"""
+    """Treat space-separated integers as tokens and use -1 to mark a Segment boundary."""
 
     def encode(self, text: str) -> list[int]:
         if text == "\n\n":
@@ -19,7 +19,8 @@ class FakeTokenizer:
         return [int(part) for part in text.split()]
 
     def decode(self, token_ids: list[int]) -> str:
-        # 边界恢复为两个换行；普通 Token 保持可读且可断言的整数文本。
+        # Restore a boundary as two newlines; ordinary tokens stay as readable, assertable integer
+        # text.
         result = ""
         for token_id in token_ids:
             if token_id == -1:
@@ -36,7 +37,7 @@ def _document(
     file_type: str = "pdf",
     metadata: dict[str, object] | None = None,
 ) -> Document:
-    """构造只包含分块算法所需字段的测试文档。"""
+    """Build a test document containing only the fields the chunking algorithm needs."""
 
     return Document(
         document_id="document-id",
@@ -57,7 +58,7 @@ def _document(
     [(0, 0), (-1, 0), (4, -1), (4, 4), (4, 5)],
 )
 def test_invalid_chunk_parameters_fail(chunk_size: int, chunk_overlap: int) -> None:
-    """非法窗口必须在计算 step 前失败，避免停滞或反向推进。"""
+    """An invalid window must fail before the step is computed, to avoid stalling or advancing backwards."""
 
     with pytest.raises(ChunkingError):
         chunk_document(
@@ -66,7 +67,7 @@ def test_invalid_chunk_parameters_fail(chunk_size: int, chunk_overlap: int) -> N
 
 
 def test_sliding_window_overlap_and_exact_ending() -> None:
-    """窗口按 size-overlap 推进，刚好覆盖末尾时不产生多余尾块。"""
+    """The window advances by size-overlap, and no redundant tail chunk appears when it exactly covers the end."""
 
     chunks = chunk_document(
         _document(("0 1 2 3 4 5 6 7 8 9", 1)),
@@ -85,7 +86,7 @@ def test_sliding_window_overlap_and_exact_ending() -> None:
 
 
 def test_final_partial_window_and_short_document_are_preserved() -> None:
-    """最后不足 chunk_size 的有效正文仍需保留，短文档只生成一个块。"""
+    """A final valid body shorter than chunk_size must still be kept, and a short document yields only one chunk."""
 
     chunks = chunk_document(
         _document(("0 1 2 3 4 5 6 7 8 9 10", 1)),
@@ -104,7 +105,7 @@ def test_final_partial_window_and_short_document_are_preserved() -> None:
 
 
 def test_overlap_is_exact_and_no_source_token_is_lost() -> None:
-    """相邻完整窗口共享精确 overlap，所有原始 Token 至少出现一次。"""
+    """Adjacent complete windows share the exact overlap, and every source token appears at least once."""
 
     chunks = chunk_document(
         _document(("0 1 2 3 4 5 6 7 8 9 10 11 12 13", 1)),
@@ -119,7 +120,7 @@ def test_overlap_is_exact_and_no_source_token_is_lost() -> None:
 
 
 def test_page_tracking_for_single_cross_page_and_page_gap() -> None:
-    """页码来自窗口内真实正文 Token，边界 Token 不应污染范围。"""
+    """Page numbers come from the real body tokens inside the window; boundary tokens must not pollute the range."""
 
     single_page = chunk_document(
         _document(("0 1 2 3 4", 5)), FakeTokenizer(), 3, 1
@@ -138,7 +139,7 @@ def test_page_tracking_for_single_cross_page_and_page_gap() -> None:
 
 
 def test_bge_m3_cross_segment_chunk_does_not_glue_text() -> None:
-    """真实 BGE-M3 忽略空白边界时，跨页正文仍不得粘连成新单词。"""
+    """When the real BGE-M3 ignores the whitespace boundary, cross-page body text must still not be glued into a new word."""
 
     settings = Settings(_env_file=None)
     tokenizer = BgeM3Tokenizer(settings.embedding_model)
@@ -147,8 +148,9 @@ def test_bge_m3_cross_segment_chunk_does_not_glue_text() -> None:
         ("beta starts the second page", 2),
     )
 
-    # BGE-M3 的 SentencePiece 会忽略纯空白，但每个 Segment 独立编码时，
-    # 后一段开头仍携带词首信息；本测试固定验证这条真实组合行为。
+    # BGE-M3's SentencePiece ignores pure whitespace, but when each Segment is encoded
+    # independently the later segment
+    # still carries word-initial information; this test pins that real combined behaviour.
     assert tokenizer.encode("\n\n") == []
     total_tokens = sum(
         len(tokenizer.encode(segment.content)) for segment in document.segments
@@ -170,7 +172,7 @@ def test_bge_m3_cross_segment_chunk_does_not_glue_text() -> None:
 
 
 def test_markdown_page_numbers_remain_none() -> None:
-    """无页码 Markdown 即使跨 Segment 分块也必须保持空页码范围。"""
+    """Markdown without page numbers must keep an empty page range even when chunked across Segments."""
 
     chunks = chunk_document(
         _document(("0 1", None), ("2 3", None), file_type="md"),
@@ -183,7 +185,7 @@ def test_markdown_page_numbers_remain_none() -> None:
 
 
 def test_chunk_ids_are_deterministic_and_include_window_configuration() -> None:
-    """同输入重复运行 ID 稳定，窗口大小或重叠变化会改变 ID。"""
+    """IDs stay stable across repeated runs on the same input, and change with the window size or overlap."""
 
     document = _document(("0 1 2 3 4 5 6 7 8 9", 1))
     first = chunk_document(document, FakeTokenizer(), 4, 1)
@@ -197,7 +199,7 @@ def test_chunk_ids_are_deterministic_and_include_window_configuration() -> None:
 
 
 def test_document_is_not_mutated_and_metadata_is_copied() -> None:
-    """Chunker 是纯转换边界，输出元数据不得与输入共享可变对象。"""
+    """The Chunker is a pure transformation boundary, so output metadata must not share mutable objects with the input."""
 
     document = _document(
         ("0 1 2 3", 1), metadata={"nested": {"source": "test"}}
@@ -213,7 +215,7 @@ def test_document_is_not_mutated_and_metadata_is_copied() -> None:
 
 
 def test_empty_document_and_invalid_tokenizer_outputs_fail() -> None:
-    """缺少正文或 Tokenizer 合同被破坏时应返回明确的分块错误。"""
+    """Missing body text or a broken Tokenizer contract must yield an explicit chunking error."""
 
     empty_document = _document()
     with pytest.raises(ChunkingError):

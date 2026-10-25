@@ -1,4 +1,4 @@
-"""保护 Runtime、Evaluation 与 Experiment 的单向架构边界。"""
+"""Protect the unidirectional architecture boundaries between Runtime, Evaluation and Experiment."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ RETIRED_RUNTIME_MODULES = {
 
 
 def _imports(path: Path) -> set[str]:
-    """读取单个模块的静态 import，不执行可能加载模型的生产代码。"""
+    """Read a single module's static imports without executing production code that may load models."""
 
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     imports: set[str] = set()
@@ -31,7 +31,7 @@ def _imports(path: Path) -> set[str]:
 
 
 def test_runtime_modules_do_not_import_retired_retrieval() -> None:
-    """正式源码不得重新引入已退休的 Translation、BM25、RRF 或多语链路。"""
+    """Production source must not reintroduce the retired Translation, BM25, RRF or multilingual chain."""
 
     violations: list[str] = []
     for path in sorted(RUNTIME_ROOT.rglob("*.py")):
@@ -52,10 +52,11 @@ def test_runtime_modules_do_not_import_retired_retrieval() -> None:
 
 
 def test_tests_do_not_import_experiments_debug() -> None:
-    """测试只依赖 src；不得直接 import experiments/debug 下的开发者脚本。
+    """Tests depend on src only; they must not import developer scripts under experiments/debug.
 
-    Phase 11C Step 1 已把 debug 层的纯格式化函数上提到 src/evidenceflow/inspection.py，
-    这条断言用于防止该依赖再次回流（tests → experiments 属禁止方向）。
+    Phase 11C Step 1 already promoted the debug layer's pure formatting functions into
+    src/evidenceflow/inspection.py, and this assertion prevents that dependency from flowing back
+    (tests -> experiments is a forbidden direction).
     """
 
     violations: list[str] = []
@@ -68,7 +69,7 @@ def test_tests_do_not_import_experiments_debug() -> None:
 
 
 def test_production_components_do_not_define_secondary_settings_factories() -> None:
-    """Settings 到生产依赖的映射必须集中在 runtime.py。"""
+    """The mapping from Settings to production dependencies must be concentrated in runtime.py."""
 
     definitions: list[str] = []
     for path in sorted(RUNTIME_ROOT.rglob("*.py")):
@@ -83,8 +84,9 @@ def test_production_components_do_not_define_secondary_settings_factories() -> N
 
 
 def test_runtime_modules_do_not_import_eval() -> None:
-    """eval 层之外的正式源码（含 tracing.py、domain/trace.py、runtime、retrieval、generation、rag）
-    不得静态 import ``evidenceflow.eval``：评测依赖线上链路，反向依赖会形成环并让 trace 混入评测逻辑。
+    """Production source outside the eval layer (including tracing.py, domain/trace.py, runtime,
+    retrieval, generation, rag) must not statically import ``evidenceflow.eval``: evaluation depends on
+    the live chain, and a reverse dependency would form a cycle and leak evaluation logic into tracing.
     """
 
     violations: list[str] = []
@@ -99,7 +101,7 @@ def test_runtime_modules_do_not_import_eval() -> None:
         if forbidden:
             violations.append(f"{path.relative_to(PROJECT_ROOT)} -> {sorted(forbidden)}")
 
-    # 显式确认 B2 新增的两个模块在扫描范围内。
+    # Explicitly confirm that the two modules added in B2 fall within the scanned range.
     scanned = {path.relative_to(RUNTIME_ROOT).as_posix() for path in RUNTIME_ROOT.rglob("*.py")}
     assert {"tracing.py", "domain/trace.py"} <= scanned
     assert violations == []

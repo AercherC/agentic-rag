@@ -1,4 +1,4 @@
-"""测试 Step 1 Domain Contracts 与确定性 ID Helpers。"""
+"""Test the Step 1 Domain Contracts and the deterministic ID helpers."""
 
 import pytest
 from pydantic import ValidationError
@@ -22,9 +22,10 @@ from evidenceflow.domain import (
 
 
 def make_chunk(**overrides: object) -> DocumentChunk:
-    """创建合法基准 Chunk，并允许测试按需覆盖单个字段。"""
+    """Create a valid baseline Chunk; tests may override individual fields as needed."""
 
-    # 统一合法基准数据，使各校验测试只改变自己关注的输入条件。
+    # One shared valid baseline, so each validation test only changes the input condition it is
+    # about.
     values = {
         "chunk_id": "chunk-1",
         "document_id": "document-1",
@@ -96,7 +97,7 @@ def test_rank_below_one_fails_validation() -> None:
 
 
 def test_reranked_result_keeps_dense_and_learned_scores_separate() -> None:
-    """Phase 9 结果同时保留 Dense 候选名次、cosine 与独立 Reranker score。"""
+    """A Phase 9 result keeps the Dense candidate rank, the cosine score, and an independent Reranker score side by side."""
 
     result = RerankedRetrievedChunk(
         chunk=make_chunk(),
@@ -167,7 +168,7 @@ def test_chunk_id_is_deterministic_and_each_identity_input_matters() -> None:
 
 
 def test_rag_answer_requires_status() -> None:
-    """RAGAnswer.status 是必填字段，缺失或未知值都被拒绝。"""
+    """RAGAnswer.status is a required field; both a missing and an unknown value are rejected."""
 
     with pytest.raises(ValidationError):
         RAGAnswer(query="q", answer="a", sources=[], retrieved_chunks=[])

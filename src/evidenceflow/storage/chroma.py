@@ -1,4 +1,4 @@
-"""使用本地 Chroma PersistentClient 持久化和查询 DocumentChunk。"""
+"""Persist and query DocumentChunk through the local Chroma PersistentClient."""
 
 from __future__ import annotations
 
@@ -18,28 +18,28 @@ COSINE_CONFIGURATION = {"hnsw": {"space": "cosine"}}
 
 
 class VectorStoreError(RuntimeError):
-    """Vector Store 配置、写入或查询失败的统一基础异常。"""
+    """Common base exception for Vector Store configuration, write, or query failures."""
 
 
 class VectorStoreConfigurationError(VectorStoreError):
-    """表示本地数据库或 Collection 配置不符合项目合同。"""
+    """Indicates that the local database or Collection configuration violates the project contract."""
 
 
 class VectorStoreWriteError(VectorStoreError):
-    """表示 Chunk 写入、删除或清空操作失败。"""
+    """Indicates that a Chunk write, delete, or clear operation failed."""
 
 
 class VectorStoreQueryError(VectorStoreError):
-    """表示 Chroma 查询结果无法转换为项目 Domain Model。"""
+    """Indicates that a Chroma query result cannot be converted into a project Domain Model."""
 
 
 def read_collection_metadata(
     persist_path: str | Path, collection_name: str
 ) -> dict[str, Any] | None:
-    """只读查询 Collection 的 metadata；Collection 不存在时返回 None。
+    """Read a Collection's metadata read-only; return None when the Collection does not exist.
 
-    用于 lifecycle 校验与 ingest 保护：必须在加载任何模型之前执行，且绝不创建 Collection。
-    持久化目录不存在时直接返回 None，不为了“查询”而在磁盘上新建 Chroma 目录。
+    Used by lifecycle validation and ingest protection: this must run before any model is loaded, and it must never create a Collection.
+    When the persistence directory does not exist it returns None directly, rather than creating a Chroma directory on disk just to "query".
     """
 
     _require_non_empty_text(collection_name, field_name="collection_name")
@@ -48,7 +48,8 @@ def read_collection_metadata(
         return None
     try:
         client = chromadb.PersistentClient(path=str(path))
-        # 用 get_collection 而不是 get_or_create_collection：查询不能产生副作用。
+        # Use get_collection rather than get_or_create_collection: a query must not produce side
+        # effects.
         collection = client.get_collection(name=collection_name)
     except NotFoundError:
         return None
@@ -60,7 +61,7 @@ def read_collection_metadata(
 
 
 def _require_non_empty_text(value: str, *, field_name: str) -> None:
-    """校验过滤条件和 Collection 名称是可用的非空字符串。"""
+    """Validate that the filter value and Collection name are usable non-empty strings."""
 
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field_name} must not be empty")
@@ -71,10 +72,11 @@ def _coerce_embedding(
     *,
     field_name: str,
 ) -> list[float]:
-    """将向量转换为有限 Python float；Storage 不重复执行归一化。"""
+    """Convert the vector into finite Python floats; the Storage layer does not normalise it again."""
 
-    # Chroma 的只读接口返回 NumPy ndarray；在 Storage 边界转成普通序列，避免
-    # 第三方数值对象继续向 Domain/检索层传播。
+    # Chroma's read-only API returns NumPy ndarray; convert it to a plain sequence at the Storage
+    # boundary
+    # so third-party numeric objects do not keep propagating into the Domain/retrieval layers.
     raw_embedding = embedding.tolist() if hasattr(embedding, "tolist") else embedding
     if isinstance(raw_embedding, (str, bytes)) or not isinstance(raw_embedding, Sequence):
         raise TypeError(f"{field_name} must be a numeric sequence")
@@ -90,10 +92,11 @@ def _coerce_embedding(
 
 
 def _serialize_domain_metadata(metadata: dict[str, Any]) -> str:
-    """确定性序列化 Domain metadata，并拒绝不可表示的业务对象。"""
+    """Serialize Domain metadata deterministically and reject business objects that cannot be represented."""
 
     try:
-        # 排序键使持久化表示稳定；禁止 NaN，避免写入非标准 JSON。
+        # Sorted keys keep the persisted representation stable; NaN is forbidden so non-standard
+        # JSON cannot be written.
         return json.dumps(
             metadata,
             ensure_ascii=False,
@@ -108,7 +111,7 @@ def _serialize_domain_metadata(metadata: dict[str, Any]) -> str:
 
 
 def _deserialize_domain_metadata(metadata_json: Any) -> dict[str, Any]:
-    """恢复 Domain metadata，并拒绝损坏或类型不正确的存储值。"""
+    """Restore Domain metadata and reject corrupted or wrongly typed stored values."""
 
     if not isinstance(metadata_json, str):
         raise VectorStoreQueryError("Stored domain metadata is not JSON text")
@@ -122,12 +125,12 @@ def _deserialize_domain_metadata(metadata_json: Any) -> dict[str, Any]:
 
 
 def serialize_chroma_record_metadata(record: Mapping[str, Any]) -> dict[str, Any]:
-    """把 Chunk 记录序列化为可被 Chroma 接受的标量 Metadata。
+    """Serialize a Chunk record into scalar Metadata that Chroma accepts.
 
-    Chroma 的原生 metadata 只接受标量值，因此完整的 Domain metadata 以确定性
-    JSON 字符串保存；其余常用检索/诊断字段保留为顶层标量，便于过滤和盘点。
-    生产 Domain Chunk 通过本函数写入，实验记录也通过同一函数写入其已有字段，避免
-    出现“能查向量但不能恢复 Chunk”的半持久化记录。
+    Chroma's native metadata only accepts scalar values, so the complete Domain metadata is stored as a deterministic
+    JSON string, while the remaining common retrieval/diagnostic fields stay as top-level scalars for filtering and inventory.
+    Production Domain Chunks are written through this function, and experiment records write their existing fields through the
+    same function, avoiding half-persisted records that "can query vectors but cannot restore the Chunk".
     """
 
     domain_metadata = record.get("metadata") or {}
@@ -140,12 +143,13 @@ def serialize_chroma_record_metadata(record: Mapping[str, Any]) -> dict[str, Any
         "token_count": int(record["token_count"]),
         DOMAIN_METADATA_KEY: _serialize_domain_metadata(domain_metadata),
     }
-    # 13C 评测记录没有 file_name/content_hash；缺失字段不伪造生产来源信息。
+    # 13C evaluation records have no file_name/content_hash; missing fields are not faked with
+    # production provenance.
     for key in ("content_hash", "file_name"):
         value = record.get(key)
         if value is not None:
             metadata[key] = str(value)
-    # Chroma metadata 不依赖 None；无页码文本直接省略两个字段。
+    # Chroma metadata does not rely on None; text without page numbers simply omits both fields.
     page_start = record.get("page_start")
     page_end = record.get("page_end")
     if page_start is not None:
@@ -155,7 +159,7 @@ def serialize_chroma_record_metadata(record: Mapping[str, Any]) -> dict[str, Any
 
 
 def serialize_chunk_metadata(chunk: DocumentChunk) -> dict[str, Any]:
-    """把完整 Domain Chunk 委托给统一记录序列化器。"""
+    """Delegate a complete Domain Chunk to the unified record serializer."""
 
     return serialize_chroma_record_metadata(
         {
@@ -172,7 +176,8 @@ def serialize_chunk_metadata(chunk: DocumentChunk) -> dict[str, Any]:
     )
 
 
-# 保留内部旧名称，避免历史实验脚本或外部诊断代码在升级时失效。
+# Keep the internal legacy name so historical experiment scripts or external diagnostic code do not
+# break on upgrade.
 _build_chroma_metadata = serialize_chunk_metadata
 
 
@@ -181,7 +186,7 @@ def _restore_chunk(
     document: Any,
     metadata: Any,
 ) -> DocumentChunk:
-    """将一条 Chroma Record 恢复为项目内部 DocumentChunk。"""
+    """Restore one Chroma Record into the project's internal DocumentChunk."""
 
     if not isinstance(chunk_id, str) or not isinstance(document, str):
         raise VectorStoreQueryError("Stored chunk ID or document text is invalid")
@@ -207,7 +212,7 @@ def _restore_chunk(
 
 
 class ChromaVectorStore:
-    """使用 cosine Collection 持久化 Dense Vector 和 DocumentChunk。"""
+    """Persist Dense Vectors and DocumentChunks into a cosine Collection."""
 
     def __init__(
         self,
@@ -217,12 +222,12 @@ class ChromaVectorStore:
         collection_metadata: Mapping[str, Any] | None = None,
         create_if_missing: bool = True,
     ) -> None:
-        """打开本地 PersistentClient，并确保 Collection 使用 cosine。
+        """Open the local PersistentClient and ensure the Collection uses cosine.
 
-        `collection_metadata` 只用于新建 staging 等 Collection 的生命周期标记；
-        未提供时保持既有 Collection 的 metadata 和运行语义不变。
-        `create_if_missing=False` 时只打开已存在的 Collection（线上按 active 指针读取时使用），
-        不存在则抛 `VectorStoreConfigurationError`，不会留下一个空 Collection。
+        `collection_metadata` is only used for lifecycle marking of newly created Collections such as staging;
+        when not provided, the metadata and runtime semantics of the existing Collection stay unchanged.
+        With `create_if_missing=False` only an existing Collection is opened (as used online when reading through the active pointer);
+        if it does not exist, `VectorStoreConfigurationError` is raised and no empty Collection is left behind.
         """
 
         _require_non_empty_text(collection_name, field_name="collection_name")
@@ -242,7 +247,7 @@ class ChromaVectorStore:
             ) from exc
 
     def _create_collection(self):
-        """创建或打开不绑定 Chroma Embedding Function 的 cosine Collection。"""
+        """Create or open a cosine Collection that binds no Chroma Embedding Function."""
 
         if not self.create_if_missing:
             try:
@@ -261,14 +266,15 @@ class ChromaVectorStore:
             "embedding_function": None,
         }
         if self.collection_metadata:
-            # metadata 只在 Collection 创建时提供，避免打开 active 时意外覆盖身份信息。
+            # metadata is supplied only when the Collection is created, so opening the active one
+            # cannot accidentally overwrite identity information.
             kwargs["metadata"] = self.collection_metadata
         collection = self._client.get_or_create_collection(**kwargs)
         self._require_cosine(collection)
         return collection
 
     def _require_cosine(self, collection: Any) -> None:
-        """项目的相似度分数语义依赖 cosine；配置不符时拒绝使用该 Collection。"""
+        """The project's similarity-score semantics depend on cosine; refuse to use the Collection if the configuration differs."""
 
         hnsw_configuration = collection.configuration.get("hnsw") or {}
         if hnsw_configuration.get("space") != "cosine":
@@ -278,24 +284,24 @@ class ChromaVectorStore:
 
     @property
     def metadata(self) -> dict[str, Any]:
-        """返回 Collection metadata 的只读副本，供 lifecycle validation 审计。"""
+        """Return a read-only copy of the Collection metadata for lifecycle validation audits."""
 
         return dict(self._collection.metadata or {})
 
     @property
     def count(self) -> int:
-        """返回当前 Collection 记录数，不改变任何存储内容。"""
+        """Return the current Collection record count without changing any stored content."""
 
         return self._collection.count()
 
     @property
     def embedding_dimension(self) -> int | None:
-        """返回已有向量维度；空 Collection 没有可推断的维度。"""
+        """Return the existing vector dimension; an empty Collection has no dimension that can be inferred."""
 
         return self._stored_dimension()
 
     def _stored_dimension(self) -> int | None:
-        """读取一条现有向量以校验后续写入和 Query 的维度。"""
+        """Read one existing vector to validate the dimension of later writes and queries."""
 
         try:
             result = self._collection.get(limit=1, include=["embeddings"])
@@ -313,7 +319,7 @@ class ChromaVectorStore:
         chunks: Sequence[DocumentChunk],
         embeddings: Sequence[Sequence[float]],
     ) -> None:
-        """校验后批量写入 Chunk 与外部生成的 Dense Embedding。"""
+        """Validate, then write Chunks and externally generated Dense Embeddings in a batch."""
 
         chunk_list = list(chunks)
         embedding_list = list(embeddings)
@@ -341,13 +347,15 @@ class ChromaVectorStore:
             )
 
         try:
-            # 主动检查重复 ID，避免依赖 Chroma add() 对重复项的静默行为。
+            # Check duplicate IDs actively instead of relying on Chroma add()'s silent behaviour
+            # for duplicates.
             existing = self._collection.get(ids=chunk_ids, include=[])
             if existing.get("ids"):
                 raise VectorStoreWriteError(
                     "One or more chunk IDs already exist in the collection"
                 )
-            # metadata 与 ids/documents 同批写入，保证 Domain Chunk 可完整反序列化。
+            # metadata is written in the same batch as ids/documents, guaranteeing the Domain Chunk
+            # can be fully deserialized.
             metadatas = [serialize_chunk_metadata(chunk) for chunk in chunk_list]
             self._collection.add(
                 ids=chunk_ids,
@@ -365,7 +373,7 @@ class ChromaVectorStore:
         query_embedding: Sequence[float],
         top_k: int,
     ) -> list[RetrievedChunk]:
-        """执行 cosine 查询，并将 distance 转换为项目 similarity_score。"""
+        """Run a cosine query and convert distance into the project's similarity_score."""
 
         if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k <= 0:
             raise ValueError("top_k must be greater than 0")
@@ -404,7 +412,8 @@ class ChromaVectorStore:
                 zip(ids, documents, metadatas, distances),
                 start=1,
             ):
-                # cosine_distance = 1 - cosine_similarity，禁止额外缩放或归一化。
+                # cosine_distance = 1 - cosine_similarity; no additional scaling or normalisation
+                # is allowed.
                 similarity_score = 1.0 - float(distance)
                 retrieved.append(
                     RetrievedChunk(
@@ -426,7 +435,7 @@ class ChromaVectorStore:
         document_id: str,
         content_hash: str | None = None,
     ) -> bool:
-        """按文档身份和可选内容 Hash 查询是否至少存在一个 Chunk。"""
+        """Query whether at least one Chunk exists by document identity and an optional content Hash."""
 
         _require_non_empty_text(document_id, field_name="document_id")
         if content_hash is not None:
@@ -446,7 +455,7 @@ class ChromaVectorStore:
             raise VectorStoreQueryError("Failed to inspect document existence") from exc
 
     def delete_document(self, document_id: str) -> None:
-        """使用 metadata 过滤一次删除指定文档的全部旧 Chunk。"""
+        """Delete all old Chunks of the given document in one call using a metadata filter."""
 
         _require_non_empty_text(document_id, field_name="document_id")
         try:
@@ -457,14 +466,15 @@ class ChromaVectorStore:
             ) from exc
 
     def iter_all_chunks(self) -> Iterator[DocumentChunk]:
-        """按 chunk_id 升序遍历当前 Collection 中的全部正式 Chunk。
+        """Iterate over every official Chunk in the current Collection in ascending chunk_id order.
 
-        用于索引生命周期校验与 Exact Dense 索引构建前的全量读取，所以该方法只读、
-        确定性，并且按 chunk_id 升序返回，避免调用方在排序上各自漂移。
+        Used for index lifecycle validation and for the full read before building the Exact Dense index, so this method is read-only
+        and deterministic, returning chunks in ascending chunk_id order so callers cannot drift apart on sorting.
         """
 
         try:
-            # offset/limit 分页遍历，避免一次性把全部 Chunk 内容加载到内存。
+            # Iterate with offset/limit pagination so all Chunk content is never loaded into memory
+            # at once.
             page_size = 1024
             offset = 0
             while True:
@@ -490,7 +500,8 @@ class ChromaVectorStore:
                         ids, documents, metadatas
                     )
                 ]
-                # 单页内排序保证整体 chunk_id 字典序；分页 offset 也会按 id 序列前进。
+                # Sorting within a page guarantees the overall chunk_id lexicographic order; the
+                # paging offset also advances along the id sequence.
                 restored.sort(key=lambda chunk: chunk.chunk_id)
                 for chunk in restored:
                     yield chunk
@@ -507,10 +518,11 @@ class ChromaVectorStore:
     def iter_all_chunks_with_embeddings(
         self,
     ) -> Iterator[tuple[DocumentChunk, list[float]]]:
-        """按 Chunk ID 升序恢复 Chunk 与向量，供进程内 Exact Index 构建。"""
+        """Restore Chunks and vectors in ascending Chunk ID order for in-process Exact Index construction."""
 
         try:
-            # 与 iter_all_chunks 使用相同分页合同；向量只读出，不复制为第二份持久化真源。
+            # Uses the same paging contract as iter_all_chunks; vectors are read out only and never
+            # copied into a second persisted source of truth.
             page_size = 1024
             offset = 0
             while True:
@@ -547,7 +559,8 @@ class ChromaVectorStore:
                         zip(ids, documents, metadatas, embeddings)
                     )
                 ]
-                # Chroma 的物理返回顺序不是业务合同；这里固定全局可复现的 ID 顺序。
+                # Chroma's physical return order is not a business contract; fix a globally
+                # reproducible ID order here.
                 restored.sort(key=lambda item: item[0].chunk_id)
                 yield from restored
                 if len(ids) < page_size:
@@ -561,7 +574,7 @@ class ChromaVectorStore:
             ) from exc
 
     def clear(self) -> None:
-        """重建当前 cosine Collection，不删除整个持久化目录。"""
+        """Rebuild the current cosine Collection without deleting the whole persistence directory."""
 
         try:
             self._client.delete_collection(name=self.collection_name)

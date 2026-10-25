@@ -1,7 +1,8 @@
-"""测试 scripts/build_staging_index.py 的构建、校验、丢弃与保护逻辑（A3）。
+"""Test the build, validation, discard, and protection logic of scripts/build_staging_index.py (A3).
 
-全部使用临时目录中的 state 文件、Fake builder 与 Fake collection 操作；真实 Chroma 用例只在
-临时目录里验证 lifecycle metadata 的改写与 --discard-staging，不触碰仓库的 data/chroma。
+Everything uses state files in temporary directories, a Fake builder, and Fake collection
+operations; the real-Chroma cases only verify lifecycle metadata rewriting and --discard-staging
+in a temporary directory and never touch the repository's data/chroma.
 """
 
 import json
@@ -47,7 +48,7 @@ def _chunk(chunk_id: str, index: int) -> DocumentChunk:
 
 
 class FakeStore:
-    """只读 Collection 替身，满足 validate_collection 的读取接口。"""
+    """A read-only Collection stand-in that satisfies the read interface of validate_collection."""
 
     def __init__(self, chunk_ids: list[str]) -> None:
         self.chunks = [_chunk(chunk_id, index) for index, chunk_id in enumerate(chunk_ids)]
@@ -64,13 +65,14 @@ class FakeStore:
 
 
 class Env:
-    """一次脚本运行的 Fake 环境：记录对 Chroma 与阶段回调的全部副作用。"""
+    """Fake environment for one script run: records every side effect on Chroma and on the stage callbacks."""
 
     def __init__(self, tmp_path, *, staging_chunk_ids=("c1", "c2"), active_chunk_ids=("c1", "c2")) -> None:
         self.tmp_path = tmp_path
         self.settings = Settings(_env_file=None, index_state_path=tmp_path / "index_state.json")
-        # active manifest 的 pipeline 与脚本使用的一致，因此新 staging 的 index_signature 等于它的；
-        # collection 名不同。
+        # # The active manifest's pipeline matches the one the script uses, so the new staging
+        # index_signature equals its own;
+        # # only the collection name differs.
         pipeline = current_pipeline_from_settings(self.settings)
         self.lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
         self.lifecycle.initialize_active(
@@ -137,7 +139,7 @@ def test_full_build_walks_all_stages_to_ready_and_does_not_activate_by_default(t
     assert env.stages == ["PARSING", "CHUNKING", "EMBEDDING", "INDEXING"]
     after = env.state()
     assert after.active == before.active and after.previous == before.previous
-    assert after.staging is not None  # 默认保留 staging 指针，不激活、不删除
+    assert after.staging is not None  # # The staging pointer is kept by default: not activated, not deleted
     assert env.deleted == [] and env.marked_active == []
     assert json.loads((tmp_path / "jobs" / "staging_build_job.json").read_text(encoding="utf-8"))["status"] == "READY"
 
@@ -157,7 +159,7 @@ def test_discard_after_validate_deletes_collection_then_clears_pointer(tmp_path)
 
 
 def test_discard_after_validate_keeps_staging_when_validation_fails(tmp_path) -> None:
-    """chunk ID 与 active 不一致：必须保留 staging collection 与指针，不能删除证据。"""
+    """chunk IDs differ from the active index: the staging collection and pointer must be kept; evidence is never deleted."""
 
     env = Env(tmp_path, staging_chunk_ids=("c1", "cX"))
 
@@ -192,10 +194,10 @@ def test_builder_exception_keeps_staging_and_exits_nonzero(tmp_path) -> None:
 
 @pytest.mark.parametrize("protected", ["active", "previous"])
 def test_discard_refuses_to_delete_active_or_previous_collection(tmp_path, protected) -> None:
-    """即使 staging 指针被篡改成指向 active/previous 的名字，也不能删除它们。"""
+    """Even when the staging pointer is tampered with to point at the active/previous names, they must not be deleted."""
 
     env = Env(tmp_path)
-    # 先造出 previous：激活一个 staging，旧 active 成为 previous。
+    # # Create previous first: activate a staging index so the old active becomes previous.
     code, _ = env.run(activate=True)
     assert code == 0
     state = env.state()
@@ -209,7 +211,7 @@ def test_discard_refuses_to_delete_active_or_previous_collection(tmp_path, prote
         discard_staging_collection(env.lifecycle, deleted.append, lambda: set(env.existing))
 
     assert deleted == []
-    assert env.state().staging is not None  # 指针原样，没有任何删除
+    assert env.state().staging is not None  # # The pointer is untouched and nothing was deleted
 
 
 def test_discard_without_staging_pointer_is_refused(tmp_path) -> None:
@@ -220,24 +222,24 @@ def test_discard_without_staging_pointer_is_refused(tmp_path) -> None:
 
 
 def test_discard_is_idempotent_when_collection_was_already_deleted(tmp_path) -> None:
-    """A3.1：上次删掉了 collection 但清指针失败；再次 discard 只清指针并成功。"""
+    """A3.1: the previous run deleted the collection but failed to clear the pointer; discarding again only clears the pointer and succeeds."""
 
     env = Env(tmp_path)
-    code, summary = env.run()  # 校验通过、保留 staging
+    code, summary = env.run()  # # Validation passed; staging is kept
     assert code == 0
     name = summary["staging_collection"]
-    env.existing.discard(name)  # 模拟 collection 已被删除、指针仍在
+    env.existing.discard(name)  # # Simulate a collection already deleted while the pointer remains
     deleted: list[str] = []
 
     state = discard_staging_collection(env.lifecycle, deleted.append, lambda: set(env.existing))
 
-    assert deleted == []  # 不再尝试删除不存在的 collection
+    assert deleted == []  # # No further attempt to delete a collection that does not exist
     assert state.staging is None and env.state().staging is None
-    env.run()  # 指针已清，可以重新开始构建
+    env.run()  # # The pointer is cleared, so the build can start over
 
 
 def test_discard_after_validate_retry_recovers_from_pointer_clear_failure(tmp_path, monkeypatch) -> None:
-    """删除成功、清指针失败 → 再执行一次 discard 即可恢复，不会卡在“已有 staging 指针”。"""
+    """Deletion succeeded but clearing the pointer failed -> running discard once more recovers, and it never gets stuck on "a staging pointer already exists"."""
 
     env = Env(tmp_path)
     original = IndexLifecycle.discard_staging
@@ -254,11 +256,11 @@ def test_discard_after_validate_retry_recovers_from_pointer_clear_failure(tmp_pa
     discard_staging_collection(env.lifecycle, env.ports().delete_collection, lambda: set(env.existing))
 
     assert env.state().staging is None
-    assert len(env.deleted) == 1  # 第二次没有重复删除
+    assert len(env.deleted) == 1  # # The second run deletes nothing twice
 
 
 def test_protected_refusal_after_build_uses_exit_code_3(tmp_path, monkeypatch) -> None:
-    """构建之后的保护拒绝不能再用“2 = 拒绝开始”：返回 3，staging collection 与指针保留。"""
+    """A post-build protection refusal must no longer use "2 = refused to start": it returns 3, and the staging collection and pointer are kept."""
 
     import scripts.build_staging_index as module
 
@@ -279,7 +281,7 @@ def test_protected_refusal_after_build_uses_exit_code_3(tmp_path, monkeypatch) -
 
 
 def _activate_once(env: Env) -> str:
-    """跑一次 --activate，返回成为新 active 的 staging 名。"""
+    """Run --activate once and return the name of the staging index that became the new active one."""
 
     code, summary = env.run(activate=True)
     assert code == 0
@@ -287,7 +289,7 @@ def _activate_once(env: Env) -> str:
 
 
 def test_rebuild_after_activation_does_not_reuse_active_name(tmp_path) -> None:
-    """A3.1：激活后以同一 signature 重建，staging 名不得等于新 active 或 previous。"""
+    """A3.1: rebuilding with the same signature after activation must not name staging after the new active or the previous index."""
 
     env = Env(tmp_path)
     first = _activate_once(env)
@@ -298,11 +300,11 @@ def test_rebuild_after_activation_does_not_reuse_active_name(tmp_path) -> None:
 
     assert code == 0
     assert summary["staging_collection"] not in {first, "col-active"}
-    assert env.marked_active == [first]  # 重建没有改写任何已有 collection
+    assert env.marked_active == [first]  # # The rebuild rewrote no existing collection
 
 
 def test_rebuild_after_rollback_does_not_reuse_previous_name(tmp_path) -> None:
-    """A3.1：rollback 后同 signature 重建，首选名恰好是 previous（上一次的 staging），必须避开。"""
+    """A3.1: rebuilding with the same signature after a rollback makes the preferred name exactly previous (the last staging), which must be avoided."""
 
     env = Env(tmp_path)
     first = _activate_once(env)
@@ -314,7 +316,7 @@ def test_rebuild_after_rollback_does_not_reuse_previous_name(tmp_path) -> None:
 
     assert code == 0
     assert summary["staging_collection"] not in {first, "col-active"}
-    assert env.deleted == [summary["staging_collection"]]  # 只删了新建的 staging
+    assert env.deleted == [summary["staging_collection"]]  # # Only the newly created staging index was deleted
     assert {"col-active", first} <= env.existing
 
 
@@ -322,7 +324,7 @@ def test_rebuild_after_rollback_does_not_reuse_previous_name(tmp_path) -> None:
 def test_refuses_to_build_when_generated_name_equals_active_or_previous(
     tmp_path, monkeypatch, protected
 ) -> None:
-    """纵深防御：生成名等于 active/previous 时在构建前拒绝，提示中不得建议删除。"""
+    """Defence in depth: when the generated name equals active/previous, refuse before building, and the message must not suggest deleting anything."""
 
     import scripts.build_staging_index as module
 
@@ -339,7 +341,7 @@ def test_refuses_to_build_when_generated_name_equals_active_or_previous(
     message = str(excinfo.value)
     assert "equals the active or previous collection" in message
     assert "Do not delete" in message and "remove it" not in message
-    assert (tmp_path / "index_state.json").read_bytes() == before  # 未登记 staging 指针
+    assert (tmp_path / "index_state.json").read_bytes() == before  # # The staging pointer was never registered
     assert env.deleted == []
 
 
@@ -347,7 +349,7 @@ def test_cli_maps_pre_build_refusal_to_exit_code_2(tmp_path, monkeypatch, capsys
     import scripts.build_staging_index as module
 
     env = Env(tmp_path)
-    env.run()  # 留下 staging 指针 → 下一次构建在开始前被拒绝
+    env.run()  # # Leaving a staging pointer behind -> the next build is refused before it starts
     monkeypatch.setattr(module, "Settings", lambda: env.settings)
     monkeypatch.setattr(module, "make_real_ports", lambda settings: env.ports())
 
@@ -356,7 +358,7 @@ def test_cli_maps_pre_build_refusal_to_exit_code_2(tmp_path, monkeypatch, capsys
 
 
 def test_cli_discard_staging_is_idempotent_in_real_chroma(tmp_path, monkeypatch, capsys) -> None:
-    """--discard-staging（临时目录的真实 Chroma）：删除登记的 staging、清指针；重复执行不出错地拒绝。"""
+    """--discard-staging (real Chroma in a temporary directory): delete the registered staging index and clear the pointer; a repeat run is refused without erroring."""
 
     import chromadb
 
@@ -375,7 +377,8 @@ def test_cli_discard_staging_is_idempotent_in_real_chroma(tmp_path, monkeypatch,
     names = {item.name for item in chromadb.PersistentClient(path=str(db)).list_collections()}
     assert names == {"col-active"}
     assert env.state().staging is None
-    # 再执行一次：没有登记的 staging，属于“拒绝开始”，什么都不改。
+    # # Run once more: no staging index is registered, which counts as "refused to start", and
+    # nothing changes.
     assert main(["--discard-staging"]) == 2
     assert {item.name for item in chromadb.PersistentClient(path=str(db)).list_collections()} == {"col-active"}
     assert main(["--discard-staging", "--activate"]) == 2
@@ -400,7 +403,7 @@ def test_activate_marks_collection_active_before_flipping_pointer(tmp_path) -> N
 
 def test_refuses_to_start_when_staging_pointer_already_registered(tmp_path) -> None:
     env = Env(tmp_path)
-    env.run()  # 留下一个 staging 指针
+    env.run()  # # Leave one staging pointer behind
 
     with pytest.raises(StagingBuildRefused, match="already registered"):
         env.run()
@@ -410,11 +413,11 @@ def test_refuses_to_start_when_staging_collection_already_exists(tmp_path) -> No
     env = Env(tmp_path)
     first_code, summary = env.run(discard_after_validate=True)
     assert first_code == 0
-    env.existing.add(summary["staging_collection"])  # 模拟上次遗留的同名 collection
+    env.existing.add(summary["staging_collection"])  # # Simulate a same-named collection left over from the previous run
 
     with pytest.raises(StagingBuildRefused, match="already exists"):
         env.run()
-    assert env.state().staging is None  # 拒绝发生在登记 staging 指针之前
+    assert env.state().staging is None  # # The refusal happens before the staging pointer is registered
 
 
 def test_activate_and_discard_are_mutually_exclusive(tmp_path) -> None:
@@ -430,8 +433,8 @@ def test_stage_reporter_is_monotonic_and_fills_skipped_stages() -> None:
     reporter = StageReporter(seen.append)
 
     reporter.reach("PARSING")
-    reporter.reach("EMBEDDING")  # 跳过 CHUNKING 时补报
-    reporter.reach("CHUNKING")  # 回退事件被忽略（逐文件循环时同一阶段会重复出现）
+    reporter.reach("EMBEDDING")  # # Backfill the report when CHUNKING is skipped
+    reporter.reach("CHUNKING")  # # Fallback events are ignored (the same stage repeats in the per-file loop)
     reporter.reach("PARSING")
     reporter.reach("INDEXING")
 
@@ -454,11 +457,11 @@ def test_observed_proxy_fires_hook_and_forwards_calls_and_attributes() -> None:
     assert observed.encode("abc") == [3]
     assert observed.decode([2]) == "xx"
     assert observed.label == "inner"
-    assert fired == ["encode"]  # 未登记钩子的 decode 不触发
+    assert fired == ["encode"]  # # The decode hook of an unregistered hook does not fire
 
 
 def test_mark_collection_lifecycle_rewrites_only_lifecycle_in_real_chroma(tmp_path) -> None:
-    """真实 Chroma（临时目录）：改写后只有 lifecycle 变化，cosine 配置不受影响。"""
+    """Real Chroma (temporary directory): after rewriting, only the lifecycle changes; the cosine configuration is unaffected."""
 
     import chromadb
 
@@ -474,13 +477,14 @@ def test_mark_collection_lifecycle_rewrites_only_lifecycle_in_real_chroma(tmp_pa
 
     reopened = ChromaVectorStore(tmp_path / "chroma", "col-stg")
     assert reopened.metadata == {**metadata, "lifecycle": "ACTIVE"}
-    # cosine 来自 configuration 而不是 metadata，改写 metadata 不应影响它。
+    # # cosine comes from configuration rather than metadata, so rewriting metadata must not affect
+    # it.
     fresh = chromadb.PersistentClient(path=str(tmp_path / "chroma")).get_collection("col-stg")
     assert fresh.configuration["hnsw"]["space"] == "cosine"
 
 
 def test_mark_collection_lifecycle_handles_legacy_hnsw_space_metadata(tmp_path) -> None:
-    """A3.1：带旧键 hnsw:space 的 cosine collection（如 v2）也能改写 lifecycle，cosine 不变。"""
+    """A3.1: a cosine collection carrying the legacy hnsw:space key (such as v2) can also have its lifecycle rewritten, and cosine is unchanged."""
 
     import chromadb
 
@@ -501,7 +505,7 @@ def test_mark_collection_lifecycle_handles_legacy_hnsw_space_metadata(tmp_path) 
 
 
 # ---------------------------------------------------------------------------
-# A3.2：--discard-staging 的错误处理与命名兜底检查
+# # A3.2: --discard-staging error handling and the naming backstop check
 # ---------------------------------------------------------------------------
 
 
@@ -510,7 +514,7 @@ def _discard_settings(tmp_path, state_path):
 
 
 def _assert_single_line(err: str, prefix: str) -> None:
-    """错误输出必须是以 prefix 开头的一行，不能带 traceback。"""
+    """Error output must be a single line starting with the prefix, with no traceback."""
 
     assert "Traceback" not in err
     lines = [line for line in err.splitlines() if line.strip()]
@@ -528,7 +532,7 @@ def test_cli_discard_staging_missing_state_file_is_refused_without_traceback(tmp
     err = capsys.readouterr().err
     _assert_single_line(err, f"REFUSED: cannot read lifecycle state {missing}: FileNotFoundError: ")
     assert not missing.exists()
-    assert not (tmp_path / "chroma").exists()  # 读状态失败时还没有连接 Chroma
+    assert not (tmp_path / "chroma").exists()  # # Chroma has not been connected yet when reading state fails
 
 
 def test_cli_discard_staging_corrupt_state_file_is_refused_without_traceback(tmp_path, monkeypatch, capsys) -> None:
@@ -542,18 +546,18 @@ def test_cli_discard_staging_corrupt_state_file_is_refused_without_traceback(tmp
 
     err = capsys.readouterr().err
     _assert_single_line(err, f"REFUSED: cannot read lifecycle state {corrupt}: ValidationError: ")
-    assert corrupt.read_text(encoding="utf-8") == "{not json"  # 原样保留，没有被重写
+    assert corrupt.read_text(encoding="utf-8") == "{not json"  # # Kept as is; not rewritten
 
 
 def test_cli_discard_staging_delete_failure_returns_1_and_keeps_pointer(tmp_path, monkeypatch, capsys) -> None:
-    """删除 collection 时 Chroma 抛错：退出码 1、一行 FAILED，staging 指针保持不变。"""
+    """Chroma raises while deleting the collection: exit code 1, one FAILED line, and the staging pointer is left unchanged."""
 
     import chromadb
 
     import scripts.build_staging_index as module
 
     env = Env(tmp_path)
-    code, summary = env.run()  # 校验通过、保留 staging 指针
+    code, summary = env.run()  # # Validation passed; the staging pointer is kept
     assert code == 0
     name = summary["staging_collection"]
     before = (tmp_path / "index_state.json").read_bytes()
@@ -563,7 +567,7 @@ def test_cli_discard_staging_delete_failure_returns_1_and_keeps_pointer(tmp_path
             self.name = item_name
 
     class FailingClient:
-        """列出时返回 staging，删除时抛错，模拟 Chroma 删除失败。"""
+        """List returns the staging index, deleting raises, simulating a Chroma deletion failure."""
 
         def __init__(self, path: str) -> None:
             self.path = path
@@ -587,13 +591,13 @@ def test_cli_discard_staging_delete_failure_returns_1_and_keeps_pointer(tmp_path
 
 @pytest.mark.parametrize("protected", ["active", "previous"])
 def test_naming_guard_refuses_before_any_build_or_write_port_is_called(tmp_path, monkeypatch, protected) -> None:
-    """A3.2：现有生成器不会产生 active/previous 名，此检查是兜底；生成器回归时必须在任何构建或写入前拒绝。"""
+    """A3.2: the current generator never produces an active/previous name, so this check is a backstop; a generator regression must be refused before any build or write."""
 
     import scripts.build_staging_index as module
 
     env = Env(tmp_path)
     if protected == "previous":
-        _activate_once(env)  # 造出 previous
+        _activate_once(env)  # # Produce previous
     state = env.state()
     target = state.active.collection_name if protected == "active" else state.previous.collection_name
     monkeypatch.setattr(module, "build_staging_collection_name", lambda *a, **k: target)
@@ -625,4 +629,4 @@ def test_naming_guard_refuses_before_any_build_or_write_port_is_called(tmp_path,
     assert called == []
     assert env.marked_active == marked_before
     assert (tmp_path / "index_state.json").read_bytes() == before
-    assert not job_dir.exists()  # 没有写出 BuildJob 或摘要
+    assert not job_dir.exists()  # # No BuildJob or summary was written

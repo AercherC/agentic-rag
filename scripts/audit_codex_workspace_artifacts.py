@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-"""只读检查 EvidenceFlow workspace 中可能由 Codex 生成的文件。
+"""Read-only check for files in the EvidenceFlow workspace that may have been produced by
+Codex.
 
-分类结果仅用于人工审查：tracked project file、codex-generated、unknown。未知项
-永远标记 REVIEW，不提供删除动作。
+The classification is for manual review only: tracked project file, codex-generated,
+unknown. Unknown items are always marked REVIEW and never get a delete action.
 """
 
 from __future__ import annotations
@@ -26,7 +27,7 @@ CODEX_PREFIXES = (
 
 
 def _iter_workspace_files(root: Path):
-    """遍历工作区但排除本审计产物与模型/插件缓存。"""
+    """Walk the workspace but exclude this audit's own artifacts and the model/plugin caches."""
 
     excluded = {".cache", ".workbuddy", ".vscode", ".git", "artifacts"}
     for dirpath, dirnames, filenames in os.walk(root, followlinks=False):
@@ -40,7 +41,7 @@ def _iter_workspace_files(root: Path):
 
 
 def load_known_project_paths(root: Path) -> set[str]:
-    """读取既有清单作为无 Git 工作区的 tracked-like 基线。"""
+    """Read the existing manifest as the tracked-like baseline of a workspace without Git."""
 
     manifest = root / "artifacts" / "cleanup" / "post13f" / "pre_cleanup_manifest.json"
     if not manifest.is_file():
@@ -54,19 +55,20 @@ def load_known_project_paths(root: Path) -> set[str]:
 
 
 def classify_workspace_path(relative_path: str, known_paths: set[str]) -> tuple[str, str]:
-    """给工作区文件分类并给出审查动作。"""
+    """Classify a workspace file and give the review action."""
 
     rel = relative_path.replace("\\", "/")
     if rel.startswith(CODEX_PREFIXES):
         return "codex-generated", "REVIEW"
     if rel in known_paths:
         return "tracked project file", "KEEP"
-    # 本轮不把 tmp/ 中既有研究文件误判成 Codex 产物；新增项进入 unknown。
+    # Do not misclassify the pre-existing research files under tmp/ as Codex artifacts in this
+    # round; new entries fall through to unknown.
     return "unknown", "REVIEW"
 
 
 def audit_workspace(root: Path) -> dict[str, Any]:
-    """返回 workspace 分类清单，不修改文件。"""
+    """Return the workspace classification inventory without modifying any file."""
 
     known_paths = load_known_project_paths(root)
     records = []
@@ -93,7 +95,7 @@ def audit_workspace(root: Path) -> dict[str, Any]:
 
 
 def main() -> int:
-    """执行 workspace artifact 审计并写入 report。"""
+    """Run the workspace artifact audit and write the report."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workspace", type=Path, default=ROOT)

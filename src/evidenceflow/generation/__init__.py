@@ -1,4 +1,4 @@
-"""公开 Grounded Answer Generator、Prompt 版本、JSON 解析函数与确定性空 Context 文案。"""
+"""Public Grounded Answer Generator, prompt versions, JSON parsing helpers, and the deterministic empty-context wording."""
 
 from evidenceflow.generation.generator import (
     GENERATOR_PROMPT_VERSION,

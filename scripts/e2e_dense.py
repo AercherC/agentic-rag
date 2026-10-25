@@ -1,18 +1,21 @@
-"""B3a-2′ 辅助脚本：为已生成的题干产出 Dense Top-K 排名，供 ``e2e_draft.py gates --dense`` 使用。
+"""B3a-2' auxiliary script: produce Dense Top-K rankings for already generated questions, for use by ``e2e_draft.py gates --dense``.
 
-为什么需要它：``gates`` 的难度标签（``easy`` / ``medium`` / ``hard``，即 gold chunk 落在
-Dense Top5 / Top6–20 / Top20 之外）依赖 ``--dense`` 的 ``{query: [chunk_id, ...]}`` 产物；
-没有它，``plan_quotas`` 会报 ``difficulty labels missing``，Gate B3 的难度配额无法达标。
+Why it is needed: the difficulty labels in ``gates`` (``easy`` / ``medium`` / ``hard``, i.e. whether the
+gold chunk lands in Dense Top5 / Top6-20 / outside Top20) depend on the ``{query: [chunk_id, ...]}``
+artifact passed to ``--dense``; without it ``plan_quotas`` reports ``difficulty labels missing`` and the
+Gate B3 difficulty quotas cannot be met.
 
-为什么必须走 ``build_retriever`` 而不是自己构造索引：``--dense`` 的排名语义必须与线上候选检索
-一致（Exact Dense Top-K，CPU 确定性）。自己装配会引入第二套口径，让难度标签与线上行为脱钩。
+Why it must go through ``build_retriever`` instead of assembling an index itself: the ranking semantics of
+``--dense`` must match serving candidate retrieval (Exact Dense Top-K, CPU-deterministic). Assembling it by
+hand would introduce a second set of semantics and decouple the difficulty labels from serving behavior.
 
-已知开销：``build_retriever`` 会顺带加载 reranker 模型（本脚本只用 dense）。保持调用它是
-可靠性优先——"与线上同路径"比省一次模型加载更重要。
+Known overhead: ``build_retriever`` also loads the reranker model (this script only uses dense). Keeping
+that call is a reliability-first choice: "the same path as serving" matters more than saving one model load.
 
-本脚本**只做 embedding 与向量检索，不发任何 LLM 请求**，因此没有 token 成本。
+This script **only does embedding and vector retrieval and sends no LLM request**, so it has no token cost.
 
-输出保护与 ``e2e_draft.py`` 同口径：任何路径解析后位于仓库 ``evals/`` 下 → 拒绝（退出码 2）。
+Output protection follows the same rules as ``e2e_draft.py``: any path that resolves under the repository's
+``evals/`` is refused (exit code 2).
 """
 
 from __future__ import annotations
@@ -36,18 +39,18 @@ EXIT_OK, EXIT_ERROR, EXIT_REFUSED = 0, 1, 2
 
 
 class Refused(Exception):
-    """输出保护拒绝写入；此时尚未加载任何模型。"""
+    """The output guard refused the write; no model has been loaded at that point."""
 
 
 def check_output(path: Path) -> None:
-    """输出保护：``evals/`` 下任何路径一律拒绝（冻结目录不得由本工具写入）。"""
+    """Output guard: refuse any path under ``evals/`` (the frozen directory must not be written by this tool)."""
 
     if path.resolve().is_relative_to(EVALS_ROOT.resolve()):
         raise Refused(f"{path} resolves under evals/ (frozen); refusing to write")
 
 
 def write_json(path: Path, payload: dict) -> None:
-    """UTF-8、键排序、缩进 2、固定 LF 换行，保证同一输入在任意 OS 产出同一字节。"""
+    """UTF-8, sorted keys, 2-space indent and a fixed LF newline, so the same input yields the same bytes on any OS."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
@@ -55,10 +58,11 @@ def write_json(path: Path, payload: dict) -> None:
 
 
 def load_queries(path: Path) -> list[str]:
-    """从 draft 产出的 JSONL 读取 query：跳过空行与未生成题干的候选，去重并保持首次出现顺序。
+    """Read queries from the JSONL produced by draft: skip empty lines and candidates with no generated question, deduplicate and keep first-appearance order.
 
-    ``--dry-run`` 的候选（题干为 ``<DRY-RUN>``）不是真实问题，参与检索只会污染排名，因此跳过。
-    保持首次出现顺序让输出可复算，也便于与 ``items.jsonl`` 对照。
+    ``--dry-run`` candidates (whose question is ``<DRY-RUN>``) are not real questions and would only pollute
+    the rankings if retrieved, so they are skipped. Keeping first-appearance order makes the output
+    recomputable and easy to cross-check against ``items.jsonl``.
     """
 
     queries: list[str] = []
@@ -81,43 +85,50 @@ def load_queries(path: Path) -> list[str]:
 
 
 def resolve_dense_ranks(queries: list[str], *, top_k: int) -> dict[str, list[str]]:
-    """对每个 query 跑一次 Exact Dense Top-K，返回 ``{query: [chunk_id, ...]}``。
+    """Run Exact Dense Top-K once per query and return ``{query: [chunk_id, ...]}``.
 
-    依赖注入点 ``build_retriever``：测试用 monkeypatch 替换它，不加载真实模型。
+    The injection point ``build_retriever`` is what tests monkeypatch, so no real model is loaded.
     """
 
     retriever = build_retriever(Settings())
     dense = retriever.dense_retriever
     ranks: dict[str, list[str]] = {}
     for query in queries:
-        # DenseRetriever.retrieve 内部完成 embed_query + 向量检索，与线上候选生成同路径。
+        # DenseRetriever.retrieve performs embed_query + vector retrieval internally, the same path
+        # as
+        # serving candidate generation.
         results = dense.retrieve(query, top_k=top_k)
         ranks[query] = [result.chunk.chunk_id for result in results]
     return ranks
 
 
 def run(args: argparse.Namespace) -> int:
-    """读取题干 → CPU 校验 → Dense Top-K → 写排名 JSON。"""
+    """Read questions -> CPU check -> Dense Top-K -> write the ranking JSON."""
 
     if args.top_k <= 0:
         raise ValueError("--top-k must be a positive integer")
     settings = Settings()
-    # 数值要可复现：冻结基线都是 CPU 结果，GPU 浮点差异可能改变排序，未显式允许时直接拒绝。
+    # The numbers must be reproducible: the frozen baselines are all CPU results and GPU
+    # floating-point
+    # differences can change the ordering, so refuse unless that is explicitly allowed.
     device = resolve_model_device(settings.model_device)
     if device != "cpu" and not args.allow_gpu:
         raise ValueError(f"resolved device is {device!r}; set MODEL_DEVICE=cpu or pass --allow-gpu")
 
     queries = load_queries(args.queries)
     ranks = resolve_dense_ranks(queries, top_k=args.top_k)
-    # 输出格式必须与 `e2e_draft.py gates --dense` 的读取口径一致：顶层就是 {query: [chunk_id...]}。
-    # 不要套一层 {"ranks": ...}，否则 gates 的 dense.get(query) 全部取不到，难度标签会静默全为 None。
+    # The output shape must match what `e2e_draft.py gates --dense` reads: the top level is {query:
+    # [chunk_id...]}.
+    # Do not wrap it in {"ranks": ...}, otherwise every gates dense.get(query) misses and the
+    # difficulty
+    # labels silently become None everywhere.
     write_json(args.out, ranks)
     print(f"queries={len(queries)} top_k={args.top_k} out={args.out}")
     return EXIT_OK
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """命令行参数。"""
+    """Command-line arguments."""
 
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -130,7 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """入口：先做输出保护，再执行；``Refused`` → 2，其余异常 → 1。"""
+    """Entry point: apply the output guard first, then run; ``Refused`` -> 2, any other exception -> 1."""
 
     args = build_parser().parse_args(argv)
     try:
@@ -143,7 +154,7 @@ def main(argv: list[str] | None = None) -> int:
     except Refused as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)
         return EXIT_REFUSED
-    except Exception as exc:  # noqa: BLE001 - CLI 边界统一转换为退出码 1
+    except Exception as exc:  # noqa: BLE001 - the CLI boundary converts everything to exit code 1
         print(f"FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return EXIT_ERROR
 

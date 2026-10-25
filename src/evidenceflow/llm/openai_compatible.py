@@ -1,4 +1,4 @@
-"""基于官方 OpenAI SDK 的通用 Chat Completions Adapter。"""
+"""A general Chat Completions adapter built on the official OpenAI SDK."""
 
 from __future__ import annotations
 
@@ -13,15 +13,18 @@ from evidenceflow.domain.generation import LLMMessage
 from evidenceflow.llm.base import LLMConfigurationError, LLMRequestError
 from evidenceflow.llm.diagnostics import classify_llm_failure
 
-# 结构化输出模式：json_schema（strict）> json_object > prompt_only。
-# 选定值（Stage A §S.2）：依据 artifacts/stage_a/A2_probe.json——deepseek-flash 对 json_schema 返回
-# 400（response_format type unavailable），json_object 与 prompt_only 均通过；按
-# json_schema > json_object > prompt_only 优先级选 json_object（要求 Prompt 含 "JSON"）。
-# 这里只是固定常量，不做运行时模式降级或自动探测；换模型/服务后须重新探测。
+# Structured output mode: json_schema (strict) > json_object > prompt_only.
+# Chosen value (Stage A §S.2): based on artifacts/stage_a/A2_probe.json - deepseek-flash returns
+# 400 for json_schema (response_format type unavailable), while json_object and prompt_only both
+# pass; following the json_schema > json_object > prompt_only priority we select json_object (which
+# requires the Prompt to contain "JSON").
+# This is a fixed constant only: there is no runtime mode downgrade or automatic probing; after
+# switching model/service the probe must be re-run.
 STRUCTURED_OUTPUT_MODE = "json_object"
 STRUCTURED_OUTPUT_MODES = ("json_schema", "json_object", "prompt_only")
 
-# thinking 开关（DeepSeek 等）：auto = 不发送，沿用服务端默认；enabled/disabled 显式开或关。
+# thinking switch (DeepSeek etc.): auto = do not send it, keep the server default; enabled/disabled
+# explicitly turn it on or off.
 THINKING_MODES = ("auto", "enabled", "disabled")
 
 
@@ -32,12 +35,13 @@ def build_structured_request_params(
     json_schema: dict,
     messages: Sequence[LLMMessage],
 ) -> dict[str, Any]:
-    """按模式生成附加到 Chat Completions 请求的参数（纯函数，无网络）。
+    """Build the parameters added to a Chat Completions request for the given mode (pure; no network).
 
-    - json_schema：``response_format`` 携带 strict JSON Schema；
-    - json_object：仅声明 JSON 对象；OpenAI 协议要求 Prompt 中出现 "JSON" 一词，
-      否则服务端会拒绝，所以这里提前校验以获得明确错误；
-    - prompt_only：不传 ``response_format``，完全靠 Prompt 约束。
+    - json_schema: ``response_format`` carries a strict JSON Schema;
+    - json_object: declares a JSON object only; the OpenAI protocol requires the word "JSON" to
+      appear in the Prompt, otherwise the server rejects the request, so it is validated here up
+      front to produce a clear error;
+    - prompt_only: no ``response_format`` is sent and the Prompt alone constrains the output.
     """
 
     if mode not in STRUCTURED_OUTPUT_MODES:
@@ -57,7 +61,7 @@ def build_structured_request_params(
 
 
 class OpenAICompatibleLLMClient:
-    """将内部消息转换为 OpenAI-compatible Chat Completions 请求。"""
+    """Turn internal messages into OpenAI-compatible Chat Completions requests."""
 
     def __init__(
         self,
@@ -72,7 +76,7 @@ class OpenAICompatibleLLMClient:
         thinking: str = "auto",
         _client: Any | None = None,
     ) -> None:
-        """验证配置并建立无自动重试、带显式超时的同步 SDK Client。"""
+        """Validate the configuration and build a synchronous SDK client with no automatic retry and an explicit timeout."""
 
         if api_key is None or not api_key.strip():
             raise LLMConfigurationError("LLM API key is required")
@@ -103,9 +107,11 @@ class OpenAICompatibleLLMClient:
             raise LLMConfigurationError("unknown thinking mode")
         self._structured_output_mode = structured_output_mode
         self._thinking = thinking
-        # 只表示最近一次调用；调用开始时重置，由上层（Generator）负责汇总多次调用。
+        # Refers to the most recent call only; reset when a call starts, and the layer above
+        # (Generator) is responsible for aggregating multiple calls.
         self._last_usage: dict | None = None
-        # 诊断用：最近一次响应是否带 reasoning_content、结束原因；不进入业务合同。
+        # Diagnostics: whether the latest response carried reasoning_content, plus the finish
+        # reason; these do not enter the business contract.
         self.last_response_info: dict[str, Any] = {}
         self._model = model
         self._temperature = float(temperature)
@@ -113,26 +119,28 @@ class OpenAICompatibleLLMClient:
         self._client = _client or OpenAI(
             api_key=api_key,
             base_url=base_url,
-            # 显式禁用系统代理：Clash 等本地代理未运行时不再截断 TLS 握手。
+            # Explicitly disable system proxies: when a local proxy such as Clash is not running,
+            # the TLS handshake used to be truncated.
             http_client=httpx.Client(trust_env=False, timeout=float(timeout_seconds)),
-            # 本阶段错误直接向上报告，不引入隐藏的 SDK 自动重试与额外等待。
+            # Errors are reported upwards directly at this stage, with no hidden SDK automatic
+            # retries or extra waiting.
             max_retries=0,
         )
 
     @property
     def max_attempts(self) -> int:
-        """单次调用的最大尝试次数（在线脚本要求为 1，由脚本策略负责重试）。"""
+        """Maximum attempts for a single call (online scripts require 1, with retry handled by the script policy)."""
 
         return self._max_attempts
 
     @property
     def last_usage(self) -> dict | None:
-        """最近一次调用的 token 用量；服务未返回 usage 时为 None。"""
+        """Token usage of the most recent call; None when the service returned no usage."""
 
         return self._last_usage
 
     def generate(self, messages: Sequence[LLMMessage]) -> str:
-        """调用 Chat Completions，并把所有供应商/传输失败统一为 LLMRequestError。"""
+        """Call Chat Completions, normalising every provider/transport failure into LLMRequestError."""
 
         return self._complete(messages, {})
 
@@ -143,7 +151,7 @@ class OpenAICompatibleLLMClient:
         schema_name: str,
         json_schema: dict,
     ) -> str:
-        """按构造时固定的结构化输出模式请求 JSON，原样返回模型文本（解析由调用方负责）。"""
+        """Request JSON using the structured output mode fixed at construction time and return the model text verbatim (parsing is the caller's job)."""
 
         extra = build_structured_request_params(
             self._structured_output_mode,
@@ -154,14 +162,14 @@ class OpenAICompatibleLLMClient:
         return self._complete(messages, extra)
 
     def _complete(self, messages: Sequence[LLMMessage], extra: dict[str, Any]) -> str:
-        """共用的请求与瞬态重试逻辑；记录最近一次调用的 usage 与响应诊断。"""
+        """Shared request and transient-retry logic; records the latest call's usage and response diagnostics."""
 
         if not messages:
             raise LLMRequestError("LLM messages must not be empty")
         request_messages = [message.model_dump() for message in messages]
         request_extra = dict(extra)
         if self._thinking != "auto":
-            # DeepSeek 的 thinking 开关（OpenAI 格式）必须走 extra_body 透传。
+            # DeepSeek's thinking switch (OpenAI format) must be passed through extra_body.
             request_extra["extra_body"] = {"thinking": {"type": self._thinking}}
         self._last_usage = None
         self.last_response_info = {}
@@ -174,7 +182,8 @@ class OpenAICompatibleLLMClient:
                     temperature=self._temperature,
                     **request_extra,
                 )
-                # Chat Completion 正常路径要求至少一个 Choice 且 content 是非空纯文本。
+                # The normal Chat Completion path requires at least one Choice with non-empty
+                # plain-text content.
                 choice = response.choices[0]
                 content = choice.message.content
                 self._record_response(response, choice)
@@ -187,7 +196,8 @@ class OpenAICompatibleLLMClient:
                     "rate_limit",
                     "provider_5xx",
                 }
-                # 只对已证实可能瞬态的类别补一次尝试；配置及普通 4xx 立即失败。
+                # Retry once only for categories proven to be potentially transient; configuration
+                # errors and ordinary 4xx fail immediately.
                 if attempt >= self._max_attempts or not retryable:
                     raise LLMRequestError("OpenAI-compatible LLM request failed") from exc
         if not isinstance(content, str) or not content.strip():
@@ -195,7 +205,7 @@ class OpenAICompatibleLLMClient:
         return content
 
     def _record_response(self, response: Any, choice: Any) -> None:
-        """提取 usage 与 reasoning_content 诊断；任何字段缺失都按“没有”处理。"""
+        """Extract usage and reasoning_content diagnostics; any missing field is treated as "absent"."""
 
         usage = getattr(response, "usage", None)
         prompt_tokens = getattr(usage, "prompt_tokens", None)

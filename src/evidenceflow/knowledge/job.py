@@ -1,4 +1,4 @@
-"""Phase 15A 最小 BuildJob 状态模型与本地持久化。"""
+"""Minimal Phase 15A BuildJob state model and local persistence."""
 
 from __future__ import annotations
 
@@ -38,7 +38,8 @@ BuildJobStatus = Literal[
     "BLOCKED",
 ]
 
-# 同步构建允许的相邻状态；FAILED/BLOCKED 是终态，避免状态记录掩盖真实失败。
+# Neighbouring statuses allowed by a synchronous build; FAILED/BLOCKED are terminal so the status
+# record cannot hide a real failure.
 _ALLOWED_TRANSITIONS: dict[BuildJobStatus, frozenset[BuildJobStatus]] = {
     "PENDING": frozenset({"SCANNING", "FAILED", "BLOCKED"}),
     "SCANNING": frozenset({"PARSING", "FAILED", "BLOCKED"}),
@@ -55,13 +56,13 @@ _ALLOWED_TRANSITIONS: dict[BuildJobStatus, frozenset[BuildJobStatus]] = {
 
 
 def _utc_now() -> datetime:
-    """返回带时区的 UTC 时间，便于不同机器审计同一 Job。"""
+    """Return a timezone-aware UTC timestamp so the same Job can be audited from different machines."""
 
     return datetime.now(timezone.utc)
 
 
 class BuildJob(BaseModel):
-    """一次同步 staging build 的可审计状态，不承诺异步 worker 语义。"""
+    """Auditable state of one synchronous staging build; no async worker semantics are promised."""
 
     job_id: str = Field(min_length=1, description="本次构建运行的唯一 Job ID。")
     knowledge_base_id: str = Field(min_length=1, description="所属知识库逻辑身份。")
@@ -87,7 +88,7 @@ class BuildJob(BaseModel):
         document_count: int | None = None,
         chunk_count: int | None = None,
     ) -> "BuildJob":
-        """生成下一状态 Job，并拒绝跳过中间阶段或复用终态。"""
+        """Produce the next-state Job, refusing to skip intermediate stages or reuse a terminal state."""
 
         if status not in _ALLOWED_TRANSITIONS[self.status]:
             raise ValueError(f"invalid BuildJob transition: {self.status} -> {status}")
@@ -110,15 +111,15 @@ class BuildJob(BaseModel):
 
 
 class BuildJobStore:
-    """把 BuildJob 以单个 JSON 文件原子保存，供审计和未来 UI 读取。"""
+    """Persist a BuildJob as a single JSON file atomically, for auditing and future UI reads."""
 
     def __init__(self, path: str | Path) -> None:
-        """创建一个指向具体 Job JSON 文件的存储器。"""
+        """Create a store pointing at a concrete Job JSON file."""
 
         self.path = Path(path)
 
     def save(self, job: BuildJob) -> None:
-        """使用同目录临时文件替换目标，避免留下半截状态 JSON。"""
+        """Replace the target using a temporary file in the same directory, so no half-written state JSON is left behind."""
 
         self.path.parent.mkdir(parents=True, exist_ok=True)
         payload = job.model_dump_json(indent=2, exclude_none=False) + "\n"
@@ -141,16 +142,16 @@ class BuildJobStore:
             raise
 
     def load(self) -> BuildJob:
-        """读取并校验一个已持久化的 BuildJob。"""
+        """Read and validate a persisted BuildJob."""
 
         return BuildJob.model_validate_json(self.path.read_text(encoding="utf-8"))
 
 
 class BuildJobTracker:
-    """在同步流程中推进并持久化真实 BuildJob 状态。"""
+    """Advance and persist real BuildJob state inside a synchronous flow."""
 
     def __init__(self, job: BuildJob, store: BuildJobStore) -> None:
-        """注入当前 Job 和持久化后端；不启动任何后台任务。"""
+        """Inject the current Job and the persistence backend; starts no background task."""
 
         self.job = job
         self.store = store
@@ -166,7 +167,7 @@ class BuildJobTracker:
         target_collection_name: str,
         store: BuildJobStore,
     ) -> "BuildJobTracker":
-        """创建 PENDING Job 并立即落盘，保证构建从可审计状态开始。"""
+        """Create a PENDING Job and write it to disk immediately, so the build starts from an auditable state."""
 
         job = BuildJob(
             job_id=f"job-{uuid4().hex}",
@@ -179,14 +180,14 @@ class BuildJobTracker:
         return cls(job, store)
 
     def advance(self, status: BuildJobStatus, **kwargs: object) -> BuildJob:
-        """推进一个合法状态并保存最新 Job。"""
+        """Advance to a legal status and save the latest Job."""
 
         self.job = self.job.transition(status, **kwargs)
         self.store.save(self.job)
         return self.job
 
     def fail(self, error_code: str, error_message: str) -> BuildJob:
-        """将 Job 标记为 FAILED，保留失败原因而不伪造 READY。"""
+        """Mark the Job FAILED, preserving the failure reason instead of faking READY."""
 
         return self.advance(
             "FAILED",
@@ -195,7 +196,7 @@ class BuildJobTracker:
         )
 
     def block(self, error_code: str, error_message: str) -> BuildJob:
-        """将因外部前提或身份歧义停止的 Job 标记为 BLOCKED。"""
+        """Mark a Job BLOCKED when it stopped on an external precondition or ambiguous identity."""
 
         return self.advance(
             "BLOCKED",

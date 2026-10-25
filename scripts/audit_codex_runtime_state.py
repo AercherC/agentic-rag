@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
-"""只读盘点 Codex 运行态目录，并按 exact allowlist 分类。
+"""Read-only inventory of the Codex runtime-state directory, classified against an exact
+allowlist.
 
-本工具不删除、不移动、不修改 CODEX_HOME。默认保护 sessions、认证、配置、附件、
-SQLite 和插件；只有明确位于 ``cache``、``tmp``、``visualizations`` 等再生目录的
-文件才会成为 SAFE_CANDIDATE，且仍按 7/30 天保留规则仅给出建议动作。
+This tool does not delete, move or modify CODEX_HOME. By default it protects sessions,
+credentials, config, attachments, SQLite and plugins; only files that clearly live in
+regenerable directories such as ``cache``, ``tmp`` or ``visualizations`` become
+SAFE_CANDIDATE, and even then only a suggested action is reported per the 7/30 day retention
+rule.
 """
 
 from __future__ import annotations
@@ -53,48 +56,53 @@ PROTECTED_ROOT_FILES = {
 
 
 def resolve_codex_home(value: str | None = None) -> Path:
-    """按 CODEX_HOME → USERPROFILE → Path.home 顺序解析目录。"""
+    """Resolve the directory in the order CODEX_HOME -> USERPROFILE -> Path.home."""
 
     raw = value or os.environ.get("CODEX_HOME")
     return Path(raw).expanduser().resolve() if raw else (Path.home() / ".codex").resolve()
 
 
 def _is_sqlite_name(name: str) -> bool:
-    """识别所有 SQLite 主库及 WAL/SHM/备份变体。"""
+    """Recognize every SQLite main database plus its WAL/SHM/backup variants."""
 
     return bool(re.search(r"\.sqlite(?:\d+)?(?:[-.]|$)", name, re.IGNORECASE))
 
 
 def classify_path(relative_path: str) -> str:
-    """对相对 CODEX_HOME 路径分类，保护/审查优先于 SAFE allowlist。"""
+    """Classify a path relative to CODEX_HOME; protect/review takes precedence over the SAFE
+    allowlist."""
 
     rel = relative_path.replace("\\", "/").strip("/")
     parts = rel.split("/") if rel else []
     name = parts[-1] if parts else ""
 
-    # DENY 优先：会话、敏感状态和插件永远不能落入时间清理 allowlist。
+    # DENY takes precedence: sessions, sensitive state and plugins must never fall into the
+    # age-based cleanup allowlist.
     if any(part in PROTECTED_DIRS for part in parts):
         return "C-PROTECT"
     if len(parts) == 1 and name in PROTECTED_ROOT_FILES:
         return "C-PROTECT"
     if _is_sqlite_name(name):
-        # 内部 logs_*.sqlite 缺少稳定删除契约，单独标为 REVIEW 而非 SAFE。
+        # The internal logs_*.sqlite files lack a stable deletion contract, so they are marked
+        # REVIEW rather than SAFE.
         return "C-REVIEW" if name.lower().startswith("logs_") else "C-PROTECT"
 
-    # 这些目录可能参与 runtime bookkeeping；本轮只报告，不自动触碰。
+    # These directories may take part in runtime bookkeeping; this round only reports them and
+    # never touches them automatically.
     if any(part in REVIEW_DIRS for part in parts):
         return "C-REVIEW"
     if name == "models_cache.json" or name.startswith("logs_"):
         return "C-REVIEW"
 
-    # 只有 exact 顶层目录 allowlist 才能成为 SAFE_CANDIDATE。
+    # Only an exact top-level directory allowlist entry can become a SAFE_CANDIDATE.
     if parts and parts[0] in SAFE_DIRS:
         return "C-SAFE-CANDIDATE"
     return "C-REVIEW"
 
 
 def retention_action(age_days: float, classification: str) -> str:
-    """将 SAFE_CANDIDATE 映射到保留策略；其余分类完全不参与时间判断。"""
+    """Map SAFE_CANDIDATE to a retention policy; all other classifications are excluded from the
+    age-based decision entirely."""
 
     if classification != "C-SAFE-CANDIDATE":
         return "DO_NOT_AUTO_DELETE"
@@ -106,7 +114,7 @@ def retention_action(age_days: float, classification: str) -> str:
 
 
 def sha256_of(path: Path) -> str:
-    """流式计算文件摘要；不把文件内容写入项目产物。"""
+    """Stream the file digest; file content is never written into project artifacts."""
 
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -116,7 +124,8 @@ def sha256_of(path: Path) -> str:
 
 
 def iter_files(root: Path):
-    """遍历目录文件且不跟随目录链接，避免越过 CODEX_HOME 边界。"""
+    """Walk the directory without following directory links, so the CODEX_HOME boundary is never
+    crossed."""
 
     if not root.is_dir():
         return
@@ -127,7 +136,8 @@ def iter_files(root: Path):
 
 
 def inventory_codex_home(codex_home: Path, *, now: datetime | None = None) -> dict[str, Any]:
-    """生成运行态文件清单、分类、大小汇总和安全快照元数据。"""
+    """Produce the runtime-state file inventory, its classifications, size rollups and
+    safety-snapshot metadata."""
 
     now = now or datetime.now(timezone.utc)
     records: list[dict[str, Any]] = []
@@ -158,7 +168,7 @@ def inventory_codex_home(codex_home: Path, *, now: datetime | None = None) -> di
 
 
 def _protected_snapshot(codex_home: Path, inventory: dict[str, Any]) -> dict[str, Any]:
-    """生成不含敏感正文的清理前快照。"""
+    """Produce a pre-cleanup snapshot that contains no sensitive content."""
 
     files = inventory["files"]
     protected = [item for item in files if item["classification"] == "C-PROTECT"]
@@ -211,7 +221,8 @@ def _protected_snapshot(codex_home: Path, inventory: dict[str, Any]) -> dict[str
 
 
 def write_inventory_artifacts(inventory: dict[str, Any], codex_home: Path, output_dir: Path) -> None:
-    """写入五份分类产物与清理快照；不写入 auth/config 正文。"""
+    """Write the five classification artifacts and the cleanup snapshot; auth/config content is
+    never written."""
 
     output_dir.mkdir(parents=True, exist_ok=True)
     files = inventory["files"]
@@ -260,7 +271,7 @@ def write_inventory_artifacts(inventory: dict[str, Any], codex_home: Path, outpu
 
 
 def main() -> int:
-    """执行只读 Codex 运行态盘点。"""
+    """Run the read-only Codex runtime-state inventory."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--codex-home", default=None, help="覆盖 CODEX_HOME 路径")

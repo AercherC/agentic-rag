@@ -1,4 +1,4 @@
-"""文档 Chunk 与检索结果的 Domain Models。"""
+"""Domain Models for document Chunks and retrieval results."""
 
 from typing import Any
 
@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, model_validator
 
 
 class DocumentChunk(BaseModel):
-    """受 Token 数限制且可追踪来源页码的文档片段。"""
+    """A document fragment bounded by token count that still tracks its source pages."""
 
     chunk_id: str = Field(
         min_length=1,
@@ -44,19 +44,21 @@ class DocumentChunk(BaseModel):
 
     @model_validator(mode="after")
     def validate_page_range(self) -> "DocumentChunk":
-        """保证页码要么是完整有序范围，要么整体为空。"""
+        """Guarantees the pages are either a complete ordered range or entirely empty."""
 
-        # Markdown/TXT 两端都为 None；PDF 两端必须同时存在，避免半截页码范围。
+        # Markdown/TXT leave both ends as None; PDF must set both, so a half page range cannot slip
+        # through.
         if (self.page_start is None) != (self.page_end is None):
             raise ValueError("page_start and page_end must both be set or both be None")
-        # PDF 使用用户可读的正向页码范围，跨页 Chunk 也必须从小到大记录。
+        # PDF uses a forward, user-readable page range; a Chunk spanning pages must also be
+        # recorded from small to large.
         if self.page_start is not None and self.page_start > self.page_end:
             raise ValueError("page_start must be less than or equal to page_end")
         return self
 
 
 class RetrievedChunk(BaseModel):
-    """某个 DocumentChunk 针对一次查询的排序结果。"""
+    """The ranking of one DocumentChunk for a single query."""
 
     chunk: DocumentChunk = Field(description="检索返回的项目内部 DocumentChunk。")
     rank: int = Field(ge=1, description="1-based 检索名次，1 表示最佳匹配。")
@@ -67,7 +69,7 @@ class RetrievedChunk(BaseModel):
 
 
 class RerankedRetrievedChunk(BaseModel):
-    """保存 Dense 候选证据与 Learned Reranker 最终排序。"""
+    """Keeps the Dense candidate evidence together with the final Learned Reranker ranking."""
 
     chunk: DocumentChunk = Field(description="重排候选对应的内部 DocumentChunk。")
     rank: int = Field(ge=1, description="Reranker 输出的 1-based 最终名次。")

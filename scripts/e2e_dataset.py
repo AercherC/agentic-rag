@@ -1,29 +1,39 @@
-"""rag_e2e_v1 题集工具：确定性校验（validate）与证据映射（map）。PROJECT_SPEC §13.1(a)(b)(c)。
+"""rag_e2e_v1 dataset tool: deterministic validation (validate) and evidence mapping (map).
 
-子命令：
+PROJECT_SPEC §13.1(a)(b)(c).
+
+Subcommands:
 - ``validate --dataset PATH [--require-approved] --report OUT.json [--source-root DIR] [--overwrite]``
-  对题集做全部确定性检查（不抛错、汇总问题），把 ``ValidationReport`` 写成键排序 JSON。
-  answer_keys 规则 ① 所需的页文本由 ``load_document``（未经 clean，与 canonical Gold v3 映射同一文本
-  基础）读取 ``--source-root``（默认 ``Settings.source_docs_path``）下的源文档。
-  题集带 fingerprint 时一并校验（不一致记为问题）。
+  runs every deterministic check on the dataset (collecting issues instead of raising) and writes a
+  ``ValidationReport`` as key-sorted JSON. For answer_keys rule 1, page text is read by
+  ``load_document`` (uncleaned, i.e. the same text basis as the canonical Gold v3 mapping) from the
+  source documents under ``--source-root`` (default ``Settings.source_docs_path``). When the dataset
+  carries a fingerprint, it is checked as well (a mismatch is recorded as an issue).
 - ``map --dataset PATH --out OUT.json [--source-root DIR] [--overwrite]``
-  用 ``runtime.resolve_active_collection`` 确定 active collection，以 ``create_if_missing=False`` 只读打开并
-  ``iter_all_chunks``；``index_signature`` / ``chunk_count`` / ``document_count`` 取自 lifecycle 状态文件
-  active 指针，并用实测 chunk 集合复核（数量不一致即失败）；``chunk_id_hash`` 按 A1 基线口径实测，
-  active manifest 记录该值时一并比对；源文档同上加载；复用 ``stable_mapping`` 生成 ``E2EMapping``
-  写成键排序 JSON。不加载任何模型、不发任何请求。
+  resolves the active collection via ``runtime.resolve_active_collection``, opens it read-only with
+  ``create_if_missing=False`` and calls ``iter_all_chunks``. ``index_signature`` / ``chunk_count`` /
+  ``document_count`` come from the active pointer in the lifecycle state file, and are re-verified
+  against the chunk set actually read (any count mismatch fails the run). ``chunk_id_hash`` is
+  measured under the A1 baseline convention and, when the active manifest records it, compared as
+  well; the source documents are loaded as above; ``stable_mapping`` is reused to build an
+  ``E2EMapping``, which is written as key-sorted JSON. No model is loaded and no request is issued.
 
-输出保护（两个子命令相同，且在读取题集、加载文档、连接 Chroma 之前完成判断）：
-- 输出路径解析后位于仓库 ``evals/`` 下 → 一律拒绝（无论文件是否已存在；冻结产物不可写入）；
-- 其他输出文件已存在且未传 ``--overwrite`` → 拒绝。
+Output protection (identical for both subcommands, and decided before reading the dataset, loading
+documents or connecting to Chroma):
+- an output path that resolves under the repository's ``evals/`` is always refused (regardless of
+  whether the file exists; frozen artifacts must not be written);
+- any other output file that already exists without ``--overwrite`` is refused.
 
-退出码：
-- 0：validate 没有任何问题；map 成功写出且至少有 1 条可用映射、无 SOURCE_EXTRACTION_FAILURE；
-- 2：validate 发现问题（报告照常写出）；输出保护拒绝（stderr ``REFUSED: <消息>``，什么都没写）；
-  map 的映射文件仍照常写出但 usable=0 或存在 SOURCE_EXTRACTION_FAILURE（stderr ``REFUSED: <原因>``，
-  便于诊断；此时映射不可用于计分）；
-- 1：运行错误（题集无法解析、状态文件不可读、collection 不存在、fingerprint 不一致、
-  chunk_count / document_count 与 active 指针不一致等；stderr ``FAILED: <异常类型>: <消息>``）。
+Exit codes:
+- 0: validate found no issue; map wrote its output and has at least 1 usable mapping with no
+  SOURCE_EXTRACTION_FAILURE;
+- 2: validate found issues (the report is still written); output protection refused (stderr
+  ``REFUSED: <message>``, nothing written); map still wrote its mapping file but usable=0 or a
+  SOURCE_EXTRACTION_FAILURE exists (stderr ``REFUSED: <reason>`` for diagnosis; the mapping cannot
+  be used for scoring in that case);
+- 1: runtime error (dataset cannot be parsed, state file unreadable, collection missing, fingerprint
+  mismatch, chunk_count / document_count disagreeing with the active pointer, etc.; stderr
+  ``FAILED: <exception type>: <message>``).
 """
 
 from __future__ import annotations
@@ -51,20 +61,25 @@ from evidenceflow.knowledge import LifecycleState  # noqa: E402
 from evidenceflow.runtime import resolve_active_collection  # noqa: E402
 from evidenceflow.storage.chroma import ChromaVectorStore  # noqa: E402
 
-# 冻结产物根目录：其下已存在的文件一律不可覆盖。
+# Root directory of frozen artifacts: any file already existing under it must never be overwritten.
 EVALS_ROOT = ROOT / "evals"
 EXIT_OK, EXIT_ERROR, EXIT_ISSUES_OR_REFUSED = 0, 1, 2
 
 
 class OutputRefused(Exception):
-    """输出保护拒绝写入；此时尚未读取任何输入或连接 Chroma。"""
+    """Refuse a write under output protection.
+
+    At this point no input has been read and no Chroma connection has been opened.
+    """
 
 
 def check_output(path: Path, *, overwrite: bool) -> None:
-    """输出保护：`evals/` 下任何路径绝不写入；其他已存在文件需显式 `--overwrite`。
+    """Output protection.
 
-    先做 `evals/` 判断而不是先看文件是否存在：B3b 的冻结写入必须由将来的 `freeze` 子命令完成，
-    普通工具即使目标文件尚未创建也不得往冻结目录里写。
+    Never write any path under `evals/`; other existing files need explicit `--overwrite`. The
+    `evals/` check comes before checking whether the file exists: B3b's frozen write must be done by
+    the future `freeze` subcommand, so an ordinary tool must not write into the frozen directory even
+    when the target file has not been created yet.
     """
 
     resolved = path.resolve()
@@ -75,19 +90,23 @@ def check_output(path: Path, *, overwrite: bool) -> None:
 
 
 def write_json(path: Path, payload: dict) -> None:
-    """UTF-8、键排序、缩进 2、固定 LF 换行，保证同一输入在任意 OS 上产出同一字节。"""
+    """UTF-8, sorted keys, indent 2, fixed LF newlines, so the same input yields the same bytes on
+    any OS.
+    """
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    # newline="\n" 阻止 Windows 把 \n 翻译成 \r\n；否则 dataset.sha256 会随 OS 漂移。
+    # newline="\n" stops Windows from translating \n into \r\n; otherwise dataset.sha256 would
+    # drift per OS.
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
                     encoding="utf-8", newline="\n")
 
 
 def load_source_documents(source_root: Path) -> list[Document]:
-    """按相对路径字典序加载 root 下全部受支持的源文档。
+    """Load every supported source document under root, in lexicographic relative-path order.
 
-    只用 ``load_document``、不做 ``clean_document``：canonical Gold v3（``experiments/stabilize_gold_v3.py``）
-    的锚点定位与 ``content_version`` 都基于未清洗的 Loader 输出，校验与映射必须用同一文本基础。
+    Only ``load_document`` is used and ``clean_document`` is not: both the anchor location and the
+    ``content_version`` of canonical Gold v3 (``experiments/stabilize_gold_v3.py``) are based on the
+    uncleaned Loader output, so validation and mapping must use the same text basis.
     """
 
     paths = sorted(p for p in source_root.rglob("*") if p.is_file() and p.suffix.lower() in SUPPORTED_FILE_TYPES)
@@ -95,7 +114,9 @@ def load_source_documents(source_root: Path) -> list[Document]:
 
 
 def make_page_text_provider(documents: list[Document]):
-    """构造 ``page_text_provider``：与 ``validate_source`` 相同，按页用 ``"\\n"`` 拼接 Segment 原文。"""
+    """Build the ``page_text_provider``: as in ``validate_source``, join Segment text per page with
+    ``"\\n"``.
+    """
 
     by_id = {d.document_id: d for d in documents}
 
@@ -104,7 +125,7 @@ def make_page_text_provider(documents: list[Document]):
         if document is None:
             raise KeyError(f"document {document_id} not found under source root")
         if page_start is None:
-            # MD/TXT 无页码：§13.1(c)① 规定取整篇。
+            # MD/TXT have no page numbers: §13.1(c) rule 1 requires taking the whole document.
             return "\n".join(s.content for s in document.segments)
         return "\n".join(s.content for s in document.segments
                          if s.page_number is not None and page_start <= s.page_number <= page_end)
@@ -113,17 +134,23 @@ def make_page_text_provider(documents: list[Document]):
 
 
 def read_dataset(path: Path) -> E2EDataset:
-    """读取题集，不在此处强制校验 fingerprint（由各子命令按语义处理）。"""
+    """Read the dataset without enforcing the fingerprint here.
+
+    Each subcommand handles the fingerprint according to its own semantics.
+    """
 
     return E2EDataset.model_validate_json(path.read_text(encoding="utf-8"))
 
 
 def read_manifest_chunk_id_hash(manifest_path: str | None) -> str | None:
-    """从 active manifest 读取 `chunk_id_hash`（若记录）；兼容顶层与 `index` 两种位置。
+    """Read `chunk_id_hash` from the active manifest (if recorded).
 
-    manifest 只是可选证据：当前 `artifacts/phase15a/active_manifest.json` 没有记录 chunk_id_hash，
-    此时返回 None，只把实测值写进映射文件，不自造期望值；只有当 manifest 明确记录时才参与比对。
-    `manifest_path` 为相对路径时按仓库根目录解析（与 lifecycle 指针的写法一致）。
+    Both the top-level and the `index` placement are accepted. The manifest is only optional
+    evidence: the current `artifacts/phase15a/active_manifest.json` does not record chunk_id_hash,
+    in which case None is returned and only the measured value is written into the mapping file -
+    no expected value is invented; the comparison only happens when the manifest records it
+    explicitly. A relative `manifest_path` is resolved against the repository root (matching how the
+    lifecycle pointer writes it).
     """
 
     if not manifest_path:
@@ -145,12 +172,14 @@ def read_manifest_chunk_id_hash(manifest_path: str | None) -> str | None:
 
 
 def run_validate(args: argparse.Namespace) -> int:
-    """validate 子命令；问题写进报告并以退出码 2 表示。
+    """The validate subcommand; issues go into the report and are signalled with exit code 2.
 
-    ``--allow-machine`` 必须显式给出：D3 修订后题集的 `approved_by` 是 `machine`，
-    而 `validate_dataset` 的默认语义只接受 `user`。不暴露这个开关，机器验收的题集
-    就永远无法通过校验——B3b 冻结会卡在 `not_approved` 上。
-    ``--enforce-grounding`` 对应 SPEC §13.1(c′) 的四条接地规则，冻结前必须打开。
+    ``--allow-machine`` must be given explicitly: after the D3 revision the dataset's `approved_by`
+    is `machine`, while `validate_dataset` by default only accepts `user`. Without exposing this
+    switch, a machine-accepted dataset could never pass validation - the B3b freeze would be stuck
+    on `not_approved`.
+    ``--enforce-grounding`` corresponds to the four grounding rules of SPEC §13.1(c′) and must be on
+    before freezing.
     """
 
     dataset = read_dataset(args.dataset)
@@ -169,10 +198,11 @@ def run_validate(args: argparse.Namespace) -> int:
 
 
 def run_map(args: argparse.Namespace) -> int:
-    """map 子命令：只读打开 active collection，生成与题集分离的映射文件。"""
+    """The map subcommand: open the active collection read-only and write a separate mapping."""
 
     dataset = read_dataset(args.dataset)
-    # 题集已带 fingerprint 时必须与内容一致，否则映射会绑定到错误的题集身份。
+    # When the dataset already carries a fingerprint it must match the content, otherwise the
+    # mapping would bind to the wrong dataset identity.
     fingerprint = compute_fingerprint(dataset)
     if dataset.fingerprint is not None and dataset.fingerprint != fingerprint:
         raise ValueError(f"dataset fingerprint mismatch: recorded {dataset.fingerprint}, computed {fingerprint}")
@@ -180,19 +210,22 @@ def run_map(args: argparse.Namespace) -> int:
     collection_name = resolve_active_collection(settings)
     state_path = Path(settings.index_state_path)
     if not state_path.is_file():
-        # 没有 lifecycle 状态文件就没有可信的 index_signature，拒绝生成无法绑定索引身份的映射。
+        # Without the lifecycle state file there is no trustworthy index_signature, so refuse to
+        # produce a mapping that cannot bind an index identity.
         raise FileNotFoundError(f"lifecycle state file {state_path} not found; index_signature unavailable")
     state = LifecycleState.model_validate_json(state_path.read_text(encoding="utf-8"))
     if state.active.collection_name != collection_name:
         raise RuntimeError("resolved collection differs from lifecycle active pointer")
     db_path = Path(settings.vector_db_path)
     if not db_path.is_dir():
-        # ChromaVectorStore 会 mkdir 持久化目录；目录不存在时直接失败，保持只读语义。
+        # ChromaVectorStore would mkdir the persistence directory; fail fast when it is missing so
+        # the read-only semantics hold.
         raise FileNotFoundError(f"vector_db_path {db_path} does not exist")
     store = ChromaVectorStore(db_path, collection_name, create_if_missing=False)
     chunks = list(store.iter_all_chunks())
-    # 身份核对：mapping 的 chunk_count / document_count 必须与 lifecycle active 指针一致。
-    # 指针抄写本身不可信；这里用真实读到的 chunk 集合复核，不一致说明指针与索引已漂移。
+    # Identity check: the mapping's chunk_count / document_count must agree with the lifecycle
+    # active pointer. The pointer's own transcription is not trustworthy; the chunk set actually
+    # read is used to re-verify, and a mismatch means pointer and index have drifted apart.
     if len(chunks) != state.active.chunk_count:
         raise ValueError(f"chunk_count mismatch: active pointer {state.active.chunk_count}, store {len(chunks)}")
     actual_document_count = len({chunk.document_id for chunk in chunks})
@@ -200,7 +233,8 @@ def run_map(args: argparse.Namespace) -> int:
         raise ValueError(
             f"document_count mismatch: active pointer {state.active.document_count}, store {actual_document_count}"
         )
-    # chunk_id_hash 只有 manifest 明确记录时才作为期望值；否则只记录实测值。
+    # chunk_id_hash serves as an expected value only when the manifest records it explicitly;
+    # otherwise only the measured value is recorded.
     expected_chunk_id_hash = read_manifest_chunk_id_hash(state.active.manifest_path)
     source_root = args.source_root or Path(settings.source_docs_path)
     documents = load_source_documents(source_root)
@@ -209,15 +243,17 @@ def run_map(args: argparse.Namespace) -> int:
                           expected_chunk_count=state.active.chunk_count,
                           expected_chunk_id_hash=expected_chunk_id_hash)
     write_json(args.out, mapping.model_dump(mode="json"))
-    # 统计可用/不可用记录（证据组 + claim 锚点）：B3b 需要这组数字记录映射率与诊断。
+    # Count usable/unusable records (evidence groups + claim anchors): B3b needs these numbers to
+    # record the mapping rate and diagnostics.
     records = [*mapping.groups, *mapping.claim_anchors]
     usable = sum(1 for record in records if is_usable(record.status))
     source_failures = sum(1 for record in records if record.status == "SOURCE_EXTRACTION_FAILURE")
     unusable = len(records) - usable
     print(f"groups={len(mapping.groups)} claim_anchors={len(mapping.claim_anchors)} usable={usable} "
           f"unusable={unusable} source_failures={source_failures} out={args.out}")
-    # 映射文件已写出（便于诊断），但以下两种情况不允许把该映射当作成功产物：全不可用，或
-    # 存在源文本抽取失败。退出码 2 表示“有问题/被拒绝”，与 validate 的语义一致。
+    # The mapping file has been written (for diagnosis), but in the two cases below it must not be
+    # treated as a successful artifact: either nothing is usable, or a source-text extraction
+    # failure is present. Exit code 2 means "has issues / refused", consistent with validate.
     if usable == 0:
         print("REFUSED: mapping has no usable record (usable=0)", file=sys.stderr)
         return EXIT_ISSUES_OR_REFUSED
@@ -229,24 +265,29 @@ def run_map(args: argparse.Namespace) -> int:
 
 
 def run_freeze(args: argparse.Namespace) -> int:
-    """freeze 子命令：B3b 的唯一写入口，把校验通过的题集冻结到 ``evals/`` 下。
+    """The freeze subcommand: B3b's only write entry point.
 
-    这是**唯一**绕过 `check_output` 的 ``evals/`` 保护路径，因此保护条件极其严格：
-    1. 目标目录必须**不存在**（一旦冻结就不能覆盖；要改只能新开版本目录）；
-    2. 题集必须先通过全部确定性校验（`validate_dataset` 的 issues 为 0），否则拒绝落盘；
-    3. `dataset.sha256` 必须与**磁盘上那份文件的字节**一致——因此先写 `dataset.json`
-       （固定 LF），再读回字节算 sha256，最后写 `dataset.sha256`。顺序反了就会写出一个
-       与实际文件不匹配的校验值；
-    4. `fingerprint` 必须与内容一致，避免把"内容与指纹不符"的题集冻进 `evals/`。
+    It freezes a validated dataset under ``evals/``. This is the **only** path that bypasses
+    `check_output`'s ``evals/`` protection, so its preconditions are extremely strict:
+    1. the target directory must **not exist** (once frozen it cannot be overwritten; changes
+       require a new version directory);
+    2. the dataset must first pass every deterministic check (`validate_dataset` reports 0 issues);
+       otherwise nothing is written to disk;
+    3. `dataset.sha256` must match the **bytes of the file on disk** - so `dataset.json` is written
+       first (fixed LF), then read back to compute the sha256, and only then is `dataset.sha256`
+       written. The reverse order would record a checksum that does not match the actual file;
+    4. `fingerprint` must match the content, so a dataset whose "content and fingerprint disagree"
+       cannot be frozen into `evals/`.
 
-    产物（与计划 §6 交付物一致）：`dataset.json`、`dataset.sha256`、`README.md`；
-    映射文件由 `map` 单独产出后由调用方复制进来（本命令不生成 mapping，避免职责混淆）。
+    Artifacts (matching the plan §6 deliverables): `dataset.json`, `dataset.sha256`, `README.md`;
+    the mapping file is produced separately by `map` and copied in by the caller (this command does
+    not generate a mapping, keeping responsibilities clear).
     """
 
     if args.target.exists():
         raise OutputRefused(f"{args.target} already exists; frozen datasets must not be overwritten")
     dataset = read_dataset(args.dataset)
-    # 指纹先行：内容与指纹不符时后面的校验都没有意义。
+    # Fingerprint first: if content and fingerprint disagree, the later checks are meaningless.
     fingerprint = compute_fingerprint(dataset)
     if dataset.fingerprint is not None and dataset.fingerprint != fingerprint:
         raise ValueError(
@@ -258,19 +299,21 @@ def run_freeze(args: argparse.Namespace) -> int:
         dataset, provider, require_approved=True, allow_machine=True, enforce_grounding=True
     )
     if not report.ok:
-        # 只挑前几条打印，避免刷屏；完整问题由调用方先用 `validate` 落到报告里查看。
+        # Print only the first few issues to avoid flooding the output; the caller should inspect
+        # the full set in the report written by `validate` first.
         preview = "; ".join(f"{issue.rule}:{issue.case_id or '-'}" for issue in report.issues[:5])
         raise OutputRefused(f"dataset failed validation ({report.issue_count} issues): {preview}")
 
     args.target.mkdir(parents=True)
     dataset_path = args.target / "dataset.json"
-    # 与 e2e_draft.write_dataset 同口径：UTF-8、键排序、缩进 2、固定 LF。
+    # Same basis as e2e_draft.write_dataset: UTF-8, sorted keys, indent 2, fixed LF.
     payload = dataset.model_dump(mode="json")
     dataset_path.write_text(
         json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
         encoding="utf-8", newline="\n",
     )
-    # sha256 必须对**落盘后的字节**计算；先读回再算，才能保证与文件实际内容一致。
+    # sha256 must be computed over the **bytes written to disk**; reading back before hashing
+    # keeps it consistent with the file's actual content.
     digest = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
     (args.target / "dataset.sha256").write_text(f"{digest}  dataset.json\n", encoding="utf-8", newline="\n")
     (args.target / "README.md").write_text(
@@ -285,7 +328,10 @@ def run_freeze(args: argparse.Namespace) -> int:
 
 
 def _render_freeze_readme(dataset, *, fingerprint: str, digest: str, report) -> str:
-    """生成冻结目录的 README：规模、分布、已知局限与校验值（不写时间戳，保证可复算）。"""
+    """Render the frozen directory's README: scale, distributions, known limitations and checksums.
+
+    No timestamp is written, keeping the file recomputable.
+    """
 
     from collections import Counter
 
@@ -343,7 +389,7 @@ def _render_freeze_readme(dataset, *, fingerprint: str, digest: str, report) -> 
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """命令行参数。"""
+    """Command-line arguments."""
 
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -371,18 +417,22 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """入口：先做输出保护，再执行子命令；错误统一转成一行 stderr。"""
+    """Entry point: apply output protection first, then run the subcommand.
+
+    Errors become a single stderr line.
+    """
 
     args = build_parser().parse_args(argv)
     if args.command == "freeze":
-        # freeze 是唯一允许写 evals/ 的路径，因此**不能**走 check_output 的 evals/ 拒绝逻辑。
-        # 它的保护条件是「目标目录必须不存在」+「校验必须通过」，由 run_freeze 自己执行。
+        # freeze is the only path allowed to write evals/, so it **must not** go through
+        # check_output's evals/ refusal logic. Its preconditions are "the target directory must not
+        # exist" plus "validation must pass", enforced by run_freeze itself.
         try:
             return run_freeze(args)
         except OutputRefused as exc:
             print(f"REFUSED: {exc}", file=sys.stderr)
             return EXIT_ISSUES_OR_REFUSED
-        except Exception as exc:  # noqa: BLE001 - CLI 边界统一转换为退出码 1
+        except Exception as exc:  # noqa: BLE001 - the CLI boundary converts uniformly to exit code 1
             print(f"FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
             return EXIT_ERROR
     output = args.report if args.command == "validate" else args.out
@@ -393,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
         return EXIT_ISSUES_OR_REFUSED
     try:
         return run_validate(args) if args.command == "validate" else run_map(args)
-    except Exception as exc:  # noqa: BLE001 - CLI 边界统一转换为退出码 1
+    except Exception as exc:  # noqa: BLE001 - the CLI boundary converts uniformly to exit code 1
         print(f"FAILED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return EXIT_ERROR
 

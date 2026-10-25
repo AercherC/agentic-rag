@@ -1,7 +1,8 @@
-"""一次 RAG 提问的只读观测记录（RunTrace，PROJECT_SPEC §12.5）。
+"""Read-only observation record of one RAG question (RunTrace, PROJECT_SPEC §12.5).
 
-RunTrace 只用于观测，不进入 RAGAnswer 或任何现有 Domain Model；payload 只允许
-§12.5 白名单内的 ID、计数、分数、耗时与 token 用量，不含任何正文或密钥。
+RunTrace is used for observation only and never enters RAGAnswer or any existing Domain
+Model; payloads may only carry the IDs, counters, scores, durations, and token usage on the
+§12.5 whitelist, and never any body text or secrets.
 """
 
 from __future__ import annotations
@@ -14,7 +15,7 @@ RUN_TRACE_SCHEMA_VERSION = "run-trace-v1"
 
 
 class TraceEvent(BaseModel):
-    """RunTrace 中的单个事件；名称取自 §12.5 的事件名列表。"""
+    """A single event in a RunTrace; the name comes from the event-name list in §12.5."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -31,7 +32,7 @@ class TraceEvent(BaseModel):
 
 
 class RunTrace(BaseModel):
-    """一次提问的完整事件序列与身份信息。"""
+    """The full event sequence and identity information of one question."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -39,7 +40,8 @@ class RunTrace(BaseModel):
         default=RUN_TRACE_SCHEMA_VERSION, description="RunTrace JSON 格式版本。"
     )
     run_id: str = Field(min_length=1, description="调用方传入的 run 标识，未传时为 uuid4。")
-    # 只保存 query 的 UTF-8 sha256，不保存原文，避免 trace 文件泄露用户问题。
+    # Store only the UTF-8 sha256 of the query, never the raw text, so trace files cannot leak user
+    # questions.
     query_sha256: str = Field(
         pattern=r"^[0-9a-f]{64}$", description="UTF-8 编码 query 的 sha256 十六进制摘要。"
     )

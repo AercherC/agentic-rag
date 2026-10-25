@@ -1,4 +1,4 @@
-"""对显式人工/校准标注计算质量指标，不用非空文本推断正确或拒答。"""
+"""Compute quality metrics over explicit human or calibration labels; never infer correctness or abstention from non-empty text."""
 
 from typing import Literal
 
@@ -9,14 +9,14 @@ from evidenceflow.eval.v2 import ranking_metrics
 
 
 class CitationJudgment(ContractModel):
-    """一个 Claim 与一个引用之间的校验结果。"""
+    """The verification result between one Claim and one citation."""
 
     label_valid: bool = Field(description="标签是否来自实际 Context。")
     supports_claim: bool = Field(description="标注者判断引用是否支持对应 Claim。")
 
 
 class ClaimJudgment(ContractModel):
-    """逐 Claim 真值判断；正确性和 Context 支持性独立标注。"""
+    """Per-Claim ground-truth judgment; correctness and Context support are labelled independently."""
 
     correct: bool = Field(description="是否符合参考真值。")
     grounded: bool = Field(description="是否由实际 Context 支持。")
@@ -26,7 +26,7 @@ class ClaimJudgment(ContractModel):
 
 def answer_metrics(claims: list[ClaimJudgment], reference_claim_covered: list[bool], *,
                    annotation_source: str) -> dict:
-    """汇总完整标注集；缺少分母时返回 null，不伪造已测分数。"""
+    """Aggregate a complete annotation set; return null when a denominator is missing instead of inventing a measured score."""
     if not annotation_source.strip():
         raise ValueError("annotation provenance is required")
     def ratio(numerator, denominator):
@@ -53,7 +53,7 @@ def answer_metrics(claims: list[ClaimJudgment], reference_claim_covered: list[bo
 
 def abstention_metrics(rows: list[tuple[Literal["answerable", "unanswerable"],
                                        Literal["ANSWERED", "INSUFFICIENT_CONTEXT", "ERROR"]]]) -> dict:
-    """错误单独计数，拒答必须由显式状态给出。"""
+    """Errors are counted separately, and abstention must come from an explicit status."""
     if any(a not in {"answerable", "unanswerable"} or s not in {"ANSWERED", "INSUFFICIENT_CONTEXT", "ERROR"} for a, s in rows):
         raise ValueError("unknown answerability/status")
     valid = [(a, s) for a, s in rows if s != "ERROR"]
@@ -68,12 +68,13 @@ def abstention_metrics(rows: list[tuple[Literal["answerable", "unanswerable"],
 
 def context_metrics(chunk_ids: list[str], groups: list[list[list[str]]], *,
                     generation_token_count: int, token_estimator: str) -> dict:
-    """评估实际纳入的 Context；Token 数由生成模型计数器或具名估算器提供。"""
+    """Evaluate the Context that was actually included; the token count comes from the generation-model counter or a named estimator."""
     if type(generation_token_count) is not int or generation_token_count < 0 or not token_estimator.strip():
         raise ValueError("generation token count and estimator are required")
     coverage = ranking_metrics(chunk_ids, groups, (max(1, len(chunk_ids)),))
     known = {cid for group in groups for bundle in group for cid in bundle}
-    # 冗余仅定义为同组已覆盖后又出现的单块替代证据；不惩罚同文档本身。
+    # Redundancy only means a single-block substitute evidence piece that reappears after its group
+    # was already covered; the same document alone is not penalized.
     duplicate = 0
     seen = set()
     for cid in chunk_ids:

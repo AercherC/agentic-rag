@@ -1,4 +1,4 @@
-"""统一导出项目公共 Domain Models 与确定性 ID 工具。"""
+"""Public re-exports of the project's Domain Models and deterministic ID helpers."""
 
 from evidenceflow.domain.answer import RAGAnswer, SourceReference
 from evidenceflow.domain.chunk import (

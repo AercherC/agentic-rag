@@ -1,4 +1,4 @@
-"""从冻结排名计算分层 v2 指标；不调用检索器或真实生成模型。"""
+"""Compute layered v2 metrics from frozen rankings; never calls a retriever or a real generation model."""
 
 import json
 from pathlib import Path
@@ -8,7 +8,7 @@ from evidenceflow.eval.metrics import custom_bundle_ndcg
 
 
 def ranking_metrics(ranked_ids: list[str], groups: list[list[list[str]]], depths=(5, 20)) -> dict:
-    """计算证据集合覆盖；碎片组仅在所有片段到齐后获得覆盖。"""
+    """Compute evidence-set coverage; a fragmented group is only covered once all its fragments are present."""
     if not groups or any(not group or any(not bundle for bundle in group) for group in groups):
         raise ValueError("only fully resolvable groups can be scored")
     if len(set(ranked_ids)) != len(ranked_ids):
@@ -16,14 +16,16 @@ def ranking_metrics(ranked_ids: list[str], groups: list[list[list[str]]], depths
     if not depths or len(set(depths)) != len(depths) or any(type(k) is not int or k <= 0 for k in depths):
         raise ValueError("depths must be unique positive integers")
     positions = {cid: rank for rank, cid in enumerate(ranked_ids, 1)}
-    # 一个 bundle 是 AND，同组多个 bundle 是 OR；覆盖排名取最早完整集合。
+    # A single bundle is an AND, multiple bundles in the same group are an OR; the coverage rank is
+    # the earliest complete set.
     group_ranks = []
     for group in groups:
         ranks = [max(positions[cid] for cid in bundle) for bundle in group
                  if all(cid in positions for cid in bundle)]
         group_ranks.append(min(ranks) if ranks else None)
     known_ids = {cid for group in groups for bundle in group for cid in bundle}
-    # 标准 RR 看首个相关 Chunk；完整组指标另行等待片段到齐。
+    # Standard RR looks at the first relevant Chunk; the complete-group metrics separately wait for
+    # all fragments.
     first = min((rank for cid, rank in positions.items() if cid in known_ids), default=None)
     complete = max(group_ranks) if all(rank is not None for rank in group_ranks) else None
     output = {"first_evidence_rank": first, "complete_evidence_rank": complete}
@@ -42,7 +44,7 @@ def ranking_metrics(ranked_ids: list[str], groups: list[list[list[str]]], depths
 
 def evaluate_rankings(dataset: EvaluationDatasetV2, mapping: MappingArtifact,
                       rankings: dict[str, list[str]], *, depths=(5, 20), configuration=None) -> dict:
-    """逐题分离映射失败、不可回答题与可评分检索结果。"""
+    """Per question, separate mapping failures, unanswerable questions, and scorable retrieval results."""
     if (dataset.dataset_id, dataset.corpus_version) != (mapping.dataset_id, mapping.corpus_version):
         raise ValueError("mapping targets a different dataset/corpus")
     expected = {(q.question_id, g.group_id) for q in dataset.questions for g in q.required_evidence_groups}
@@ -90,7 +92,7 @@ def evaluate_rankings(dataset: EvaluationDatasetV2, mapping: MappingArtifact,
 
 
 def save_artifact(payload: dict, path: Path) -> None:
-    """排他创建版本化 JSON，避免覆盖历史实验。"""
+    """Create the versioned JSON exclusively so that historical experiments are never overwritten."""
     text = json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n"
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -100,7 +102,7 @@ def save_artifact(payload: dict, path: Path) -> None:
 
 def evaluate_evidence_coverage(dataset: EvaluationDatasetV2, mapping: MappingArtifact,
                                rankings: dict[str, list[str]], *, depths=(5, 20)) -> dict:
-    """按组 micro 聚合两种分母，Corpus 无法表达的证据在系统覆盖中计零。"""
+    """Aggregate group-wise (micro) over both denominators; evidence the corpus cannot express counts as zero in system coverage."""
     if (dataset.dataset_id, dataset.corpus_version) != (mapping.dataset_id, mapping.corpus_version):
         raise ValueError("mapping targets a different dataset/corpus")
     if not depths or len(set(depths)) != len(depths) or any(type(k) is not int or k <= 0 for k in depths):

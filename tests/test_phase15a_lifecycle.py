@@ -1,4 +1,4 @@
-"""验证 Phase 15A staging validation、activation/rollback 和 BuildJob。"""
+"""Verify Phase 15A staging validation, activation/rollback and BuildJob."""
 
 import pytest
 
@@ -19,7 +19,7 @@ from evidenceflow.storage import ChromaVectorStore
 
 
 def _pipeline() -> PipelineIdentity:
-    """构造与 manifest 测试一致的固定 indexing pipeline。"""
+    """Build the same fixed indexing pipeline used by the manifest tests."""
 
     return PipelineIdentity(
         parser_version="parser-v1",
@@ -32,7 +32,7 @@ def _pipeline() -> PipelineIdentity:
 
 
 def _manifest(collection: str, *, status: str, chunk_count: int = 2):
-    """生成测试用 staging/active manifest。"""
+    """Produce a staging/active manifest for tests."""
 
     return build_manifest(
         knowledge_base_id="kb-test",
@@ -46,7 +46,7 @@ def _manifest(collection: str, *, status: str, chunk_count: int = 2):
 
 
 def _chunk(chunk_id: str, index: int) -> DocumentChunk:
-    """构造带当前 runtime 溯源 metadata 的 Domain Chunk。"""
+    """Build a Domain Chunk carrying the current runtime provenance metadata."""
 
     return DocumentChunk(
         chunk_id=chunk_id,
@@ -61,7 +61,7 @@ def _chunk(chunk_id: str, index: int) -> DocumentChunk:
 
 
 class FakeStore:
-    """只读模拟 Collection，记录 smoke 调用但不触碰真实 Chroma。"""
+    """Read-only Collection simulation; it records smoke calls without touching real Chroma."""
 
     def __init__(self, chunks: list[DocumentChunk], dimension: int = 2) -> None:
         self.chunks = chunks
@@ -69,25 +69,25 @@ class FakeStore:
         self.search_calls = 0
 
     def iter_all_chunks(self):
-        """返回固定 Chunk 集合，模拟 VectorStore 的恢复接口。"""
+        """Return a fixed Chunk collection, simulating the VectorStore recovery interface."""
 
         return iter(self.chunks)
 
     @property
     def embedding_dimension(self) -> int:
-        """暴露 validation 所需的向量维度。"""
+        """Expose the vector dimension validation needs."""
 
         return self.dimension
 
     def search(self, query_embedding, top_k: int):
-        """记录一次 Dense smoke 并返回非空结果。"""
+        """Record one Dense smoke call and return a non-empty result."""
 
         self.search_calls += 1
         return [self.chunks[0]] if self.chunks else []
 
 
 def _passed_report() -> CollectionValidationReport:
-    """构造 activation 所需的已通过 validation report。"""
+    """Build the passed validation report activation requires."""
 
     return CollectionValidationReport(
         passed=True,
@@ -104,7 +104,7 @@ def _passed_report() -> CollectionValidationReport:
 
 
 def test_validation_checks_identity_metadata_dimension_and_dense_smoke() -> None:
-    """合格 Collection 必须通过所有 activation 前检查。"""
+    """A qualifying Collection must pass every pre-activation check."""
 
     manifest = _manifest("staging", status="STAGING")
     store = FakeStore([_chunk("c1", 0), _chunk("c2", 1)])
@@ -122,7 +122,7 @@ def test_validation_checks_identity_metadata_dimension_and_dense_smoke() -> None
 
 
 def test_validation_rejects_orphan_duplicate_and_missing_metadata() -> None:
-    """缺记录、重复 ID 或运行时 metadata 缺失都不能 activation。"""
+    """Missing records, duplicate IDs or missing runtime metadata all block activation."""
 
     manifest = _manifest("staging", status="STAGING")
     bad = _chunk("c1", 0)
@@ -142,7 +142,7 @@ def test_validation_rejects_orphan_duplicate_and_missing_metadata() -> None:
 
 
 def test_activation_preserves_previous_and_rollback_only_switches_pointers(tmp_path) -> None:
-    """activation 后旧 active 成为 previous，rollback 不需要重建。"""
+    """After activation the old active becomes previous, and a rollback needs no rebuild."""
 
     lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
     active_manifest = _manifest("active-a", status="ACTIVE", chunk_count=1)
@@ -163,7 +163,7 @@ def test_activation_preserves_previous_and_rollback_only_switches_pointers(tmp_p
 
 
 def test_failed_validation_leaves_active_and_staging_state_untouched(tmp_path) -> None:
-    """validation 失败时 activation 不得改变 active pointer。"""
+    """When validation fails, activation must not change the active pointer."""
 
     lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
     active_manifest = _manifest("active-a", status="ACTIVE", chunk_count=1)
@@ -182,7 +182,7 @@ def test_failed_validation_leaves_active_and_staging_state_untouched(tmp_path) -
 
 
 def test_staging_build_coordinator_records_real_stages_and_never_touches_active(tmp_path) -> None:
-    """staging builder 只写目标 Collection，Job 阶段真实推进到 READY。"""
+    """The staging builder writes only the target Collection, and the Job stages really advance to READY."""
 
     lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
     active_manifest = _manifest("active-a", status="ACTIVE", chunk_count=1)
@@ -192,7 +192,7 @@ def test_staging_build_coordinator_records_real_stages_and_never_touches_active(
     seen: list[str] = []
 
     def build(collection_name: str, report_stage) -> FakeStore:
-        """模拟复用 IngestionService 的 controlled build callback。"""
+        """Simulate a controlled build callback that reuses IngestionService."""
 
         assert collection_name == "staging-b"
         for stage in ("PARSING", "CHUNKING", "EMBEDDING", "INDEXING"):
@@ -216,7 +216,7 @@ def test_staging_build_coordinator_records_real_stages_and_never_touches_active(
 
 
 def test_staging_build_failure_is_failed_and_keeps_active_pointer(tmp_path) -> None:
-    """controlled build 异常只结束 Job，不污染 active。"""
+    """A controlled build exception only ends the Job and does not pollute active."""
 
     lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
     active_manifest = _manifest("active-a", status="ACTIVE", chunk_count=1)
@@ -225,7 +225,7 @@ def test_staging_build_failure_is_failed_and_keeps_active_pointer(tmp_path) -> N
     coordinator = StagingBuildCoordinator(lifecycle, BuildJobStore(tmp_path / "job.json"))
 
     def build(_collection_name: str, report_stage) -> FakeStore:
-        """在 Embedding 阶段模拟可控失败。"""
+        """Simulate a controlled failure during the Embedding stage."""
 
         report_stage("PARSING")
         report_stage("CHUNKING")
@@ -239,7 +239,7 @@ def test_staging_build_failure_is_failed_and_keeps_active_pointer(tmp_path) -> N
 
 
 def test_build_job_distinguishes_failed_and_blocked_and_persists(tmp_path) -> None:
-    """BuildJob 状态与错误类别可持久化，FAILED 不被 BLOCKED 混淆。"""
+    """The BuildJob status and error class are persistable, and FAILED is not confused with BLOCKED."""
 
     failed_store = BuildJobStore(tmp_path / "failed.json")
     failed = BuildJobTracker.create(
@@ -268,7 +268,7 @@ def test_build_job_distinguishes_failed_and_blocked_and_persists(tmp_path) -> No
 
 
 def test_staging_collection_name_is_deterministic() -> None:
-    """相同 base/signature 必须生成同名 staging，不能依赖随机 UUID。"""
+    """The same base/signature must yield the same staging name, with no reliance on a random UUID."""
 
     first = build_staging_collection_name("ef_research_bge_m3_hybrid_c512_v2", "a" * 64)
     second = build_staging_collection_name("ef_research_bge_m3_hybrid_c512_v2", "a" * 64)
@@ -277,9 +277,10 @@ def test_staging_collection_name_is_deterministic() -> None:
 
 
 def test_staging_name_regenerated_from_its_own_output_differs() -> None:
-    """A3.1：激活后 active 就是上次的 staging 名；以它为 base 再生成必须得到不同的名称。
+    """A3.1: after activation, active is the previous staging name; regenerating from it as base must give a different name.
 
-    旧实现只截取 base 前 32 字符，``…c512_v2`` 被截成 ``…c512_v``，对结果再生成仍是它本身。
+    The old implementation only truncated the first 32 characters of base, so ``…c512_v2`` became ``…c512_v``, and
+    regenerating from the result returned the very same name.
     """
 
     v2 = "ef_research_bge_m3_hybrid_c512_v2"
@@ -289,11 +290,11 @@ def test_staging_name_regenerated_from_its_own_output_differs() -> None:
     third = build_staging_collection_name(second, signature)
 
     assert len({v2, first, second, third}) == 4
-    assert all(3 <= len(name) <= 63 for name in (first, second, third))  # Chroma 名称上限
+    assert all(3 <= len(name) <= 63 for name in (first, second, third))  # Chroma name length limit
 
 
 def test_staging_name_differs_for_bases_sharing_the_truncated_prefix() -> None:
-    """截断前缀相同的不同 base（如 …_v2 与 …_v3）必须得到不同名称：哈希基于完整 base。"""
+    """Different bases sharing the truncated prefix (such as …_v2 and …_v3) must get different names: the hash uses the full base."""
 
     signature = "c" * 64
     names = {
@@ -303,7 +304,7 @@ def test_staging_name_differs_for_bases_sharing_the_truncated_prefix() -> None:
 
 
 def test_staging_name_avoids_reserved_names_deterministically() -> None:
-    """rollback 后同 base+signature 的首选名就是 previous；reserved 使其确定性地改用下一个候选。"""
+    """After a rollback the preferred name for the same base+signature is previous; reserved makes it deterministically move to the next candidate."""
 
     base, signature = "ef_research_bge_m3_hybrid_c512_v2", "d" * 64
     preferred = build_staging_collection_name(base, signature)
@@ -327,7 +328,7 @@ def test_staging_name_raises_when_every_candidate_is_reserved(monkeypatch) -> No
 
 
 def test_chroma_staging_metadata_is_explicit_and_readable(tmp_path) -> None:
-    """新建 staging Collection 可写入生命周期 metadata，且不改变旧 Adapter 语义。"""
+    """A newly created staging Collection can carry lifecycle metadata without changing the old Adapter semantics."""
 
     store = ChromaVectorStore(
         tmp_path / "chroma",
@@ -342,7 +343,7 @@ def test_chroma_staging_metadata_is_explicit_and_readable(tmp_path) -> None:
 
 
 def _lifecycle_with_staging(tmp_path):
-    """建立带 active、previous 与 staging 三个指针的状态文件。"""
+    """Build a state file that has active, previous and staging pointers."""
 
     lifecycle = IndexLifecycle(tmp_path / "index_state.json", "kb-test")
     lifecycle.initialize_active(_manifest("active-a", status="ACTIVE", chunk_count=1))
@@ -354,7 +355,7 @@ def _lifecycle_with_staging(tmp_path):
 
 
 def test_discard_staging_clears_only_staging_pointer(tmp_path) -> None:
-    """discard_staging 只清空 staging，active 与 previous 保持原样。"""
+    """discard_staging clears only staging; active and previous stay as they were."""
 
     lifecycle = _lifecycle_with_staging(tmp_path)
     before = lifecycle.load_state()
@@ -365,7 +366,7 @@ def test_discard_staging_clears_only_staging_pointer(tmp_path) -> None:
     assert after.staging is None
     assert after.active == before.active
     assert after.previous == before.previous
-    assert lifecycle.load_state() == after  # 已落盘
+    assert lifecycle.load_state() == after  # already persisted
 
 
 def test_discard_staging_is_noop_and_does_not_rewrite_file_when_staging_is_null(tmp_path) -> None:
@@ -382,7 +383,7 @@ def test_discard_staging_is_noop_and_does_not_rewrite_file_when_staging_is_null(
 
 
 def test_discard_staging_uses_atomic_write_and_leaves_no_temp_files(tmp_path, monkeypatch) -> None:
-    """沿用 _write_json_atomic：写入失败时原状态文件不变，且不残留临时文件。"""
+    """It reuses _write_json_atomic: when the write fails the original state file is unchanged and no temp file is left behind."""
 
     import evidenceflow.knowledge.lifecycle as lifecycle_module
 

@@ -1,4 +1,4 @@
-"""把底层 LLM 异常链转换为可审计且不含敏感配置的诊断信息。"""
+"""Turn underlying LLM exception chains into auditable diagnostics that carry no sensitive configuration."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ _SECRET_PATTERNS = (
 
 
 def _safe_message(exc: BaseException) -> str:
-    """清理异常文本中的常见凭据形态，并限制持久化长度。"""
+    """Strip common credential shapes from exception text and cap the persisted length."""
 
     message = str(exc)
     for pattern in _SECRET_PATTERNS:
@@ -25,7 +25,7 @@ def _safe_message(exc: BaseException) -> str:
 
 
 def _status_code(exc: BaseException) -> int | None:
-    """兼容 OpenAI SDK 与 HTTP 客户端常见的状态码暴露方式。"""
+    """Support the common ways the OpenAI SDK and HTTP clients expose a status code."""
 
     value = getattr(exc, "status_code", None)
     if isinstance(value, int):
@@ -36,7 +36,7 @@ def _status_code(exc: BaseException) -> int | None:
 
 
 def classify_llm_failure(exc: BaseException) -> str:
-    """沿异常链识别可操作的失败类别，未知类型明确归入 other。"""
+    """Walk the exception chain to identify an actionable failure class; unknown kinds are reported as other."""
 
     chain = exception_chain(exc)
     exceptions = [item["exception"] for item in chain]
@@ -63,7 +63,7 @@ def classify_llm_failure(exc: BaseException) -> str:
 
 
 def exception_chain(exc: BaseException) -> list[dict[str, Any]]:
-    """保留从业务异常到底层原因的有序链，并防止循环引用。"""
+    """Keep the ordered chain from the business exception down to the root cause, and guard against cycles."""
 
     result: list[dict[str, Any]] = []
     current: BaseException | None = exc
@@ -84,7 +84,7 @@ def exception_chain(exc: BaseException) -> list[dict[str, Any]]:
 
 
 def serialize_llm_failure(exc: BaseException) -> dict[str, Any]:
-    """生成可直接写入 Evaluation JSON 的脱敏失败诊断。"""
+    """Produce a redacted failure diagnostic that can be written straight into Evaluation JSON."""
 
     chain = exception_chain(exc)
     return {

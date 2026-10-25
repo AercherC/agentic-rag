@@ -1,4 +1,4 @@
-"""以原文定位验证 Gold，再映射到特定版本的 Chunk；不执行模糊相关性判断。"""
+"""Verify Gold via source anchoring, then map it onto the Chunks of a specific version; no fuzzy relevance judgment is performed."""
 
 import re
 import unicodedata
@@ -9,24 +9,24 @@ from evidenceflow.domain.evaluation_v2 import EvaluationDatasetV2, GroupMapping,
 
 
 def normalize_anchor(text: str) -> str:
-    """保留历史 research-anchor-v1 规范化，明确处理行尾断词。"""
+    """Keep the historical research-anchor-v1 normalization, explicitly handling end-of-line hyphenation."""
     text = unicodedata.normalize("NFKC", text)
     text = re.sub(r"(?<=\w)-\s*\n\s*(?=\w)", "", text)
     return re.sub(r"\s+", " ", text).strip().casefold()
 
 
 def _loose_hyphen(text: str) -> str:
-    """仅用于诊断 decode 丢失换行后的断词；不自动变成 Gold。"""
+    """Used only to diagnose hyphenation after decode lost a line break; never becomes Gold automatically."""
     return re.sub(r"(?<=\w)-\s+(?=\w)", "", normalize_anchor(text))
 
 
 def _occurrences(text: str, anchor: str) -> list[int]:
-    """返回包括重叠在内的所有位置，不以第一个命中掩盖歧义。"""
+    """Return all positions including overlapping ones, so that an ambiguous match is not hidden behind the first hit."""
     return [match.start() for match in re.finditer(f"(?={re.escape(anchor)})", text)]
 
 
 def _map_alternative(alternative, document, chunks):
-    """验证一条替代证据，并返回状态、足够的 Chunk 集合与诊断。"""
+    """Verify one alternative evidence anchor and return its status, the sufficient Chunk sets, and diagnostics."""
     if document is None or not document.segments:
         return "SOURCE_EXTRACTION_FAILURE", [], "source unavailable or extraction empty"
     if document.content_hash != alternative.content_version:
@@ -69,7 +69,8 @@ def _map_alternative(alternative, document, chunks):
     loose = [c.chunk_id for c in eligible if _loose_hyphen(alternative.evidence_anchor) in _loose_hyphen(c.content)]
     if loose:
         return "ANCHOR_NORMALIZATION_FAILURE", [], "source anchor exists; decoded chunk lost hyphen line break; diagnostic chunks=" + ",".join(sorted(loose))
-    # 只有能将 Chunk 连续正文唯一对齐回原文时，才证明跨块覆盖；不把词袋拼接当证据。
+    # Cross-chunk coverage is only proven when the Chunk bodies can be uniquely aligned back onto
+    # the source; a bag-of-words concatenation is not evidence.
     full_text = normalize_anchor("\n".join(s.content for s in document.segments))
     full_positions = _occurrences(full_text, anchor)
     if len(full_positions) != 1:
@@ -86,7 +87,8 @@ def _map_alternative(alternative, document, chunks):
     while cursor < end:
         choices = [item for item in intervals if item[0] <= cursor and item[1] > cursor]
         if not choices:
-            # 允许原文中仅空白的缝隙；不跨过任何缺失的实际字符。
+            # Allow gaps that are whitespace-only in the source; never skip over a missing real
+            # character.
             if cursor < len(full_text) and full_text[cursor].isspace():
                 cursor += 1
                 continue
@@ -103,7 +105,7 @@ def _map_alternative(alternative, document, chunks):
 
 def map_dataset(dataset: EvaluationDatasetV2, documents: list[Document], chunks: list[DocumentChunk], *,
                 index_version: str) -> MappingArtifact:
-    """全量映射每题每组；替代证据成功即可满足 OR 合同。"""
+    """Map every group of every question; one successful alternative is enough to satisfy the OR contract."""
     by_id = {doc.document_id: doc for doc in documents}
     if len(by_id) != len(documents) or len({c.chunk_id for c in chunks}) != len(chunks):
         raise ValueError("duplicate source/chunk identity")

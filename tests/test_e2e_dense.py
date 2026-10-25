@@ -1,4 +1,4 @@
-"""``scripts/e2e_dense.py`` 的 Fake 测试：不加载任何真实模型、不联网。"""
+"""Fake-based tests for ``scripts/e2e_dense.py``: no real model is loaded and no network access is used."""
 
 import json
 
@@ -18,7 +18,7 @@ class _FakeResult:
 
 
 class _FakeDense:
-    """记录收到的 query 与 top_k，按固定规则返回 chunk_id。"""
+    """Record the received query and top_k, returning chunk_ids by a fixed rule."""
 
     def __init__(self, *, fail_on=None):
         self.calls = []
@@ -32,13 +32,13 @@ class _FakeDense:
 
 
 class _FakeSettings:
-    """只需提供脚本读取的 ``model_device`` 字段。"""
+    """Need only provide the ``model_device`` field the script reads."""
 
     model_device = "cpu"
 
 
 def _patch_runtime(monkeypatch, dense):
-    """替换 build_retriever 与设备解析，避免加载模型。"""
+    """Replace build_retriever and device resolution to avoid loading models."""
 
     class _FakeRetriever:
         dense_retriever = dense
@@ -64,14 +64,14 @@ def test_dense_outputs_top_level_query_to_chunk_ids(tmp_path, monkeypatch):
     assert module.main(["--queries", str(items), "--out", str(out), "--top-k", "3"]) == 0
 
     ranks = json.loads(out.read_text(encoding="utf-8"))
-    # 顶层必须直接是 {query: [chunk_id...]}，与 gates --dense 的读取口径一致。
+    # The top level must be exactly {query: [chunk_id...]}, matching how gates --dense reads it.
     assert set(ranks) == {"What is the chamfer distance?", "How many layers are used?"}
     assert ranks["What is the chamfer distance?"] == [
         "c-What is the chamfer distance?-1", "c-What is the chamfer distance?-2",
         "c-What is the chamfer distance?-3",
     ]
     assert dense.calls == [("What is the chamfer distance?", 3), ("How many layers are used?", 3)]
-    # 固定 LF：跨 OS 产出同一字节。
+    # Fixed LF: the same bytes across operating systems.
     assert b"\r\n" not in out.read_bytes()
 
 
@@ -86,7 +86,8 @@ def test_dense_deduplicates_queries_and_skips_dry_run(tmp_path, monkeypatch):
     ])
     out = tmp_path / "dense.json"
     assert module.main(["--queries", str(items), "--out", str(out), "--top-k", "2"]) == 0
-    # 同一个题干只检索一次；--dry-run 的占位题干不参与检索。
+    # The same question text is retrieved only once; the --dry-run placeholder text takes no part
+    # in retrieval.
     assert [call[0] for call in dense.calls] == ["Repeated question?"]
 
 
@@ -136,7 +137,7 @@ def test_dense_rejects_malformed_jsonl(tmp_path, monkeypatch):
 
 
 def _captured_error(monkeypatch, tmp_path, items, out):
-    """辅助：重跑一次并返回 stderr 文本（供错误信息断言）。"""
+    """Helper: run once more and return the stderr text (for asserting error messages)."""
 
     import contextlib
     import io

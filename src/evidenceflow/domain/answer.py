@@ -1,4 +1,4 @@
-"""生成回答及其实际引用来源的 Domain Models。"""
+"""Domain Models for generated answers and the sources they actually cite."""
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -10,7 +10,7 @@ from evidenceflow.domain.generation import AnswerStatus
 
 
 class SourceReference(BaseModel):
-    """最终回答实际引用的精简来源对象。"""
+    """The compact source object actually cited by the final answer."""
 
     source_label: str = Field(
         min_length=1,
@@ -32,19 +32,20 @@ class SourceReference(BaseModel):
 
     @model_validator(mode="after")
     def validate_page_range(self) -> "SourceReference":
-        """保证最终引用的可选页码范围完整且有序。"""
+        """Guarantees the optional page range of a final citation is complete and ordered."""
 
-        # 无页码来源必须两端同时为空；PDF 引用必须提供完整起止页码。
+        # A source without page numbers must leave both ends empty; a PDF citation must provide a
+        # complete start and end page.
         if (self.page_start is None) != (self.page_end is None):
             raise ValueError("page_start and page_end must both be set or both be None")
-        # 起始页晚于结束页时无法表示有效的来源范围。
+        # A start page later than the end page cannot express a valid source range.
         if self.page_start is not None and self.page_start > self.page_end:
             raise ValueError("page_start must be less than or equal to page_end")
         return self
 
 
 class RAGAnswer(BaseModel):
-    """包含实际引用与检索追踪信息的结构化 RAG 回答。"""
+    """Structured RAG answer carrying the actual citations plus retrieval trace information."""
 
     query: str = Field(min_length=1, description="原始用户查询。")
     status: AnswerStatus = Field(

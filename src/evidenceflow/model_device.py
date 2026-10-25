@@ -1,17 +1,17 @@
-"""提供 Embedding 与 Reranker 共用的最小推理设备选择规则。"""
+"""Minimal inference-device selection rules shared by the Embedding and Reranker models."""
 
 
 class ModelDeviceError(RuntimeError):
-    """请求的模型推理设备当前不可用。"""
+    """The requested model inference device is currently unavailable."""
 
 
 def resolve_model_device(requested: str) -> str:
-    """将 Settings 设备选项解析为可直接用于 PyTorch 的设备名。"""
+    """Resolve a Settings device option into a device name PyTorch can use directly."""
 
     if requested not in {"auto", "cpu", "cuda"}:
         raise ValueError("model device must be one of: auto, cpu, cuda")
     if requested == "cpu":
-        # 强制 CPU 不需要探测或初始化 CUDA Runtime。
+        # Forcing CPU avoids probing or initializing the CUDA runtime.
         return "cpu"
 
     try:
@@ -24,7 +24,8 @@ def resolve_model_device(requested: str) -> str:
         ) from exc
 
     if torch.cuda.is_available():
-        # 固定到首张 CUDA 设备，避免各模型各自推断不同的默认设备。
+        # Pin to the first CUDA device so that each model does not infer a different default
+        # device.
         return "cuda:0"
     if requested == "cuda":
         raise ModelDeviceError(

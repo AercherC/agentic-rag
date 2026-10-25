@@ -1,7 +1,7 @@
-"""测试 RunTrace（PROJECT_SPEC §12.5）：记录器、事件顺序、payload 白名单、失败路径与开关等价。
+"""Test RunTrace (PROJECT_SPEC §12.5): recorder, event ordering, payload allowlist, failure paths, and flag equivalence.
 
-只用 Fake/Stub：Fake Dense 检索、Fake Reranker scorer、Fake LLM Client，
-接入真实的 DenseRerankerRetriever、LearnedReranker、ContextBuilder、Generator 与 RAGService。
+Fakes/Stubs only: a Fake Dense retriever, a Fake Reranker scorer, and a Fake LLM Client are wired
+into the real DenseRerankerRetriever, LearnedReranker, ContextBuilder, Generator, and RAGService.
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ SYSTEM_PROMPT_FRAGMENT = "You answer questions using only the supplied knowledge
 QUERY = "QUERYTEXT 为什么 Agent 需要外部工具？"
 ANSWER_BODY = "ANSWERBODY 工具为 Agent 提供外部能力 [S1]，并能执行动作 [S2]。"
 
-# §12.5 payload 白名单：每个事件的键集合必须与之完全相等。
+# # §12.5 payload allowlist: each event's key set must equal it exactly.
 PAYLOAD_KEYS = {
     "run.started": set(),
     "retrieval.dense.started": set(),
@@ -58,7 +58,7 @@ PAYLOAD_KEYS = {
     "run.completed": set(),
     "run.failed": {"error_type", "stage"},
 }
-# 列表型 payload 中每一项允许的键。
+# # The keys allowed for each item inside a list-valued payload.
 ITEM_KEYS = {
     ("retrieval.dense.completed", "candidates"): {"rank", "chunk_id", "similarity_score"},
     ("rerank.completed", "results"): {"rank", "chunk_id", "candidate_rank", "reranker_score"},
@@ -81,7 +81,7 @@ SUCCESS_ORDER = [
 
 
 class CharacterTokenizer:
-    """以字符为 Token，让 Context 预算完全可预测。"""
+    """Treat characters as tokens, so the context budget is fully predictable."""
 
     def encode(self, text: str) -> list[int]:
         return [ord(character) for character in text]
@@ -91,7 +91,7 @@ class CharacterTokenizer:
 
 
 def _chunk(index: int) -> DocumentChunk:
-    """构造正文带可检测标记的 Chunk，用于断言正文不进入 trace。"""
+    """Build a Chunk whose body text carries a detectable marker, to assert that body text never enters the trace."""
 
     return DocumentChunk(
         chunk_id=f"chunk-{index}",
@@ -114,7 +114,7 @@ def _dense_rows(count: int = 6) -> list[RetrievedChunk]:
 
 
 class FakeDense:
-    """返回固定 Dense 候选，或抛出指定异常。"""
+    """Return fixed Dense candidates, or raise the given exception."""
 
     def __init__(self, rows: list[RetrievedChunk], error: Exception | None = None) -> None:
         self.rows = rows
@@ -127,7 +127,7 @@ class FakeDense:
 
 
 class FakeScorer:
-    """按正文中的段号给出确定性分数（段号越大越相关），并报告截断数。"""
+    """Return a deterministic score from the paragraph number in the body text (higher paragraph = more relevant) and report the truncation count."""
 
     last_truncated_pair_count = 1
 
@@ -136,7 +136,7 @@ class FakeScorer:
 
 
 class FakeLLM:
-    """按顺序返回预置回复，带 usage 与一个不应进入 trace 的假 API key。"""
+    """Return preset replies in order, with usage and a fake API key that must never enter the trace."""
 
     def __init__(self, *replies: str) -> None:
         self.api_key = FAKE_API_KEY
@@ -144,13 +144,13 @@ class FakeLLM:
         self.calls = 0
         self.last_usage: dict | None = None
 
-    def generate(self, messages):  # pragma: no cover - v3 只走 generate_json
+    def generate(self, messages):  # # pragma: no cover - v3 only goes through generate_json
         raise AssertionError("must use generate_json")
 
     def generate_json(self, messages, *, schema_name, json_schema) -> str:
         reply = self.replies[min(self.calls, len(self.replies) - 1)]
         self.calls += 1
-        # total_tokens 不在白名单内，trace 中应被过滤掉。
+        # # total_tokens is not in the allowlist, so it must be filtered out of the trace.
         self.last_usage = {"prompt_tokens": 100 + self.calls, "completion_tokens": 7, "total_tokens": 999}
         return reply
 
@@ -166,7 +166,7 @@ def build_service(
     rows: list[RetrievedChunk] | None = None,
     dense_error: Exception | None = None,
 ) -> RAGService:
-    """用真实组件 + Fake 依赖装配 RAGService；recorder 同时注入三个组件。"""
+    """Assemble RAGService from real components plus Fake dependencies; the recorder is injected into all three components."""
 
     retriever = DenseRerankerRetriever(
         FakeDense(_dense_rows() if rows is None else rows, dense_error),
@@ -188,7 +188,7 @@ def _run(service: RAGService, recorder: RunTraceRecorder, query: str = QUERY):
     return answer, recorder.finish()
 
 
-# ---------- 成功路径 ----------
+# # ---------- success path ----------
 
 
 def test_success_event_order_seq_and_payloads() -> None:
@@ -207,7 +207,7 @@ def test_success_event_order_seq_and_payloads() -> None:
     assert [item["chunk_id"] for item in dense["candidates"]] == [f"chunk-{i}" for i in range(6)]
     rerank = by_name["rerank.completed"]
     assert rerank["input_count"] == 6 and rerank["output_count"] == 3
-    # 截断数整批一个值：3 个 batch 各报告 1。
+    # # One truncation count per batch: each of the 3 batches reports 1.
     assert rerank["truncated_pair_count"] == 3
     assert [
         (item["rank"], item["chunk_id"], item["candidate_rank"], item["reranker_score"])
@@ -263,7 +263,7 @@ def test_context_sha256_uses_utf8_context_text() -> None:
     assert payload["context_text_sha256"] == hashlib.sha256(expected.encode("utf-8")).hexdigest()
 
 
-# ---------- 失败路径 ----------
+# # ---------- failure path ----------
 
 
 def test_retrieval_failure_reraises_same_object_and_records_run_failed() -> None:
@@ -303,7 +303,7 @@ def test_generation_and_citation_failures_propagate_unchanged(replies, exc_type,
     recorder.start_run(QUERY)
     traced = _capture(service, exc_type)
 
-    # 异常类型、消息与异常链与未接 trace 时完全一致。
+    # # Exception type, message, and exception chain are exactly the same as without tracing.
     assert type(traced) is type(baseline) and str(traced) == str(baseline)
     assert type(traced.__cause__) is type(baseline.__cause__)
     trace = recorder.finish()
@@ -338,7 +338,7 @@ def test_blank_query_records_nothing() -> None:
     assert recorder.events == []
 
 
-# ---------- 确定性拒答 ----------
+# # ---------- deterministic abstention ----------
 
 
 def test_empty_context_records_generation_completed_without_llm_call() -> None:
@@ -354,11 +354,11 @@ def test_empty_context_records_generation_completed_without_llm_call() -> None:
     assert citation == {"valid_labels": [], "invalid_labels": [], "source_count": 0}
 
 
-# ---------- 开关等价与 recorder 自身异常 ----------
+# # ---------- flag equivalence and the recorder's own exception ----------
 
 
 class ExplodingRecorder:
-    """record 总是抛错，用于验证 recorder 缺陷不影响回答。"""
+    """`record` always raises, used to verify a recorder defect does not affect the answer."""
 
     def __init__(self) -> None:
         self.calls = 0
@@ -409,11 +409,11 @@ def test_safe_record_none_and_exception() -> None:
     safe_record(ExplodingRecorder(), "run.started")
 
 
-# ---------- RunTraceRecorder 本身 ----------
+# # ---------- RunTraceRecorder itself ----------
 
 
 class FakeClock:
-    """按预置序列返回单调时钟秒数。"""
+    """Return monotonic clock seconds from a preset sequence."""
 
     def __init__(self, *values: float) -> None:
         self.values = list(values)
@@ -447,7 +447,7 @@ def test_duration_ms_with_injected_clock() -> None:
     assert [e.elapsed_ms for e in trace.events] == [0.0, 500.0, 750.0, 1000.0, 2000.0]
     assert [e.duration_ms for e in trace.events] == [None, None, 250.0, None, 2000.0]
     assert trace.started_at_utc == trace.completed_at_utc == FIXED_UTC.isoformat()
-    # 往返校验：落盘 JSON 能被 RunTrace 重新加载。
+    # # Round-trip check: the persisted JSON can be reloaded as a RunTrace.
     assert RunTrace.model_validate_json(trace.model_dump_json()) == trace
 
 
@@ -487,7 +487,7 @@ def test_trace_models_forbid_extra_fields() -> None:
 
 
 def _patch_build_rag_service(monkeypatch, *, replies: tuple[str, ...] = ()) -> list:
-    """替换 runtime.build_rag_service：用 Fake 依赖装配，并记录收到的 trace_recorder。"""
+    """Replace runtime.build_rag_service: assemble from Fake dependencies and capture the trace_recorder received."""
 
     received: list = []
 
@@ -518,7 +518,7 @@ def test_cli_trace_written_on_success_and_stdout_unchanged(monkeypatch, tmp_path
     trace = RunTrace.model_validate_json(raw)
     assert trace.status == "completed"
     assert [e.name for e in trace.events] == SUCCESS_ORDER
-    # 键排序、缩进 2、不转义非 ASCII。
+    # # Sorted keys, 2-space indent, non-ASCII not escaped.
     assert raw == json.dumps(trace.model_dump(mode="json"), sort_keys=True, ensure_ascii=False, indent=2) + "\n"
     assert "run.started" not in traced.out
 

@@ -1,6 +1,6 @@
-"""读取并校验人工标注的 Retrieval Evaluation Dataset。
+"""Load and validate the human-annotated Retrieval Evaluation Dataset.
 
-COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+COMPATIBILITY_ONLY: legacy HitRate semantics; new code uses eval/ir_metrics.py.
 """
 
 import json
@@ -14,36 +14,39 @@ from evidenceflow.domain.evaluation_v2 import EvaluationDatasetV2
 
 
 class EvaluationDatasetError(ValueError):
-    """表示评测数据的 JSON 结构或业务 Schema 不合法。"""
+    """Signals that the evaluation data's JSON structure or business schema is invalid."""
 
 
-# 复用 Domain Model 作为唯一数据合同，避免 Loader 维护一套重复字段定义。
+# Reuse the Domain Model as the single data contract so the Loader does not maintain a duplicate
+# field definition.
 _QUESTIONS_ADAPTER = TypeAdapter(list[EvaluationQuestion])
 
 
 def load_evaluation_questions(path: Path) -> list[EvaluationQuestion]:
-    """从 JSON 文件加载问题，并执行 Pydantic 与精确重复校验。
+    """Load questions from a JSON file and apply Pydantic plus exact-duplicate validation.
 
     Args:
-        path: 顶层为 JSON 数组的评测数据文件路径。
+        path: Path to an evaluation data file whose top level is a JSON array.
 
     Returns:
-        按文件顺序排列且已经通过 Domain Model 校验的问题列表。
+        The questions in file order, already validated against the Domain Model.
 
     Raises:
-        FileNotFoundError: 数据文件不存在。
-        EvaluationDatasetError: JSON、顶层结构、Schema 或题目唯一性不合法。
+        FileNotFoundError: the data file does not exist.
+        EvaluationDatasetError: the JSON, top-level structure, schema, or question
+            uniqueness is invalid.
     """
 
     dataset_path = Path(path)
     if not dataset_path.is_file():
-        # 保留专门的文件异常类型，让调用方能区分路径问题与数据内容问题。
+        # Keep the dedicated file exception type so callers can tell path problems from
+        # data-content problems.
         raise FileNotFoundError(f"Evaluation dataset does not exist: {dataset_path}")
 
     try:
         raw_data = json.loads(dataset_path.read_text(encoding="utf-8"))
     except JSONDecodeError as exc:
-        # 行列信息可直接帮助人工维护 questions.json 时定位语法错误。
+        # Line and column information helps a human fixing a syntax error in questions.json.
         raise EvaluationDatasetError(
             f"Invalid JSON in evaluation dataset at line {exc.lineno}, "
             f"column {exc.colno}: {dataset_path}"
@@ -53,7 +56,8 @@ def load_evaluation_questions(path: Path) -> list[EvaluationQuestion]:
             f"Evaluation dataset must be UTF-8 encoded: {dataset_path}"
         ) from exc
 
-    # 显式检查顶层类型，以提供比通用 Pydantic 错误更直接的数据格式提示。
+    # Check the top-level type explicitly to give a more direct format hint than a generic Pydantic
+    # error.
     if not isinstance(raw_data, list):
         raise EvaluationDatasetError("Evaluation dataset top level must be a JSON array")
 
@@ -62,7 +66,8 @@ def load_evaluation_questions(path: Path) -> list[EvaluationQuestion]:
     except ValidationError as exc:
         raise EvaluationDatasetError(f"Invalid evaluation dataset schema: {exc}") from exc
 
-    # 仅检查完全相同的问题文本；语义去重需要人工判断，不属于当前 Loader 职责。
+    # Only identical question text is checked; semantic deduplication needs human judgment and is
+    # not this Loader's job.
     question_texts = [question.question for question in questions]
     if len(question_texts) != len(set(question_texts)):
         raise EvaluationDatasetError("Evaluation dataset contains duplicate question text")
@@ -71,7 +76,7 @@ def load_evaluation_questions(path: Path) -> list[EvaluationQuestion]:
 
 
 def adapt_research_v1(payload: dict, content_versions: dict[str, str]) -> EvaluationDatasetV2:
-    """显式迁移科研 v1 来源组，保留 query ID，不补造 Claim 或 Holdout。"""
+    """Explicitly migrate the research v1 source groups, keeping query IDs and inventing no Claims or Holdout."""
     return EvaluationDatasetV2.model_validate({
         "schema_version": "2.0",
         "dataset_id": f"research-v2-from-{payload['dataset_hash']}",

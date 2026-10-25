@@ -1,4 +1,4 @@
-"""验证 Academic Research v1 冻结语料、评测集和基线报告的一致性。"""
+"""Verify the consistency of the Academic Research v1 frozen corpus, evaluation set, and baseline report."""
 
 from __future__ import annotations
 
@@ -12,20 +12,20 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _load(relative_path: str) -> dict:
-    """读取项目内 JSON 评测产物。"""
+    """Load a JSON evaluation artifact from inside the project."""
 
     return json.loads((ROOT / relative_path).read_text(encoding="utf-8"))
 
 
 def _canonical_hash(payload: dict) -> str:
-    """复用冻结数据集声明的确定性 JSON Hash 规则。"""
+    """Reuse the deterministic JSON Hash rule declared by the frozen dataset."""
 
     raw = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
 def test_research_corpus_manifest_matches_active_sources() -> None:
-    """研究语料必须恰好包含冻结的 10 篇 PDF，避免旧领域文档重新混入。"""
+    """The research corpus must contain exactly the frozen 10 PDFs, so legacy domain documents cannot creep back in."""
 
     manifest = _load("evals/research_ingestion/academic_corpus_manifest_v1.json")
     actual_files = sorted(path.name for path in (ROOT / "data/source_docs").glob("*.pdf"))
@@ -37,7 +37,7 @@ def test_research_corpus_manifest_matches_active_sources() -> None:
 
 
 def test_research_dataset_hash_and_contract_are_frozen() -> None:
-    """40 题必须保持 Gold 无 Chunk ID、题型及证据类型分布不漂移。"""
+    """The 40 questions must keep Gold free of Chunk IDs, with the question-type and evidence-type distributions unmoved."""
 
     dataset = _load("evals/research_retrieval/research_questions_v1.json")
     claimed_hash = dataset.pop("dataset_hash")
@@ -65,7 +65,7 @@ def test_research_dataset_hash_and_contract_are_frozen() -> None:
 
 
 def test_research_dense_report_targets_same_dataset() -> None:
-    """Current Dense 报告必须覆盖全部冻结题且不声明运行禁用实验。"""
+    """The Current Dense report must cover every frozen question and must not declare any forbidden experiment as run."""
 
     dataset = _load("evals/research_retrieval/research_questions_v1.json")
     result = _load("evals/research_retrieval/research_dense_baseline_v1.json")

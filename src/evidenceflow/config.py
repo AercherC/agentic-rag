@@ -1,4 +1,4 @@
-"""EvidenceFlow 应用配置定义。"""
+"""EvidenceFlow application configuration definitions."""
 
 from pathlib import Path
 from typing import Literal
@@ -8,7 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 DEFAULT_RERANKER_MODEL = "BAAI/bge-reranker-base"
 
-# Chunk 策略的合法取值（§9.3）与 fixed 身份 Collection 名单（§9.4 身份隔离守卫）。
+# Legal Chunk strategy values (§9.3) and the list of fixed-identity Collections (§9.4
+# identity-isolation guard).
 CHUNK_STRATEGIES = ("hybrid", "fixed")
 FIXED_IDENTITY_COLLECTIONS = frozenset(
     {
@@ -19,10 +20,10 @@ FIXED_IDENTITY_COLLECTIONS = frozenset(
 
 
 class Settings(BaseSettings):
-    """从环境变量和可选的 .env 文件加载统一运行配置。"""
+    """Load the unified runtime configuration from environment variables and an optional .env file."""
 
-    # 环境变量按大小写不敏感方式匹配，使 LLM_API_KEY 等大写名称
-    # 能够映射到下方符合 Python 命名习惯的小写属性。
+    # Environment variables are matched case-insensitively so that upper-case names such as
+    # LLM_API_KEY can map onto the lower-case Python-style attributes below.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -162,7 +163,7 @@ class Settings(BaseSettings):
     @field_validator("llm_base_url", "llm_model", "reranker_model")
     @classmethod
     def validate_non_blank_llm_setting(cls, value: str) -> str:
-        """拒绝只有空白的 Endpoint 或模型名，同时保留调用方原值。"""
+        """Reject whitespace-only endpoints or model names while preserving the caller's original value."""
 
         if not value.strip():
             raise ValueError("LLM base URL and model must not be blank")
@@ -170,13 +171,14 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_chunk_configuration(self) -> "Settings":
-        """校验 Chunk 身份隔离及 Reranker 分层深度合同。"""
+        """Validate Chunk identity isolation and the Reranker layering-depth contract."""
 
-        # Overlap 达到或超过 Chunk Size 时，下一窗口不会产生有效前进。
+        # When Overlap reaches or exceeds Chunk Size, the next window makes no effective progress.
         if self.chunk_overlap >= self.chunk_size:
             raise ValueError("chunk_overlap must be smaller than chunk_size")
-        # §9.4 身份隔离：hybrid 不得复用 fixed 身份的 Collection，
-        # 防止不同切分语义的向量混在同一 Collection 里造成检索语义漂移。
+        # §9.4 identity isolation: hybrid must not reuse a fixed-identity Collection,
+        # because mixing vectors from different chunking semantics into one Collection lets
+        # retrieval semantics drift.
         if (
             self.chunk_strategy == "hybrid"
             and self.collection_name in FIXED_IDENTITY_COLLECTIONS
@@ -185,7 +187,8 @@ class Settings(BaseSettings):
                 "chunk_strategy='hybrid' must not reuse the fixed-identity collection "
                 f"{self.collection_name!r}; rebuild into a hybrid-identity collection"
             )
-        # Reranker 只能缩小候选集合；禁止隐式扩容或最终深度被静默 clamp。
+        # The Reranker may only shrink the candidate set; implicit expansion or silently clamping
+        # the final depth is forbidden.
         if self.reranker_final_k > self.reranker_input_k:
             raise ValueError("reranker_final_k must not exceed reranker_input_k")
         return self

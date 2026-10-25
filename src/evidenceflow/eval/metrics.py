@@ -1,6 +1,6 @@
-"""实现 Retrieval Gold 匹配、单题指标与聚合指标计算。
+"""Retrieval Gold matching, per-question metrics, and aggregate metric computation.
 
-COMPATIBILITY_ONLY：legacy HitRate 语义，新代码用 eval/ir_metrics.py。
+COMPATIBILITY_ONLY: legacy HitRate semantics; new code uses eval/ir_metrics.py.
 """
 
 from dataclasses import dataclass
@@ -15,7 +15,7 @@ from evidenceflow.domain.evaluation import EvaluationSource
 
 @dataclass(frozen=True)
 class QuestionMetrics:
-    """保存一道问题在固定 Top-5 结果上的客观检索指标。"""
+    """Objective retrieval metrics of one question over the fixed Top-5 results."""
 
     first_relevant_rank: int | None
     recall_at_1: float
@@ -26,7 +26,7 @@ class QuestionMetrics:
 
 @dataclass(frozen=True)
 class AggregateMetrics:
-    """保存一组问题的数量、平均 Recall@K 与 MRR。"""
+    """Question count, mean Recall@K, and MRR of a question set."""
 
     question_count: int
     recall_at_1: float
@@ -36,37 +36,41 @@ class AggregateMetrics:
 
 
 def normalize_gold_text(text: str) -> str:
-    """以最小确定性规则规范化 Gold 锚点与待匹配正文。"""
+    """Normalize Gold anchors and candidate text with the minimal deterministic rules."""
 
-    # NFC 与统一换行先消除跨平台表示差异，再折叠所有连续 whitespace。
+    # NFC plus newline unification remove cross-platform differences first, then all runs of
+    # whitespace are collapsed.
     normalized = unicodedata.normalize("NFC", text)
     normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
     return re.sub(r"\s+", " ", normalized).strip()
 
 
 def is_relevant(retrieved: RetrievedChunk, gold: EvaluationSource) -> bool:
-    """按文档身份及页码或原文锚点判断检索结果是否相关。"""
+    """Decide relevance from document identity plus pages or the text anchor."""
 
     if retrieved.chunk.document_id != gold.document_id:
         return False
 
     if gold.reference_text is not None:
-        # Fine-grained Gold 必须命中真正答案文本；同文档的其他 Chunk 不再误判。
+        # Fine-grained Gold must hit the actual answer text; other Chunks of the same document are
+        # no longer misjudged.
         anchor = normalize_gold_text(gold.reference_text)
         content = normalize_gold_text(retrieved.chunk.content)
         return anchor in content
 
-    # 无页码、无锚点是历史 Markdown/TXT 合同，仍按文档身份命中。
+    # No pages and no anchor is the historical Markdown/TXT contract, so document identity still
+    # matches.
     if gold.page_start is None:
         return True
 
     retrieved_start = retrieved.chunk.page_start
     retrieved_end = retrieved.chunk.page_end
-    # PDF Gold 必须匹配真实页码；元数据缺失时不能退化为文档级命中。
+    # PDF Gold must match real page numbers; missing metadata must not degrade into a
+    # document-level hit.
     if retrieved_start is None or retrieved_end is None:
         return False
 
-    # 两个闭区间有交集，当且仅当任一区间没有完全落在另一区间外侧。
+    # Two closed intervals intersect exactly when neither one lies entirely outside the other.
     return retrieved_start <= gold.page_end and retrieved_end >= gold.page_start
 
 
@@ -74,7 +78,7 @@ def is_relevant_to_any(
     retrieved: RetrievedChunk,
     gold_sources: Sequence[EvaluationSource],
 ) -> bool:
-    """判断检索结果是否匹配问题的任意一个人工 Gold Source。"""
+    """Decide whether a retrieval result matches any human-annotated Gold Source of the question."""
 
     return any(is_relevant(retrieved, gold) for gold in gold_sources)
 
@@ -83,12 +87,13 @@ def calculate_question_metrics(
     retrieved_results: Sequence[RetrievedChunk],
     gold_sources: Sequence[EvaluationSource],
 ) -> QuestionMetrics:
-    """从一次 Top-5 检索结果计算 First Rank、Recall@K 与 RR。"""
+    """Compute First Rank, Recall@K, and RR from one Top-5 retrieval result."""
 
     if not gold_sources:
         raise ValueError("gold_sources must not be empty")
 
-    # 使用 Domain Model 中的显式 1-based rank，避免依赖输入列表恰好已经排序。
+    # Use the explicit 1-based rank from the Domain Model, never rely on the input list happening
+    # to be sorted.
     relevant_ranks = [
         result.rank
         for result in retrieved_results
@@ -97,7 +102,7 @@ def calculate_question_metrics(
     first_rank = min(relevant_ranks, default=None)
 
     def hit_at(k: int) -> float:
-        """将 Top-K 是否至少命中一个 Gold 转换为可聚合的 0/1 浮点值。"""
+        """Convert "Top-K hit at least one Gold" into an aggregatable 0/1 float."""
 
         return float(first_rank is not None and first_rank <= k)
 
@@ -114,7 +119,7 @@ def calculate_question_metrics(
 def aggregate_question_metrics(
     metrics: Sequence[QuestionMetrics],
 ) -> AggregateMetrics:
-    """对非空问题集合取算术平均，得到 Recall@K 和 MRR。"""
+    """Take the arithmetic mean over a non-empty question set to obtain Recall@K and MRR."""
 
     if not metrics:
         raise ValueError("metrics must not be empty")
@@ -130,12 +135,12 @@ def aggregate_question_metrics(
 
 
 def custom_evidence_group_ndcg(ranked_ids, groups, depth: int) -> float:
-    """保留 research v1 的 CUSTOM 首次组增益；每个排名最多贡献一个新组。"""
+    """Keep the research v1 CUSTOM first-group gain; each rank contributes at most one new group."""
     return custom_bundle_ndcg(ranked_ids, [[[cid] for cid in group] for group in groups], depth)
 
 
 def custom_bundle_ndcg(ranked_ids, groups, depth: int) -> float:
-    """共享 CUSTOM 增益核心，支持单块替代与跨块 AND 集合。"""
+    """Shared CUSTOM gain core, supporting single-block alternatives and cross-block AND sets."""
     if type(depth) is not int or depth <= 0:
         raise ValueError("depth must be positive")
     seen = set()
@@ -153,7 +158,7 @@ def custom_bundle_ndcg(ranked_ids, groups, depth: int) -> float:
 
 
 def legacy_research_metrics(rows, depths=(1, 3, 5, 10, 20)) -> dict:
-    """历史报告适配器：Hit/MRR 仍表示完整组覆盖，禁止用于 v2 字段命名。"""
+    """Historical report adapter: Hit/MRR still mean complete-group coverage and must not name v2 fields."""
     count = len(rows)
     if not count:
         return {"N": 0}
