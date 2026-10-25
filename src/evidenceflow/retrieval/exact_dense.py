@@ -137,21 +137,28 @@ class ExactDenseIndex:
         # float32 matrix multiplication yields the full inner products; the candidate order is
         # decided entirely by the project-level sort below.
         scores = self._matrix @ query
-        scored = [
-            (float(score), chunk_id)
-            for score, chunk_id in zip(scores.tolist(), self._chunk_ids)
-        ]
+        size = len(self._chunk_ids)
+        effective_top_k = min(top_k, size)
+        if effective_top_k < size:
+            # Only candidates that can reach the Top-K go through the Python sort: take the K-th
+            # largest score as the threshold and let every candidate at or above it (ties included)
+            # take part, so ties still break strictly on chunk_id and the result matches a full sort
+            # exactly.
+            threshold = np.partition(scores, size - effective_top_k)[size - effective_top_k]
+            positions = np.flatnonzero(scores >= threshold).tolist()
+        else:
+            positions = range(size)
+        scored = [(float(scores[position]), self._chunk_ids[position], position) for position in positions]
 
         scored.sort(key=lambda item: (-item[0], item[1]))
-        by_id = dict(zip(self._chunk_ids, self._chunks))
         return [
             RetrievedChunk(
-                chunk=by_id[chunk_id].model_copy(deep=True),
+                chunk=self._chunks[position].model_copy(deep=True),
                 rank=rank,
                 similarity_score=score,
             )
-            for rank, (score, chunk_id) in enumerate(
-                scored[: min(top_k, len(scored))],
+            for rank, (score, _chunk_id, position) in enumerate(
+                scored[:effective_top_k],
                 start=1,
             )
         ]

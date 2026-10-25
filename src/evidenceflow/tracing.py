@@ -7,6 +7,9 @@ This module only observes; it never changes any answer or exception propagation:
   untraced deployment;
 - Components always record through ``safe_record``, and any exception from the recorder itself is
   swallowed with only a warning log line.
+- When shared components serve concurrent requests, ``trace_scope`` pins the recorder of the
+  current thread/coroutine for one run and components pick it up through ``resolve_recorder``; an
+  explicitly injected recorder still wins.
 Importing ``evidenceflow.eval`` is not allowed (runtime-side modules must not depend on the
 evaluation layer in reverse).
 """
@@ -17,7 +20,9 @@ import hashlib
 import logging
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from typing import Any, Protocol
 
@@ -27,6 +32,9 @@ logger = logging.getLogger(__name__)
 
 _COMPLETED_SUFFIX = ".completed"
 _STARTED_SUFFIX = ".started"
+_ACTIVE_RECORDER: ContextVar["TraceRecorder | None"] = ContextVar(
+    "evidenceflow_active_trace_recorder", default=None
+)
 
 
 class TraceRecorder(Protocol):
@@ -42,6 +50,29 @@ class NullTraceRecorder:
 
     def record(self, name: str, **payload: Any) -> None:
         """Discard the event."""
+
+
+@contextmanager
+def trace_scope(recorder: TraceRecorder | None) -> Iterator[TraceRecorder | None]:
+    """Make ``recorder`` the recorder of the current run in this context, restoring it on exit.
+
+    A ContextVar is isolated per thread and per asyncio task, so several requests can share one set
+    of Runtime components and still send their events only to their own recorder, without swapping
+    ``trace_recorder`` on the shared components between requests.
+    """
+
+    token = _ACTIVE_RECORDER.set(recorder)
+    try:
+        yield recorder
+    finally:
+        _ACTIVE_RECORDER.reset(token)
+
+
+def resolve_recorder(explicit: TraceRecorder | None) -> TraceRecorder | None:
+    """A recorder passed explicitly at construction time wins; otherwise the current recorder set
+    by ``trace_scope`` is used."""
+
+    return explicit if explicit is not None else _ACTIVE_RECORDER.get()
 
 
 def safe_record(recorder: TraceRecorder | None, name: str, **payload: Any) -> None:

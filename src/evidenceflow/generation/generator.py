@@ -9,6 +9,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.context import BuiltContext
 from evidenceflow.domain.generation import (
     AnswerStatus,
@@ -18,10 +19,16 @@ from evidenceflow.domain.generation import (
     generator_output_json_schema,
 )
 from evidenceflow.llm.base import LLMClient
-from evidenceflow.tracing import TraceRecorder, safe_record
+from evidenceflow.tracing import TraceRecorder, resolve_recorder, safe_record
 
 GENERATOR_PROMPT_VERSION = "rag-generator-v3"
 INSUFFICIENT_CONTEXT_ANSWER = "知识库中没有足够的相关信息来回答这个问题。"
+INSUFFICIENT_CONTEXT_ANSWER_EN = (
+    "The knowledge base does not contain enough relevant information to answer this question."
+)
+# Unified CJK Han characters (including extensions A and the compatibility block); any Han
+# character in the question means the question is treated as Chinese.
+_HAN_CHARACTER = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
 GENERATOR_SCHEMA_NAME = "generator_output"
 
 _SYSTEM_PROMPT = """You answer questions using only the supplied knowledge-base context.
@@ -46,6 +53,13 @@ _REPAIR_INSTRUCTION = (
 _THINK_BLOCK = re.compile(r"\A<think>.*?</think>", re.DOTALL)
 # Outer ```json code fence (the language tag may be omitted); it must wrap the whole text.
 _CODE_FENCE = re.compile(r"\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\Z", re.DOTALL)
+
+
+def insufficient_context_answer(query: str) -> str:
+    """Deterministic refusal text for an empty Context; the language follows the question (matching
+    the language rule of the System Prompt)."""
+
+    return INSUFFICIENT_CONTEXT_ANSWER if _HAN_CHARACTER.search(query) else INSUFFICIENT_CONTEXT_ANSWER_EN
 
 
 class GenerationContractError(ValueError):
@@ -111,6 +125,10 @@ def _empty_diagnostics() -> dict[str, Any]:
 class Generator:
     """Hands the Query and BuiltContext to an abstract LLMClient; performs no retrieval and no Citation parsing."""
 
+    # Diagnostics are isolated per thread: when one Generator serves several requests at once, each
+    # thread reads and writes only its own diagnostics.
+    _last_diagnostics = PerThread(_empty_diagnostics)
+
     def __init__(
         self, llm_client: LLMClient, *, trace_recorder: TraceRecorder | None = None
     ) -> None:
@@ -123,8 +141,8 @@ class Generator:
 
     @property
     def last_diagnostics(self) -> dict[str, Any]:
-        """A read-only diagnostic copy of the most recent ``generate`` call; it never enters
-        GeneratedAnswer / RAGAnswer.
+        """A read-only diagnostic copy of the current thread's most recent ``generate`` call; it
+        never enters GeneratedAnswer / RAGAnswer.
 
         Fields: ``llm_called``, ``repair_attempted``, ``repair_succeeded``, ``usages`` (one item per
         LLM call, taken from client.last_usage, possibly None) and ``raw_response_lengths``.
@@ -184,7 +202,7 @@ class Generator:
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
         self._last_diagnostics = _empty_diagnostics()
-        recorder = self.trace_recorder
+        recorder = resolve_recorder(self.trace_recorder)
         safe_record(recorder, "generation.started")
         if not context.entries:
             # With no evidence the model is not called, avoiding cost, latency and an unsupported
@@ -192,7 +210,7 @@ class Generator:
             # from the model's memory.
             answer = GeneratedAnswer(
                 status=AnswerStatus.INSUFFICIENT_CONTEXT,
-                answer_text=INSUFFICIENT_CONTEXT_ANSWER,
+                answer_text=insufficient_context_answer(query),
             )
             # The deterministic refusal also records generation.completed (llm_called=false) so the
             # event

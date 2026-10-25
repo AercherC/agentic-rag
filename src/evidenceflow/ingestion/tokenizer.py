@@ -1,5 +1,6 @@
 """Provide the Chunker with a Tokenizer interface decoupled from the Hugging Face implementation."""
 
+import threading
 from typing import Protocol, runtime_checkable
 
 from transformers import AutoTokenizer
@@ -37,6 +38,9 @@ class BgeM3Tokenizer:
         if not model_name.strip():
             raise ValueError("Tokenizer model name must not be empty")
         self.model_name = model_name
+        # The same instance is shared across concurrent requests (the ContextBuilder counts tokens);
+        # fast tokenizers are not safe for concurrent calls, so calls are serialized.
+        self._lock = threading.Lock()
         try:
             # The model name is injected via Settings.embedding_model so that the Adapter does not
             # hardcode it twice.
@@ -51,8 +55,9 @@ class BgeM3Tokenizer:
 
         try:
             # The chunk_size contract counts body tokens, so automatic special tokens must be
-            # explicitly disabled.
-            token_ids = self._tokenizer.encode(text, add_special_tokens=False)
+            # explicitly disabled. A shared tokenizer is called concurrently, hence the lock.
+            with self._lock:
+                token_ids = self._tokenizer.encode(text, add_special_tokens=False)
         except Exception as exc:
             raise TokenizerError("Tokenizer failed to encode text") from exc
         if not isinstance(token_ids, list) or not all(
@@ -66,12 +71,13 @@ class BgeM3Tokenizer:
 
         try:
             # Do not let Transformers re-format whitespace; the Chunker only permits a surrounding
-            # strip().
-            text = self._tokenizer.decode(
-                token_ids,
-                skip_special_tokens=False,
-                clean_up_tokenization_spaces=False,
-            )
+            # strip(). Serialized for the same reason as encode().
+            with self._lock:
+                text = self._tokenizer.decode(
+                    token_ids,
+                    skip_special_tokens=False,
+                    clean_up_tokenization_spaces=False,
+                )
         except Exception as exc:
             raise TokenizerError("Tokenizer failed to decode token IDs") from exc
         if not isinstance(text, str):

@@ -31,6 +31,9 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = [
+    "requires_model: loads the real BGE-M3 model; skipped unless it is in the local Hugging Face cache or EVIDENCEFLOW_RUN_MODEL_TESTS=1",
+]
 # The deselected cases and ignored modules below verify frozen historical artifacts
 # (artifacts/, evals/, and one-off experiment scripts under experiments/) that are
 # intentionally NOT published in this repository. The test files stay in the tree so the

@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 from openai import OpenAI
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.generation import LLMMessage
 from evidenceflow.llm.base import LLMConfigurationError, LLMRequestError
 from evidenceflow.llm.diagnostics import classify_llm_failure
@@ -63,6 +64,11 @@ def build_structured_request_params(
 class OpenAICompatibleLLMClient:
     """Turn internal messages into OpenAI-compatible Chat Completions requests."""
 
+    # usage and response diagnostics only describe "the most recent call on this thread"; they are
+    # isolated per thread so concurrent requests do not overwrite each other.
+    _last_usage = PerThread(lambda: None)
+    last_response_info = PerThread(dict)
+
     def __init__(
         self,
         *,
@@ -74,6 +80,7 @@ class OpenAICompatibleLLMClient:
         max_attempts: int = 2,
         structured_output_mode: str = STRUCTURED_OUTPUT_MODE,
         thinking: str = "auto",
+        trust_env: bool = False,
         _client: Any | None = None,
     ) -> None:
         """Validate the configuration and build a synchronous SDK client with no automatic retry and an explicit timeout."""
@@ -119,9 +126,10 @@ class OpenAICompatibleLLMClient:
         self._client = _client or OpenAI(
             api_key=api_key,
             base_url=base_url,
-            # Explicitly disable system proxies: when a local proxy such as Clash is not running,
-            # the TLS handshake used to be truncated.
-            http_client=httpx.Client(trust_env=False, timeout=float(timeout_seconds)),
+            # System proxies are ignored by default: when a local proxy such as Clash is not
+            # running, the TLS handshake used to be truncated. Set LLM_TRUST_ENV=true to opt in
+            # when outbound traffic must go through a proxy.
+            http_client=httpx.Client(trust_env=bool(trust_env), timeout=float(timeout_seconds)),
             # Errors are reported upwards directly at this stage, with no hidden SDK automatic
             # retries or extra waiting.
             max_retries=0,
@@ -135,7 +143,7 @@ class OpenAICompatibleLLMClient:
 
     @property
     def last_usage(self) -> dict | None:
-        """Token usage of the most recent call; None when the service returned no usage."""
+        """Token usage of the current thread's most recent call; None when the service returned no usage."""
 
         return self._last_usage
 

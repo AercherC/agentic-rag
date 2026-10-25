@@ -40,6 +40,12 @@ Exact Dense Top20 -> BGE Reranker -> Top5
 The CLI only triggers assembly; question-answering orchestration lives solely in
 `RAGService`.
 
+The assembled components can be shared across concurrent requests (e.g. behind a web
+server). Per-call diagnostics (`Generator.last_diagnostics`, `last_usage`, reranker
+timings) are kept per thread, model and tokenizer calls are serialized, and a per-request
+trace recorder is supplied with `evidenceflow.tracing.trace_scope(recorder)` instead of
+mutating the shared components.
+
 ### 4. Evidence Context
 
 ```text
@@ -60,6 +66,10 @@ Context Builder -> LLM (JSON output) -> Citation Validation -> RAGAnswer(status)
   `answered` requires valid citations; `insufficient_context` may carry none.
 - The default LLM is DeepSeek. Switching providers requires overriding `LLM_BASE_URL`,
   `LLM_MODEL`, and usually `LLM_THINKING`.
+- The LLM HTTP client ignores `HTTP(S)_PROXY` by default; set `LLM_TRUST_ENV=true` on
+  networks that require a proxy.
+- When retrieval yields no usable context, the deterministic abstention message follows
+  the question language (Chinese if the question contains Han characters, else English).
 - Endpoints, model names, and API keys come from `.env` or environment variables. No real
   credentials are stored in this repository.
 
@@ -113,6 +123,10 @@ The suite is designed to run offline against fixed inputs. Model-backed paths ar
 exercised through fakes and stubs rather than real API calls. A small number of tests
 assert on files that are not published in this repository; those are skipped or expected
 to fail in this trimmed checkout.
+
+Tests marked `requires_model` load the real BGE-M3 model. They run when the model is in
+the local Hugging Face cache (honours `HF_HOME`) and are skipped otherwise; set
+`EVIDENCEFLOW_RUN_MODEL_TESTS=1` to force them (this may download the model).
 
 ## Known limitations
 

@@ -16,9 +16,11 @@ from evidenceflow.domain import (
 from evidenceflow.generation import (
     GENERATOR_PROMPT_VERSION,
     INSUFFICIENT_CONTEXT_ANSWER,
+    INSUFFICIENT_CONTEXT_ANSWER_EN,
     GenerationContractError,
     Generator,
     extract_json_text,
+    insufficient_context_answer,
     parse_generator_output,
 )
 from evidenceflow.llm import LLMError
@@ -234,6 +236,20 @@ def test_unknown_status_extra_and_missing_fields_are_rejected(payload: dict) -> 
         parse_generator_output(json.dumps([payload]))
 
 
+def test_empty_context_answer_follows_query_language() -> None:
+    """Questions containing Han characters get the Chinese refusal, the rest get the English one."""
+
+    generator = Generator(FakeLLMClient(AssertionError("must not call LLM")))
+
+    chinese = generator.generate("PoinTr 如何表示点云？", empty_context())
+    english = generator.generate("How does PoinTr represent point clouds?", empty_context())
+
+    assert chinese.answer_text == INSUFFICIENT_CONTEXT_ANSWER
+    assert english.answer_text == INSUFFICIENT_CONTEXT_ANSWER_EN
+    assert insufficient_context_answer("点云") == INSUFFICIENT_CONTEXT_ANSWER
+    assert insufficient_context_answer("Punktwolke?") == INSUFFICIENT_CONTEXT_ANSWER_EN
+
+
 def test_extract_json_text_order() -> None:
     assert extract_json_text('  <think>a</think>  ```json\n{"a": 1}\n```  ') == '{"a": 1}'
     assert extract_json_text('{"a": 1}') == '{"a": 1}'
@@ -248,7 +264,9 @@ def test_empty_context_returns_deterministically_without_llm_call() -> None:
 
     result = generator.generate("What is missing?", empty_context())
 
-    assert result.answer_text == INSUFFICIENT_CONTEXT_ANSWER
+    # An English question gets the English refusal, matching the System Prompt's
+    # "answer in the language of the question" rule.
+    assert result.answer_text == INSUFFICIENT_CONTEXT_ANSWER_EN
     assert result.status is AnswerStatus.INSUFFICIENT_CONTEXT
     assert client.calls == []
     # The diagnostics must be able to express "the LLM was not called".

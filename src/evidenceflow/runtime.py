@@ -30,9 +30,23 @@ from evidenceflow.storage import (
     read_collection_metadata,
 )
 
-# BGE-M3 Dense vector dimension; a mismatched Exact index dimension means the collection does not
-# match the current embedding model.
+# BGE-M3 Dense vector dimension; used as the expected value only when the embedding provider does
+# not declare a dimension of its own.
 EMBEDDING_DIMENSION = 1024
+
+
+def expected_embedding_dimension(embedding_provider: object) -> int:
+    """Dimension the Exact index must match: the provider's declared model dimension wins.
+
+    A mismatch means the collection does not match the current embedding model. Reading the
+    dimension from the model instead of hard-coding it keeps the check pointed at the model that
+    was actually loaded after ``EMBEDDING_MODEL`` changes.
+    """
+
+    dimension = getattr(embedding_provider, "dimension", None)
+    if isinstance(dimension, int) and not isinstance(dimension, bool) and dimension > 0:
+        return dimension
+    return EMBEDDING_DIMENSION
 
 
 def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
@@ -46,6 +60,7 @@ def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
         timeout_seconds=settings.llm_timeout_seconds,
         max_attempts=settings.llm_max_attempts,
         thinking=settings.llm_thinking,
+        trust_env=settings.llm_trust_env,
     )
 
 
@@ -226,16 +241,18 @@ def build_retriever(
         [chunk for chunk, _ in pairs], [embedding for _, embedding in pairs]
     )
     # Startup validation: the index size must equal the collection record count and the dimension
-    # must match BGE-M3; otherwise an incomplete or mismatched index was read, so refuse to start
-    # instead of silently degrading.
+    # must match the embedding model; otherwise an incomplete or mismatched index was read, so
+    # refuse to start instead of silently degrading.
     if exact_index.size != vector_store.count:
         raise ExactDenseIndexError(
             f"Exact index size {exact_index.size} does not match "
             f"collection count {vector_store.count}"
         )
-    if exact_index.dimension != EMBEDDING_DIMENSION:
+    expected_dimension = expected_embedding_dimension(embedding_provider)
+    if exact_index.dimension != expected_dimension:
         raise ExactDenseIndexError(
-            f"Exact index dimension {exact_index.dimension} != {EMBEDDING_DIMENSION}"
+            f"Exact index dimension {exact_index.dimension} != embedding model "
+            f"dimension {expected_dimension}"
         )
     dense_retriever = DenseRetriever(
         embedding_provider,
@@ -286,13 +303,28 @@ def build_rag_service(
         if retriever is not None
         else build_retriever(settings, trace_recorder=trace_recorder)
     )
-    context_builder = ContextBuilder(
-        BgeM3Tokenizer(settings.embedding_model),
-        settings.max_context_tokens,
-    )
+    context_builder = build_context_builder(settings)
     generator = (
         generator
         if generator is not None
-        else Generator(build_llm_client(settings), trace_recorder=trace_recorder)
+        else build_generator(settings, trace_recorder=trace_recorder)
     )
     return RAGService(retriever, context_builder, generator, trace_recorder=trace_recorder)
+
+
+def build_context_builder(settings: Settings) -> ContextBuilder:
+    """Production Context assembly: the same Tokenizer as Embedding, budget taken from Settings.
+
+    The evaluation diagnosis scripts observe retrieval, context and generation stage by stage;
+    reusing this function keeps them on exactly the production wiring.
+    """
+
+    return ContextBuilder(BgeM3Tokenizer(settings.embedding_model), settings.max_context_tokens)
+
+
+def build_generator(
+    settings: Settings, *, trace_recorder: TraceRecorder | None = None
+) -> Generator:
+    """Production Generator assembly; like ``build_context_builder``, reused by stage diagnosis."""
+
+    return Generator(build_llm_client(settings), trace_recorder=trace_recorder)

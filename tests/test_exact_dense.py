@@ -106,3 +106,28 @@ def test_exact_backend_is_fixed_to_numpy_regardless_of_faiss(monkeypatch) -> Non
     # The module no longer imports faiss, so there is no faiss attribute that could be misused.
     assert not hasattr(module, "faiss")
     assert index.search([1.0, 0.0], top_k=1)[0].chunk.chunk_id == "A"
+
+
+@pytest.mark.parametrize("top_k", [1, 2, 3, 7, 25, 40, 41])
+def test_partial_selection_matches_full_sort_including_boundary_ties(top_k: int) -> None:
+    """Top-K selects a threshold before sorting; the result must match a full
+    (score DESC, chunk_id ASC) sort followed by truncation.
+
+    Only a few vector directions are used, which creates many ties and lets a tie group straddle
+    the K-th boundary.
+    """
+
+    rng = np.random.default_rng(7)
+    directions = np.eye(4, dtype=np.float32)
+    picks = rng.integers(0, 4, size=40)
+    chunk_ids = [f"c{value:02d}" for value in rng.permutation(40)]
+    embeddings = [directions[pick].tolist() for pick in picks]
+    index = ExactDenseIndex([_chunk(chunk_id, i) for i, chunk_id in enumerate(chunk_ids)], embeddings)
+    query = np.array([0.8, 0.6, 0.0, 0.0], dtype=np.float32)
+
+    results = index.search(query, top_k=top_k)
+
+    scores = (np.asarray(embeddings, dtype=np.float32) @ query).tolist()
+    expected = sorted(zip(scores, chunk_ids), key=lambda item: (-item[0], item[1]))[:top_k]
+    assert [(item.similarity_score, item.chunk.chunk_id) for item in results] == expected
+    assert [item.rank for item in results] == list(range(1, len(expected) + 1))

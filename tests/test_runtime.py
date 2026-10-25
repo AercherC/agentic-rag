@@ -74,8 +74,8 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
             events.append(("dense_reranker", contract))
 
     class FakeLLM:
-        def __init__(self, *, api_key, base_url, model, temperature, timeout_seconds, max_attempts, thinking):
-            events.append(("llm", (model, temperature, timeout_seconds, max_attempts, thinking)))
+        def __init__(self, *, api_key, base_url, model, temperature, timeout_seconds, max_attempts, thinking, trust_env):
+            events.append(("llm", (model, temperature, timeout_seconds, max_attempts, thinking, trust_env)))
 
     class FakeTokenizer:
         def __init__(self, model): events.append(("tokenizer", model))
@@ -134,7 +134,7 @@ def test_runtime_factory_wires_formal_components_from_settings(monkeypatch, tmp_
         ),
         ("tokenizer", "test-bge"),
         ("context", 1234),
-        ("llm", ("test-llm", 0.0, 60.0, 2, "disabled")),
+        ("llm", ("test-llm", 0.0, 60.0, 2, "disabled", False)),
         ("generator", "FakeLLM"),
         ("generator_trace_recorder", None),
     ]
@@ -187,8 +187,16 @@ def test_runtime_factory_wires_ingestion_from_settings(monkeypatch, tmp_path) ->
     ]
 
 
-def _patch_retriever_deps(monkeypatch, *, store_count: int, index_size: int, dimension: int):
-    """Replace the heavy dependencies for build_retriever's startup-validation cases."""
+def _patch_retriever_deps(
+    monkeypatch,
+    *,
+    store_count: int,
+    index_size: int,
+    dimension: int,
+    provider_dimension: int | None = None,
+):
+    """Replace the heavy dependencies for build_retriever's startup-validation cases;
+    ``provider_dimension`` of None means the provider declares no dimension."""
 
     class FakeStore:
         count = store_count
@@ -203,7 +211,8 @@ def _patch_retriever_deps(monkeypatch, *, store_count: int, index_size: int, dim
 
     FakeIndex.size = index_size
     FakeIndex.dimension = dimension
-    monkeypatch.setattr("evidenceflow.runtime.BgeM3EmbeddingProvider", lambda m, *, device: object())
+    provider = object() if provider_dimension is None else SimpleNamespace(dimension=provider_dimension)
+    monkeypatch.setattr("evidenceflow.runtime.BgeM3EmbeddingProvider", lambda m, *, device: provider)
     monkeypatch.setattr("evidenceflow.runtime.ChromaVectorStore", FakeStore)
     monkeypatch.setattr("evidenceflow.runtime.ExactDenseIndex", FakeIndex)
     monkeypatch.setattr("evidenceflow.runtime.DenseRetriever", lambda e, s, top_k: object())
@@ -233,6 +242,23 @@ def test_build_retriever_rejects_wrong_dimension(monkeypatch, tmp_path) -> None:
 
     with pytest.raises(ExactDenseIndexError, match="dimension"):
         build_retriever(Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu"))
+
+
+def test_build_retriever_checks_dimension_against_embedding_model(monkeypatch, tmp_path) -> None:
+    """When the provider declares a dimension, the model dimension wins over the hard-coded BGE-M3
+    1024."""
+
+    settings = Settings(_env_file=None, vector_db_path=tmp_path, model_device="cpu")
+    _patch_retriever_deps(
+        monkeypatch, store_count=2, index_size=2, dimension=768, provider_dimension=768
+    )
+    assert build_retriever(settings) == "retriever"
+
+    _patch_retriever_deps(
+        monkeypatch, store_count=2, index_size=2, dimension=1024, provider_dimension=768
+    )
+    with pytest.raises(ExactDenseIndexError, match="embedding model dimension 768"):
+        build_retriever(settings)
 
 
 def test_build_retriever_returns_retriever_when_validation_passes(monkeypatch, tmp_path) -> None:

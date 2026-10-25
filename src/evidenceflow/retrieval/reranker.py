@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import math
 import logging
+import threading
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.chunk import (
     DocumentChunk,
     RerankedRetrievedChunk,
@@ -16,7 +18,7 @@ from evidenceflow.domain.chunk import (
 )
 from evidenceflow.model_device import resolve_model_device
 from evidenceflow.retrieval.retriever import DenseRetriever, InvalidQueryError
-from evidenceflow.tracing import TraceRecorder, safe_record
+from evidenceflow.tracing import TraceRecorder, resolve_recorder, safe_record
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,11 @@ class RerankedChunk:
 
 class LearnedReranker:
     """Batch-scores candidates with a replaceable PairScorer and applies a stable deterministic ordering."""
+
+    # Truncation count and timing of the most recent rerank are isolated per thread, so concurrent
+    # requests each read their own values.
+    last_truncated_pair_count = PerThread(int)
+    last_timing_seconds = PerThread(dict)
 
     def __init__(
         self,
@@ -146,8 +153,24 @@ def rank_scored_candidates(
     ]
 
 
+def _zero_scorer_timings() -> dict[str, float]:
+    """Initial per-stage scorer timings; every thread gets its own copy on first read."""
+
+    return {
+        "untruncated_tokenization": 0.0,
+        "model_tokenization": 0.0,
+        "model_forward": 0.0,
+        "score_postprocess": 0.0,
+    }
+
+
 class TransformersCrossEncoderScorer:
     """Compute Cross-Encoder logits with a Hugging Face Sequence Classification model."""
+
+    # Truncation count and timings of the most recent batch are isolated per thread; the caller
+    # reads them on the same thread right afterwards.
+    last_truncated_pair_count = PerThread(int)
+    last_timing_seconds = PerThread(_zero_scorer_timings)
 
     def __init__(
         self,
@@ -183,21 +206,26 @@ class TransformersCrossEncoderScorer:
         self.model.to(device=self.device, dtype=torch.float32)
         self.model.eval()
         self._torch = torch
+        # A fast tokenizer mutates internal state when truncation/padding settings change, so
+        # concurrent calls raise "Already borrowed"; tokenization and the forward pass run serially
+        # for the whole batch, which also keeps the counters intact.
+        self._lock = threading.Lock()
         self.forward_passes = 0
         self.last_truncated_pair_count = 0
         self.inference_mode = inference_mode
-        # Only the stage timings of the most recent batch are kept, to locate bottlenecks in
-        # performance experiments;
-        # they take no part in scoring or ranking.
-        self.last_timing_seconds = {
-            "untruncated_tokenization": 0.0,
-            "model_tokenization": 0.0,
-            "model_forward": 0.0,
-            "score_postprocess": 0.0,
-        }
+        # Only the stage timings of the most recent batch are kept, per thread, to locate
+        # bottlenecks in performance experiments; they take no part in scoring or ranking.
+        self.last_timing_seconds = _zero_scorer_timings()
 
     def score_pairs(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
-        """Run one forward pass over a single batch and return the raw logits."""
+        """Run one forward pass over a single batch and return the raw logits; concurrent calls are
+        serialized batch by batch."""
+
+        with self._lock:
+            return self._score_pairs_locked(pairs)
+
+    def _score_pairs_locked(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
+        """Run tokenization, the forward pass and post-processing while holding the lock."""
 
         if not pairs:
             self.last_truncated_pair_count = 0
@@ -278,7 +306,8 @@ class DenseRerankerRetriever:
         self.reranker_input_k = reranker_input_k
         self.final_top_k = final_top_k
         # Public attribute: callers (including the B2 trace comparison experiment) may swap the
-        # recorder between two retrieve calls.
+        # recorder between two retrieve calls. When one instance serves concurrent requests, use
+        # tracing.trace_scope instead of replacing this attribute.
         self.trace_recorder = trace_recorder
 
     def retrieve(
@@ -300,9 +329,10 @@ class DenseRerankerRetriever:
         if effective_top_k > self.reranker_input_k:
             raise ValueError("top_k must not exceed reranker_input_k")
 
-        # This call pins a single recorder; when it is None no payload is built below, so the cost
-        # matches an untraced run.
-        recorder = self.trace_recorder
+        # This call pins a single recorder: an explicitly injected one wins, otherwise the recorder
+        # installed by ``tracing.trace_scope`` for the current request is used. When it is None no
+        # payload is built below, so the cost matches an untraced run.
+        recorder = resolve_recorder(self.trace_recorder)
         safe_record(recorder, "retrieval.dense.started")
         candidates = self.dense_retriever.retrieve(query, top_k=self.candidate_pool_k)
         if recorder is not None:

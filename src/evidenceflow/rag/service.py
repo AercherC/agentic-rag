@@ -13,7 +13,7 @@ from evidenceflow.domain.chunk import (
 )
 from evidenceflow.domain.context import BuiltContext
 from evidenceflow.domain.generation import GeneratedAnswer
-from evidenceflow.tracing import TraceRecorder, safe_record
+from evidenceflow.tracing import TraceRecorder, resolve_recorder, safe_record
 
 
 class RetrieverProtocol(Protocol):
@@ -68,7 +68,7 @@ class RAGService:
         # The blank-query check stays first: the run has not started yet, so no event is recorded.
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
-        recorder = self.trace_recorder
+        recorder = resolve_recorder(self.trace_recorder)
         safe_record(recorder, "run.started")
         # Track the current stage name so a failure can write run.failed.stage.
         stage = "retrieval"

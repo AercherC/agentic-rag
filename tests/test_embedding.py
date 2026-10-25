@@ -155,6 +155,7 @@ def real_bge_m3_provider() -> BgeM3EmbeddingProvider:
     return BgeM3EmbeddingProvider(settings.embedding_model)
 
 
+@pytest.mark.requires_model
 @pytest.mark.parametrize(
     "query",
     [
@@ -175,6 +176,7 @@ def test_real_bge_m3_embeds_english_and_chinese_queries(
     assert _norm(vector) == pytest.approx(1.0, abs=1e-6)
 
 
+@pytest.mark.requires_model
 def test_real_bge_m3_batch_and_query_dimensions_match(
     real_bge_m3_provider: BgeM3EmbeddingProvider,
 ) -> None:
@@ -195,3 +197,26 @@ def test_real_bge_m3_batch_and_query_dimensions_match(
     assert dimension > 0
     assert all(len(vector) == dimension for vector in document_vectors)
     assert all(_norm(vector) == pytest.approx(1.0, abs=1e-6) for vector in document_vectors)
+
+
+def test_provider_reports_model_dimension_or_none(monkeypatch) -> None:
+    """dimension comes from the model's declaration; None when it declares none or an invalid value,
+    leaving the fallback choice to the caller."""
+
+    class DeclaringModel(_FakeSentenceTransformer):
+        def get_sentence_embedding_dimension(self) -> int | None:
+            return self.declared
+
+    model = DeclaringModel()
+    monkeypatch.setattr(
+        "evidenceflow.embedding.bge_m3.SentenceTransformer",
+        lambda model_name, *, device: model,
+    )
+    provider = BgeM3EmbeddingProvider("configured/model", device="cpu")
+
+    model.declared = 1024
+    assert provider.dimension == 1024
+    model.declared = None
+    assert provider.dimension is None
+    model.declared = True
+    assert provider.dimension is None

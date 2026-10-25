@@ -1,6 +1,7 @@
 """BGE-M3 Dense Embedding backed by Sentence Transformers."""
 
 import math
+import threading
 from collections.abc import Sequence
 from typing import Any
 
@@ -86,6 +87,9 @@ class BgeM3EmbeddingProvider:
             raise ValueError("Embedding model name must not be empty")
         self.model_name = model_name
         self.device = resolve_model_device(device)
+        # A provider shared across concurrent requests serializes encode(): the underlying fast
+        # tokenizer is not thread-safe.
+        self._lock = threading.Lock()
         try:
             # Documents and queries share this instance and device; the model library loads float32
             # weights by default.
@@ -94,6 +98,16 @@ class BgeM3EmbeddingProvider:
             raise EmbeddingLoadError(
                 f"Failed to load embedding model: {model_name}"
             ) from exc
+
+    @property
+    def dimension(self) -> int | None:
+        """The Dense vector dimension declared by the model; None when the model declares none."""
+
+        getter = getattr(self._model, "get_sentence_embedding_dimension", None)
+        value = getter() if callable(getter) else None
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            return None
+        return value
 
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         """Encode several document texts in one batch, guaranteeing every output is explicitly L2-normalized."""
@@ -108,15 +122,17 @@ class BgeM3EmbeddingProvider:
             _validate_text(text, field_name=f"texts[{index}]")
 
         try:
-            # The underlying call receives the whole Batch at once; the project layer then
-            # independently guarantees normalization and output types.
-            raw_vectors = self._model.encode(
-                text_list,
-                convert_to_numpy=True,
-                normalize_embeddings=False,
-                show_progress_bar=False,
-                device=self.device,
-            )
+            # The underlying call receives the whole batch at once; the project layer then
+            # independently guarantees normalization and output types. Shared providers are
+            # called concurrently, so the model call is serialized (see __init__).
+            with self._lock:
+                raw_vectors = self._model.encode(
+                    text_list,
+                    convert_to_numpy=True,
+                    normalize_embeddings=False,
+                    show_progress_bar=False,
+                    device=self.device,
+                )
         except Exception as exc:
             raise EmbeddingError("Failed to embed document texts") from exc
         return _normalize_batch(raw_vectors, expected_count=len(text_list))
@@ -127,14 +143,15 @@ class BgeM3EmbeddingProvider:
         _validate_text(query, field_name="query")
         try:
             # No strip, rewrite, or translation: the validated raw Query goes to the model
-            # unchanged.
-            raw_vector = self._model.encode(
-                query,
-                convert_to_numpy=True,
-                normalize_embeddings=False,
-                show_progress_bar=False,
-                device=self.device,
-            )
+            # unchanged; the call is serialized for the same reason as document encoding.
+            with self._lock:
+                raw_vector = self._model.encode(
+                    query,
+                    convert_to_numpy=True,
+                    normalize_embeddings=False,
+                    show_progress_bar=False,
+                    device=self.device,
+                )
         except Exception as exc:
             raise EmbeddingError("Failed to embed query") from exc
         return _normalize_vector(raw_vector)

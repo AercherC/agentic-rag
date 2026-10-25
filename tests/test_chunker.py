@@ -138,6 +138,7 @@ def test_page_tracking_for_single_cross_page_and_page_gap() -> None:
     assert "\n\n" in cross_page[0].content
 
 
+@pytest.mark.requires_model
 def test_bge_m3_cross_segment_chunk_does_not_glue_text() -> None:
     """When the real BGE-M3 ignores the whitespace boundary, cross-page body text must still not be glued into a new word."""
 

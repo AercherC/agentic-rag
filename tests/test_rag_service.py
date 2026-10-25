@@ -14,7 +14,7 @@ from evidenceflow.domain import (
     RerankedRetrievedChunk,
     SourceReference,
 )
-from evidenceflow.generation import Generator
+from evidenceflow.generation import INSUFFICIENT_CONTEXT_ANSWER_EN, Generator
 from evidenceflow.llm import LLMRequestError
 from evidenceflow.rag import RAGService
 
@@ -168,7 +168,9 @@ def test_empty_retrieval_flows_through_existing_empty_context_and_generator_cont
 
     assert answer.sources == []
     assert answer.retrieved_chunks == []
-    assert "没有足够" in answer.answer
+    # The deterministic refusal for an empty Context follows the question language; an English
+    # question gets the English text.
+    assert answer.answer == INSUFFICIENT_CONTEXT_ANSWER_EN
 
 
 def test_retriever_or_context_failure_stops_downstream_components() -> None:
