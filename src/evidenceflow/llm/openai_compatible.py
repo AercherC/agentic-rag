@@ -9,6 +9,7 @@ from typing import Any
 import httpx
 from openai import OpenAI
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.generation import LLMMessage
 from evidenceflow.llm.base import LLMConfigurationError, LLMRequestError
 from evidenceflow.llm.diagnostics import classify_llm_failure
@@ -59,6 +60,10 @@ def build_structured_request_params(
 class OpenAICompatibleLLMClient:
     """将内部消息转换为 OpenAI-compatible Chat Completions 请求。"""
 
+    # usage 与响应诊断只表示“本线程最近一次调用”；按线程隔离，避免并发请求互相覆盖。
+    _last_usage = PerThread(lambda: None)
+    last_response_info = PerThread(dict)
+
     def __init__(
         self,
         *,
@@ -70,6 +75,7 @@ class OpenAICompatibleLLMClient:
         max_attempts: int = 2,
         structured_output_mode: str = STRUCTURED_OUTPUT_MODE,
         thinking: str = "auto",
+        trust_env: bool = False,
         _client: Any | None = None,
     ) -> None:
         """验证配置并建立无自动重试、带显式超时的同步 SDK Client。"""
@@ -113,8 +119,9 @@ class OpenAICompatibleLLMClient:
         self._client = _client or OpenAI(
             api_key=api_key,
             base_url=base_url,
-            # 显式禁用系统代理：Clash 等本地代理未运行时不再截断 TLS 握手。
-            http_client=httpx.Client(trust_env=False, timeout=float(timeout_seconds)),
+            # 默认不读系统代理：Clash 等本地代理未运行时不再截断 TLS 握手；需要代理出网时
+            # 由 LLM_TRUST_ENV=true 显式开启。
+            http_client=httpx.Client(trust_env=bool(trust_env), timeout=float(timeout_seconds)),
             # 本阶段错误直接向上报告，不引入隐藏的 SDK 自动重试与额外等待。
             max_retries=0,
         )
@@ -127,7 +134,7 @@ class OpenAICompatibleLLMClient:
 
     @property
     def last_usage(self) -> dict | None:
-        """最近一次调用的 token 用量；服务未返回 usage 时为 None。"""
+        """当前线程最近一次调用的 token 用量；服务未返回 usage 时为 None。"""
 
         return self._last_usage
 

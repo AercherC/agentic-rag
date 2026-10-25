@@ -91,6 +91,7 @@ def real_bge_m3_tokenizer() -> BgeM3Tokenizer:
     return BgeM3Tokenizer(settings.embedding_model)
 
 
+@pytest.mark.requires_model
 @pytest.mark.parametrize("text", ["Evidence must remain traceable.", "证据必须保持可追溯。"])
 def test_real_bge_m3_tokenizer_handles_english_and_chinese(
     real_bge_m3_tokenizer: BgeM3Tokenizer,

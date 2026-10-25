@@ -8,6 +8,7 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.context import BuiltContext
 from evidenceflow.domain.generation import (
     AnswerStatus,
@@ -17,10 +18,15 @@ from evidenceflow.domain.generation import (
     generator_output_json_schema,
 )
 from evidenceflow.llm.base import LLMClient
-from evidenceflow.tracing import TraceRecorder, safe_record
+from evidenceflow.tracing import TraceRecorder, resolve_recorder, safe_record
 
 GENERATOR_PROMPT_VERSION = "rag-generator-v3"
 INSUFFICIENT_CONTEXT_ANSWER = "知识库中没有足够的相关信息来回答这个问题。"
+INSUFFICIENT_CONTEXT_ANSWER_EN = (
+    "The knowledge base does not contain enough relevant information to answer this question."
+)
+# CJK 统一汉字（含扩展 A 与兼容区）；问题中出现汉字即视为中文提问。
+_HAN_CHARACTER = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]")
 GENERATOR_SCHEMA_NAME = "generator_output"
 
 _SYSTEM_PROMPT = """You answer questions using only the supplied knowledge-base context.
@@ -45,6 +51,12 @@ _REPAIR_INSTRUCTION = (
 _THINK_BLOCK = re.compile(r"\A<think>.*?</think>", re.DOTALL)
 # 外层 ```json 代码块（语言标记可省略），必须整体包住全文。
 _CODE_FENCE = re.compile(r"\A```(?:json)?[ \t]*\n?(.*?)\n?[ \t]*```\Z", re.DOTALL)
+
+
+def insufficient_context_answer(query: str) -> str:
+    """空 Context 时的确定性拒答文本，语言跟随问题（与 System Prompt 的语言规则一致）。"""
+
+    return INSUFFICIENT_CONTEXT_ANSWER if _HAN_CHARACTER.search(query) else INSUFFICIENT_CONTEXT_ANSWER_EN
 
 
 class GenerationContractError(ValueError):
@@ -106,6 +118,9 @@ def _empty_diagnostics() -> dict[str, Any]:
 class Generator:
     """把 Query 与 BuiltContext 交给抽象 LLMClient，不承担检索或 Citation 解析。"""
 
+    # 诊断按线程隔离：同一 Generator 并发服务多个请求时，各线程只读写自己的诊断。
+    _last_diagnostics = PerThread(_empty_diagnostics)
+
     def __init__(
         self, llm_client: LLMClient, *, trace_recorder: TraceRecorder | None = None
     ) -> None:
@@ -117,7 +132,7 @@ class Generator:
 
     @property
     def last_diagnostics(self) -> dict[str, Any]:
-        """最近一次 ``generate`` 的只读诊断副本，不进入 GeneratedAnswer / RAGAnswer。
+        """当前线程最近一次 ``generate`` 的只读诊断副本，不进入 GeneratedAnswer / RAGAnswer。
 
         字段：``llm_called``、``repair_attempted``、``repair_succeeded``、``usages``
         （每次 LLM 调用一项，来自 client.last_usage，可为 None）、``raw_response_lengths``。
@@ -173,13 +188,13 @@ class Generator:
         if not isinstance(query, str) or not query.strip():
             raise ValueError("query must not be blank")
         self._last_diagnostics = _empty_diagnostics()
-        recorder = self.trace_recorder
+        recorder = resolve_recorder(self.trace_recorder)
         safe_record(recorder, "generation.started")
         if not context.entries:
             # 没有证据时不调用模型，避免费用、延迟和无依据的模型记忆回答。
             answer = GeneratedAnswer(
                 status=AnswerStatus.INSUFFICIENT_CONTEXT,
-                answer_text=INSUFFICIENT_CONTEXT_ANSWER,
+                answer_text=insufficient_context_answer(query),
             )
             # 确定性拒答也记 generation.completed（llm_called=false），保证事件序列完整。
             self._record_completed(recorder, answer)

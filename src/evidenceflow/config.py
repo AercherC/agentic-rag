@@ -61,6 +61,13 @@ class Settings(BaseSettings):
         le=2,
         description="单次 LLM 业务调用的最大尝试次数；仅瞬态错误允许第二次尝试。",
     )
+    llm_trust_env: bool = Field(
+        default=False,
+        description=(
+            "LLM HTTP Client 是否读取 HTTP(S)_PROXY 等系统代理环境变量。默认 False，避免本地代理"
+            "未运行时截断 TLS 握手；在必须经代理出网的网络中设为 True。"
+        ),
+    )
     llm_thinking: Literal["auto", "enabled", "disabled"] = Field(
         default="disabled",
         description=(

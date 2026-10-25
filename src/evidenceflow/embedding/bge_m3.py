@@ -1,6 +1,7 @@
 """使用 Sentence Transformers 提供 BGE-M3 Dense Embedding。"""
 
 import math
+import threading
 from collections.abc import Sequence
 from typing import Any
 
@@ -84,6 +85,8 @@ class BgeM3EmbeddingProvider:
             raise ValueError("Embedding model name must not be empty")
         self.model_name = model_name
         self.device = resolve_model_device(device)
+        # 共享 Provider 被并发请求调用时串行执行 encode：底层 fast tokenizer 不是线程安全的。
+        self._lock = threading.Lock()
         try:
             # 文档与 Query 共用该实例及设备；模型库默认加载 float32 权重。
             self._model = SentenceTransformer(model_name, device=self.device)
@@ -91,6 +94,16 @@ class BgeM3EmbeddingProvider:
             raise EmbeddingLoadError(
                 f"Failed to load embedding model: {model_name}"
             ) from exc
+
+    @property
+    def dimension(self) -> int | None:
+        """模型声明的 Dense 向量维度；模型未声明时为 None。"""
+
+        getter = getattr(self._model, "get_sentence_embedding_dimension", None)
+        value = getter() if callable(getter) else None
+        if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+            return None
+        return value
 
     def embed_documents(self, texts: Sequence[str]) -> list[list[float]]:
         """一次批量编码多个文档文本，并保证所有输出显式 L2 归一化。"""
@@ -106,13 +119,14 @@ class BgeM3EmbeddingProvider:
 
         try:
             # 底层一次接收完整 Batch；项目层随后独立保证归一化和输出类型。
-            raw_vectors = self._model.encode(
-                text_list,
-                convert_to_numpy=True,
-                normalize_embeddings=False,
-                show_progress_bar=False,
-                device=self.device,
-            )
+            with self._lock:
+                raw_vectors = self._model.encode(
+                    text_list,
+                    convert_to_numpy=True,
+                    normalize_embeddings=False,
+                    show_progress_bar=False,
+                    device=self.device,
+                )
         except Exception as exc:
             raise EmbeddingError("Failed to embed document texts") from exc
         return _normalize_batch(raw_vectors, expected_count=len(text_list))
@@ -123,13 +137,14 @@ class BgeM3EmbeddingProvider:
         _validate_text(query, field_name="query")
         try:
             # 不执行 strip、改写或翻译，校验后的原始 Query 原样交给模型。
-            raw_vector = self._model.encode(
-                query,
-                convert_to_numpy=True,
-                normalize_embeddings=False,
-                show_progress_bar=False,
-                device=self.device,
-            )
+            with self._lock:
+                raw_vector = self._model.encode(
+                    query,
+                    convert_to_numpy=True,
+                    normalize_embeddings=False,
+                    show_progress_bar=False,
+                    device=self.device,
+                )
         except Exception as exc:
             raise EmbeddingError("Failed to embed query") from exc
         return _normalize_vector(raw_vector)

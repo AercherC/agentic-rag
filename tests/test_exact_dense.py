@@ -106,3 +106,26 @@ def test_exact_backend_is_fixed_to_numpy_regardless_of_faiss(monkeypatch) -> Non
     # 模块不再导入 faiss，因此没有 faiss 属性可被误用。
     assert not hasattr(module, "faiss")
     assert index.search([1.0, 0.0], top_k=1)[0].chunk.chunk_id == "A"
+
+
+@pytest.mark.parametrize("top_k", [1, 2, 3, 7, 25, 40, 41])
+def test_partial_selection_matches_full_sort_including_boundary_ties(top_k: int) -> None:
+    """Top-K 先选阈值再排序，结果必须与“全量按 (score DESC, chunk_id ASC) 排序后截断”一致。
+
+    向量只取少数几个方向，制造大量同分，并让同分组跨越第 K 名的边界。
+    """
+
+    rng = np.random.default_rng(7)
+    directions = np.eye(4, dtype=np.float32)
+    picks = rng.integers(0, 4, size=40)
+    chunk_ids = [f"c{value:02d}" for value in rng.permutation(40)]
+    embeddings = [directions[pick].tolist() for pick in picks]
+    index = ExactDenseIndex([_chunk(chunk_id, i) for i, chunk_id in enumerate(chunk_ids)], embeddings)
+    query = np.array([0.8, 0.6, 0.0, 0.0], dtype=np.float32)
+
+    results = index.search(query, top_k=top_k)
+
+    scores = (np.asarray(embeddings, dtype=np.float32) @ query).tolist()
+    expected = sorted(zip(scores, chunk_ids), key=lambda item: (-item[0], item[1]))[:top_k]
+    assert [(item.similarity_score, item.chunk.chunk_id) for item in results] == expected
+    assert [item.rank for item in results] == list(range(1, len(expected) + 1))

@@ -93,3 +93,56 @@ def test_reranker_model_and_tokenized_inputs_share_device(monkeypatch) -> None:
     assert observed["forward_device"] == observed["model_device"]
     assert observed["mask_device"] == observed["model_device"]
     assert observed["model_dtype"] is torch.float32
+
+
+def test_concurrent_score_pairs_never_overlap_and_report_per_thread_counts(monkeypatch) -> None:
+    """Fast tokenizer 并发调用不安全：score_pairs 必须串行进入，截断数按线程返回。"""
+
+    import threading
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    active = {"count": 0, "max": 0}
+    guard = threading.Lock()
+
+    class SlowTokenizer:
+        def __call__(self, pairs, *, padding, truncation, **kwargs):
+            with guard:
+                active["count"] += 1
+                active["max"] = max(active["max"], active["count"])
+            time.sleep(0.01)  # 拉长临界区，让未加锁的实现必然发生重叠
+            with guard:
+                active["count"] -= 1
+            if not padding and not truncation:
+                # 查询文本长度即“超长”对数，便于断言每个线程拿到自己的截断数。
+                return {"input_ids": [[0] * 10] * len(pairs[0][0])}
+            return _FakeBatch(input_ids=_FakeTensor(), attention_mask=_FakeTensor())
+
+    class FakeModel:
+        def to(self, *, device, dtype):
+            return self
+
+        def eval(self):
+            return self
+
+        def __call__(self, **_inputs):
+            return SimpleNamespace(logits=_FakeLogits())
+
+    transformers = ModuleType("transformers")
+    transformers.AutoTokenizer = SimpleNamespace(from_pretrained=lambda _name: SlowTokenizer())
+    transformers.AutoModelForSequenceClassification = SimpleNamespace(
+        from_pretrained=lambda _name: FakeModel()
+    )
+    monkeypatch.setitem(sys.modules, "transformers", transformers)
+    scorer = TransformersCrossEncoderScorer("test/reranker", device="cpu", max_length=5)
+
+    def worker(index: int) -> int:
+        scorer.score_pairs([("q" * (index + 1), "passage")])
+        return scorer.last_truncated_pair_count
+
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        counts = list(pool.map(worker, range(6)))
+
+    assert active["max"] == 1
+    assert counts == [index + 1 for index in range(6)]
+    assert scorer.forward_passes == 6
