@@ -1,8 +1,0 @@
-Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 39071.16it/s]
-Loading weights:   0%|          | 0/201 [00:00<?, ?it/s]Loading weights:  12%|█▏        | 25/201 [00:00<00:00, 237.46it/s]Loading weights:  31%|███       | 62/201 [00:00<00:00, 310.69it/s]Loading weights:  47%|████▋     | 94/201 [00:00<00:00, 300.15it/s]Loading weights: 100%|██████████| 201/201 [00:00<00:00, 587.63it/s]
-[transformers] Token indices sequence length is longer than the specified maximum sequence length for this model (525 > 512). Running this sequence through the model will result in indexing errors
-{"status": "PASS", "output": "artifacts\\stage_a\\A3_replay_runtime.json", "device": "cpu", "backend": "numpy.exact"}
-
-real	3m27.287s
-user	0m0.015s
-sys	0m0.015s

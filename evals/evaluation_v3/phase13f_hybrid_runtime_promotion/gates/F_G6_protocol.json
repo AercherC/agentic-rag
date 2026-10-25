@@ -1,7 +1,0 @@
-{
- "collection": "ef_research_bge_m3_hybrid_c512_v1",
- "collection_identity_ok": true,
- "embedding": "BGE-M3 CLS pooling + L2 norm（同 13C-C 协议）",
- "top_k": 20,
- "pass": true
-}

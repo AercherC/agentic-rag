@@ -1,8 +1,0 @@
-{
-  "phase": 6,
-  "candidate_contract_gate": "PASS",
-  "baseline_gate": "PASS",
-  "evaluation_gate": "PASS",
-  "reproducibility_gate": "PASS",
-  "gate": "PASS"
-}

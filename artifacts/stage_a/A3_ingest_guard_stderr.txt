@@ -1,1 +1,0 @@
-Ingestion refused: Refusing to ingest into the ACTIVE collection 'ef_research_bge_m3_hybrid_c512_v2'; build a staging index with scripts/build_staging_index.py instead
