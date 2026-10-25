@@ -137,6 +137,7 @@ def test_page_tracking_for_single_cross_page_and_page_gap() -> None:
     assert "\n\n" in cross_page[0].content
 
 
+@pytest.mark.requires_model
 def test_bge_m3_cross_segment_chunk_does_not_glue_text() -> None:
     """真实 BGE-M3 忽略空白边界时，跨页正文仍不得粘连成新单词。"""
 

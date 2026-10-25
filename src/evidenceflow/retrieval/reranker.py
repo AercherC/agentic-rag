@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import math
 import logging
+import threading
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
+from evidenceflow.concurrency import PerThread
 from evidenceflow.domain.chunk import (
     DocumentChunk,
     RerankedRetrievedChunk,
@@ -16,7 +18,7 @@ from evidenceflow.domain.chunk import (
 )
 from evidenceflow.model_device import resolve_model_device
 from evidenceflow.retrieval.retriever import DenseRetriever, InvalidQueryError
-from evidenceflow.tracing import TraceRecorder, safe_record
+from evidenceflow.tracing import TraceRecorder, resolve_recorder, safe_record
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +47,10 @@ class RerankedChunk:
 
 class LearnedReranker:
     """以可替换 PairScorer 对候选批量评分，并执行稳定确定性排序。"""
+
+    # 最近一次 rerank 的截断数与耗时按线程隔离，供并发请求各自读取。
+    last_truncated_pair_count = PerThread(int)
+    last_timing_seconds = PerThread(dict)
 
     def __init__(
         self,
@@ -143,8 +149,23 @@ def rank_scored_candidates(
     ]
 
 
+def _zero_scorer_timings() -> dict[str, float]:
+    """Scorer 各阶段耗时的初值；每个线程第一次读取时各得一份。"""
+
+    return {
+        "untruncated_tokenization": 0.0,
+        "model_tokenization": 0.0,
+        "model_forward": 0.0,
+        "score_postprocess": 0.0,
+    }
+
+
 class TransformersCrossEncoderScorer:
     """使用 Hugging Face Sequence Classification 模型计算 Cross-Encoder logits。"""
+
+    # 最近一批的截断数与耗时按线程隔离；调用方在同一线程内紧接着读取。
+    last_truncated_pair_count = PerThread(int)
+    last_timing_seconds = PerThread(_zero_scorer_timings)
 
     def __init__(
         self,
@@ -178,19 +199,23 @@ class TransformersCrossEncoderScorer:
         self.model.to(device=self.device, dtype=torch.float32)
         self.model.eval()
         self._torch = torch
+        # Fast tokenizer 在 truncation/padding 设置切换时会修改内部状态，并发调用会抛
+        # "Already borrowed"；整批 tokenization + 前向串行执行，计数也因此不会丢失。
+        self._lock = threading.Lock()
         self.forward_passes = 0
         self.last_truncated_pair_count = 0
         self.inference_mode = inference_mode
         # 仅保存最近一批的阶段耗时，供性能实验定位瓶颈，不参与评分或排序。
-        self.last_timing_seconds = {
-            "untruncated_tokenization": 0.0,
-            "model_tokenization": 0.0,
-            "model_forward": 0.0,
-            "score_postprocess": 0.0,
-        }
+        self.last_timing_seconds = _zero_scorer_timings()
 
     def score_pairs(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
-        """对一个 batch 执行一次前向，并返回原始 logit。"""
+        """对一个 batch 执行一次前向，并返回原始 logit；多线程调用时逐批串行。"""
+
+        with self._lock:
+            return self._score_pairs_locked(pairs)
+
+    def _score_pairs_locked(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
+        """持有锁时执行 tokenization、前向与后处理。"""
 
         if not pairs:
             self.last_truncated_pair_count = 0
@@ -268,7 +293,8 @@ class DenseRerankerRetriever:
         self.candidate_pool_k = candidate_pool_k
         self.reranker_input_k = reranker_input_k
         self.final_top_k = final_top_k
-        # 公开属性：调用方（含 B2 trace 对照实验）可在两次 retrieve 之间替换 recorder。
+        # 公开属性：调用方（含 B2 trace 对照实验）可在两次 retrieve 之间替换 recorder；
+        # 并发请求共享同一实例时改用 tracing.trace_scope，不要替换此属性。
         self.trace_recorder = trace_recorder
 
     def retrieve(
@@ -291,7 +317,7 @@ class DenseRerankerRetriever:
             raise ValueError("top_k must not exceed reranker_input_k")
 
         # 本次调用固定使用同一个 recorder；为 None 时下面不构造任何 payload，开销与未接 trace 一致。
-        recorder = self.trace_recorder
+        recorder = resolve_recorder(self.trace_recorder)
         safe_record(recorder, "retrieval.dense.started")
         candidates = self.dense_retriever.retrieve(query, top_k=self.candidate_pool_k)
         if recorder is not None:

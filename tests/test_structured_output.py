@@ -240,3 +240,26 @@ def test_reasoning_content_presence_is_recorded() -> None:
     client = make_client(absent, "prompt_only")
     client.generate(PLAIN_MESSAGES)
     assert client.last_response_info["reasoning_content_present"] is False
+
+
+@pytest.mark.parametrize("trust_env", [False, True])
+def test_trust_env_controls_system_proxy_usage(trust_env: bool) -> None:
+    """默认不读系统代理；LLM_TRUST_ENV=true 时 HTTP Client 才使用 HTTP(S)_PROXY。"""
+
+    client = OpenAICompatibleLLMClient(
+        api_key="test-only-key",
+        base_url="https://example.test/v1",
+        model="m",
+        trust_env=trust_env,
+    )
+
+    assert client._client._client.trust_env is trust_env
+
+
+def test_trust_env_defaults_to_false_in_settings(monkeypatch) -> None:
+    from evidenceflow.config import Settings
+
+    monkeypatch.delenv("LLM_TRUST_ENV", raising=False)
+    assert Settings(_env_file=None).llm_trust_env is False
+    monkeypatch.setenv("LLM_TRUST_ENV", "true")
+    assert Settings(_env_file=None).llm_trust_env is True

@@ -133,21 +133,27 @@ class ExactDenseIndex:
 
         # float32 矩阵乘法得到全量内积；候选顺序完全由下面的项目层排序决定。
         scores = self._matrix @ query
-        scored = [
-            (float(score), chunk_id)
-            for score, chunk_id in zip(scores.tolist(), self._chunk_ids)
-        ]
+        size = len(self._chunk_ids)
+        effective_top_k = min(top_k, size)
+        if effective_top_k < size:
+            # 只对可能进入 Top-K 的候选做 Python 排序：取第 K 大分数为阈值，所有不低于
+            # 阈值的候选（含与阈值同分者）都参与排序，因此同分时仍严格按 chunk_id 决胜，
+            # 结果与全量排序完全一致。
+            threshold = np.partition(scores, size - effective_top_k)[size - effective_top_k]
+            positions = np.flatnonzero(scores >= threshold).tolist()
+        else:
+            positions = range(size)
+        scored = [(float(scores[position]), self._chunk_ids[position], position) for position in positions]
 
         scored.sort(key=lambda item: (-item[0], item[1]))
-        by_id = dict(zip(self._chunk_ids, self._chunks))
         return [
             RetrievedChunk(
-                chunk=by_id[chunk_id].model_copy(deep=True),
+                chunk=self._chunks[position].model_copy(deep=True),
                 rank=rank,
                 similarity_score=score,
             )
-            for rank, (score, chunk_id) in enumerate(
-                scored[: min(top_k, len(scored))],
+            for rank, (score, _chunk_id, position) in enumerate(
+                scored[:effective_top_k],
                 start=1,
             )
         ]

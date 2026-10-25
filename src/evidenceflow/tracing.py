@@ -4,6 +4,8 @@
 - 组件（DenseRerankerRetriever、Generator、RAGService）的 ``trace_recorder`` 默认为 ``None``，
   此时调用方根本不构造 payload，开销与未接入 trace 时一致；
 - 组件一律经 ``safe_record`` 记录，recorder 自身的任何异常都被吞掉，只留一条 warning 日志。
+- 共享组件服务并发请求时，用 ``trace_scope`` 为当前线程/协程指定本次 run 的 recorder，
+  组件经 ``resolve_recorder`` 取得它；构造时显式传入的 recorder 优先。
 不得 import ``evidenceflow.eval``（runtime 侧模块不反向依赖评测层）。
 """
 
@@ -13,7 +15,9 @@ import hashlib
 import logging
 import time
 import uuid
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from datetime import datetime, timezone
 from typing import Any, Protocol
 
@@ -23,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 _COMPLETED_SUFFIX = ".completed"
 _STARTED_SUFFIX = ".started"
+_ACTIVE_RECORDER: ContextVar["TraceRecorder | None"] = ContextVar(
+    "evidenceflow_active_trace_recorder", default=None
+)
 
 
 class TraceRecorder(Protocol):
@@ -37,6 +44,27 @@ class NullTraceRecorder:
 
     def record(self, name: str, **payload: Any) -> None:
         """丢弃事件。"""
+
+
+@contextmanager
+def trace_scope(recorder: TraceRecorder | None) -> Iterator[TraceRecorder | None]:
+    """在当前上下文内把 ``recorder`` 设为本次 run 的 recorder，退出时恢复原值。
+
+    ContextVar 按线程与 asyncio 任务隔离，因此多个请求可以共享同一组 Runtime 组件，
+    各自的事件只进入各自的 recorder，而不必在请求之间替换组件上的 ``trace_recorder``。
+    """
+
+    token = _ACTIVE_RECORDER.set(recorder)
+    try:
+        yield recorder
+    finally:
+        _ACTIVE_RECORDER.reset(token)
+
+
+def resolve_recorder(explicit: TraceRecorder | None) -> TraceRecorder | None:
+    """组件构造时显式传入的 recorder 优先；否则使用 ``trace_scope`` 设定的当前 recorder。"""
+
+    return explicit if explicit is not None else _ACTIVE_RECORDER.get()
 
 
 def safe_record(recorder: TraceRecorder | None, name: str, **payload: Any) -> None:

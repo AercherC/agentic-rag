@@ -30,8 +30,21 @@ from evidenceflow.storage import (
     read_collection_metadata,
 )
 
-# BGE-M3 Dense 向量维度；Exact 索引维度不符说明 collection 与当前 Embedding 模型不匹配。
+# BGE-M3 Dense 向量维度；仅当 Embedding Provider 未声明自身维度时作为期望值。
 EMBEDDING_DIMENSION = 1024
+
+
+def expected_embedding_dimension(embedding_provider: object) -> int:
+    """Exact 索引必须匹配的维度：优先取 Provider 声明的模型维度。
+
+    维度不符说明 collection 与当前 Embedding 模型不匹配。从模型读取而不是写死，
+    更换 ``EMBEDDING_MODEL`` 后校验仍然针对实际加载的模型。
+    """
+
+    dimension = getattr(embedding_provider, "dimension", None)
+    if isinstance(dimension, int) and not isinstance(dimension, bool) and dimension > 0:
+        return dimension
+    return EMBEDDING_DIMENSION
 
 
 def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
@@ -45,6 +58,7 @@ def build_llm_client(settings: Settings) -> OpenAICompatibleLLMClient:
         timeout_seconds=settings.llm_timeout_seconds,
         max_attempts=settings.llm_max_attempts,
         thinking=settings.llm_thinking,
+        trust_env=settings.llm_trust_env,
     )
 
 
@@ -204,16 +218,18 @@ def build_retriever(
     exact_index = ExactDenseIndex(
         [chunk for chunk, _ in pairs], [embedding for _, embedding in pairs]
     )
-    # 启动校验：索引大小必须等于 collection 记录数，维度必须与 BGE-M3 一致，
+    # 启动校验：索引大小必须等于 collection 记录数，维度必须与 Embedding 模型一致，
     # 否则说明读到了不完整或不匹配的索引，拒绝启动而不是静默降级。
     if exact_index.size != vector_store.count:
         raise ExactDenseIndexError(
             f"Exact index size {exact_index.size} does not match "
             f"collection count {vector_store.count}"
         )
-    if exact_index.dimension != EMBEDDING_DIMENSION:
+    expected_dimension = expected_embedding_dimension(embedding_provider)
+    if exact_index.dimension != expected_dimension:
         raise ExactDenseIndexError(
-            f"Exact index dimension {exact_index.dimension} != {EMBEDDING_DIMENSION}"
+            f"Exact index dimension {exact_index.dimension} != embedding model "
+            f"dimension {expected_dimension}"
         )
     dense_retriever = DenseRetriever(
         embedding_provider,

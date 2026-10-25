@@ -1,5 +1,6 @@
 """为 Chunker 提供与 Hugging Face 实现解耦的 Tokenizer 接口。"""
 
+import threading
 from typing import Protocol, runtime_checkable
 
 from transformers import AutoTokenizer
@@ -37,6 +38,8 @@ class BgeM3Tokenizer:
         if not model_name.strip():
             raise ValueError("Tokenizer model name must not be empty")
         self.model_name = model_name
+        # 同一实例会被并发请求共享（ContextBuilder 计数）；fast tokenizer 并发调用不安全，串行执行。
+        self._lock = threading.Lock()
         try:
             # 模型名由 Settings.embedding_model 注入，避免 Adapter 重复硬编码。
             self._tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -50,7 +53,8 @@ class BgeM3Tokenizer:
 
         try:
             # chunk_size 的合同是正文 Token 数，因此必须显式关闭自动特殊 Token。
-            token_ids = self._tokenizer.encode(text, add_special_tokens=False)
+            with self._lock:
+                token_ids = self._tokenizer.encode(text, add_special_tokens=False)
         except Exception as exc:
             raise TokenizerError("Tokenizer failed to encode text") from exc
         if not isinstance(token_ids, list) or not all(
@@ -64,11 +68,12 @@ class BgeM3Tokenizer:
 
         try:
             # 不让 Transformers 再做空格格式化，Chunker 只允许外围 strip()。
-            text = self._tokenizer.decode(
-                token_ids,
-                skip_special_tokens=False,
-                clean_up_tokenization_spaces=False,
-            )
+            with self._lock:
+                text = self._tokenizer.decode(
+                    token_ids,
+                    skip_special_tokens=False,
+                    clean_up_tokenization_spaces=False,
+                )
         except Exception as exc:
             raise TokenizerError("Tokenizer failed to decode token IDs") from exc
         if not isinstance(text, str):
